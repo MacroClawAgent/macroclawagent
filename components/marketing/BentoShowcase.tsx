@@ -265,49 +265,49 @@ export function BentoShowcase() {
         </motion.div>
 
         {/* Bento — Top row: Dashboard left, Agent+Cart right */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-4">
+        <div className="flex flex-col lg:flex-row gap-4 mb-4 lg:h-[380px]">
           {/* Dashboard — wider left panel */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0 }}
-            className="w-full lg:w-[58%] flex-shrink-0 min-h-[340px] lg:h-[380px]"
+            className="w-full lg:w-[58%] flex-shrink-0 min-h-[340px] lg:h-full"
           >
             <DashboardCard />
           </motion.div>
 
           {/* Agent + Cart stacked */}
-          <div className="flex-1 flex flex-col gap-4 lg:h-[380px]">
+          <div className="flex-1 flex flex-col gap-4 lg:h-full">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.08 }}
-              className="flex-1 min-h-[180px]"
+              className="flex-1 flex flex-col min-h-[180px]"
             >
-              <AgentCard />
+              <div className="flex-1 flex flex-col h-full"><AgentCard /></div>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.16 }}
-              className="flex-1 min-h-[180px]"
+              className="flex-1 flex flex-col min-h-[180px]"
             >
-              <CartCard />
+              <div className="flex-1 flex flex-col h-full"><CartCard /></div>
             </motion.div>
           </div>
         </div>
 
         {/* Bento — Bottom row: 3 equal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 auto-rows-[220px]">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className="min-h-[200px]"
+            className="h-full"
           >
             <StravaCard />
           </motion.div>
@@ -316,7 +316,7 @@ export function BentoShowcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="min-h-[200px]"
+            className="h-full"
           >
             <MacroCard />
           </motion.div>
@@ -325,7 +325,7 @@ export function BentoShowcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.24 }}
-            className="min-h-[200px]"
+            className="h-full"
           >
             <StreakCard />
           </motion.div>
