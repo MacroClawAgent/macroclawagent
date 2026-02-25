@@ -264,21 +264,21 @@ export function BentoShowcase() {
           </p>
         </motion.div>
 
-        {/* Bento Grid — Top row: Dashboard + right stack */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
-          {/* Card A — Dashboard */}
+        {/* Bento — Top row: Dashboard left, Agent+Cart right */}
+        <div className="flex flex-col lg:flex-row gap-4 mb-4">
+          {/* Dashboard — wider left panel */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0 }}
-            className="md:col-span-7 h-[380px]"
+            className="w-full lg:w-[58%] flex-shrink-0 min-h-[340px] lg:h-[380px]"
           >
             <DashboardCard />
           </motion.div>
 
-          {/* Right column: Agent + Cart stacked */}
-          <div className="md:col-span-5 flex flex-col gap-4">
+          {/* Agent + Cart stacked */}
+          <div className="flex-1 flex flex-col gap-4">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -300,8 +300,8 @@ export function BentoShowcase() {
           </div>
         </div>
 
-        {/* Bento Grid — Bottom row: 3 equal cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Bento — Bottom row: 3 equal cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
