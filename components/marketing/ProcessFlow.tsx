@@ -53,15 +53,15 @@ export function ProcessFlow() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col sm:flex-row items-center gap-8 mb-20"
+          className="flex flex-col sm:flex-row items-center justify-center gap-10 mb-20"
         >
           {/* Mascot image */}
           <div className="flex-shrink-0">
             <Image
               src="/howitworks.png"
               alt="MacroClaw surfing"
-              width={180}
-              height={180}
+              width={300}
+              height={300}
               className="object-contain drop-shadow-2xl"
             />
           </div>
