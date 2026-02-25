@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { isSupabaseConfigured, createClient } from "@/lib/supabase/client";
@@ -62,6 +62,25 @@ export default function OnboardingPage() {
 
   const set = (field: keyof FormData, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  // Redirect away if profile is already complete (or if not logged in)
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const check = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { router.push("/login"); return; }
+        const { data: profile } = await supabase
+          .from("users")
+          .select("profile_complete")
+          .eq("id", user.id)
+          .single();
+        if (profile?.profile_complete) router.push("/dashboard");
+      } catch { /* ignore */ }
+    };
+    check();
+  }, [router]);
 
   // Weight in kg (store as kg regardless of unit)
   const weightKg =

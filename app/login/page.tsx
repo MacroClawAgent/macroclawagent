@@ -61,12 +61,17 @@ export default function LoginPage() {
           "Check your email for a confirmation link to activate your account."
         );
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: authData, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
-        window.location.href = "/dashboard";
+        const { data: profile } = await supabase
+          .from("users")
+          .select("profile_complete")
+          .eq("id", authData.user!.id)
+          .single();
+        window.location.href = profile?.profile_complete ? "/dashboard" : "/onboarding";
       }
     } catch (err: unknown) {
       setError(friendlyError(err));

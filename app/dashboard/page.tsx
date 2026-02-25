@@ -55,13 +55,16 @@ async function getUser() {
     // Try to fetch full name from public.users
     const { data: profile } = await supabase
       .from("users")
-      .select("full_name, avatar_url")
+      .select("full_name, avatar_url, profile_complete")
       .eq("id", user.id)
       .single();
+    if (!profile?.profile_complete) {
+      redirect("/onboarding");
+    }
     return {
       email: user.email ?? "",
-      full_name: profile?.full_name ?? null,
-      avatar_url: profile?.avatar_url ?? null,
+      full_name: profile.full_name ?? null,
+      avatar_url: profile.avatar_url ?? null,
     };
   } catch {
     return null;
