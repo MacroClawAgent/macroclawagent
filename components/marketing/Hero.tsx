@@ -58,14 +58,14 @@ export function Hero() {
       <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[480px] h-[480px] rounded-full bg-indigo-600/6 blur-[80px] pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center min-h-[80vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-4 items-center min-h-[80vh]">
 
           {/* ── LEFT: Content ── */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-8 lg:pr-8"
+            className="flex flex-col gap-8 lg:pr-2"
           >
             {/* Pill badge */}
             <motion.div variants={itemVariants}>

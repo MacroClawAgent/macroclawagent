@@ -264,70 +264,68 @@ export function BentoShowcase() {
           </p>
         </motion.div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[180px]">
-          {/* Card A — Dashboard (large, 2 rows) */}
+        {/* Bento Grid — Top row: Dashboard + right stack */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+          {/* Card A — Dashboard */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0 }}
-            className="md:col-span-7 row-span-2"
+            className="md:col-span-7 h-[380px]"
           >
             <DashboardCard />
           </motion.div>
 
-          {/* Card B — Agent chat */}
+          {/* Right column: Agent + Cart stacked */}
+          <div className="md:col-span-5 flex flex-col gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.08 }}
+              className="flex-1 min-h-[180px]"
+            >
+              <AgentCard />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.16 }}
+              className="flex-1 min-h-[180px]"
+            >
+              <CartCard />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Bento Grid — Bottom row: 3 equal cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className="md:col-span-5"
-          >
-            <AgentCard />
-          </motion.div>
-
-          {/* Card C — Smart Cart */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.16 }}
-            className="md:col-span-5"
-          >
-            <CartCard />
-          </motion.div>
-
-          {/* Card D — Strava Sync */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.08 }}
-            className="md:col-span-4"
+            className="min-h-[200px]"
           >
             <StravaCard />
           </motion.div>
-
-          {/* Card E — Macro Target */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="md:col-span-4"
+            className="min-h-[200px]"
           >
             <MacroCard />
           </motion.div>
-
-          {/* Card F — Streak */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.24 }}
-            className="md:col-span-4"
+            className="min-h-[200px]"
           >
             <StreakCard />
           </motion.div>
