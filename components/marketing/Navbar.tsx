@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 
@@ -24,12 +25,14 @@ export function Navbar() {
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <span className="text-2xl transition-transform group-hover:scale-110 duration-200">
-            🦀
-          </span>
-          <span className="font-bold text-lg text-slate-100 tracking-tight">
-            MacroClawAgent
-          </span>
+          <Image
+            src="/logo.png"
+            alt="MacroClawAgent logo"
+            width={120}
+            height={36}
+            className="object-contain transition-opacity group-hover:opacity-90 duration-200"
+            priority
+          />
         </Link>
 
         {/* Nav Links */}

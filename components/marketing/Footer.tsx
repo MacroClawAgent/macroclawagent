@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 const footerLinks = {
   product: [
@@ -33,13 +34,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
           {/* Col 1: Brand */}
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5 group mb-4">
-              <span className="text-2xl transition-transform group-hover:scale-110 duration-200">
-                🦀
-              </span>
-              <span className="font-bold text-lg text-slate-100 tracking-tight">
-                MacroClawAgent
-              </span>
+            <Link href="/" className="inline-flex mb-4 group">
+              <Image
+                src="/logo.png"
+                alt="MacroClawAgent logo"
+                width={120}
+                height={36}
+                className="object-contain transition-opacity group-hover:opacity-90 duration-200"
+              />
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
               AI-powered nutrition for serious athletes. Sync your training,
