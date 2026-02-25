@@ -45,7 +45,7 @@ function Ring({
 /* ── Card A: Dashboard ── */
 function DashboardCard() {
   return (
-    <div className="flex flex-col gap-5 p-6 glass-card glow-border rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-5 p-6 glass-card glow-border rounded-2xl">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Dashboard</p>
@@ -57,7 +57,7 @@ function DashboardCard() {
       </div>
 
       {/* Activity rings */}
-      <div className="flex items-center justify-around py-6">
+      <div className="flex items-center justify-around flex-1 py-2">
         <Ring pct={0.76} strokeColor="#f97316" size={72} strokeWidth={7} label="Calories" value="2140" />
         <Ring pct={0.79} strokeColor="#10b981" size={72} strokeWidth={7} label="Protein" value="142g" />
         <Ring pct={0.64} strokeColor="#f59e0b" size={72} strokeWidth={7} label="Carbs" value="220g" />
@@ -85,7 +85,7 @@ function DashboardCard() {
 /* ── Card B: Claw Agent chat ── */
 function AgentCard() {
   return (
-    <div className="flex flex-col gap-4 p-5 glass-card rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 glass-card rounded-2xl">
       <div className="flex items-center gap-2">
         <div className="w-7 h-7 rounded-xl bg-indigo-500/20 border border-indigo-500/25 flex items-center justify-center">
           <Bot className="w-3.5 h-3.5 text-indigo-400" />
@@ -100,7 +100,7 @@ function AgentCard() {
       </div>
 
       {/* Chat bubbles */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 flex-1 overflow-hidden">
         {/* User */}
         <div className="flex justify-end">
           <div className="bg-white/[0.06] border border-white/[0.07] rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] text-slate-300 max-w-[85%]">
@@ -126,7 +126,7 @@ function CartCard() {
     { name: "Quinoa Power Bowl", macros: "22P · 68C · 12F", price: "$15.20" },
   ];
   return (
-    <div className="flex flex-col gap-4 p-5 glass-card rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 glass-card rounded-2xl">
       <div className="flex items-center gap-2">
         <ShoppingBag className="w-4 h-4 text-emerald-400" />
         <p className="text-sm font-bold text-slate-100">Smart Cart</p>
@@ -160,7 +160,7 @@ function CartCard() {
 /* ── Card D: Strava Sync ── */
 function StravaCard() {
   return (
-    <div className="flex flex-col gap-4 p-5 glass-card rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 glass-card rounded-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-orange-400" />
@@ -189,7 +189,7 @@ function StravaCard() {
 /* ── Card E: Macro Target ── */
 function MacroCard() {
   return (
-    <div className="flex flex-col gap-3 p-5 glass-card rounded-2xl justify-center bg-gradient-to-br from-indigo-900/20 to-transparent">
+    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 glass-card rounded-2xl justify-center bg-gradient-to-br from-indigo-900/20 to-transparent">
       <p className="text-[11px] text-indigo-400 uppercase tracking-widest font-semibold">Daily Target</p>
       <div>
         <p className="text-4xl font-black text-slate-100 leading-none">2,840</p>
@@ -215,7 +215,7 @@ function MacroCard() {
 function StreakCard() {
   const days = Array.from({ length: 28 }, (_, i) => i < 14 || (i >= 18 && i < 21));
   return (
-    <div className="flex flex-col gap-3 p-5 glass-card rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 glass-card rounded-2xl">
       <div className="flex items-center gap-2">
         <Flame className="w-4 h-4 text-orange-400" />
         <p className="text-sm font-bold text-slate-100">Streak</p>
@@ -264,63 +264,70 @@ export function BentoShowcase() {
           </p>
         </motion.div>
 
-        {/* Bento — Top row: Dashboard left, Agent+Cart right */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-4">
-          {/* Dashboard — wider left panel */}
+        {/* Bento — unified 6-col grid, rows 1-2 are 200px each */}
+        <div className="grid grid-cols-1 lg:grid-cols-6 lg:grid-rows-[200px_200px_220px] gap-4">
+          {/* Dashboard — 4 cols × 2 rows = 416px tall */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0 }}
-            className="w-full lg:w-[58%] flex-shrink-0"
+            className="lg:col-span-4 lg:row-span-2 min-h-[300px]"
           >
             <DashboardCard />
           </motion.div>
 
-          {/* Agent + Cart stacked */}
-          <div className="flex-1 flex flex-col gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.08 }}
-            >
-              <AgentCard />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.16 }}
-            >
-              <CartCard />
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Bento — Bottom row: 3 equal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Agent — 2 cols × 1 row */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.08 }}
+            className="lg:col-span-2 min-h-[160px]"
           >
-            <StravaCard />
+            <AgentCard />
           </motion.div>
+
+          {/* Cart — 2 cols × 1 row */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.16 }}
+            className="lg:col-span-2 min-h-[160px]"
+          >
+            <CartCard />
+          </motion.div>
+
+          {/* Strava — 2 cols × 1 row */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.08 }}
+            className="lg:col-span-2 min-h-[180px]"
+          >
+            <StravaCard />
+          </motion.div>
+
+          {/* Macro — 2 cols × 1 row */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.16 }}
+            className="lg:col-span-2 min-h-[180px]"
           >
             <MacroCard />
           </motion.div>
+
+          {/* Streak — 2 cols × 1 row */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.24 }}
+            className="lg:col-span-2 min-h-[180px]"
           >
             <StreakCard />
           </motion.div>
