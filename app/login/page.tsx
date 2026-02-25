@@ -17,6 +17,14 @@ import {
 
 type Mode = "login" | "signup";
 
+function friendlyError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (msg === "Failed to fetch" || msg.includes("fetch")) {
+    return "Cannot reach the auth server. Make sure your Supabase project is active and your NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are set correctly in Vercel, then redeploy.";
+  }
+  return msg || "Something went wrong";
+}
+
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -61,9 +69,7 @@ export default function LoginPage() {
         window.location.href = "/dashboard";
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+      setError(friendlyError(err));
     } finally {
       setLoading(false);
     }
@@ -83,11 +89,9 @@ export default function LoginPage() {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
-      if (error) setError(error.message);
+      if (error) setError(friendlyError(error));
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+      setError(friendlyError(err));
     }
   };
 
