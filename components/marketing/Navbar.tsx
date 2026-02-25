@@ -28,11 +28,14 @@ export function Navbar() {
           <Image
             src="/logo.png"
             alt="MacroClawAgent logo"
-            width={120}
-            height={36}
+            width={84}
+            height={26}
             className="object-contain transition-opacity group-hover:opacity-90 duration-200"
             priority
           />
+          <span className="font-bold text-lg text-slate-100 tracking-tight">
+            MacroClawAgent
+          </span>
         </Link>
 
         {/* Nav Links */}
