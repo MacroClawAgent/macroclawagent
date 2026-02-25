@@ -42,7 +42,7 @@ const steps = [
 export function ProcessFlow() {
   return (
     <section
-      id="features"
+      id="how-it-works"
       className="relative py-32 px-6 bg-mesh-section overflow-hidden"
     >
       <div className="max-w-6xl mx-auto">
@@ -96,7 +96,7 @@ export function ProcessFlow() {
                     >
                       {step.icon}
                     </div>
-                    <span className="text-5xl font-black text-white/[0.04] leading-none font-mono">
+                    <span className="text-4xl font-black text-white/[0.08] leading-none font-mono">
                       {step.step}
                     </span>
                   </div>

@@ -1,9 +1,58 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
 import { Activity, ShoppingBag, Heart, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+
+/* ── Count-up hook ── */
+function useCountUp(target: number, duration = 1500, enabled = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!enabled) return;
+    let start: number | null = null;
+    const step = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+      else setCount(target);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration, enabled]);
+  return count;
+}
+
+function StatCard({ value, numericValue, suffix, label, delay }: {
+  value: string;
+  numericValue: number;
+  suffix: string;
+  label: string;
+  delay: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const count = useCountUp(numericValue, 1600, isInView);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
+      className="text-center"
+    >
+      <p className="text-4xl md:text-5xl font-black gradient-text">
+        {isInView ? `${count.toLocaleString()}${suffix}` : value}
+      </p>
+      <p className="text-slate-500 text-sm mt-2">{label}</p>
+    </motion.div>
+  );
+}
 
 const apps = [
   {
@@ -32,10 +81,11 @@ const apps = [
   },
 ];
 
-const stats = [
-  { value: "12,400+", label: "Athletes using MacroClawAgent" },
-  { value: "94%", label: "Macro targets hit" },
-  { value: "3.2M", label: "Meals planned by AI" },
+const statCards = [
+  { value: "12,400+", numericValue: 12400, suffix: "+", label: "Athletes using MacroClawAgent", delay: 0 },
+  { value: "94%", numericValue: 94, suffix: "%", label: "Macro targets hit", delay: 0.1 },
+  { value: "3.2M", numericValue: 3, suffix: ".2M", label: "Meals planned by AI", delay: 0.2 },
+  { value: "4.9", numericValue: 4, suffix: ".9★", label: "Average user rating", delay: 0.3 },
 ];
 
 export function TrustSignals() {
@@ -46,29 +96,11 @@ export function TrustSignals() {
 
       <div className="max-w-5xl mx-auto">
         {/* Stats row */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="grid grid-cols-3 gap-6 mb-24"
-        >
-          {stats.map((stat, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="text-center"
-            >
-              <p className="text-4xl md:text-5xl font-black gradient-text">
-                {stat.value}
-              </p>
-              <p className="text-slate-500 text-sm mt-2">{stat.label}</p>
-            </motion.div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
+          {statCards.map((s) => (
+            <StatCard key={s.label} {...s} />
           ))}
-        </motion.div>
+        </div>
 
         {/* Apps section */}
         <motion.div
