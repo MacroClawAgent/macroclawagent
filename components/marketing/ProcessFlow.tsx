@@ -53,7 +53,7 @@ export function ProcessFlow() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-10 mb-20"
+          className="flex flex-col sm:flex-row items-center gap-10 mb-20"
         >
           {/* Mascot image */}
           <div className="flex-shrink-0">
@@ -67,7 +67,7 @@ export function ProcessFlow() {
           </div>
 
           {/* Text */}
-          <div>
+          <div className="flex-1 text-center">
             <p className="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">
               How It Works
             </p>
