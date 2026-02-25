@@ -2,6 +2,7 @@ import { ActivityRings } from "@/components/dashboard/ActivityRings";
 import { MealCards } from "@/components/dashboard/MealCards";
 import { StravaActivity } from "@/components/dashboard/StravaActivity";
 import { AgentChat } from "@/components/dashboard/AgentChat";
+import { SignOutButton } from "@/components/dashboard/SignOutButton";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowLeft, Bell, Settings, Zap, Droplets, Scale } from "lucide-react";
@@ -72,6 +73,7 @@ export default function DashboardPage() {
             <button className="w-9 h-9 rounded-xl glass flex items-center justify-center text-green-300/60 hover:text-green-300 transition-colors">
               <Settings className="w-4 h-4" />
             </button>
+            <SignOutButton />
           </div>
         </div>
       </header>

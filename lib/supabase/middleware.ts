@@ -2,13 +2,25 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  // Skip Supabase entirely if env vars are not configured
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    // Protect dashboard — redirect to login if no Supabase configured
+    if (request.nextUrl.pathname.startsWith("/dashboard")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
+
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -22,28 +34,34 @@ export async function updateSession(request: NextRequest) {
           );
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options as Parameters<typeof supabaseResponse.cookies.set>[2])
+            supabaseResponse.cookies.set(
+              name,
+              value,
+              options as Parameters<typeof supabaseResponse.cookies.set>[2]
+            )
           );
         },
       },
     }
   );
 
-  // Refresh session — do not remove this line
+  // Refresh session — keep this line
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect unauthenticated users away from protected routes
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith("/dashboard") &&
-    !request.nextUrl.pathname.startsWith("/dashboard/auth")
-  ) {
-    // For MVP: allow access to dashboard without auth (remove this line to enforce auth)
-    // const url = request.nextUrl.clone();
-    // url.pathname = "/";
-    // return NextResponse.redirect(url);
+  // Redirect unauthenticated users away from /dashboard to /login
+  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect authenticated users away from /login to /dashboard
+  if (user && request.nextUrl.pathname === "/login") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;
