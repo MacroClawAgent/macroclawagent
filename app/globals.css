@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 145 60% 4%;
+    --foreground: 140 30% 95%;
+    --card: 145 50% 6%;
+    --card-foreground: 140 30% 95%;
+    --popover: 145 50% 6%;
+    --popover-foreground: 140 30% 95%;
+    --primary: 142 76% 60%;
+    --primary-foreground: 145 60% 4%;
+    --secondary: 145 30% 12%;
+    --secondary-foreground: 140 30% 95%;
+    --muted: 145 20% 14%;
+    --muted-foreground: 140 10% 60%;
+    --accent: 142 76% 60%;
+    --accent-foreground: 145 60% 4%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 145 20% 14%;
+    --input: 145 20% 14%;
+    --ring: 142 76% 60%;
+    --radius: 0.75rem;
+  }
+
+  /* Force dark mode */
+  .dark {
+    --background: 145 60% 4%;
+    --foreground: 140 30% 95%;
+    --card: 145 50% 6%;
+    --card-foreground: 140 30% 95%;
+    --popover: 145 50% 6%;
+    --popover-foreground: 140 30% 95%;
+    --primary: 142 76% 60%;
+    --primary-foreground: 145 60% 4%;
+    --secondary: 145 30% 12%;
+    --secondary-foreground: 140 30% 95%;
+    --muted: 145 20% 14%;
+    --muted-foreground: 140 10% 60%;
+    --accent: 142 76% 60%;
+    --accent-foreground: 145 60% 4%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 145 20% 14%;
+    --input: 145 20% 14%;
+    --ring: 142 76% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#0A1A0F] text-green-50 antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0A1A0F;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(74, 222, 128, 0.2);
+    border-radius: 99px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(74, 222, 128, 0.4);
+  }
+
+  /* Selection color */
+  ::selection {
+    background: rgba(74, 222, 128, 0.25);
+    color: #f0fdf4;
+  }
+}
+
+@layer utilities {
+  /* Mesh gradient backgrounds */
+  .bg-mesh-hero {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -20%, rgba(17, 45, 24, 0.8) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 80% 60%, rgba(26, 74, 38, 0.3) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 50% at 20% 80%, rgba(13, 36, 20, 0.5) 0%, transparent 50%),
+      #0A1A0F;
+  }
+
+  .bg-mesh-section {
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 50%, rgba(13, 36, 20, 0.6) 0%, transparent 70%),
+      #0A1A0F;
+  }
+
+  /* Text balance for headings */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Noise texture overlay */
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
