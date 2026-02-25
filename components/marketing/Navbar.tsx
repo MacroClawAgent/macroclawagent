@@ -34,13 +34,18 @@ export function Navbar() {
 
         {/* Nav Links */}
         <div className="hidden md:flex items-center gap-8">
-          {["Features", "Dashboard", "Pricing"].map((item) => (
+          {[
+            { label: "Features", href: "/features" },
+            { label: "Pricing", href: "/pricing" },
+            { label: "About", href: "/about" },
+            { label: "Blog", href: "/blog" },
+          ].map((item) => (
             <Link
-              key={item}
-              href={item === "Dashboard" ? "/dashboard" : `#${item.toLowerCase()}`}
+              key={item.label}
+              href={item.href}
               className="text-sm text-slate-400 hover:text-slate-100 transition-colors duration-200"
             >
-              {item}
+              {item.label}
             </Link>
           ))}
         </div>
