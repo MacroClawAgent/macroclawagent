@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Activity, Sparkles, ShoppingCart, ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const steps = [
   {
@@ -52,18 +53,32 @@ export function ProcessFlow() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="flex flex-col sm:flex-row items-center gap-8 mb-20"
         >
-          <p className="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">
-            How It Works
-          </p>
-          <h2 className="text-4xl md:text-5xl font-black text-slate-100 tracking-tight">
-            How the{" "}
-            <span className="gradient-text">Claw Works</span>
-          </h2>
-          <p className="mt-4 text-slate-400 max-w-xl mx-auto text-lg">
-            Three steps from sweat to sustenance. Fully automated.
-          </p>
+          {/* Mascot image */}
+          <div className="flex-shrink-0">
+            <Image
+              src="/howitworks.png"
+              alt="MacroClaw surfing"
+              width={180}
+              height={180}
+              className="object-contain drop-shadow-2xl"
+            />
+          </div>
+
+          {/* Text */}
+          <div>
+            <p className="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">
+              How It Works
+            </p>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-100 tracking-tight">
+              How the{" "}
+              <span className="gradient-text">Claw Works</span>
+            </h2>
+            <p className="mt-4 text-slate-400 max-w-xl text-lg">
+              Three steps from sweat to sustenance. Fully automated.
+            </p>
+          </div>
         </motion.div>
 
         {/* Steps */}
