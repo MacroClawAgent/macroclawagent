@@ -278,7 +278,7 @@ export function BentoShowcase() {
           </motion.div>
 
           {/* Agent + Cart stacked */}
-          <div className="flex-1 flex flex-col gap-4">
+          <div className="flex-1 flex flex-col gap-4 lg:h-[380px]">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}

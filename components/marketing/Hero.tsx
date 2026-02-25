@@ -58,14 +58,14 @@ export function Hero() {
       <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[480px] h-[480px] rounded-full bg-indigo-600/6 blur-[80px] pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-4 items-center min-h-[80vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-0 items-center min-h-[80vh]">
 
           {/* ── LEFT: Content ── */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-8 lg:pr-2"
+            className="flex flex-col gap-8"
           >
             {/* Pill badge */}
             <motion.div variants={itemVariants}>
@@ -78,13 +78,11 @@ export function Hero() {
             {/* H1 */}
             <motion.h1
               variants={itemVariants}
-              className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.92] text-balance"
+              className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95]"
             >
               <span className="gradient-text">Fuel your training.</span>
               <br />
-              <span className="text-slate-100">Eat like your goals</span>
-              <br />
-              <span className="text-slate-100">are real.</span>
+              <span className="text-slate-100">Eat like your goals are real.</span>
             </motion.h1>
 
             {/* Sub */}
