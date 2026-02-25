@@ -53,10 +53,10 @@ export function ProcessFlow() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col sm:flex-row items-center gap-10 mb-20"
+          className="relative flex flex-col items-center gap-8 mb-20 sm:min-h-[280px] sm:justify-center"
         >
-          {/* Mascot image */}
-          <div className="flex-shrink-0">
+          {/* Mascot image — absolute left on desktop, stacked on mobile */}
+          <div className="sm:absolute sm:left-0 sm:top-1/2 sm:-translate-y-1/2">
             <Image
               src="/howitworks.png"
               alt="MacroClaw surfing"
@@ -66,8 +66,8 @@ export function ProcessFlow() {
             />
           </div>
 
-          {/* Text */}
-          <div className="flex-1 text-center">
+          {/* Text — centered across full container width */}
+          <div className="text-center">
             <p className="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">
               How It Works
             </p>
@@ -75,7 +75,7 @@ export function ProcessFlow() {
               How the{" "}
               <span className="gradient-text">Claw Works</span>
             </h2>
-            <p className="mt-4 text-slate-400 max-w-xl text-lg">
+            <p className="mt-4 text-slate-400 max-w-xl text-lg mx-auto">
               Three steps from sweat to sustenance. Fully automated.
             </p>
           </div>
