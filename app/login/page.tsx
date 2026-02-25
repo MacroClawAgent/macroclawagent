@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
+import { isSupabaseConfigured, createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowRight,
@@ -13,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 
 type Mode = "login" | "signup";
@@ -26,14 +26,20 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const supabaseReady = isSupabaseConfigured();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabaseReady) {
+      setError("Auth backend not configured — add Supabase keys to your environment variables.");
+      return;
+    }
     setError(null);
     setSuccess(null);
     setLoading(true);
 
-    const supabase = createClient();
     try {
+      const supabase = createClient();
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
@@ -64,32 +70,42 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    if (!supabaseReady) {
+      setError("Auth backend not configured — add Supabase keys to your environment variables.");
+      return;
+    }
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) setError(error.message);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) setError(error.message);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#0A1A0F] flex flex-col">
+    <div className="min-h-screen bg-[#08090D] flex flex-col">
       {/* Top nav */}
       <nav className="px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           <span className="text-xl transition-transform group-hover:scale-110 duration-200">
             🦀
           </span>
-          <span className="font-bold text-green-50 tracking-tight">
+          <span className="font-bold text-slate-100 tracking-tight">
             MacroClawAgent
           </span>
         </Link>
         <Link
           href="/"
-          className="text-sm text-green-300/50 hover:text-green-300 transition-colors"
+          className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
         >
           ← Back to home
         </Link>
@@ -99,8 +115,37 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           {/* Decorative orbs */}
-          <div className="absolute top-1/3 left-1/4 w-64 h-64 rounded-full bg-green-900/20 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-1/3 right-1/4 w-48 h-48 rounded-full bg-emerald-900/15 blur-3xl pointer-events-none" />
+          <div className="absolute top-1/3 left-1/4 w-64 h-64 rounded-full bg-indigo-900/20 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-1/3 right-1/4 w-48 h-48 rounded-full bg-violet-900/15 blur-3xl pointer-events-none" />
+
+          {/* Unconfigured banner */}
+          <AnimatePresence>
+            {!supabaseReady && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 flex items-start gap-3 px-4 py-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl"
+              >
+                <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-amber-300 mb-0.5">
+                    Auth backend not configured
+                  </p>
+                  <p className="text-xs text-amber-300/70">
+                    Add{" "}
+                    <code className="font-mono bg-amber-500/10 px-1 rounded">
+                      NEXT_PUBLIC_SUPABASE_URL
+                    </code>{" "}
+                    and{" "}
+                    <code className="font-mono bg-amber-500/10 px-1 rounded">
+                      NEXT_PUBLIC_SUPABASE_ANON_KEY
+                    </code>{" "}
+                    to your Vercel environment variables.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -110,10 +155,10 @@ export default function LoginPage() {
           >
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-black text-green-50 tracking-tight">
+              <h1 className="text-3xl font-black text-slate-100 tracking-tight">
                 {mode === "login" ? "Welcome back" : "Create your account"}
               </h1>
-              <p className="text-green-300/60 mt-2 text-sm">
+              <p className="text-slate-400 mt-2 text-sm">
                 {mode === "login"
                   ? "Sign in to access your AI nutrition dashboard."
                   : "Start optimizing your nutrition with AI."}
@@ -134,8 +179,8 @@ export default function LoginPage() {
                       }}
                       className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
                         mode === m
-                          ? "bg-accent text-forest shadow-lg shadow-accent/20"
-                          : "text-green-300/60 hover:text-green-300"
+                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
+                          : "text-slate-400 hover:text-slate-200"
                       }`}
                     >
                       {m === "login" ? "Sign In" : "Sign Up"}
@@ -146,7 +191,7 @@ export default function LoginPage() {
                 {/* Google OAuth */}
                 <button
                   onClick={handleGoogleLogin}
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 glass rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/8 transition-all duration-200 text-sm font-medium text-green-100"
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 glass rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/[0.08] transition-all duration-200 text-sm font-medium text-slate-200"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path
@@ -171,18 +216,16 @@ export default function LoginPage() {
 
                 {/* Divider */}
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-px bg-white/8" />
-                  <span className="text-xs text-green-300/40 font-medium">
-                    or
-                  </span>
-                  <div className="flex-1 h-px bg-white/8" />
+                  <div className="flex-1 h-px bg-white/[0.08]" />
+                  <span className="text-xs text-slate-500 font-medium">or</span>
+                  <div className="flex-1 h-px bg-white/[0.08]" />
                 </div>
 
                 {/* Email/password form */}
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   {/* Email */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold text-green-300/70 uppercase tracking-wide">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
                       Email
                     </label>
                     <input
@@ -191,20 +234,20 @@ export default function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="athlete@example.com"
                       required
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-green-50 placeholder:text-green-300/30 outline-none focus:border-accent/50 focus:bg-white/8 transition-all duration-200"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-indigo-500/60 focus:bg-white/[0.08] transition-all duration-200"
                     />
                   </div>
 
                   {/* Password */}
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-green-300/70 uppercase tracking-wide">
+                      <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
                         Password
                       </label>
                       {mode === "login" && (
                         <button
                           type="button"
-                          className="text-xs text-accent/70 hover:text-accent transition-colors"
+                          className="text-xs text-indigo-400/80 hover:text-indigo-300 transition-colors"
                         >
                           Forgot password?
                         </button>
@@ -222,12 +265,12 @@ export default function LoginPage() {
                         }
                         required
                         minLength={mode === "signup" ? 8 : undefined}
-                        className="w-full px-4 py-3 pr-11 bg-white/5 border border-white/10 rounded-xl text-sm text-green-50 placeholder:text-green-300/30 outline-none focus:border-accent/50 focus:bg-white/8 transition-all duration-200"
+                        className="w-full px-4 py-3 pr-11 bg-white/5 border border-white/10 rounded-xl text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-indigo-500/60 focus:bg-white/[0.08] transition-all duration-200"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword((p) => !p)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-green-300/40 hover:text-green-300 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                       >
                         {showPassword ? (
                           <EyeOff className="w-4 h-4" />
@@ -256,20 +299,19 @@ export default function LoginPage() {
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
-                        className="flex items-start gap-2.5 px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl"
+                        className="flex items-start gap-2.5 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
                       >
-                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-green-300">{success}</p>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-emerald-300">{success}</p>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
                   {/* Submit */}
-                  <Button
+                  <button
                     type="submit"
-                    size="lg"
-                    className="w-full mt-1"
                     disabled={loading}
+                    className="w-full mt-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -279,18 +321,18 @@ export default function LoginPage() {
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
-                  </Button>
+                  </button>
                 </form>
 
                 {/* Terms */}
                 {mode === "signup" && (
-                  <p className="text-center text-xs text-green-300/30 leading-relaxed">
+                  <p className="text-center text-xs text-slate-600 leading-relaxed">
                     By creating an account you agree to our{" "}
-                    <a href="#" className="text-accent/60 hover:text-accent transition-colors">
+                    <a href="#" className="text-indigo-400/80 hover:text-indigo-300 transition-colors">
                       Terms
                     </a>{" "}
                     and{" "}
-                    <a href="#" className="text-accent/60 hover:text-accent transition-colors">
+                    <a href="#" className="text-indigo-400/80 hover:text-indigo-300 transition-colors">
                       Privacy Policy
                     </a>
                     .

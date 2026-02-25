@@ -8,27 +8,27 @@ const rings = [
     label: "Calories",
     current: 1640,
     target: 2240,
-    color: "#4ADE80",
-    strokeColor: "#4ADE80",
-    shadowColor: "rgba(74, 222, 128, 0.4)",
+    color: "#F97316",
+    strokeColor: "#F97316",
+    shadowColor: "rgba(249, 115, 22, 0.4)",
     radius: 58,
   },
   {
     label: "Protein",
     current: 87,
     target: 120,
-    color: "#60A5FA",
-    strokeColor: "#60A5FA",
-    shadowColor: "rgba(96, 165, 250, 0.4)",
+    color: "#10B981",
+    strokeColor: "#10B981",
+    shadowColor: "rgba(16, 185, 129, 0.4)",
     radius: 44,
   },
   {
     label: "Carbs",
     current: 180,
     target: 250,
-    color: "#34D399",
-    strokeColor: "#34D399",
-    shadowColor: "rgba(52, 211, 153, 0.3)",
+    color: "#F59E0B",
+    strokeColor: "#F59E0B",
+    shadowColor: "rgba(245, 158, 11, 0.3)",
     radius: 30,
   },
 ];
@@ -71,7 +71,7 @@ export function ActivityRings() {
   return (
     <Card className="glass-card border-0 h-full">
       <CardHeader className="pb-4">
-        <CardTitle className="text-base font-semibold text-green-200/80">
+        <CardTitle className="text-base font-semibold text-slate-300">
           Weekly Goal
         </CardTitle>
       </CardHeader>
@@ -87,7 +87,7 @@ export function ActivityRings() {
                 cy="80"
                 r={ring.radius}
                 fill="none"
-                stroke="rgba(255,255,255,0.05)"
+                stroke="rgba(255,255,255,0.04)"
                 strokeWidth="7"
               />
             ))}
@@ -103,11 +103,11 @@ export function ActivityRings() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.8, duration: 0.4 }}
-              className="text-3xl font-black text-green-50"
+              className="text-3xl font-black text-slate-100"
             >
               {overallProgress}%
             </motion.span>
-            <span className="text-xs text-green-300/50 font-medium">complete</span>
+            <span className="text-xs text-slate-500 font-medium">complete</span>
           </div>
         </div>
 
@@ -122,10 +122,10 @@ export function ActivityRings() {
                     className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: ring.color }}
                   />
-                  <span className="text-sm text-green-300/70">{ring.label}</span>
+                  <span className="text-sm text-slate-400">{ring.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-20 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                  <div className="w-20 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
                       style={{ backgroundColor: ring.color }}
@@ -134,9 +134,9 @@ export function ActivityRings() {
                       transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
                     />
                   </div>
-                  <span className="text-xs text-green-300/50 w-16 text-right font-mono">
+                  <span className="text-xs text-slate-500 w-16 text-right font-mono">
                     {ring.current}
-                    <span className="text-green-300/30">/{ring.target}</span>
+                    <span className="text-slate-700">/{ring.target}</span>
                   </span>
                 </div>
               </div>

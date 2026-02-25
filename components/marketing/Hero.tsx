@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Zap, Target, TrendingUp } from "lucide-react";
 
 const statPills = [
-  { icon: <Zap className="w-3.5 h-3.5" />, text: "2,340 kcal tracked", color: "text-green-400" },
-  { icon: <Target className="w-3.5 h-3.5" />, text: "87g protein hit", color: "text-blue-400" },
-  { icon: <TrendingUp className="w-3.5 h-3.5" />, text: "5.2km logged", color: "text-orange-400" },
+  { icon: <Zap className="w-3.5 h-3.5" />, text: "2,340 kcal tracked", color: "text-orange-400" },
+  { icon: <Target className="w-3.5 h-3.5" />, text: "87g protein hit", color: "text-emerald-400" },
+  { icon: <TrendingUp className="w-3.5 h-3.5" />, text: "5.2km logged", color: "text-indigo-400" },
 ];
 
 const containerVariants = {
@@ -28,9 +28,9 @@ export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-mesh-hero pt-16">
       {/* Decorative orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-green-900/20 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-emerald-900/15 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-green-950/30 blur-[80px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-indigo-900/15 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-violet-900/10 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-indigo-950/20 blur-[80px] pointer-events-none" />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         <motion.div
@@ -41,8 +41,8 @@ export function Hero() {
         >
           {/* Pill badge */}
           <motion.div variants={itemVariants}>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass glow-border text-xs font-medium text-green-300 tracking-wide uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass glow-border text-xs font-medium text-indigo-300 tracking-wide uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
               Powered by Claude AI · Strava · Uber Eats
             </span>
           </motion.div>
@@ -54,13 +54,13 @@ export function Hero() {
           >
             <span className="gradient-text">Your AI Nutrition Coach.</span>
             <br />
-            <span className="text-green-50">Built for Athletes.</span>
+            <span className="text-slate-100">Built for Athletes.</span>
           </motion.h1>
 
           {/* Subheadline */}
           <motion.p
             variants={itemVariants}
-            className="max-w-2xl text-lg md:text-xl text-green-300/70 leading-relaxed"
+            className="max-w-2xl text-lg md:text-xl text-slate-400 leading-relaxed"
           >
             MacroClawAgent syncs your Strava runs and orders the exact fuel you
             need. No more guessing what to eat after a hard session — the Claw
@@ -73,7 +73,7 @@ export function Hero() {
             className="flex flex-col sm:flex-row items-center gap-4"
           >
             <Button size="xl" variant="glow" asChild>
-              <Link href="/dashboard">
+              <Link href="/login">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-1" />
               </Link>
@@ -98,7 +98,7 @@ export function Hero() {
                 className="flex items-center gap-2 px-4 py-2 glass rounded-full text-sm font-medium"
               >
                 <span className={pill.color}>{pill.icon}</span>
-                <span className="text-green-200/80">{pill.text}</span>
+                <span className="text-slate-300">{pill.text}</span>
               </motion.div>
             ))}
           </motion.div>
@@ -108,11 +108,11 @@ export function Hero() {
             variants={itemVariants}
             className="w-full max-w-4xl mt-8 glass-card p-1 glow-border"
           >
-            <div className="relative w-full aspect-[16/7] rounded-xl overflow-hidden bg-gradient-to-br from-forest-mid to-forest-light flex items-center justify-center">
+            <div className="relative w-full aspect-[16/7] rounded-xl overflow-hidden bg-gradient-to-br from-[#0F111A] to-[#161925] flex items-center justify-center">
               {/* Fake dashboard preview */}
               <div className="absolute inset-0 grid grid-cols-3 gap-2 p-4 opacity-60">
                 <div className="glass-card col-span-1 flex flex-col items-center justify-center gap-2 p-4">
-                  <div className="w-16 h-16 rounded-full border-4 border-accent/40 border-t-accent animate-spin-slow" />
+                  <div className="w-16 h-16 rounded-full border-4 border-indigo-500/40 border-t-indigo-400 animate-spin" style={{ animationDuration: "3s" }} />
                   <div className="h-2 w-16 rounded bg-white/10" />
                   <div className="h-2 w-10 rounded bg-white/5" />
                 </div>
@@ -123,8 +123,8 @@ export function Hero() {
                 </div>
               </div>
               <div className="relative z-10 text-center">
-                <p className="text-green-300/50 text-sm font-medium">Dashboard Preview</p>
-                <p className="text-green-300/30 text-xs mt-1">Sign in to see your data</p>
+                <p className="text-slate-400 text-sm font-medium">Dashboard Preview</p>
+                <p className="text-slate-600 text-xs mt-1">Sign in to see your data</p>
               </div>
             </div>
           </motion.div>
@@ -132,7 +132,7 @@ export function Hero() {
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0A1A0F] to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#08090D] to-transparent pointer-events-none" />
     </section>
   );
 }

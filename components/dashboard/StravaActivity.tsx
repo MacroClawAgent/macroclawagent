@@ -44,8 +44,8 @@ const activities = [
     duration: "1h 42min",
     calories: 920,
     pace: "8:15/km",
-    color: "text-green-400",
-    bg: "bg-green-500/10",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
   },
   {
     id: 4,
@@ -68,23 +68,20 @@ function ActivityRow({ activity, delay }: { activity: (typeof activities)[0]; de
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0 group hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors duration-200"
+      className="flex items-center gap-4 py-3 border-b border-white/[0.05] last:border-0 group hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors duration-200"
     >
-      {/* Icon */}
       <div
         className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${activity.bg} ${activity.color}`}
       >
         {activity.icon}
       </div>
 
-      {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-green-50 truncate">{activity.name}</p>
-        <p className="text-xs text-green-300/40 mt-0.5">{activity.date}</p>
+        <p className="text-sm font-semibold text-slate-100 truncate">{activity.name}</p>
+        <p className="text-xs text-slate-500 mt-0.5">{activity.date}</p>
       </div>
 
-      {/* Stats */}
-      <div className="hidden sm:flex items-center gap-3 text-xs text-green-300/50">
+      <div className="hidden sm:flex items-center gap-3 text-xs text-slate-500">
         <span className="flex items-center gap-1">
           <MapPin className="w-3 h-3" />
           {activity.distance}
@@ -95,7 +92,6 @@ function ActivityRow({ activity, delay }: { activity: (typeof activities)[0]; de
         </span>
       </div>
 
-      {/* Calories badge */}
       <Badge variant="calories" className="flex-shrink-0">
         <Flame className="w-3 h-3 mr-1" />
         {activity.calories}
@@ -106,7 +102,7 @@ function ActivityRow({ activity, delay }: { activity: (typeof activities)[0]; de
 
 function ActivitySkeleton() {
   return (
-    <div className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0">
+    <div className="flex items-center gap-4 py-3 border-b border-white/[0.05] last:border-0">
       <Skeleton className="w-9 h-9 rounded-xl flex-shrink-0" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-3.5 w-48" />
@@ -130,14 +126,14 @@ export function StravaActivity() {
   return (
     <Card className="glass-card border-0">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-semibold text-green-200/80">
+        <CardTitle className="text-base font-semibold text-slate-300">
           Recent Activity
         </CardTitle>
         {!loading && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-1.5 text-xs text-green-300/50"
+            className="flex items-center gap-1.5 text-xs text-slate-500"
           >
             <Flame className="w-3.5 h-3.5 text-orange-400" />
             <span className="font-mono">{totalCalories.toLocaleString()} kcal this week</span>

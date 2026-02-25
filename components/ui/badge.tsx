@@ -8,15 +8,15 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-accent/20 text-accent hover:bg-accent/30",
+          "border-transparent bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30",
         secondary:
-          "border-transparent bg-white/10 text-green-200 hover:bg-white/15",
+          "border-transparent bg-white/10 text-slate-300 hover:bg-white/15",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "border-white/20 text-green-300",
+        outline: "border-white/15 text-slate-300",
         protein: "border-transparent bg-blue-500/20 text-blue-300",
         carbs: "border-transparent bg-amber-500/20 text-amber-300",
-        calories: "border-transparent bg-green-500/20 text-green-300",
+        calories: "border-transparent bg-orange-500/20 text-orange-300",
       },
     },
     defaultVariants: {

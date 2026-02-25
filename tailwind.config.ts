@@ -19,17 +19,11 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Nature Distilled palette
-        forest: {
-          DEFAULT: "#0A1A0F",
-          light: "#0D2414",
-          mid: "#112D18",
-          bright: "#1A4A26",
-        },
-        accent: {
-          DEFAULT: "#4ADE80",
-          muted: "#22C55E",
-          dim: "#166534",
+        // Midnight Athletic palette
+        midnight: {
+          DEFAULT: "#08090D",
+          surface: "#0F111A",
+          elevated: "#161925",
         },
         // Shadcn CSS variable mappings
         border: "hsl(var(--border))",
@@ -72,32 +66,26 @@ const config: Config = {
         mono: ["var(--font-geist-mono)", "monospace"],
       },
       keyframes: {
-        // Skeleton shimmer
         shimmer: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
         },
-        // Hero gradient text animation
         "gradient-shift": {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
         },
-        // Floating chat bubble
         float: {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-6px)" },
         },
-        // Pulse glow for chat bubble
         "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(74, 222, 128, 0.3)" },
-          "50%": { boxShadow: "0 0 40px rgba(74, 222, 128, 0.6)" },
+          "0%, 100%": { boxShadow: "0 0 20px rgba(99, 102, 241, 0.3)" },
+          "50%": { boxShadow: "0 0 40px rgba(99, 102, 241, 0.6)" },
         },
-        // Slide up for process flow cards
         "slide-up": {
           "0%": { opacity: "0", transform: "translateY(30px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        // Ring fill for activity rings
         "ring-fill": {
           "0%": { strokeDashoffset: "var(--ring-full)" },
           "100%": { strokeDashoffset: "var(--ring-offset)" },
@@ -135,23 +123,23 @@ const config: Config = {
         ".glass": {
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          backgroundColor: "rgba(255, 255, 255, 0.05)",
-          border: "1px solid rgba(255, 255, 255, 0.10)",
+          backgroundColor: "rgba(255, 255, 255, 0.04)",
+          border: "1px solid rgba(255, 255, 255, 0.07)",
         },
         // Premium card glass effect
         ".glass-card": {
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          backgroundColor: "rgba(255, 255, 255, 0.03)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
+          backgroundColor: "rgba(15, 17, 26, 0.80)",
+          border: "1px solid rgba(255, 255, 255, 0.07)",
           borderRadius: "1rem",
         },
         // Stronger glass for overlays
         ".glass-heavy": {
           backdropFilter: "blur(32px)",
           WebkitBackdropFilter: "blur(32px)",
-          backgroundColor: "rgba(10, 26, 15, 0.85)",
-          border: "1px solid rgba(74, 222, 128, 0.15)",
+          backgroundColor: "rgba(8, 9, 13, 0.90)",
+          border: "1px solid rgba(99, 102, 241, 0.15)",
         },
         // Shimmer skeleton overlay
         ".skeleton-shimmer": {
@@ -162,24 +150,24 @@ const config: Config = {
             position: "absolute",
             inset: "0",
             background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)",
+              "linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)",
             animation: "shimmer 2s infinite",
           },
         },
-        // Gradient text utility
+        // Gradient text utility — indigo → violet → blue
         ".gradient-text": {
           background:
-            "linear-gradient(135deg, #4ADE80 0%, #34D399 35%, #6EE7B7 70%, #4ADE80 100%)",
+            "linear-gradient(135deg, #6366F1 0%, #8B5CF6 40%, #A78BFA 70%, #6366F1 100%)",
           backgroundSize: "300% 300%",
           WebkitBackgroundClip: "text",
           backgroundClip: "text",
           WebkitTextFillColor: "transparent",
           animation: "gradient-shift 4s ease infinite",
         },
-        // Accent glow border
+        // Indigo glow border
         ".glow-border": {
-          border: "1px solid rgba(74, 222, 128, 0.3)",
-          boxShadow: "0 0 20px rgba(74, 222, 128, 0.1)",
+          border: "1px solid rgba(99, 102, 241, 0.35)",
+          boxShadow: "0 0 24px rgba(99, 102, 241, 0.10)",
         },
       });
     }),

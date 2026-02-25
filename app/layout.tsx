@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#0A1A0F",
+  themeColor: "#08090D",
 };
 
 export const metadata: Metadata = {
@@ -44,7 +44,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${inter.variable} ${geistMono.variable} font-sans min-h-screen bg-[#0A1A0F] text-green-50 antialiased`}
+        className={`${inter.variable} ${geistMono.variable} font-sans min-h-screen bg-[#08090D] text-slate-100 antialiased`}
       >
         {children}
       </body>

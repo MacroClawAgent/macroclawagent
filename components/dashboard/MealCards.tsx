@@ -14,7 +14,7 @@ const meals = [
     time: "Breakfast",
     name: "Green Protein Bowl",
     description: "Spinach, quinoa, poached eggs, avocado, hemp seeds",
-    gradient: "from-emerald-900 via-green-800 to-teal-900",
+    gradient: "from-emerald-950 via-teal-900 to-cyan-950",
     calories: 520,
     protein: 34,
     carbs: 48,
@@ -26,7 +26,7 @@ const meals = [
     time: "Lunch",
     name: "Quinoa Power Salad",
     description: "Tri-color quinoa, roasted chickpeas, tahini dressing, greens",
-    gradient: "from-teal-900 via-cyan-800 to-blue-900",
+    gradient: "from-indigo-950 via-violet-900 to-purple-950",
     calories: 480,
     protein: 28,
     carbs: 62,
@@ -38,7 +38,7 @@ const meals = [
     time: "Dinner",
     name: "Salmon & Sweet Potato",
     description: "Wild-caught salmon, roasted sweet potato, broccolini, lemon",
-    gradient: "from-blue-900 via-indigo-800 to-purple-900",
+    gradient: "from-orange-950 via-amber-900 to-yellow-950",
     calories: 640,
     protein: 45,
     carbs: 52,
@@ -56,13 +56,12 @@ function MealCard({ meal, index }: { meal: (typeof meals)[0]; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card className="glass-card border-0 overflow-hidden group hover:border-white/12 transition-all duration-300">
+      <Card className="glass-card border-0 overflow-hidden group hover:border-white/[0.12] transition-all duration-300">
         {/* Meal image placeholder */}
         <div
           className={`relative h-36 bg-gradient-to-br ${meal.gradient} overflow-hidden`}
         >
-          <div className="absolute inset-0 bg-black/20" />
-          {/* Decorative elements */}
+          <div className="absolute inset-0 bg-black/30" />
           <div className="absolute top-4 left-4">
             <span className="text-xs font-semibold uppercase tracking-widest text-white/50 bg-black/30 px-2 py-1 rounded-md">
               {meal.time}
@@ -72,8 +71,7 @@ function MealCard({ meal, index }: { meal: (typeof meals)[0]; index: number }) {
             <Clock className="w-3 h-3" />
             {meal.prepTime}
           </div>
-          {/* Abstract food visualization */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-20">
+          <div className="absolute inset-0 flex items-center justify-center opacity-15">
             <div className="w-20 h-20 rounded-full border-2 border-white/30" />
             <div className="absolute w-12 h-12 rounded-full border border-white/20" />
           </div>
@@ -81,8 +79,8 @@ function MealCard({ meal, index }: { meal: (typeof meals)[0]; index: number }) {
 
         <CardContent className="p-5 flex flex-col gap-4">
           <div>
-            <h3 className="font-bold text-green-50 text-base">{meal.name}</h3>
-            <p className="text-xs text-green-300/50 mt-1 leading-relaxed">
+            <h3 className="font-bold text-slate-100 text-base">{meal.name}</h3>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
               {meal.description}
             </p>
           </div>
@@ -145,8 +143,8 @@ export function MealCards() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-green-50">Today&apos;s Meal Plan</h2>
-        <span className="text-xs text-green-300/40 font-mono">
+        <h2 className="text-lg font-bold text-slate-100">Today&apos;s Meal Plan</h2>
+        <span className="text-xs text-slate-500 font-mono">
           {meals.reduce((acc, m) => acc + m.calories, 0)} kcal total
         </span>
       </div>

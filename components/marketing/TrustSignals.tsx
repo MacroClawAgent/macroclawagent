@@ -18,9 +18,9 @@ const apps = [
     icon: <ShoppingBag className="w-6 h-6" />,
     name: "Uber Eats",
     status: "Connected",
-    color: "text-green-400",
-    bg: "bg-green-500/10 border-green-500/20",
-    dot: "bg-green-400",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10 border-emerald-500/20",
+    dot: "bg-emerald-400",
   },
   {
     icon: <Heart className="w-6 h-6" />,
@@ -65,7 +65,7 @@ export function TrustSignals() {
               <p className="text-4xl md:text-5xl font-black gradient-text">
                 {stat.value}
               </p>
-              <p className="text-green-300/50 text-sm mt-2">{stat.label}</p>
+              <p className="text-slate-500 text-sm mt-2">{stat.label}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -78,10 +78,10 @@ export function TrustSignals() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <p className="text-green-300/50 text-sm font-medium uppercase tracking-widest mb-3">
+          <p className="text-slate-500 text-sm font-medium uppercase tracking-widest mb-3">
             Works With
           </p>
-          <h2 className="text-3xl md:text-4xl font-black text-green-50">
+          <h2 className="text-3xl md:text-4xl font-black text-slate-100">
             Your Favorite Apps
           </h2>
         </motion.div>
@@ -104,8 +104,8 @@ export function TrustSignals() {
             >
               <div className={`${app.color} flex-shrink-0`}>{app.icon}</div>
               <div className="flex flex-col">
-                <span className="font-semibold text-green-50 text-sm">{app.name}</span>
-                <span className="flex items-center gap-1.5 text-xs text-green-300/50 mt-0.5">
+                <span className="font-semibold text-slate-100 text-sm">{app.name}</span>
+                <span className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
                   <span className={`w-1.5 h-1.5 rounded-full ${app.dot}`} />
                   {app.status}
                 </span>
@@ -119,14 +119,14 @@ export function TrustSignals() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="flex items-center gap-4 px-6 py-4 rounded-2xl glass border border-white/5 min-w-[200px]"
+            className="flex items-center gap-4 px-6 py-4 rounded-2xl glass border border-white/[0.05] min-w-[200px]"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-              <Plus className="w-5 h-5 text-white/30" />
+            <div className="w-10 h-10 rounded-xl bg-white/[0.05] flex items-center justify-center">
+              <Plus className="w-5 h-5 text-white/25" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-green-50/50 text-sm">More Soon</span>
-              <span className="text-xs text-green-300/30 mt-0.5">Whoop, Garmin, Oura</span>
+              <span className="font-semibold text-slate-400 text-sm">More Soon</span>
+              <span className="text-xs text-slate-600 mt-0.5">Whoop, Garmin, Oura</span>
             </div>
           </motion.div>
         </motion.div>
@@ -140,14 +140,14 @@ export function TrustSignals() {
           className="text-center mt-16"
         >
           <div className="glass-card p-12 glow-border max-w-2xl mx-auto">
-            <h3 className="text-3xl font-black text-green-50 mb-4">
+            <h3 className="text-3xl font-black text-slate-100 mb-4">
               Ready to eat like an <span className="gradient-text">athlete</span>?
             </h3>
-            <p className="text-green-300/60 mb-8">
+            <p className="text-slate-400 mb-8">
               Join thousands of athletes who never guess their macros again.
             </p>
             <Button size="xl" variant="glow" asChild>
-              <Link href="/dashboard">
+              <Link href="/login">
                 Start for Free — No Credit Card
               </Link>
             </Button>

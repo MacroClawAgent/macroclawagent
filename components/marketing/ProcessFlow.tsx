@@ -7,8 +7,8 @@ const steps = [
   {
     step: "01",
     icon: <Activity className="w-7 h-7" />,
-    iconBg: "bg-orange-500/20 text-orange-400",
-    glowColor: "rgba(249, 115, 22, 0.15)",
+    iconBg: "bg-orange-500/15 text-orange-400",
+    glowColor: "rgba(249, 115, 22, 0.10)",
     title: "Sync Your Activity",
     description:
       "Connect Strava and import runs, rides, and workouts automatically. MacroClawAgent reads your real-time calorie deficit.",
@@ -18,24 +18,24 @@ const steps = [
   {
     step: "02",
     icon: <Sparkles className="w-7 h-7" />,
-    iconBg: "bg-green-500/20 text-green-400",
-    glowColor: "rgba(74, 222, 128, 0.15)",
+    iconBg: "bg-indigo-500/15 text-indigo-400",
+    glowColor: "rgba(99, 102, 241, 0.12)",
     title: "AI Plans Your Meals",
     description:
       "Claude analyzes your workout, current macros, and goals. It builds a personalized meal plan optimized for recovery and performance.",
     tag: "Claude AI",
-    tagColor: "text-green-400 bg-green-500/10 border-green-500/20",
+    tagColor: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
   },
   {
     step: "03",
     icon: <ShoppingCart className="w-7 h-7" />,
-    iconBg: "bg-blue-500/20 text-blue-400",
-    glowColor: "rgba(59, 130, 246, 0.15)",
+    iconBg: "bg-emerald-500/15 text-emerald-400",
+    glowColor: "rgba(16, 185, 129, 0.10)",
     title: "Uber Eats Delivers",
     description:
       "Your optimized meal cart is built and ready to order with one tap. The exact macros you need, delivered to your door.",
     tag: "Uber Eats API",
-    tagColor: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+    tagColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
   },
 ];
 
@@ -54,14 +54,14 @@ export function ProcessFlow() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <p className="text-accent text-sm font-semibold uppercase tracking-widest mb-4">
+          <p className="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">
             How It Works
           </p>
-          <h2 className="text-4xl md:text-5xl font-black text-green-50 tracking-tight">
+          <h2 className="text-4xl md:text-5xl font-black text-slate-100 tracking-tight">
             How the{" "}
             <span className="gradient-text">Claw Works</span>
           </h2>
-          <p className="mt-4 text-green-300/60 max-w-xl mx-auto text-lg">
+          <p className="mt-4 text-slate-400 max-w-xl mx-auto text-lg">
             Three steps from sweat to sustenance. Fully automated.
           </p>
         </motion.div>
@@ -70,7 +70,7 @@ export function ProcessFlow() {
         <div className="relative">
           {/* Desktop connecting line */}
           <div className="hidden md:block absolute top-16 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px">
-            <div className="h-full border-t border-dashed border-white/15" />
+            <div className="h-full border-t border-dashed border-white/10" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
@@ -84,7 +84,7 @@ export function ProcessFlow() {
                 className="relative"
               >
                 <div
-                  className="glass-card p-8 h-full flex flex-col gap-6 hover:border-white/15 transition-all duration-300 group"
+                  className="glass-card p-8 h-full flex flex-col gap-6 hover:border-white/12 transition-all duration-300 group"
                   style={{
                     boxShadow: `0 0 60px ${step.glowColor}`,
                   }}
@@ -96,17 +96,17 @@ export function ProcessFlow() {
                     >
                       {step.icon}
                     </div>
-                    <span className="text-5xl font-black text-white/5 leading-none font-mono">
+                    <span className="text-5xl font-black text-white/[0.04] leading-none font-mono">
                       {step.step}
                     </span>
                   </div>
 
                   {/* Content */}
                   <div className="flex flex-col gap-3 flex-1">
-                    <h3 className="text-xl font-bold text-green-50">
+                    <h3 className="text-xl font-bold text-slate-100">
                       {step.title}
                     </h3>
-                    <p className="text-green-300/60 text-sm leading-relaxed flex-1">
+                    <p className="text-slate-400 text-sm leading-relaxed flex-1">
                       {step.description}
                     </p>
                   </div>

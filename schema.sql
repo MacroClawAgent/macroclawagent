@@ -15,6 +15,13 @@ CREATE TABLE IF NOT EXISTS public.users (
   strava_access_token  TEXT,  -- Store encrypted in production
   strava_refresh_token TEXT,  -- Store encrypted in production
   strava_token_expires_at TIMESTAMPTZ,
+  -- Health profile (collected in onboarding)
+  weight_kg        NUMERIC(5,2),
+  height_cm        INTEGER,
+  date_of_birth    DATE,
+  gender           TEXT CHECK (gender IN ('male','female','other','prefer_not_to_say')),
+  unit_preference  TEXT DEFAULT 'metric',
+  profile_complete BOOLEAN DEFAULT FALSE,
   -- App preferences
   calorie_goal   INTEGER DEFAULT 2000,
   protein_goal   INTEGER DEFAULT 120,  -- grams
@@ -112,3 +119,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ============================================================
+-- STORAGE
+-- ============================================================
+-- Run this manually in Supabase Dashboard → Storage → New Bucket:
+--   Name: avatars
+--   Public bucket: YES
+-- Then add a policy so authenticated users can upload to their own folder:
+--   Allowed operation: INSERT
+--   Policy: (auth.uid()::text = (storage.foldername(name))[1])
