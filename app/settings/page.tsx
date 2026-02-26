@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { AppShell } from "@/components/app/AppShell";
 import { isSupabaseConfigured, createClient } from "@/lib/supabase/client";
 import {
   User, Target, Link2, Bell, CreditCard,
   Upload, X, Loader2, CheckCircle2, AlertCircle,
-  Activity, ShoppingBag, Check, Crown, Zap,
+  ShoppingBag, Check, Crown, Zap, RefreshCw,
 } from "lucide-react";
 
 type Tab = "profile" | "goals" | "integrations" | "notifications" | "billing";
@@ -57,6 +58,10 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stravaAthleteId, setStravaAthleteId] = useState<string | null>(null);
+  const [stravaSyncing, setStravaSyncing] = useState(false);
+  const [stravaSuccess, setStravaSuccess] = useState(false);
+  const [stravaError, setStravaError] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [notifications, setNotifications] = useState({ email: true, push: false, weekly: true, plan: true });
@@ -73,6 +78,18 @@ export default function SettingsPage() {
   const set = (field: keyof ProfileData, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
+  // Handle redirect-back from Strava OAuth (read URL params client-side)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab") as Tab | null;
+    const connected = params.get("connected");
+    const err = params.get("error");
+    if (tab) setActiveTab(tab);
+    if (connected === "true") setStravaSuccess(true);
+    if (err === "strava_denied") setStravaError("Strava authorisation was cancelled.");
+    if (err === "strava_error") setStravaError("Strava connection failed. Please try again.");
+  }, []);
+
   useEffect(() => {
     if (!isSupabaseConfigured()) { setLoading(false); return; }
     const load = async () => {
@@ -82,7 +99,7 @@ export default function SettingsPage() {
         if (!user) { router.push("/login"); return; }
         const { data } = await supabase
           .from("users")
-          .select("full_name,date_of_birth,gender,weight_kg,height_cm,unit_preference,avatar_url,calorie_goal,protein_goal,carbs_goal,fat_goal")
+          .select("full_name,date_of_birth,gender,weight_kg,height_cm,unit_preference,avatar_url,calorie_goal,protein_goal,carbs_goal,fat_goal,strava_athlete_id")
           .eq("id", user.id).single();
         if (data) {
           const isImperial = data.unit_preference === "imperial";
@@ -96,6 +113,7 @@ export default function SettingsPage() {
             unit: isImperial ? "imperial" : "metric", avatar_url: data.avatar_url ?? "",
           });
           if (data.avatar_url) setAvatarPreview(data.avatar_url);
+          setStravaAthleteId(data.strava_athlete_id ?? null);
           setGoals({
             calorie_goal: (data.calorie_goal ?? 2000).toString(),
             protein_goal: (data.protein_goal ?? 120).toString(),
@@ -353,36 +371,90 @@ export default function SettingsPage() {
               {/* ── INTEGRATIONS TAB ── */}
               {activeTab === "integrations" && (
                 <div className="flex flex-col gap-4">
-                  {[
-                    {
-                      icon: <Activity className="w-5 h-5 text-orange-400" />,
-                      name: "Strava", desc: "Sync your activities and performance data", bg: "bg-orange-500/10 border-orange-500/20",
-                      connected: true, status: "Synced 2 hours ago", statusColor: "text-emerald-400",
-                    },
-                    {
-                      icon: <ShoppingBag className="w-5 h-5 text-emerald-400" />,
-                      name: "Uber Eats", desc: "Order macro-matched meals directly from your plan", bg: "bg-emerald-500/10 border-emerald-500/20",
-                      connected: false, status: "Not connected", statusColor: "text-slate-500",
-                    },
-                  ].map((integration) => (
-                    <div key={integration.name} className="glass-card p-5 rounded-2xl flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-xl ${integration.bg} border flex items-center justify-center flex-shrink-0`}>
-                        {integration.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-100">{integration.name}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{integration.desc}</p>
-                        <p className={`text-xs font-semibold mt-1 ${integration.statusColor}`}>{integration.status}</p>
-                      </div>
-                      <button className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
-                        integration.connected
-                          ? "bg-white/[0.04] border-white/10 text-slate-400 hover:text-red-400 hover:border-red-500/20 hover:bg-red-500/5"
-                          : "bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500"
-                      }`}>
-                        {integration.connected ? "Disconnect" : "Connect"}
+
+                  {/* Strava success / error banners */}
+                  {stravaSuccess && (
+                    <div className="flex items-center gap-2.5 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <p className="text-xs text-emerald-300">Strava connected! Your activities have been imported.</p>
+                      <button onClick={() => setStravaSuccess(false)} className="ml-auto text-slate-600 hover:text-slate-400"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                  )}
+                  {stravaError && (
+                    <div className="flex items-center gap-2.5 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                      <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      <p className="text-xs text-red-300">{stravaError}</p>
+                      <button onClick={() => setStravaError(null)} className="ml-auto text-slate-600 hover:text-slate-400"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                  )}
+
+                  {/* Strava card */}
+                  <div className="glass-card p-5 rounded-2xl flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+                      <Image src="/strava.png" alt="Strava" width={28} height={28} className="object-contain" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-slate-100">Strava</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Sync your activities and performance data</p>
+                      <p className={`text-xs font-semibold mt-1 ${stravaAthleteId ? "text-emerald-400" : "text-slate-500"}`}>
+                        {stravaAthleteId ? `Connected · Athlete #${stravaAthleteId}` : "Not connected"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {stravaAthleteId && (
+                        <button
+                          onClick={async () => {
+                            setStravaSyncing(true);
+                            try {
+                              const res = await fetch("/api/strava/sync", { method: "POST" });
+                              const d = await res.json();
+                              if (res.ok) setStravaSuccess(true);
+                              else setStravaError(d.error ?? "Sync failed");
+                            } catch { setStravaError("Sync failed"); }
+                            finally { setStravaSyncing(false); }
+                          }}
+                          disabled={stravaSyncing}
+                          className="px-3 py-2 rounded-xl text-xs font-semibold border bg-white/[0.04] border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/[0.08] transition-all disabled:opacity-50 flex items-center gap-1.5"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${stravaSyncing ? "animate-spin" : ""}`} />
+                          {stravaSyncing ? "Syncing…" : "Sync Now"}
+                        </button>
+                      )}
+                      <button
+                        onClick={async () => {
+                          if (stravaAthleteId) {
+                            await fetch("/api/strava/disconnect", { method: "DELETE" });
+                            setStravaAthleteId(null);
+                            setStravaSuccess(false);
+                          } else {
+                            window.location.href = "/api/strava/connect";
+                          }
+                        }}
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
+                          stravaAthleteId
+                            ? "bg-white/[0.04] border-white/10 text-slate-400 hover:text-red-400 hover:border-red-500/20 hover:bg-red-500/5"
+                            : "bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500"
+                        }`}
+                      >
+                        {stravaAthleteId ? "Disconnect" : "Connect"}
                       </button>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Uber Eats card */}
+                  <div className="glass-card p-5 rounded-2xl flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      <ShoppingBag className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-slate-100">Uber Eats</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Order macro-matched meals directly from your plan</p>
+                      <p className="text-xs font-semibold mt-1 text-slate-500">Not connected</p>
+                    </div>
+                    <button className="px-4 py-2 rounded-xl text-sm font-semibold border bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500 transition-all">
+                      Connect
+                    </button>
+                  </div>
 
                   <div className="glass-card p-5 rounded-2xl border border-dashed border-white/[0.08]">
                     <p className="text-sm font-semibold text-slate-400">More integrations coming soon</p>
