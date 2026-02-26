@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -58,14 +59,50 @@ export function Navbar() {
 
         {/* CTA */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
+          <Button variant="ghost" size="sm" className="hidden sm:flex" asChild>
             <Link href="/login">Sign In</Link>
           </Button>
           <Button size="sm" className="hidden sm:flex" asChild>
             <Link href="/login">Get Started Free</Link>
           </Button>
+          {/* Hamburger — mobile only */}
+          <button
+            className="md:hidden flex flex-col gap-1.5 p-2"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`block h-0.5 w-5 bg-slate-300 transition-all duration-200 ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`block h-0.5 w-5 bg-slate-300 transition-all duration-200 ${mobileOpen ? "opacity-0" : ""}`} />
+            <span className={`block h-0.5 w-5 bg-slate-300 transition-all duration-200 ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu panel */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-white/[0.07] bg-[#08090D]/95 backdrop-blur-xl px-6 py-4 flex flex-col gap-1">
+          {[
+            { label: "Features", href: "/features" },
+            { label: "Pricing", href: "/pricing" },
+            { label: "About", href: "/about" },
+            { label: "Blog", href: "/blog" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              className="py-3 px-2 text-sm text-slate-300 hover:text-slate-100 border-b border-white/[0.04] last:border-0 transition-colors"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <div className="pt-3">
+            <Button size="sm" className="w-full" asChild>
+              <Link href="/login" onClick={() => setMobileOpen(false)}>Get Started Free</Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

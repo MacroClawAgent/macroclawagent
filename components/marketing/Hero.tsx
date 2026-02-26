@@ -58,14 +58,14 @@ export function Hero() {
       <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[480px] h-[480px] rounded-full bg-indigo-600/6 blur-[80px] pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-0 items-center min-h-[80vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-0 items-center min-h-[70vh] lg:min-h-[80vh]">
 
           {/* ── LEFT: Content ── */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-8"
+            className="flex flex-col gap-8 items-center lg:items-start text-center lg:text-left"
           >
             {/* Pill badge */}
             <motion.div variants={itemVariants}>
@@ -94,10 +94,11 @@ export function Hero() {
               builds your Uber Eats cart. Nutrition that actually moves with your training.
             </motion.p>
 
+
             {/* CTAs */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row items-start gap-4"
+              className="flex flex-col sm:flex-row items-center lg:items-start gap-4"
             >
               <Button size="xl" variant="glow" asChild>
                 <Link href="/login">
@@ -114,7 +115,7 @@ export function Hero() {
             </motion.div>
 
             {/* Stat pills */}
-            <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
+            <motion.div variants={itemVariants} className="flex flex-wrap gap-3 justify-center lg:justify-start">
               {[
                 { value: "12,400+", label: "Athletes" },
                 { value: "94%", label: "Macro accuracy" },
@@ -139,7 +140,7 @@ export function Hero() {
             className="relative flex items-center justify-center lg:justify-end"
           >
             {/* Mascot container */}
-            <div className="relative w-full max-w-[420px] h-[480px] flex items-center justify-center">
+            <div className="relative w-full max-w-[420px] h-[280px] sm:h-[420px] md:h-[480px] flex items-center justify-center">
               {/* Glowing backdrop */}
               <div className="absolute inset-0 rounded-3xl bg-indigo-500/[0.04] border border-indigo-500/10" />
               <div className="absolute inset-8 rounded-3xl bg-gradient-to-b from-indigo-600/6 to-transparent blur-xl" />
@@ -173,7 +174,7 @@ export function Hero() {
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 0.9 }}
-                className="absolute -left-12 top-8 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[170px]"
+                className="hidden sm:absolute -left-12 top-8 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[170px]"
               >
                 <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2.5">Today&apos;s Macros</p>
                 <div className="flex items-center gap-2.5">
@@ -196,7 +197,7 @@ export function Hero() {
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 1.05 }}
-                className="absolute -right-10 top-12 z-20 glass-card p-3.5 rounded-2xl shadow-2xl max-w-[200px]"
+                className="hidden sm:absolute -right-10 top-12 z-20 glass-card p-3.5 rounded-2xl shadow-2xl max-w-[200px]"
               >
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -213,7 +214,7 @@ export function Hero() {
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 1.2 }}
-                className="absolute -right-8 bottom-16 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[180px]"
+                className="hidden sm:absolute -right-8 bottom-16 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[180px]"
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <Activity className="w-3.5 h-3.5 text-orange-400" />
@@ -238,7 +239,7 @@ export function Hero() {
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 1.35 }}
-                className="absolute -left-10 bottom-20 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[160px]"
+                className="hidden sm:absolute -left-10 bottom-20 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[160px]"
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
