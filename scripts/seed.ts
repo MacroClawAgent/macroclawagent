@@ -74,6 +74,16 @@ async function main() {
   await supabase.from("meal_plans").delete().eq("user_id", userId).gte("date", thirtyDaysAgo);
   console.log("Cleared existing data.");
 
+  // 2.5 Ensure public.users row exists (created on first login; seed bypasses that)
+  const { error: profileErr } = await supabase
+    .from("users")
+    .upsert(
+      { id: userId, email, calorie_goal: 2000, protein_goal: 120, carbs_goal: 250, fat_goal: 70 },
+      { onConflict: "id" }
+    );
+  if (profileErr) throw profileErr;
+  console.log("✓ User profile row ensured");
+
   // 3. Insert 20 activities
   const activities = [
     { type: "Run",  name: "Morning Zone 2 Run",        started_at: withHour(daysAgo(0),  6, 45), duration_seconds: 1680, distance_meters: 5200,  calories: 312,  elevation_meters: 42,  avg_heart_rate: 148, pace_seconds_per_km: 323,  speed_kmh: null },

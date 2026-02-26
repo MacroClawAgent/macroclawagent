@@ -202,6 +202,7 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_user_created ON public.chat_message
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "chat_messages_all_own" ON public.chat_messages FOR ALL USING (auth.uid() = user_id);
 
--- Extend meal_plans with label and activity_summary columns
+-- Extend meal_plans with label, activity_summary, and status columns
 ALTER TABLE public.meal_plans ADD COLUMN IF NOT EXISTS label TEXT;
 ALTER TABLE public.meal_plans ADD COLUMN IF NOT EXISTS activity_summary TEXT;
+ALTER TABLE public.meal_plans ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'built', 'ordered', 'delivered'));
