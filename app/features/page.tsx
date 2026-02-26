@@ -660,37 +660,43 @@ export default function FeaturesPage() {
 
         {/* ── CTA ── */}
         <section className="py-24">
-          <div className="max-w-3xl mx-auto px-6 text-center">
+          <div className="max-w-5xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="glass-card glow-border p-12 flex flex-col items-center gap-6"
+              className="glass-card glow-border p-10 lg:p-14 flex flex-col lg:flex-row items-center gap-10 lg:gap-14"
             >
-              <Image
-                src="/mascot.png"
-                alt="MacroClaw mascot"
-                width={120}
-                height={120}
-                className="object-contain drop-shadow-xl"
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
-              />
-              <h2 className="text-4xl font-black gradient-text">Ready to fuel smarter?</h2>
-              <p className="text-lg text-slate-400 max-w-md">
-                Create your free account and let the Claw Agent take over your nutrition in under 5 minutes.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="glow" size="lg" asChild>
-                  <Link href="/login">
-                    Get Started Free
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <Link href="/pricing">See Pricing</Link>
-                </Button>
+              {/* Mascot — left */}
+              <div className="flex-shrink-0">
+                <Image
+                  src="/fuelsmarter.png"
+                  alt="MacroClaw mascot"
+                  width={240}
+                  height={240}
+                  className="object-contain drop-shadow-xl"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
               </div>
-              <p className="text-xs text-slate-600">No credit card required · Cancel anytime</p>
+              {/* Text — right */}
+              <div className="flex flex-col gap-6 text-center lg:text-left">
+                <h2 className="text-4xl md:text-5xl font-black gradient-text">Ready to fuel smarter?</h2>
+                <p className="text-lg text-slate-400 max-w-md">
+                  Create your free account and let the Claw Agent take over your nutrition in under 5 minutes.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                  <Button variant="glow" size="lg" asChild>
+                    <Link href="/login">
+                      Get Started Free
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="lg" asChild>
+                    <Link href="/pricing">See Pricing</Link>
+                  </Button>
+                </div>
+                <p className="text-xs text-slate-600">No credit card required · Cancel anytime</p>
+              </div>
             </motion.div>
           </div>
         </section>
