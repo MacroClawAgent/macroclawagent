@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, Send, Bot } from "lucide-react";
+import { Sparkles, X, Send, Bot, ExternalLink } from "lucide-react";
 
 interface ChatMessage {
   id: number;
@@ -74,12 +75,17 @@ export function AgentChat() {
                   </p>
                 </div>
               </div>
+              <div className="flex items-center gap-1">
+              <Link href="/agent" className="w-7 h-7 rounded-lg hover:bg-white/[0.05] flex items-center justify-center text-slate-500 hover:text-indigo-400 transition-colors" title="Open full chat">
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
               <button
                 onClick={() => setOpen(false)}
                 className="w-7 h-7 rounded-lg hover:bg-white/[0.05] flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
             </div>
 
             {/* Messages */}

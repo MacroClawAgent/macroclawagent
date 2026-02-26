@@ -2,10 +2,8 @@ import { ActivityRings } from "@/components/dashboard/ActivityRings";
 import { MealCards } from "@/components/dashboard/MealCards";
 import { StravaActivity } from "@/components/dashboard/StravaActivity";
 import { AgentChat } from "@/components/dashboard/AgentChat";
-import { SignOutButton } from "@/components/dashboard/SignOutButton";
 import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link";
-import { ArrowLeft, Bell, Settings, Zap, Droplets, Scale } from "lucide-react";
+import { Zap, Droplets, Scale } from "lucide-react";
 import { redirect } from "next/navigation";
 
 const quickStats = [
@@ -82,66 +80,26 @@ export default async function DashboardPage() {
   const user = await getUser();
 
   return (
-    <div className="min-h-screen bg-[#08090D]">
-      {/* Dashboard Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#08090D]/80 border-b border-white/[0.07]">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors text-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Link>
-            <div className="w-px h-4 bg-white/10" />
-            <div className="flex items-center gap-2.5">
-              <span className="text-xl">🦀</span>
-              <span className="font-bold text-slate-100">MacroClawAgent</span>
-            </div>
+    <>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Greeting row */}
+        <div className="mb-8 flex items-end justify-between">
+          <div>
+            <h1 className="text-2xl font-black text-slate-100">
+              {getGreeting(user?.full_name ?? null)}
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Here&apos;s your performance overview for today
+            </p>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-semibold text-slate-100">
-                {getGreeting(user?.full_name ?? null)}
-              </p>
-              <p className="text-xs text-slate-500">Here&apos;s your plan for today</p>
-            </div>
-
-            {/* Avatar or initials */}
-            {user?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.avatar_url}
-                alt="Profile"
-                className="w-9 h-9 rounded-xl object-cover border border-white/10"
-              />
-            ) : user?.full_name ? (
-              <div className="w-9 h-9 rounded-xl bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-300">
-                {user.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
-              </div>
-            ) : null}
-
-            <button className="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors relative">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
-            </button>
-            <Link
-              href="/profile"
-              className="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors"
-            >
-              <Settings className="w-4 h-4" />
-            </Link>
-            <SignOutButton />
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-semibold text-emerald-400">Strava synced</span>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Quick Stats Row */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {quickStats.map((stat, i) => (
             <Card key={i} className="glass-card border-0">
               <CardContent className="p-5">
@@ -184,10 +142,10 @@ export default async function DashboardPage() {
             <StravaActivity />
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Floating Agent Chat */}
       <AgentChat />
-    </div>
+    </>
   );
 }

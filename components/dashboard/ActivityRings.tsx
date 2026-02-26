@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ChevronRight } from "lucide-react";
 
 const rings = [
   {
@@ -71,9 +73,14 @@ export function ActivityRings() {
   return (
     <Card className="glass-card border-0 h-full">
       <CardHeader className="pb-4">
-        <CardTitle className="text-base font-semibold text-slate-300">
-          Weekly Goal
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-semibold text-slate-300">
+            Today&apos;s Goals
+          </CardTitle>
+          <Link href="/nutrition" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5 transition-colors">
+            Details <ChevronRight className="w-3 h-3" />
+          </Link>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6">
         {/* SVG Rings */}

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, Check, Clock } from "lucide-react";
+import { ShoppingCart, Check, Clock, ChevronRight } from "lucide-react";
 
 const meals = [
   {
@@ -144,9 +145,14 @@ export function MealCards() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-100">Today&apos;s Meal Plan</h2>
-        <span className="text-xs text-slate-500 font-mono">
-          {meals.reduce((acc, m) => acc + m.calories, 0)} kcal total
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500 font-mono">
+            {meals.reduce((acc, m) => acc + m.calories, 0)} kcal total
+          </span>
+          <Link href="/meal-plans" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-0.5">
+            All plans <ChevronRight className="w-3 h-3" />
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

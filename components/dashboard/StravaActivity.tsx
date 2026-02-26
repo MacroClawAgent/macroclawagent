@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Bike, Mountain, Flame, Clock, MapPin } from "lucide-react";
+import { Activity, Bike, Mountain, Flame, Clock, MapPin, ChevronRight } from "lucide-react";
 
 const activities = [
   {
@@ -117,7 +118,7 @@ export function StravaActivity() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
+    const timer = setTimeout(() => setLoading(false), 800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -129,16 +130,21 @@ export function StravaActivity() {
         <CardTitle className="text-base font-semibold text-slate-300">
           Recent Activity
         </CardTitle>
-        {!loading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-1.5 text-xs text-slate-500"
-          >
-            <Flame className="w-3.5 h-3.5 text-orange-400" />
-            <span className="font-mono">{totalCalories.toLocaleString()} kcal this week</span>
-          </motion.div>
-        )}
+        <div className="flex items-center gap-3">
+          {!loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-1.5 text-xs text-slate-500"
+            >
+              <Flame className="w-3.5 h-3.5 text-orange-400" />
+              <span className="font-mono">{totalCalories.toLocaleString()} kcal this week</span>
+            </motion.div>
+          )}
+          <Link href="/activities" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5 transition-colors">
+            All <ChevronRight className="w-3 h-3" />
+          </Link>
+        </div>
       </CardHeader>
       <CardContent className="px-4">
         {loading
