@@ -174,7 +174,7 @@ export function Hero() {
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 0.9 }}
-                className="hidden sm:absolute -left-12 top-8 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[170px]"
+                className="hidden sm:block absolute -left-12 top-8 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[170px]"
               >
                 <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2.5">Today&apos;s Macros</p>
                 <div className="flex items-center gap-2.5">
@@ -197,7 +197,7 @@ export function Hero() {
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 1.05 }}
-                className="hidden sm:absolute -right-10 top-12 z-20 glass-card p-3.5 rounded-2xl shadow-2xl max-w-[200px]"
+                className="hidden sm:block absolute -right-10 top-12 z-20 glass-card p-3.5 rounded-2xl shadow-2xl max-w-[200px]"
               >
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -214,7 +214,7 @@ export function Hero() {
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 1.2 }}
-                className="hidden sm:absolute -right-8 bottom-16 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[180px]"
+                className="hidden sm:block absolute -right-8 bottom-16 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[180px]"
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <Activity className="w-3.5 h-3.5 text-orange-400" />
@@ -239,7 +239,7 @@ export function Hero() {
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 1.35 }}
-                className="hidden sm:absolute -left-10 bottom-20 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[160px]"
+                className="hidden sm:block absolute -left-10 bottom-20 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[160px]"
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
