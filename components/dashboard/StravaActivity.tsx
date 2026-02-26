@@ -1,69 +1,56 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Bike, Mountain, Flame, Clock, MapPin, ChevronRight } from "lucide-react";
+import { Activity, Bike, Waves, Flame, Clock, MapPin, ChevronRight } from "lucide-react";
+import type { ActivityRow as ActivityRowType } from "@/types/database";
 
-const activities = [
-  {
-    id: 1,
-    type: "run",
-    icon: <Activity className="w-4 h-4" />,
-    name: "Morning Zone 2 Run",
-    date: "Today, 6:42 AM",
-    distance: "5.2 km",
-    duration: "28 min",
-    calories: 312,
-    pace: "5:23/km",
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
-  },
-  {
-    id: 2,
-    type: "ride",
-    icon: <Bike className="w-4 h-4" />,
-    name: "Evening Threshold Ride",
-    date: "Yesterday, 5:15 PM",
-    distance: "32.1 km",
-    duration: "1h 04min",
-    calories: 780,
-    pace: "30.1 km/h",
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-  },
-  {
-    id: 3,
-    type: "hike",
-    icon: <Mountain className="w-4 h-4" />,
-    name: "Trail Run — Monte Serra",
-    date: "Mon, 7:00 AM",
-    distance: "12.4 km",
-    duration: "1h 42min",
-    calories: 920,
-    pace: "8:15/km",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-  },
-  {
-    id: 4,
-    type: "run",
-    icon: <Activity className="w-4 h-4" />,
-    name: "Tempo Run",
-    date: "Sun, 8:00 AM",
-    distance: "8.0 km",
-    duration: "37 min",
-    calories: 468,
-    pace: "4:38/km",
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
-  },
-];
+interface StravaActivityProps {
+  activities?: ActivityRowType[];
+}
 
-function ActivityRow({ activity, delay }: { activity: (typeof activities)[0]; delay: number }) {
+function formatDistance(meters: number): string {
+  return `${(meters / 1000).toFixed(1)} km`;
+}
+
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  return h > 0 ? `${h}h ${m}min` : `${m} min`;
+}
+
+function formatPace(secPerKm: number | null, speedKmh: number | null): string {
+  if (secPerKm) {
+    const m = Math.floor(secPerKm / 60);
+    const s = Math.round(secPerKm % 60);
+    return `${m}:${s.toString().padStart(2, "0")}/km`;
+  }
+  if (speedKmh) return `${speedKmh.toFixed(1)} km/h`;
+  return "—";
+}
+
+function formatDate(isoString: string): string {
+  const d = new Date(isoString);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
+  const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (diffDays === 0) return `Today, ${timeStr}`;
+  if (diffDays === 1) return `Yesterday, ${timeStr}`;
+  return `${d.toLocaleDateString([], { month: "short", day: "numeric" })}, ${timeStr}`;
+}
+
+function activityStyle(type: string) {
+  if (type === "Ride") return { color: "text-blue-400",    bg: "bg-blue-500/10",    icon: <Bike className="w-4 h-4" /> };
+  if (type === "Swim") return { color: "text-cyan-400",    bg: "bg-cyan-500/10",    icon: <Waves className="w-4 h-4" /> };
+  return                       { color: "text-orange-400", bg: "bg-orange-500/10",  icon: <Activity className="w-4 h-4" /> };
+}
+
+function ActivityRow({ activity, delay }: { activity: ActivityRowType; delay: number }) {
+  const style = activityStyle(activity.type);
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -72,24 +59,24 @@ function ActivityRow({ activity, delay }: { activity: (typeof activities)[0]; de
       className="flex items-center gap-4 py-3 border-b border-white/[0.05] last:border-0 group hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors duration-200"
     >
       <div
-        className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${activity.bg} ${activity.color}`}
+        className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${style.bg} ${style.color}`}
       >
-        {activity.icon}
+        {style.icon}
       </div>
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-slate-100 truncate">{activity.name}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{activity.date}</p>
+        <p className="text-xs text-slate-500 mt-0.5">{formatDate(activity.started_at)}</p>
       </div>
 
       <div className="hidden sm:flex items-center gap-3 text-xs text-slate-500">
         <span className="flex items-center gap-1">
           <MapPin className="w-3 h-3" />
-          {activity.distance}
+          {formatDistance(activity.distance_meters)}
         </span>
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" />
-          {activity.duration}
+          {formatDuration(activity.duration_seconds)}
         </span>
       </div>
 
@@ -114,14 +101,9 @@ function ActivitySkeleton() {
   );
 }
 
-export function StravaActivity() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
-
+export function StravaActivity({ activities: activitiesProp }: StravaActivityProps) {
+  const loading = activitiesProp === undefined;
+  const activities = activitiesProp ?? [];
   const totalCalories = activities.reduce((acc, a) => acc + a.calories, 0);
 
   return (
@@ -131,7 +113,7 @@ export function StravaActivity() {
           Recent Activity
         </CardTitle>
         <div className="flex items-center gap-3">
-          {!loading && (
+          {!loading && totalCalories > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

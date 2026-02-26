@@ -5,41 +5,35 @@ import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 
-const rings = [
-  {
-    label: "Calories",
-    current: 1640,
-    target: 2240,
-    color: "#F97316",
-    strokeColor: "#F97316",
-    shadowColor: "rgba(249, 115, 22, 0.4)",
-    radius: 58,
-  },
-  {
-    label: "Protein",
-    current: 87,
-    target: 120,
-    color: "#10B981",
-    strokeColor: "#10B981",
-    shadowColor: "rgba(16, 185, 129, 0.4)",
-    radius: 44,
-  },
-  {
-    label: "Carbs",
-    current: 180,
-    target: 250,
-    color: "#F59E0B",
-    strokeColor: "#F59E0B",
-    shadowColor: "rgba(245, 158, 11, 0.3)",
-    radius: 30,
-  },
+interface RingData {
+  label: string;
+  current: number;
+  target: number;
+}
+
+interface ActivityRingsProps {
+  rings?: RingData[];
+}
+
+const RING_DESIGN = [
+  { color: "#F97316", strokeColor: "#F97316", shadowColor: "rgba(249, 115, 22, 0.4)",  radius: 58 },
+  { color: "#10B981", strokeColor: "#10B981", shadowColor: "rgba(16, 185, 129, 0.4)",  radius: 44 },
+  { color: "#F59E0B", strokeColor: "#F59E0B", shadowColor: "rgba(245, 158, 11, 0.3)",  radius: 30 },
 ];
+
+const DEFAULT_RINGS: RingData[] = [
+  { label: "Calories", current: 0, target: 2000 },
+  { label: "Protein",  current: 0, target: 120  },
+  { label: "Carbs",    current: 0, target: 250  },
+];
+
+type RingFull = RingData & (typeof RING_DESIGN)[0];
 
 function Ring({
   ring,
   delay,
 }: {
-  ring: (typeof rings)[0];
+  ring: RingFull;
   delay: number;
 }) {
   const circumference = 2 * Math.PI * ring.radius;
@@ -65,9 +59,15 @@ function Ring({
   );
 }
 
-export function ActivityRings() {
+export function ActivityRings({ rings: ringsProp }: ActivityRingsProps) {
+  const baseRings = ringsProp ?? DEFAULT_RINGS;
+  const rings: RingFull[] = baseRings.map((r, i) => ({
+    ...r,
+    ...RING_DESIGN[i % RING_DESIGN.length],
+  }));
+
   const overallProgress = Math.round(
-    (rings.reduce((acc, r) => acc + r.current / r.target, 0) / rings.length) * 100
+    (rings.reduce((acc, r) => acc + Math.min(r.current / r.target, 1), 0) / rings.length) * 100
   );
 
   return (
@@ -121,7 +121,7 @@ export function ActivityRings() {
         {/* Legend */}
         <div className="w-full flex flex-col gap-3">
           {rings.map((ring) => {
-            const pct = Math.round((ring.current / ring.target) * 100);
+            const pct = Math.min(Math.round((ring.current / ring.target) * 100), 100);
             return (
               <div key={ring.label} className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">

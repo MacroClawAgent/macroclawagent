@@ -7,48 +7,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, Check, Clock, ChevronRight } from "lucide-react";
+import { ShoppingCart, Check, Clock, ChevronRight, Sparkles } from "lucide-react";
+import type { MealItem } from "@/types/database";
 
-const meals = [
-  {
-    id: 1,
-    time: "Breakfast",
-    name: "Green Protein Bowl",
-    description: "Spinach, quinoa, poached eggs, avocado, hemp seeds",
-    gradient: "from-emerald-950 via-teal-900 to-cyan-950",
-    calories: 520,
-    protein: 34,
-    carbs: 48,
-    fat: 18,
-    prepTime: "15 min",
-  },
-  {
-    id: 2,
-    time: "Lunch",
-    name: "Quinoa Power Salad",
-    description: "Tri-color quinoa, roasted chickpeas, tahini dressing, greens",
-    gradient: "from-indigo-950 via-violet-900 to-purple-950",
-    calories: 480,
-    protein: 28,
-    carbs: 62,
-    fat: 14,
-    prepTime: "10 min",
-  },
-  {
-    id: 3,
-    time: "Dinner",
-    name: "Salmon & Sweet Potato",
-    description: "Wild-caught salmon, roasted sweet potato, broccolini, lemon",
-    gradient: "from-orange-950 via-amber-900 to-yellow-950",
-    calories: 640,
-    protein: 45,
-    carbs: 52,
-    fat: 22,
-    prepTime: "25 min",
-  },
-];
+interface MealCardsProps {
+  meals?: MealItem[];
+  loading?: boolean;
+  planId?: string;
+}
 
-function MealCard({ meal, index }: { meal: (typeof meals)[0]; index: number }) {
+const TAG_GRADIENT: Record<string, string> = {
+  Breakfast: "from-emerald-950 via-teal-900 to-cyan-950",
+  Lunch:     "from-indigo-950 via-violet-900 to-purple-950",
+  Snack:     "from-slate-900 via-slate-800 to-slate-900",
+  Dinner:    "from-orange-950 via-amber-900 to-yellow-950",
+};
+
+type MealCardItem = MealItem & { gradient: string };
+
+function MealCard({ meal, index }: { meal: MealCardItem; index: number }) {
   const [added, setAdded] = useState(false);
 
   return (
@@ -65,13 +42,15 @@ function MealCard({ meal, index }: { meal: (typeof meals)[0]; index: number }) {
           <div className="absolute inset-0 bg-black/30" />
           <div className="absolute top-4 left-4">
             <span className="text-xs font-semibold uppercase tracking-widest text-white/50 bg-black/30 px-2 py-1 rounded-md">
-              {meal.time}
+              {meal.tag}
             </span>
           </div>
-          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-white/40 text-xs">
-            <Clock className="w-3 h-3" />
-            {meal.prepTime}
-          </div>
+          {meal.prep_time && (
+            <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-white/40 text-xs">
+              <Clock className="w-3 h-3" />
+              {meal.prep_time}
+            </div>
+          )}
           <div className="absolute inset-0 flex items-center justify-center opacity-15">
             <div className="w-20 h-20 rounded-full border-2 border-white/30" />
             <div className="absolute w-12 h-12 rounded-full border border-white/20" />
@@ -138,30 +117,48 @@ function MealCardSkeleton() {
   );
 }
 
-export function MealCards() {
-  const [loading] = useState(false);
+export function MealCards({ meals: mealsProp, loading = false }: MealCardsProps) {
+  const meals: MealCardItem[] = (mealsProp ?? []).map((m) => ({
+    ...m,
+    gradient: TAG_GRADIENT[m.tag] ?? "from-slate-900 via-slate-800 to-slate-900",
+  }));
+
+  const totalCalories = meals.reduce((acc, m) => acc + m.calories, 0);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-100">Today&apos;s Meal Plan</h2>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 font-mono">
-            {meals.reduce((acc, m) => acc + m.calories, 0)} kcal total
-          </span>
+          {totalCalories > 0 && (
+            <span className="text-xs text-slate-500 font-mono">
+              {totalCalories} kcal total
+            </span>
+          )}
           <Link href="/meal-plans" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-0.5">
             All plans <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {loading
-          ? [0, 1, 2].map((i) => <MealCardSkeleton key={i} />)
-          : meals.map((meal, index) => (
-              <MealCard key={meal.id} meal={meal} index={index} />
-            ))}
-      </div>
+      {!loading && meals.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center glass-card rounded-2xl border-dashed border border-white/[0.08]">
+          <Sparkles className="w-8 h-8 text-indigo-400 mb-3 opacity-60" />
+          <p className="text-sm font-semibold text-slate-400">No meal plan for today</p>
+          <p className="text-xs text-slate-600 mt-1 mb-4">Generate one with the Claw Agent</p>
+          <Link href="/agent" className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all">
+            Generate Plan
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {loading
+            ? [0, 1, 2].map((i) => <MealCardSkeleton key={i} />)
+            : meals.map((meal, index) => (
+                <MealCard key={`${meal.tag}-${index}`} meal={meal} index={index} />
+              ))}
+        </div>
+      )}
     </div>
   );
 }

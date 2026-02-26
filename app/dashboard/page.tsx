@@ -5,41 +5,9 @@ import { AgentChat } from "@/components/dashboard/AgentChat";
 import { Card, CardContent } from "@/components/ui/card";
 import { Zap, Droplets, Scale } from "lucide-react";
 import { redirect } from "next/navigation";
+import type { ActivityRow, MealItem } from "@/types/database";
 
-const quickStats = [
-  {
-    label: "Calories Burned",
-    value: "1,640",
-    unit: "kcal",
-    icon: <Zap className="w-5 h-5" />,
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
-    change: "+12%",
-    changeColor: "text-orange-400",
-  },
-  {
-    label: "Protein Target",
-    value: "87",
-    unit: "/ 120g",
-    icon: <Scale className="w-5 h-5" />,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    change: "73%",
-    changeColor: "text-emerald-400",
-  },
-  {
-    label: "Hydration",
-    value: "1.8",
-    unit: "/ 3.0L",
-    icon: <Droplets className="w-5 h-5" />,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    change: "60%",
-    changeColor: "text-blue-400",
-  },
-];
-
-async function getUser() {
+async function getDashboardData() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return null;
   }
@@ -47,22 +15,55 @@ async function getUser() {
     const { createClient } = await import("@/lib/supabase/server");
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      redirect("/login");
-    }
-    // Try to fetch full name from public.users
+    if (!user) redirect("/login");
+
     const { data: profile } = await supabase
       .from("users")
-      .select("full_name, avatar_url, profile_complete")
+      .select("full_name, avatar_url, profile_complete, calorie_goal, protein_goal, carbs_goal, fat_goal")
       .eq("id", user.id)
       .single();
-    if (!profile?.profile_complete) {
-      redirect("/onboarding");
-    }
+    if (!profile?.profile_complete) redirect("/onboarding");
+
+    const today = new Date().toISOString().split("T")[0];
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
+
+    const [nutritionRes, mealPlanRes, activitiesRes] = await Promise.all([
+      supabase
+        .from("nutrition_logs")
+        .select("calories_consumed,protein_g,carbs_g,fat_g,hydration_ml")
+        .eq("user_id", user.id)
+        .eq("date", today)
+        .single(),
+      supabase
+        .from("meal_plans")
+        .select("id,meals,label,cart_status,activity_summary")
+        .eq("user_id", user.id)
+        .eq("date", today)
+        .single(),
+      supabase
+        .from("activities")
+        .select("id,type,name,started_at,distance_meters,duration_seconds,calories,pace_seconds_per_km,speed_kmh,elevation_meters,avg_heart_rate")
+        .eq("user_id", user.id)
+        .order("started_at", { ascending: false })
+        .limit(4),
+    ]);
+
+    const nutrition = nutritionRes.data;
+    const mealPlan = mealPlanRes.data;
+    const activities: ActivityRow[] = (activitiesRes.data ?? []) as ActivityRow[];
+    const goals = {
+      calorie_goal: profile.calorie_goal ?? 2000,
+      protein_goal: profile.protein_goal ?? 120,
+      carbs_goal: profile.carbs_goal ?? 250,
+    };
+
     return {
-      email: user.email ?? "",
       full_name: profile.full_name ?? null,
       avatar_url: profile.avatar_url ?? null,
+      nutrition,
+      mealPlan,
+      activities,
+      goals,
     };
   } catch {
     return null;
@@ -77,7 +78,58 @@ function getGreeting(name: string | null) {
 }
 
 export default async function DashboardPage() {
-  const user = await getUser();
+  const data = await getDashboardData();
+
+  const nutrition = data?.nutrition;
+  const goals = data?.goals ?? { calorie_goal: 2000, protein_goal: 120, carbs_goal: 250 };
+  const mealItems: MealItem[] = Array.isArray(data?.mealPlan?.meals) ? (data.mealPlan.meals as MealItem[]) : [];
+
+  const caloriesPct = nutrition
+    ? Math.round((nutrition.calories_consumed / goals.calorie_goal) * 100)
+    : 0;
+  const proteinPct = nutrition
+    ? Math.round((nutrition.protein_g / goals.protein_goal) * 100)
+    : 0;
+  const hydrationL = nutrition ? (nutrition.hydration_ml / 1000).toFixed(1) : "0.0";
+
+  const quickStats = [
+    {
+      label: "Calories Today",
+      value: nutrition ? nutrition.calories_consumed.toLocaleString() : "—",
+      unit: `/ ${goals.calorie_goal.toLocaleString()} kcal`,
+      icon: <Zap className="w-5 h-5" />,
+      color: "text-orange-400",
+      bg: "bg-orange-500/10",
+      change: nutrition ? `${caloriesPct}% of goal` : "No data yet",
+      changeColor: "text-orange-400",
+    },
+    {
+      label: "Protein Target",
+      value: nutrition ? `${nutrition.protein_g}` : "—",
+      unit: `/ ${goals.protein_goal}g`,
+      icon: <Scale className="w-5 h-5" />,
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      change: nutrition ? `${proteinPct}% complete` : "No data yet",
+      changeColor: "text-emerald-400",
+    },
+    {
+      label: "Hydration",
+      value: hydrationL,
+      unit: "L today",
+      icon: <Droplets className="w-5 h-5" />,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      change: nutrition ? `${nutrition.hydration_ml >= 2000 ? "Goal reached!" : `${nutrition.hydration_ml}ml / 2000ml`}` : "No data yet",
+      changeColor: nutrition?.hydration_ml >= 2000 ? "text-emerald-400" : "text-blue-400",
+    },
+  ];
+
+  const rings = [
+    { label: "Calories", current: nutrition?.calories_consumed ?? 0, target: goals.calorie_goal },
+    { label: "Protein",  current: Math.round(nutrition?.protein_g ?? 0), target: goals.protein_goal },
+    { label: "Carbs",    current: Math.round(nutrition?.carbs_g ?? 0), target: goals.carbs_goal },
+  ];
 
   return (
     <>
@@ -86,7 +138,7 @@ export default async function DashboardPage() {
         <div className="mb-8 flex items-end justify-between">
           <div>
             <h1 className="text-2xl font-black text-slate-100">
-              {getGreeting(user?.full_name ?? null)}
+              {getGreeting(data?.full_name ?? null)}
             </h1>
             <p className="text-sm text-slate-500 mt-1">
               Here&apos;s your performance overview for today
@@ -129,17 +181,17 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Activity Ring — tall left column */}
           <div className="lg:col-span-1">
-            <ActivityRings />
+            <ActivityRings rings={rings} />
           </div>
 
           {/* Meal Cards — spans 3 columns */}
           <div className="lg:col-span-3">
-            <MealCards />
+            <MealCards meals={mealItems} />
           </div>
 
           {/* Strava Activity — full width bottom */}
           <div className="lg:col-span-4">
-            <StravaActivity />
+            <StravaActivity activities={data?.activities} />
           </div>
         </div>
       </div>

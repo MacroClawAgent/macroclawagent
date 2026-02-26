@@ -6,22 +6,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AppShell } from "@/components/app/AppShell";
 import { isSupabaseConfigured, createClient } from "@/lib/supabase/client";
 import { Sparkles, Send, Bot, Activity, Flame, ChevronRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { AgentMessage, AgentContext } from "@/types/database";
 
-interface ChatMessage {
-  id: number;
-  role: "assistant" | "user";
-  content: string;
-  time: string;
-}
-
-const initialMessages: ChatMessage[] = [
-  {
-    id: 1,
-    role: "assistant",
-    content: "Hey! I'm your Claw Agent. I've analyzed your morning run — you burned 312 kcal at Zone 2. Your protein is 33g short of today's target. Want me to build a recovery meal plan and add it to your Uber Eats cart?",
-    time: "Just now",
-  },
-];
+const INITIAL_MESSAGE: AgentMessage = {
+  id: "initial",
+  role: "assistant",
+  content: "Hey! I'm your Claw Agent. Ask me anything about your nutrition, training, or meal planning.",
+  created_at: new Date().toISOString(),
+};
 
 const suggestedPrompts = [
   "What should I eat after my run?",
@@ -32,22 +25,19 @@ const suggestedPrompts = [
   "What's my weekly training load?",
 ];
 
-const agentReplies = [
-  "Based on your 5.2km run this morning, I recommend increasing protein by 30g today. I've found 3 options on Uber Eats that fit your macros — want me to add them to your cart?",
-  "I've generated your meal plan for today: Green Protein Bowl (breakfast), Quinoa Power Salad (lunch), and Salmon & Sweet Potato (dinner). Total: 1,640 kcal, 107g protein. Shall I order these?",
-  "This week you burned 2,480 kcal across 4 activities. Your 7-day average is 620 kcal/session — 12% above last week. Great consistency!",
-  "For a $20 budget, I recommend the Grilled Chicken Bowl (42g protein, $12.50) or the Salmon Power Bowl (38g protein, $18.90). Both hit your macro targets.",
-  "Race day nutrition: 3g carbs/kg body weight pre-race, 30–60g carbs/hr during, 1.2g protein/kg post-race within 30 minutes. Want me to prep a specific plan?",
-];
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
 export default function AgentPage() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [messages, setMessages] = useState<AgentMessage[]>([INITIAL_MESSAGE]);
+  const [context, setContext] = useState<AgentContext | null>(null);
+  const [contextLoading, setContextLoading] = useState(true);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const replyIndex = useRef(0);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) { setAuthorized(true); return; }
@@ -59,40 +49,70 @@ export default function AgentPage() {
   }, [router]);
 
   useEffect(() => {
+    if (!authorized) return;
+    fetch("/api/agent/messages")
+      .then((r) => r.json())
+      .then(({ messages: dbMessages, context: ctx }) => {
+        if (dbMessages && dbMessages.length > 0) setMessages(dbMessages as AgentMessage[]);
+        setContext(ctx as AgentContext);
+      })
+      .catch(console.error)
+      .finally(() => setContextLoading(false));
+  }, [authorized]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, thinking]);
 
-  const sendMessage = (text?: string) => {
+  const sendMessage = async (text?: string) => {
     const content = text ?? input.trim();
-    if (!content) return;
+    if (!content || thinking) return;
     setInput("");
-
-    const userMsg: ChatMessage = {
-      id: messages.length + 1,
-      role: "user",
-      content,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-    setMessages((prev) => [...prev, userMsg]);
     setThinking(true);
 
-    setTimeout(() => {
-      const reply = agentReplies[replyIndex.current % agentReplies.length];
-      replyIndex.current++;
-      setThinking(false);
+    // Optimistically add user message
+    const tempId = `tmp-${Date.now()}`;
+    const optimisticUser: AgentMessage = {
+      id: tempId,
+      role: "user",
+      content,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimisticUser]);
+
+    try {
+      const res = await fetch("/api/agent/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      const { userMessage, assistantMessage } = await res.json();
       setMessages((prev) => [
-        ...prev,
-        {
-          id: prev.length + 1,
-          role: "assistant",
-          content: reply,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
+        ...prev.filter((m) => m.id !== tempId),
+        userMessage,
+        assistantMessage,
       ]);
-    }, 1200);
+    } catch {
+      // Keep the optimistic message on failure
+    } finally {
+      setThinking(false);
+    }
   };
 
   if (!authorized) return null;
+
+  // Context sidebar derived values
+  const calorieGoal = context?.calorie_goal ?? 2000;
+  const proteinGoal = context?.protein_goal ?? 120;
+  const carbsGoal = 250;
+  const todayCals = context?.today_calories ?? 0;
+  const todayProtein = context?.today_protein ?? 0;
+  const todayCarbs = 0; // not in context yet, show 0
+  const macros = [
+    { label: "Calories", val: `${todayCals.toLocaleString()}`,  target: calorieGoal.toLocaleString(), pct: calorieGoal > 0 ? Math.min(Math.round((todayCals / calorieGoal) * 100), 100) : 0, color: "#F97316" },
+    { label: "Protein",  val: `${todayProtein}g`,               target: `${proteinGoal}g`,           pct: proteinGoal > 0 ? Math.min(Math.round((todayProtein / proteinGoal) * 100), 100) : 0, color: "#10B981" },
+    { label: "Carbs",    val: `${todayCarbs}g`,                  target: `${carbsGoal}g`,              pct: 0, color: "#F59E0B" },
+  ];
 
   return (
     <AppShell>
@@ -109,35 +129,47 @@ export default function AgentPage() {
             {/* Current macros summary */}
             <div className="glass-card p-4 rounded-xl">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Today&apos;s Macros</p>
-              {[
-                { label: "Calories", val: "1,640", target: "2,240", pct: 73, color: "#F97316" },
-                { label: "Protein", val: "87g", target: "120g", pct: 73, color: "#10B981" },
-                { label: "Carbs", val: "180g", target: "250g", pct: 72, color: "#F59E0B" },
-              ].map((m) => (
-                <div key={m.label} className="mb-2.5">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-500">{m.label}</span>
-                    <span className="text-slate-400 font-mono">{m.val}/{m.target}</span>
+              {contextLoading ? (
+                [0,1,2].map((i) => <Skeleton key={i} className="h-6 mb-2" />)
+              ) : (
+                macros.map((m) => (
+                  <div key={m.label} className="mb-2.5">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-500">{m.label}</span>
+                      <span className="text-slate-400 font-mono">{m.val}/{m.target}</span>
+                    </div>
+                    <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${m.pct}%`, backgroundColor: m.color }} />
+                    </div>
                   </div>
-                  <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${m.pct}%`, backgroundColor: m.color }} />
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             {/* Last activity */}
             <div className="glass-card p-4 rounded-xl">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Last Activity</p>
-              <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-4 h-4 text-orange-400" />
-                <p className="text-sm font-bold text-slate-100">5.2km Morning Run</p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-orange-400" />
-                <span className="text-xs text-orange-400 font-semibold">312 kcal</span>
-                <span className="text-xs text-slate-600 ml-1">· 28 min · Zone 2</span>
-              </div>
+              {contextLoading ? (
+                <Skeleton className="h-12" />
+              ) : context?.last_activity_name ? (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Activity className="w-4 h-4 text-orange-400" />
+                    <p className="text-sm font-bold text-slate-100">{context.last_activity_name}</p>
+                  </div>
+                  {context.last_activity_calories && (
+                    <div className="flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-orange-400" />
+                      <span className="text-xs text-orange-400 font-semibold">{context.last_activity_calories} kcal</span>
+                      {context.last_activity_distance_m && (
+                        <span className="text-xs text-slate-600 ml-1">· {(context.last_activity_distance_m / 1000).toFixed(1)} km</span>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-xs text-slate-600">No recent activities</p>
+              )}
             </div>
 
             {/* Suggested prompts */}
@@ -163,7 +195,7 @@ export default function AgentPage() {
             {/* Chat header */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.07]">
               <div className="w-9 h-9 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                <Sparkles className="w-4.5 h-4.5 text-indigo-400" />
+                <Sparkles className="w-4 h-4 text-indigo-400" />
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-100">Claw Agent</p>
@@ -199,7 +231,7 @@ export default function AgentPage() {
                     >
                       {msg.content}
                     </div>
-                    <p className="text-[10px] text-slate-600 px-1">{msg.time}</p>
+                    <p className="text-[10px] text-slate-600 px-1">{formatTime(msg.created_at)}</p>
                   </div>
                 </motion.div>
               ))}

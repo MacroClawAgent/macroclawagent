@@ -27,6 +27,10 @@ export async function POST(request: NextRequest) {
       unit_preference,
       avatar_url,
       profile_complete,
+      calorie_goal,
+      protein_goal,
+      carbs_goal,
+      fat_goal,
     } = body;
 
     const updatePayload: Record<string, unknown> = {};
@@ -38,6 +42,10 @@ export async function POST(request: NextRequest) {
     if (unit_preference !== undefined) updatePayload.unit_preference = unit_preference;
     if (avatar_url !== undefined) updatePayload.avatar_url = avatar_url;
     if (profile_complete !== undefined) updatePayload.profile_complete = profile_complete;
+    if (calorie_goal !== undefined) updatePayload.calorie_goal = calorie_goal;
+    if (protein_goal !== undefined) updatePayload.protein_goal = protein_goal;
+    if (carbs_goal !== undefined) updatePayload.carbs_goal = carbs_goal;
+    if (fat_goal !== undefined) updatePayload.fat_goal = fat_goal;
 
     const { data, error } = await supabase
       .from("users")
