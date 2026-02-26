@@ -469,14 +469,14 @@ export default function FeaturesPage() {
         </section>
 
         {/* ── Running mascot strip ── */}
-        <div className="w-full overflow-hidden">
+        <div className="w-full overflow-hidden relative h-28">
           <video
             src="/strava.mp4"
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-auto block"
+            className="absolute bottom-0 h-full w-auto animate-run-across"
           />
         </div>
 
