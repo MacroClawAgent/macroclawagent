@@ -468,17 +468,6 @@ export default function FeaturesPage() {
           </div>
         </section>
 
-        {/* ── Running mascot strip ── */}
-        <div className="w-full overflow-hidden relative h-28">
-          <video
-            src="/strava.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute bottom-0 h-full w-auto animate-run-across"
-          />
-        </div>
 
         {/* ── Core Features — Alternating Spotlights ── */}
         {pillars.map((pillar, i) => (

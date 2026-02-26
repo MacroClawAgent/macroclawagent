@@ -134,12 +134,4 @@
     animation-play-state: paused;
   }
 
-  /* Running mascot left → right */
-  @keyframes run-across {
-    from { transform: translateX(-160px); }
-    to   { transform: translateX(100vw); }
-  }
-  .animate-run-across {
-    animation: run-across 5s linear infinite;
-  }
 }
