@@ -1,9 +1,10 @@
 "use client";
 
-import { Activity, ShoppingBag, Heart, Bot, Watch, Cpu, Circle } from "lucide-react";
+import Image from "next/image";
+import { ShoppingBag, Heart, Bot, Watch, Cpu, Circle } from "lucide-react";
 
 const integrations = [
-  { icon: <Activity className="w-4 h-4" />, name: "Strava", color: "text-orange-400" },
+  { icon: <Image src="/strava.png" alt="Strava" width={16} height={16} className="object-contain" />, name: "Strava", color: "" },
   { icon: <ShoppingBag className="w-4 h-4" />, name: "Uber Eats", color: "text-emerald-400" },
   { icon: <Heart className="w-4 h-4" />, name: "Apple Health", color: "text-pink-400" },
   { icon: <Bot className="w-4 h-4" />, name: "Anthropic Claude", color: "text-indigo-400" },

@@ -1,13 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, Sparkles, ShoppingCart, ArrowRight } from "lucide-react";
+import { Sparkles, ShoppingCart, ArrowRight } from "lucide-react";
 import Image from "next/image";
 
 const steps = [
   {
     step: "01",
-    icon: <Activity className="w-7 h-7" />,
+    icon: <Image src="/strava.png" alt="Strava" width={28} height={28} className="object-contain" />,
     iconBg: "bg-orange-500/15 text-orange-400",
     glowColor: "rgba(249, 115, 22, 0.10)",
     title: "Sync Your Activity",

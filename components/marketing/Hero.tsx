@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronRight, Activity, Bot, ShoppingBag } from "lucide-react";
+import { ArrowRight, ChevronRight, Bot, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
 const containerVariants = {
@@ -217,7 +217,7 @@ export function Hero() {
                 className="hidden sm:block absolute -right-8 bottom-16 z-20 glass-card p-3.5 rounded-2xl shadow-2xl min-w-[180px]"
               >
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Activity className="w-3.5 h-3.5 text-orange-400" />
+                  <Image src="/strava.png" alt="Strava" width={14} height={14} className="object-contain" />
                   <p className="text-[10px] font-semibold text-slate-400">Last Activity</p>
                 </div>
                 <p className="text-xs font-bold text-slate-100">10.2km Morning Run</p>

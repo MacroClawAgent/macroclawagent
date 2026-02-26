@@ -6,7 +6,8 @@ import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Bike, Waves, Flame, Clock, MapPin, ChevronRight } from "lucide-react";
+import { Bike, Waves, Flame, Clock, MapPin, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import type { ActivityRow as ActivityRowType } from "@/types/database";
 
 interface StravaActivityProps {
@@ -46,7 +47,7 @@ function formatDate(isoString: string): string {
 function activityStyle(type: string) {
   if (type === "Ride") return { color: "text-blue-400",    bg: "bg-blue-500/10",    icon: <Bike className="w-4 h-4" /> };
   if (type === "Swim") return { color: "text-cyan-400",    bg: "bg-cyan-500/10",    icon: <Waves className="w-4 h-4" /> };
-  return                       { color: "text-orange-400", bg: "bg-orange-500/10",  icon: <Activity className="w-4 h-4" /> };
+  return                       { color: "text-orange-400", bg: "bg-orange-500/10",  icon: <Image src="/strava.png" alt="Strava" width={16} height={16} className="object-contain" /> };
 }
 
 function ActivityRow({ activity, delay }: { activity: ActivityRowType; delay: number }) {

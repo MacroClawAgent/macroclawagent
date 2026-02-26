@@ -2,9 +2,10 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import { Activity, ShoppingBag, Heart, Plus } from "lucide-react";
+import { ShoppingBag, Heart, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 
 /* ── Count-up hook ── */
 function useCountUp(target: number, duration = 1500, enabled = false) {
@@ -56,10 +57,10 @@ function StatCard({ value, numericValue, suffix, label, delay }: {
 
 const apps = [
   {
-    icon: <Activity className="w-6 h-6" />,
+    icon: <Image src="/strava.png" alt="Strava" width={24} height={24} className="object-contain" />,
     name: "Strava",
     status: "Connected",
-    color: "text-orange-400",
+    color: "",
     bg: "bg-orange-500/10 border-orange-500/20",
     dot: "bg-orange-400",
   },

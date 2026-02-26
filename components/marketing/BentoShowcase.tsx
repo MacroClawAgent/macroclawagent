@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, Bot, ShoppingBag, Flame, Check } from "lucide-react";
+import { Bot, ShoppingBag, Flame, Check } from "lucide-react";
+import Image from "next/image";
 
 /* ── Mini SVG ring ── */
 function Ring({
@@ -163,7 +164,7 @@ function StravaCard() {
     <div className="flex flex-col h-full overflow-hidden gap-4 p-5 glass-card rounded-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-orange-400" />
+          <Image src="/strava.png" alt="Strava" width={16} height={16} className="object-contain" />
           <p className="text-sm font-bold text-slate-100">Strava Sync</p>
         </div>
         <span className="text-[10px] text-emerald-400 font-semibold">● Live</span>
