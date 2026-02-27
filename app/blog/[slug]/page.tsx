@@ -176,6 +176,7 @@ const posts: Record<string, BlogPost> = {
     readTime: "8 min read",
     emoji: "🤖",
     gradient: "from-indigo-900/40 to-[#0F111A]",
+    coverImage: "/gym.png",
     toc: [
       "What makes AI coaching different from a nutrition app",
       "The three gaps AI fills",
@@ -315,6 +316,7 @@ const posts: Record<string, BlogPost> = {
     readTime: "10 min read",
     emoji: "🥩",
     gradient: "from-emerald-900/40 to-[#0F111A]",
+    coverImage: "/nutrition.png",
     toc: [
       "The outdated RDA and why it's not a target",
       "Why endurance athletes need more protein than expected",

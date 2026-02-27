@@ -33,7 +33,7 @@ const posts = [
     tagColor: "text-indigo-400 bg-indigo-500/10",
     tagBorder: "border-indigo-500/20",
     gradient: "from-indigo-900/40 to-[#0F111A]",
-    coverImage: null as string | null,
+    coverImage: "/gym.png" as string | null,
     title: "Why AI Nutrition Coaching is Changing Athletic Performance",
     excerpt:
       "Human coaches are expensive and unavailable at 11pm when you're logging your third meal. Here's why AI is closing that gap.",
@@ -50,7 +50,7 @@ const posts = [
     tagColor: "text-emerald-400 bg-emerald-500/10",
     tagBorder: "border-emerald-500/20",
     gradient: "from-emerald-900/40 to-[#0F111A]",
-    coverImage: null as string | null,
+    coverImage: "/nutrition.png" as string | null,
     title: "The Science Behind Protein Targets for Endurance Athletes",
     excerpt:
       "0.8g/kg? 1.6g/kg? 2.2g/kg? The research on protein needs for endurance athletes is clearer than you think — and the number is probably higher than your app suggests.",
