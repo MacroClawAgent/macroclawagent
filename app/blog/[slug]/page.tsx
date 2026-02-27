@@ -1,19 +1,34 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Twitter } from "lucide-react";
+import { BlogProgress } from "@/components/blog/BlogProgress";
+import { CopyLinkButton } from "@/components/blog/CopyLinkButton";
 
 type BlogPost = {
   slug: string;
   tag: string;
   tagColor: string;
+  tagBorder: string;
   title: string;
+  excerpt: string;
   date: string;
   readTime: string;
   emoji: string;
   gradient: string;
+  coverImage?: string;
+  toc: string[];
+  author: {
+    name: string;
+    role: string;
+    initials: string;
+    gradient: string;
+    bio: string;
+  };
+  relatedSlugs?: [string, string];
   body: React.ReactNode;
 };
 
@@ -22,11 +37,30 @@ const posts: Record<string, BlogPost> = {
     slug: "fueling-strava-rides",
     tag: "Performance",
     tagColor: "text-orange-400 bg-orange-500/10",
+    tagBorder: "border-orange-500/20",
     title: "How to Fuel Your Strava Rides with Precision Macros",
+    excerpt: "Stop guessing your carb intake on ride day. Here's how to sync your training load with your nutrition targets — automatically.",
     date: "Feb 18, 2026",
     readTime: "6 min read",
     emoji: "🚴",
     gradient: "from-orange-900/40 to-[#0F111A]",
+    coverImage: "/cyclists.png",
+    toc: [
+      "Why your calorie target needs to move with your rides",
+      "Carbohydrate requirements for cyclists",
+      "The three-window fueling framework",
+      "Protein on ride days",
+      "How MacroClawAgent automates this",
+      "Practical next step",
+    ],
+    author: {
+      name: "Marco R.",
+      role: "Co-founder & CEO",
+      initials: "MR",
+      gradient: "from-orange-500 to-red-600",
+      bio: "Cyclist and ex-consultant. Built MacroClawAgent after years of training hard and eating wrong.",
+    },
+    relatedSlugs: ["ai-nutrition-coaching", "protein-targets-athletes"],
     body: (
       <div className="prose-content">
         <p>
@@ -135,11 +169,28 @@ const posts: Record<string, BlogPost> = {
     slug: "ai-nutrition-coaching",
     tag: "AI + Nutrition",
     tagColor: "text-indigo-400 bg-indigo-500/10",
+    tagBorder: "border-indigo-500/20",
     title: "Why AI Nutrition Coaching is Changing Athletic Performance",
+    excerpt: "Human coaches are expensive and unavailable at 11pm when you're logging your third meal. Here's why AI is closing that gap.",
     date: "Feb 10, 2026",
     readTime: "8 min read",
     emoji: "🤖",
     gradient: "from-indigo-900/40 to-[#0F111A]",
+    toc: [
+      "What makes AI coaching different from a nutrition app",
+      "The three gaps AI fills",
+      "Where AI nutrition still requires human judgement",
+      "The model behind MacroClawAgent",
+      "What this looks like in practice",
+    ],
+    author: {
+      name: "Lena W.",
+      role: "Co-founder & CTO",
+      initials: "LW",
+      gradient: "from-indigo-500 to-violet-600",
+      bio: "Marathon runner and engineer. Built MacroClawAgent to make intelligent nutrition guidance available at 11pm, not just in scheduled appointments.",
+    },
+    relatedSlugs: ["fueling-strava-rides", "protein-targets-athletes"],
     body: (
       <div className="prose-content">
         <p>
@@ -257,11 +308,29 @@ const posts: Record<string, BlogPost> = {
     slug: "protein-targets-athletes",
     tag: "Science",
     tagColor: "text-emerald-400 bg-emerald-500/10",
+    tagBorder: "border-emerald-500/20",
     title: "The Science Behind Protein Targets for Endurance Athletes",
+    excerpt: "0.8g/kg? 1.6g/kg? 2.2g/kg? The research on protein needs for endurance athletes is clearer than you think — and the number is probably higher than your app suggests.",
     date: "Jan 28, 2026",
     readTime: "10 min read",
     emoji: "🥩",
     gradient: "from-emerald-900/40 to-[#0F111A]",
+    toc: [
+      "The outdated RDA and why it's not a target",
+      "Why endurance athletes need more protein than expected",
+      "Current evidence-based recommendations",
+      "Per-meal distribution matters more than daily totals",
+      "Food sources and bioavailability",
+      "What this means for your app",
+    ],
+    author: {
+      name: "Yuki T.",
+      role: "Head of AI",
+      initials: "YT",
+      gradient: "from-emerald-500 to-teal-600",
+      bio: "Triathlete and ex-Anthropic engineer. Digs deep into sports nutrition literature so athletes don't have to.",
+    },
+    relatedSlugs: ["fueling-strava-rides", "ai-nutrition-coaching"],
     body: (
       <div className="prose-content">
         <p>
@@ -388,64 +457,206 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
   const post = posts[params.slug];
   if (!post) notFound();
 
+  const relatedPosts = post.relatedSlugs
+    ? post.relatedSlugs.map((s) => posts[s]).filter(Boolean)
+    : [];
+
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://macroclawagent.com/blog/${post.slug}`)}`;
+
   return (
     <div className="min-h-screen bg-[#08090D]">
       <Navbar />
+      <BlogProgress />
       <main className="pt-16">
-        {/* Hero */}
-        <section className={`relative py-20 overflow-hidden`}>
-          <div className={`absolute inset-0 bg-gradient-to-b ${post.gradient} opacity-60`} />
-          <div className="relative max-w-3xl mx-auto px-6 text-center">
-            <span className="text-6xl block mb-6">{post.emoji}</span>
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${post.tagColor}`}>
-                {post.tag}
-              </span>
-              <span className="text-xs text-slate-600">{post.date}</span>
-              <span className="text-xs text-slate-600">·</span>
-              <span className="text-xs text-slate-600">{post.readTime}</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-black text-slate-100 leading-tight">
-              {post.title}
-            </h1>
-          </div>
-        </section>
 
-        {/* Article body */}
-        <section className="pb-24">
-          <div className="max-w-3xl mx-auto px-6">
-            <div className="glass-card p-8 md:p-12 article-body">
-              {post.body}
-            </div>
+        {/* ── Article Hero ── */}
+        <section className="relative overflow-hidden">
+          <div className="relative min-h-[420px] md:min-h-[520px] flex items-end">
+            {post.coverImage ? (
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                fill
+                className="object-cover object-center"
+                priority
+              />
+            ) : (
+              <div className={`absolute inset-0 bg-gradient-to-br ${post.gradient}`} />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-[#08090D]/70 to-[#08090D]/20" />
 
-            {/* CTA */}
-            <div className="mt-12 glass-card glow-border p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div>
-                <p className="font-bold text-slate-100 mb-1">Let the Claw Agent apply this.</p>
-                <p className="text-sm text-slate-400">
-                  MacroClawAgent syncs your Strava data and sets evidence-based targets automatically.
-                </p>
+            <div className="relative z-10 max-w-4xl mx-auto px-6 pb-12 w-full">
+              {/* Breadcrumb */}
+              <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
+                <Link href="/blog" className="hover:text-slate-300 transition-colors">Blog</Link>
+                <span>/</span>
+                <span className={post.tagColor.split(" ")[0]}>{post.tag}</span>
               </div>
-              <Button variant="glow" size="lg" className="flex-shrink-0" asChild>
-                <Link href="/login">
-                  Get Started Free
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-            </div>
 
-            {/* Back link */}
-            <div className="mt-8">
-              <Link
-                href="/blog"
-                className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Blog
-              </Link>
+              {/* Meta row */}
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${post.tagColor} ${post.tagBorder}`}>
+                  {post.tag}
+                </span>
+                <span className="text-xs text-slate-400">{post.date}</span>
+                <span className="text-slate-600">·</span>
+                <span className="text-xs text-slate-400">{post.readTime}</span>
+              </div>
+
+              {/* Title */}
+              <h1 className="text-3xl md:text-5xl font-black text-slate-100 leading-tight mb-4">
+                {post.title}
+              </h1>
+
+              {/* Excerpt */}
+              <p className="text-lg text-slate-300 leading-relaxed mb-6 max-w-2xl">
+                {post.excerpt}
+              </p>
+
+              {/* Author byline */}
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${post.author.gradient} flex items-center justify-center text-sm font-black text-white`}>
+                  {post.author.initials}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-200">{post.author.name}</p>
+                  <p className="text-xs text-slate-500">{post.author.role}</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
+
+        {/* ── Body + Sidebar ── */}
+        <section className="py-12 pb-24">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="grid lg:grid-cols-[1fr_260px] gap-10 items-start">
+
+              {/* Main article */}
+              <div className="min-w-0">
+                <div className="glass-card p-8 md:p-12 article-body">
+                  {post.body}
+                </div>
+
+                {/* Author card */}
+                <div className="mt-8 glass-card p-6 flex items-start gap-5">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${post.author.gradient} flex items-center justify-center text-lg font-black text-white flex-shrink-0`}>
+                    {post.author.initials}
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-100 mb-0.5">{post.author.name}</p>
+                    <p className="text-xs text-indigo-400 font-medium mb-2">{post.author.role}</p>
+                    <p className="text-sm text-slate-400 leading-relaxed">{post.author.bio}</p>
+                    <p className="text-xs text-slate-600 mt-3">Written for MacroClawAgent · {post.date}</p>
+                  </div>
+                </div>
+
+                {/* Share row */}
+                <div className="mt-6 flex items-center gap-3">
+                  <span className="text-sm text-slate-500 font-medium">Share:</span>
+                  <CopyLinkButton />
+                  <a
+                    href={twitterUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-slate-400 hover:text-slate-200 hover:border-white/20 transition-all duration-200"
+                  >
+                    <Twitter className="w-3.5 h-3.5" />
+                    Share on X
+                  </a>
+                </div>
+
+                {/* Related posts */}
+                {relatedPosts.length > 0 && (
+                  <div className="mt-12">
+                    <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-5">
+                      Related articles
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {relatedPosts.map((related) => (
+                        <Link
+                          key={related.slug}
+                          href={`/blog/${related.slug}`}
+                          className="glass-card p-5 flex flex-col gap-2 hover:border-indigo-500/30 transition-colors group"
+                        >
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full self-start border ${related.tagColor} ${related.tagBorder}`}>
+                            {related.tag}
+                          </span>
+                          <p className="text-sm font-bold text-slate-200 leading-snug group-hover:text-indigo-200 transition-colors">
+                            {related.title}
+                          </p>
+                          <span className="text-xs text-slate-600">{related.readTime}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bottom CTA */}
+                <div className="mt-12 glass-card glow-border p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6">
+                  <Image
+                    src="/mascot.png"
+                    alt="MacroClaw"
+                    width={72}
+                    height={72}
+                    className="object-contain flex-shrink-0"
+                  />
+                  <div className="flex-1 text-center sm:text-left">
+                    <p className="font-bold text-slate-100 mb-1">Let the Claw Agent apply this.</p>
+                    <p className="text-sm text-slate-400">
+                      MacroClawAgent syncs your Strava data and sets evidence-based targets automatically.
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+                    <Button variant="glow" size="default" asChild>
+                      <Link href="/login">
+                        Get Started Free
+                        <ArrowRight className="w-4 h-4 ml-1.5" />
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="default" asChild>
+                      <Link href="/blog">
+                        <ArrowLeft className="w-4 h-4 mr-1.5" />
+                        More articles
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar */}
+              <aside className="hidden lg:block sticky top-24 space-y-4">
+                <div className="glass-card p-5">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">
+                    In this article
+                  </p>
+                  <nav className="flex flex-col gap-1">
+                    {post.toc.map((heading, i) => (
+                      <span
+                        key={i}
+                        className="text-sm text-slate-400 hover:text-slate-200 leading-snug cursor-pointer transition-colors py-1 border-l-2 border-transparent hover:border-indigo-500 pl-3"
+                      >
+                        {heading}
+                      </span>
+                    ))}
+                  </nav>
+                </div>
+
+                <div className="glass-card border border-indigo-500/20 p-5 flex flex-col gap-3">
+                  <p className="text-sm font-bold text-slate-100">Let the Claw apply this →</p>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Connect Strava. Get evidence-based targets. Order recovery meals automatically.
+                  </p>
+                  <Button variant="glow" size="sm" asChild className="w-full">
+                    <Link href="/login">Start Free</Link>
+                  </Button>
+                </div>
+              </aside>
+
+            </div>
+          </div>
+        </section>
+
       </main>
       <Footer />
     </div>

@@ -198,60 +198,79 @@ export default function AboutPage() {
       <main className="pt-16">
 
         {/* ── Hero ── */}
-        <section className="relative min-h-[80vh] flex items-center overflow-hidden">
-          {/* Background photo */}
-          <div className="absolute inset-0">
-            <Image
-              src="/cyclists.png"
-              alt="Athletes cycling"
-              fill
-              className="object-cover object-center"
-              priority
-            />
-            {/* Dark gradient overlay — left opaque, right lets photo through */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#08090D] via-[#08090D]/90 to-[#08090D]/50" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-transparent to-[#08090D]/40" />
-          </div>
+        <section className="relative py-28 md:py-36 overflow-hidden">
+          {/* Atmospheric orbs */}
+          <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] rounded-full bg-indigo-900/12 blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-violet-900/10 blur-3xl pointer-events-none" />
 
-          {/* Content */}
-          <div className="relative z-10 max-w-6xl mx-auto px-6 py-28 md:py-36 w-full">
-            <motion.div
-              initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="max-w-2xl"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-widest">Our story</span>
-              </div>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
-                <span className="gradient-text">We built the nutrition tool</span>
-                <br />
-                <span className="text-slate-100">we always wanted.</span>
-              </h1>
-              <p className="text-lg md:text-xl text-slate-400 leading-relaxed mb-8 max-w-xl">
-                Founded by athletes. Frustrated by static calorie apps that ignore training data.
-                Built to finally close the loop between how you train and what you eat.
-              </p>
-              <div className="flex flex-wrap gap-3 mb-6">
-                <span className="text-sm text-slate-500">Founded 2025</span>
-                <span className="text-slate-700">·</span>
-                <span className="text-sm text-slate-500">Remote-first</span>
-                <span className="text-slate-700">·</span>
-                <span className="text-sm text-slate-500">Athlete-led</span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Button variant="glow" size="lg" asChild>
-                  <Link href="/login">Get Started Free</Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <a href="#story">
-                    Read our story <ArrowRight className="w-4 h-4 ml-1" />
-                  </a>
-                </Button>
-              </div>
-            </motion.div>
+          <div className="relative z-10 max-w-6xl mx-auto px-6 w-full">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+
+              {/* Left column */}
+              <motion.div
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                  <span className="text-xs font-semibold text-indigo-400 uppercase tracking-widest">Our story</span>
+                </div>
+                <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
+                  <span className="gradient-text">We built the nutrition tool</span>
+                  <br />
+                  <span className="text-slate-100">we always wanted.</span>
+                </h1>
+                <p className="text-lg md:text-xl text-slate-400 leading-relaxed mb-8 max-w-xl">
+                  Founded by athletes. Frustrated by static calorie apps that ignore training data.
+                  Built to finally close the loop between how you train and what you eat.
+                </p>
+                <div className="flex flex-wrap gap-3 mb-8">
+                  <span className="text-sm text-slate-500">Founded 2025</span>
+                  <span className="text-slate-700">·</span>
+                  <span className="text-sm text-slate-500">Remote-first</span>
+                  <span className="text-slate-700">·</span>
+                  <span className="text-sm text-slate-500">Athlete-led</span>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="glow" size="lg" asChild>
+                    <Link href="/login">Get Started Free</Link>
+                  </Button>
+                  <Button variant="outline" size="lg" asChild>
+                    <a href="#story">
+                      Read our story <ArrowRight className="w-4 h-4 ml-1" />
+                    </a>
+                  </Button>
+                </div>
+              </motion.div>
+
+              {/* Right column — mascot */}
+              <motion.div
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.15 }}
+                className="relative flex items-center justify-center"
+              >
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-80 h-80 rounded-full bg-orange-500/8 blur-3xl" />
+                </div>
+                <div className="glass-card p-8 relative z-10 flex flex-col items-center gap-6 max-w-xs w-full">
+                  <Image
+                    src="/mascot.png"
+                    alt="MacroClaw mascot"
+                    width={260}
+                    height={260}
+                    className="object-contain drop-shadow-2xl"
+                    priority
+                  />
+                  <div className="text-center">
+                    <p className="font-bold text-slate-100 text-lg">The Claw Agent</p>
+                    <p className="text-sm text-slate-500">Your AI nutrition coach</p>
+                  </div>
+                </div>
+              </motion.div>
+
+            </div>
           </div>
         </section>
 
