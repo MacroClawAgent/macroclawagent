@@ -15,7 +15,10 @@ export async function GET() {
     }
 
     return NextResponse.redirect(getStravaAuthUrl());
-  } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err) {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const isMisconfig = err instanceof Error && err.message.includes("STRAVA_CLIENT_ID");
+    const param = isMisconfig ? "strava_not_configured" : "strava_error";
+    return NextResponse.redirect(`${baseUrl}/settings?tab=integrations&error=${param}`);
   }
 }

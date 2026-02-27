@@ -46,8 +46,12 @@ export interface ActivityInsert {
 // ── Auth URL ──────────────────────────────────────────────────────────────────
 
 export function getStravaAuthUrl(): string {
-  const clientId = process.env.STRAVA_CLIENT_ID!;
-  const redirectUri = process.env.STRAVA_REDIRECT_URI!;
+  const clientId = process.env.STRAVA_CLIENT_ID;
+  if (!clientId) {
+    throw new Error("STRAVA_CLIENT_ID is not configured — add it to Vercel environment variables.");
+  }
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const redirectUri = process.env.STRAVA_REDIRECT_URI || `${appUrl}/api/strava/callback`;
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,

@@ -62,6 +62,7 @@ export default function SettingsPage() {
   const [stravaSyncing, setStravaSyncing] = useState(false);
   const [stravaSuccess, setStravaSuccess] = useState(false);
   const [stravaError, setStravaError] = useState<string | null>(null);
+  const [stravaNotConfigured, setStravaNotConfigured] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [notifications, setNotifications] = useState({ email: true, push: false, weekly: true, plan: true });
@@ -88,6 +89,7 @@ export default function SettingsPage() {
     if (connected === "true") setStravaSuccess(true);
     if (err === "strava_denied") setStravaError("Strava authorisation was cancelled.");
     if (err === "strava_error") setStravaError("Strava connection failed. Please try again.");
+    if (err === "strava_not_configured") setStravaNotConfigured(true);
   }, []);
 
   useEffect(() => {
@@ -385,6 +387,16 @@ export default function SettingsPage() {
                       <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
                       <p className="text-xs text-red-300">{stravaError}</p>
                       <button onClick={() => setStravaError(null)} className="ml-auto text-slate-600 hover:text-slate-400"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                  )}
+                  {stravaNotConfigured && (
+                    <div className="flex items-start gap-2.5 px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                      <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-300 leading-relaxed">
+                        <strong>Strava not configured.</strong> Add <code className="font-mono">STRAVA_CLIENT_ID</code> and{" "}
+                        <code className="font-mono">STRAVA_CLIENT_SECRET</code> to your Vercel environment variables, then redeploy.
+                      </p>
+                      <button onClick={() => setStravaNotConfigured(false)} className="ml-auto text-slate-600 hover:text-slate-400 flex-shrink-0"><X className="w-3.5 h-3.5" /></button>
                     </div>
                   )}
 
