@@ -213,12 +213,22 @@ export default function BlogPage() {
                       href={`/blog/${post.slug}`}
                       className="block glass-card overflow-hidden hover:border-indigo-500/30 transition-colors duration-300 group h-full"
                     >
-                      <div
-                        className={`h-40 bg-gradient-to-br ${post.gradient} flex items-center justify-center relative overflow-hidden`}
-                      >
-                        <span className="text-5xl group-hover:scale-110 transition-transform duration-300 relative z-10">
-                          {post.emoji}
-                        </span>
+                      <div className="relative h-40 overflow-hidden">
+                        {post.coverImage ? (
+                          <Image
+                            src={post.coverImage}
+                            alt={post.title}
+                            fill
+                            className="object-cover object-center group-hover:scale-[1.02] transition-transform duration-700"
+                          />
+                        ) : (
+                          <div className={`absolute inset-0 bg-gradient-to-br ${post.gradient} flex items-center justify-center`}>
+                            <span className="text-5xl group-hover:scale-110 transition-transform duration-300">
+                              {post.emoji}
+                            </span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#08090D]/60 to-transparent" />
                       </div>
                       <div className="p-6 flex flex-col gap-3">
                         <div className="flex items-center justify-between">
