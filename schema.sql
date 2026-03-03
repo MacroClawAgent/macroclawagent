@@ -206,3 +206,25 @@ CREATE POLICY "chat_messages_all_own" ON public.chat_messages FOR ALL USING (aut
 ALTER TABLE public.meal_plans ADD COLUMN IF NOT EXISTS label TEXT;
 ALTER TABLE public.meal_plans ADD COLUMN IF NOT EXISTS activity_summary TEXT;
 ALTER TABLE public.meal_plans ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'built', 'ordered', 'delivered'));
+
+-- ============================================================
+-- BETA SIGNUPS TABLE
+-- Public waitlist collected via /join page (QR code / events).
+-- Run in Supabase SQL Editor after deploying the /join page.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.beta_signups (
+  id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  full_name     TEXT        NOT NULL,
+  email         TEXT        UNIQUE NOT NULL,
+  phone         TEXT,
+  sport         TEXT,
+  signed_up_at  TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE public.beta_signups ENABLE ROW LEVEL SECURITY;
+
+-- Allow anonymous (unauthenticated) users to insert a signup
+CREATE POLICY "public_insert_beta_signups"
+  ON public.beta_signups FOR INSERT
+  WITH CHECK (true);
