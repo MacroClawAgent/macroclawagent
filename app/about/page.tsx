@@ -40,10 +40,10 @@ function StatCard({ value, suffix, label }: { value: number; suffix: string; lab
       viewport={{ once: true }}
       className="flex flex-col items-center gap-1"
     >
-      <p className="text-4xl font-black gradient-text">
+      <p className="text-4xl font-black gradient-text-light">
         {isInView ? `${count.toLocaleString()}${suffix}` : `0${suffix}`}
       </p>
-      <p className="text-sm text-slate-500">{label}</p>
+      <p className="text-sm text-gray-500">{label}</p>
     </motion.div>
   );
 }
@@ -73,13 +73,13 @@ const timeline = [
   {
     date: "Jun 2025",
     title: "Smart cart ships",
-    desc: "Uber Eats integration completes the loop — the Claw Agent now doesn't just tell you what to eat, it builds the cart. Recovery meals, ordered in under 60 seconds.",
+    desc: "Uber Eats integration completes the loop — the Jonno Agent now doesn't just tell you what to eat, it builds the cart. Recovery meals, ordered in under 60 seconds.",
     color: "bg-emerald-500",
   },
   {
     date: "2026",
     title: "Public launch",
-    desc: "12,400+ athletes onboard across 34 countries. The Claw Agent handles training nutrition so athletes can focus on training.",
+    desc: "12,400+ athletes onboard across 34 countries. The Jonno Agent handles training nutrition so athletes can focus on training.",
     color: "bg-violet-500",
   },
 ];
@@ -94,10 +94,10 @@ const values = [
   },
   {
     icon: <Brain className="w-6 h-6" />,
-    color: "text-indigo-400",
-    bg: "bg-indigo-500/10",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     title: "AI-First Coaching",
-    desc: "The Claw Agent isn't a calculator with a chat interface. It reasons across your training history, food preferences, and goals to give context-aware recommendations.",
+    desc: "The Jonno Agent isn't a calculator with a chat interface. It reasons across your training history, food preferences, and goals to give context-aware recommendations.",
     featured: true,
   },
   {
@@ -131,7 +131,7 @@ const team = [
     gradient: "from-emerald-500 to-teal-600",
     name: "Yuki T.",
     role: "Head of AI",
-    bio: "Triathlete and ex-Anthropic engineer. Designed the Claw reasoning loop.",
+    bio: "Triathlete and ex-Anthropic engineer. Designed the Jonno reasoning loop.",
     badge: "Triathlete · Tokyo",
   },
   {
@@ -148,10 +148,10 @@ const stack = [
   {
     name: "Anthropic Claude",
     role: "The AI brain",
-    desc: "Claude API powers the Claw Agent — reasoning across nutrition data, activity history, and food preferences to generate genuinely useful advice.",
-    color: "text-indigo-400",
-    bg: "bg-indigo-500/10",
-    border: "border-indigo-500/20",
+    desc: "Claude API powers the Jonno Agent — reasoning across nutrition data, activity history, and food preferences to generate genuinely useful advice.",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
     icon: <Brain className="w-8 h-8" />,
   },
   {
@@ -166,7 +166,7 @@ const stack = [
   {
     name: "Uber Direct API",
     role: "Seamless delivery",
-    desc: "The integration means the Claw Agent doesn't just tell you what to eat — it builds the cart, surfaces macro-matched options from restaurants near you, and removes the friction.",
+    desc: "The integration means the Jonno Agent doesn't just tell you what to eat — it builds the cart, surfaces macro-matched options from restaurants near you, and removes the friction.",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",
@@ -193,7 +193,7 @@ const openRoles = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#08090D]">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <main className="pt-16">
 
@@ -212,25 +212,25 @@ export default function AboutPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 mb-6">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                  <span className="text-xs font-semibold text-indigo-400 uppercase tracking-widest">Our story</span>
+                  <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Our story</span>
                 </div>
                 <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
-                  <span className="gradient-text">We built the nutrition tool</span>
+                  <span className="gradient-text-light">We built the nutrition tool</span>
                   <br />
-                  <span className="text-slate-100">we always wanted.</span>
+                  <span className="text-gray-900">we always wanted.</span>
                 </h1>
-                <p className="text-lg md:text-xl text-slate-400 leading-relaxed mb-8 max-w-xl">
+                <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8 max-w-xl">
                   Founded by athletes. Frustrated by static calorie apps that ignore training data.
                   Built to finally close the loop between how you train and what you eat.
                 </p>
                 <div className="flex flex-wrap gap-3 mb-8">
-                  <span className="text-sm text-slate-500">Founded 2025</span>
+                  <span className="text-sm text-gray-500">Founded 2025</span>
                   <span className="text-slate-700">·</span>
-                  <span className="text-sm text-slate-500">Remote-first</span>
+                  <span className="text-sm text-gray-500">Remote-first</span>
                   <span className="text-slate-700">·</span>
-                  <span className="text-sm text-slate-500">Athlete-led</span>
+                  <span className="text-sm text-gray-500">Athlete-led</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <Button variant="glow" size="lg" asChild>
@@ -254,18 +254,18 @@ export default function AboutPage() {
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-80 h-80 rounded-full bg-orange-500/8 blur-3xl" />
                 </div>
-                <div className="glass-card p-8 relative z-10 flex flex-col items-center gap-6 max-w-xs w-full">
+                <div className="light-card p-8 relative z-10 flex flex-col items-center gap-6 max-w-xs w-full">
                   <Image
                     src="/mascot.png"
-                    alt="MacroClaw mascot"
+                    alt="Jonno mascot"
                     width={260}
                     height={260}
                     className="object-contain drop-shadow-2xl"
                     priority
                   />
                   <div className="text-center">
-                    <p className="font-bold text-slate-100 text-lg">The Claw Agent</p>
-                    <p className="text-sm text-slate-500">Your AI nutrition coach</p>
+                    <p className="font-bold text-gray-900 text-lg">The Jonno Agent</p>
+                    <p className="text-sm text-gray-500">Your AI nutrition coach</p>
                   </div>
                 </div>
               </motion.div>
@@ -275,7 +275,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Stats Bar ── */}
-        <section className="py-14 border-y border-white/[0.05] bg-[#0F111A]/60 backdrop-blur-sm">
+        <section className="py-14 border-y border-gray-100 bg-white/60 backdrop-blur-sm">
           <div className="max-w-5xl mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-10 divide-x divide-white/[0.06]">
               {stats.map((s) => (
@@ -288,7 +288,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Our Story ── */}
-        <section id="story" className="py-24 bg-mesh-section">
+        <section id="story" className="py-24 bg-gray-50">
           <div className="max-w-6xl mx-auto px-6">
             <div className="grid md:grid-cols-2 gap-16 items-center">
               {/* Text column */}
@@ -298,30 +298,30 @@ export default function AboutPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
               >
-                <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-4">
+                <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-4">
                   Origin story
                 </p>
-                <h2 className="text-4xl md:text-5xl font-black gradient-text mb-6 leading-tight">
+                <h2 className="text-4xl md:text-5xl font-black gradient-text-light mb-6 leading-tight">
                   The problem we lived.
                 </h2>
-                <p className="text-slate-400 leading-relaxed mb-5">
+                <p className="text-gray-600 leading-relaxed mb-5">
                   Athletes are the most data-rich humans alive. GPS routes, power outputs, heart rate curves,
                   VO2 estimates. But every nutrition app treats everyone the same — static calorie targets
                   regardless of what you did that day.
                 </p>
-                <p className="text-slate-400 leading-relaxed mb-5">
+                <p className="text-gray-600 leading-relaxed mb-5">
                   We'd do a 4-hour ride and still see the same 2,000 kcal target. Then get "grilled chicken
                   and veg" suggested for the third time. And actually ordering the right food? A 30-minute
                   research task every evening.
                 </p>
                 <blockquote className="border-l-2 border-indigo-500 pl-5 my-8">
-                  <p className="text-lg text-slate-200 font-medium italic leading-relaxed">
+                  <p className="text-lg text-gray-800 font-medium italic leading-relaxed">
                     "Your training data finally tells your kitchen what to do. The guesswork is gone."
                   </p>
                 </blockquote>
                 <div className="flex flex-wrap gap-2 mt-6">
                   {["2024 — Idea born", "Jan 2025 — First beta", "2026 — Public launch"].map((badge) => (
-                    <span key={badge} className="px-3 py-1 text-xs rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">
+                    <span key={badge} className="px-3 py-1 text-xs rounded-full bg-blue-50 border border-blue-200 text-blue-500">
                       {badge}
                     </span>
                   ))}
@@ -340,17 +340,17 @@ export default function AboutPage() {
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-72 h-72 rounded-full bg-orange-500/8 blur-3xl" />
                 </div>
-                <div className="glass-card p-6 relative z-10 flex flex-col items-center gap-4 max-w-sm w-full">
+                <div className="light-card p-6 relative z-10 flex flex-col items-center gap-4 max-w-sm w-full">
                   <Image
                     src="/mascot.png"
-                    alt="MacroClaw mascot"
+                    alt="Jonno mascot"
                     width={280}
                     height={280}
                     className="object-contain drop-shadow-2xl"
                   />
                   <div className="text-center">
-                    <p className="font-bold text-slate-100">The Claw Agent</p>
-                    <p className="text-sm text-slate-500">Your AI nutrition coach</p>
+                    <p className="font-bold text-gray-900">The Jonno Agent</p>
+                    <p className="text-sm text-gray-500">Your AI nutrition coach</p>
                   </div>
                 </div>
               </motion.div>
@@ -367,10 +367,10 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">
                 Company history
               </p>
-              <h2 className="text-4xl font-black gradient-text">From frustration to product.</h2>
+              <h2 className="text-4xl font-black gradient-text-light">From frustration to product.</h2>
             </motion.div>
 
             <div className="relative">
@@ -393,12 +393,12 @@ export default function AboutPage() {
                     </div>
 
                     {/* Card */}
-                    <div className={`glass-card p-6 ml-14 md:ml-0 ${i % 2 === 0 ? "md:mr-auto md:pr-16" : "md:ml-auto md:pl-16"} md:w-[45%]`}>
-                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
+                    <div className={`light-card p-6 ml-14 md:ml-0 ${i % 2 === 0 ? "md:mr-auto md:pr-16" : "md:ml-auto md:pl-16"} md:w-[45%]`}>
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200 mb-3">
                         {item.date}
                       </span>
-                      <h3 className="font-bold text-slate-100 mb-2">{item.title}</h3>
-                      <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
+                      <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
+                      <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -408,7 +408,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Values ── */}
-        <section className="py-20 bg-mesh-section">
+        <section className="py-20 bg-gray-50">
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -416,10 +416,10 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-6"
             >
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">
                 How we work
               </p>
-              <h2 className="text-4xl font-black gradient-text">What we believe in.</h2>
+              <h2 className="text-4xl font-black gradient-text-light">What we believe in.</h2>
             </motion.div>
 
             {/* Pull quote */}
@@ -427,7 +427,7 @@ export default function AboutPage() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-center text-2xl md:text-3xl font-bold text-slate-300 italic max-w-2xl mx-auto mb-14"
+              className="text-center text-2xl md:text-3xl font-bold text-gray-700 italic max-w-2xl mx-auto mb-14"
             >
               "Train like a pro. Eat like you know why."
             </motion.p>
@@ -440,13 +440,13 @@ export default function AboutPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className={`glass-card p-8 flex flex-col gap-4 ${v.featured ? "glow-border" : ""}`}
+                  className={`light-card p-8 flex flex-col gap-4 ${v.featured ? "border border-gray-200" : ""}`}
                 >
                   <div className={`w-12 h-12 rounded-xl ${v.bg} ${v.color} flex items-center justify-center`}>
                     {v.icon}
                   </div>
-                  <h3 className="text-lg font-bold text-slate-100">{v.title}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">{v.desc}</p>
+                  <h3 className="text-lg font-bold text-gray-900">{v.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{v.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -462,11 +462,11 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">
                 The team
               </p>
-              <h2 className="text-4xl font-black gradient-text">The athletes behind the Claw.</h2>
-              <p className="text-slate-400 mt-4 max-w-lg mx-auto">
+              <h2 className="text-4xl font-black gradient-text-light">The athletes behind Jonno.</h2>
+              <p className="text-gray-600 mt-4 max-w-lg mx-auto">
                 Remote-first. Performance-obsessed. All active athletes who use the product daily.
               </p>
             </motion.div>
@@ -479,18 +479,18 @@ export default function AboutPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="glass-card p-6 flex flex-col items-center text-center gap-4"
+                  className="light-card p-6 flex flex-col items-center text-center gap-4"
                 >
                   {/* Avatar */}
                   <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${member.gradient} flex items-center justify-center text-2xl font-black text-white shadow-lg`}>
                     {member.initials}
                   </div>
                   <div>
-                    <p className="font-bold text-slate-100">{member.name}</p>
-                    <p className="text-xs text-indigo-400 font-medium mt-0.5">{member.role}</p>
+                    <p className="font-bold text-gray-900">{member.name}</p>
+                    <p className="text-xs text-blue-600 font-medium mt-0.5">{member.role}</p>
                   </div>
-                  <p className="text-sm text-slate-400 leading-relaxed">{member.bio}</p>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-white/[0.04] px-3 py-1 rounded-full">
+                  <p className="text-sm text-gray-600 leading-relaxed">{member.bio}</p>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
                     <MapPin className="w-3 h-3" />
                     {member.badge}
                   </div>
@@ -501,7 +501,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Tech Stack ── */}
-        <section className="py-20 bg-mesh-section">
+        <section className="py-20 bg-gray-50">
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -509,11 +509,11 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">
                 Technology
               </p>
-              <h2 className="text-4xl font-black gradient-text">Built on the best APIs.</h2>
-              <p className="text-lg text-slate-400 mt-4 max-w-xl mx-auto">
+              <h2 className="text-4xl font-black gradient-text-light">Built on the best APIs.</h2>
+              <p className="text-lg text-gray-600 mt-4 max-w-xl mx-auto">
                 We didn't build a new AI. We orchestrated the world's best tools into one athlete-first workflow.
               </p>
             </motion.div>
@@ -526,7 +526,7 @@ export default function AboutPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.12 }}
-                  className={`glass-card p-8 border ${s.border} flex flex-col gap-4`}
+                  className={`light-card p-8 border ${s.border} flex flex-col gap-4`}
                 >
                   <div className={`w-14 h-14 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center`}>
                     {s.name === "Strava API" ? (
@@ -537,9 +537,9 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <p className={`font-bold text-lg ${s.color}`}>{s.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{s.role}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{s.role}</p>
                   </div>
-                  <p className="text-sm text-slate-400 leading-relaxed">{s.desc}</p>
+                  <p className="text-sm text-gray-600 leading-relaxed">{s.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -549,12 +549,12 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="glass-card p-6 text-center"
+              className="light-card p-6 text-center"
             >
-              <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">System architecture</p>
+              <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">System architecture</p>
               <Image
                 src="/howitworks.png"
-                alt="How MacroClawAgent works"
+                alt="How Jonno works"
                 width={900}
                 height={400}
                 className="w-full object-contain rounded-lg max-h-72"
@@ -564,7 +564,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Press / Featured In ── */}
-        <section className="py-16 border-y border-white/[0.05]">
+        <section className="py-16 border-y border-gray-100">
           <div className="max-w-5xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0 }}
@@ -572,14 +572,14 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center"
             >
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-widest mb-8">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-8">
                 As featured in
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 {press.map((name) => (
                   <span
                     key={name}
-                    className="px-5 py-2 rounded-lg border border-white/5 bg-white/[0.02] text-slate-500 font-semibold text-sm"
+                    className="px-5 py-2 rounded-lg border border-white/5 bg-gray-50 text-gray-500 font-semibold text-sm"
                   >
                     {name}
                   </span>
@@ -601,8 +601,8 @@ export default function AboutPage() {
               <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-3">
                 We're hiring
               </p>
-              <h2 className="text-4xl font-black gradient-text">Join the team.</h2>
-              <p className="text-slate-400 mt-4 max-w-lg mx-auto">
+              <h2 className="text-4xl font-black gradient-text-light">Join the team.</h2>
+              <p className="text-gray-600 mt-4 max-w-lg mx-auto">
                 We're a small team building something athletes actually use. If you train and you build, we want to talk.
               </p>
             </motion.div>
@@ -618,22 +618,22 @@ export default function AboutPage() {
                 >
                   <a
                     href="#"
-                    className="glass-card p-5 flex items-center justify-between group hover:border-indigo-500/30 transition-colors duration-200 block"
+                    className="light-card p-5 flex items-center justify-between group hover:border-blue-200 transition-colors duration-200 block"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                       <div>
-                        <p className="font-semibold text-slate-100 group-hover:text-indigo-300 transition-colors">
+                        <p className="font-semibold text-gray-900 group-hover:text-blue-500 transition-colors">
                           {role.title}
                         </p>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs text-slate-500">{role.team}</span>
+                          <span className="text-xs text-gray-500">{role.team}</span>
                           <span className="text-slate-700">·</span>
-                          <span className="text-xs text-slate-500">{role.location}</span>
+                          <span className="text-xs text-gray-500">{role.location}</span>
                         </div>
                       </div>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-blue-600 transition-colors" />
                   </a>
                 </motion.div>
               ))}
@@ -642,17 +642,17 @@ export default function AboutPage() {
         </section>
 
         {/* ── Mission / CTA ── */}
-        <section className="py-20 border-t border-white/[0.06]">
+        <section className="py-20 border-t border-gray-100">
           <div className="max-w-5xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="glass-card glow-border overflow-hidden"
+              className="light-card border border-gray-200 overflow-hidden"
             >
               <div className="grid md:grid-cols-2 items-center">
                 {/* Image */}
-                <div className="relative h-64 md:h-full min-h-[280px] bg-[#0F111A]">
+                <div className="relative h-64 md:h-full min-h-[280px] bg-white">
                   <Image
                     src="/fuelsmarter.png"
                     alt="Fuel smarter"
@@ -665,14 +665,14 @@ export default function AboutPage() {
                 {/* Text */}
                 <div className="p-10 md:p-12 flex flex-col items-start gap-6">
                   <span className="text-4xl">🦀</span>
-                  <h2 className="text-3xl md:text-4xl font-black gradient-text leading-tight">
+                  <h2 className="text-3xl md:text-4xl font-black gradient-text-light leading-tight">
                     The mission
                   </h2>
-                  <p className="text-lg text-slate-300 leading-relaxed">
+                  <p className="text-lg text-gray-700 leading-relaxed">
                     "Nutrition should be as data-driven as your training. We're building the infrastructure
                     that makes that true — one athlete at a time."
                   </p>
-                  <p className="text-xs text-slate-600">— MacroClawAgent, 2026</p>
+                  <p className="text-xs text-gray-500">— Jonno, 2026</p>
                   <div className="flex flex-wrap gap-3 pt-2">
                     <Button variant="glow" size="lg" asChild>
                       <Link href="/login">

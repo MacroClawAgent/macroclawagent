@@ -28,7 +28,7 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-800 bg-[#111827]">
+    <footer className="border-t border-blue-900/40 bg-[#0A1628]">
       <div className="max-w-6xl mx-auto px-6 pt-16 pb-8">
         {/* Top section: logo col + link cols */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
@@ -37,13 +37,13 @@ export function Footer() {
             <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
               <Image
                 src="/logo.png"
-                alt="MacroClawAgent logo"
+                alt="Jonno logo"
                 width={84}
                 height={26}
                 className="object-contain transition-opacity group-hover:opacity-90 duration-200"
               />
               <span className="font-bold text-lg text-white tracking-tight">
-                MacroClawAgent
+                Jonno
               </span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
@@ -147,10 +147,10 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="h-px bg-gray-700 mb-8" />
+        <div className="h-px bg-blue-900/50 mb-8" />
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-500">
-            © 2026 MacroClawAgent. Built for athletes who eat with intention.
+            © 2026 Jonno. Built for athletes who eat with intention.
           </p>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-800/30">
             <span className="text-xs text-blue-300 font-medium">Powered by</span>

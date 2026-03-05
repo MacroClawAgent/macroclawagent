@@ -145,7 +145,7 @@ export function MealCards({ meals: mealsProp, loading = false }: MealCardsProps)
         <div className="flex flex-col items-center justify-center py-12 text-center glass-card rounded-2xl border-dashed border border-white/[0.08]">
           <Sparkles className="w-8 h-8 text-indigo-400 mb-3 opacity-60" />
           <p className="text-sm font-semibold text-slate-400">No meal plan for today</p>
-          <p className="text-xs text-slate-600 mt-1 mb-4">Generate one with the Claw Agent</p>
+          <p className="text-xs text-slate-600 mt-1 mb-4">Generate one with the Jonno Agent</p>
           <Link href="/agent" className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all">
             Generate Plan
           </Link>

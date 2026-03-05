@@ -18,7 +18,7 @@ const tiers = [
     featured: false,
     features: [
       "Basic macro tracking (calories, protein, carbs, fat)",
-      "1 AI Claw Agent query per day",
+      "1 AI Jonno Agent query per day",
       "Strava activity sync",
       "Manual meal logging",
       "Activity rings dashboard",
@@ -36,13 +36,13 @@ const tiers = [
     name: "Pro",
     price: "$9.99",
     period: "/month",
-    desc: "The full Claw Agent experience for committed athletes.",
+    desc: "The full Jonno Agent experience for committed athletes.",
     cta: "Start Pro Free",
     featured: true,
     badge: "Most Popular",
     features: [
       "Everything in Free",
-      "Unlimited AI Claw Agent chats",
+      "Unlimited AI Jonno Agent chats",
       "Uber Eats smart cart builder",
       "Macro-matched restaurant suggestions",
       "Smart meal library & saved meals",
@@ -113,13 +113,13 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="border-b border-white/[0.07] py-5 cursor-pointer"
+      className="border-b border-gray-100 py-5 cursor-pointer"
       onClick={() => setOpen((o) => !o)}
     >
       <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-semibold text-slate-100">{q}</p>
+        <p className="text-sm font-semibold text-gray-900">{q}</p>
         <ChevronDown
-          className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </div>
       <AnimatePresence>
@@ -129,7 +129,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="text-sm text-slate-400 mt-3 leading-relaxed overflow-hidden"
+            className="text-sm text-gray-600 mt-3 leading-relaxed overflow-hidden"
           >
             {a}
           </motion.p>
@@ -141,7 +141,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 function CheckOrX({ value }: { value: boolean | string }) {
   if (typeof value === "string") {
-    return <span className="text-xs font-semibold text-indigo-300">{value}</span>;
+    return <span className="text-xs font-semibold text-blue-500">{value}</span>;
   }
   return value ? (
     <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" />
@@ -152,7 +152,7 @@ function CheckOrX({ value }: { value: boolean | string }) {
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-[#08090D]">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <main className="pt-16">
         {/* Hero */}
@@ -165,13 +165,13 @@ export default function PricingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-4">
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-4">
                 Simple pricing
               </p>
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight gradient-text mb-4">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight gradient-text-light mb-4">
                 Start free.<br className="hidden md:block" /> Upgrade when you're ready.
               </h1>
-              <p className="text-lg text-slate-400 max-w-xl mx-auto">
+              <p className="text-lg text-gray-600 max-w-xl mx-auto">
                 No hidden fees. No annual lock-in. Cancel anytime.
               </p>
             </motion.div>
@@ -188,8 +188,8 @@ export default function PricingPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className={`glass-card p-8 flex flex-col gap-6 relative ${
-                    tier.featured ? "glow-border" : ""
+                  className={`light-card p-8 flex flex-col gap-6 relative ${
+                    tier.featured ? "border border-gray-200" : ""
                   }`}
                 >
                   {tier.badge && (
@@ -203,12 +203,12 @@ export default function PricingPage() {
 
                   {/* Header */}
                   <div>
-                    <p className="text-sm font-semibold text-slate-400 mb-1">{tier.name}</p>
+                    <p className="text-sm font-semibold text-gray-600 mb-1">{tier.name}</p>
                     <div className="flex items-end gap-1 mb-2">
-                      <span className="text-4xl font-black text-slate-100">{tier.price}</span>
-                      <span className="text-sm text-slate-500 mb-1.5">{tier.period}</span>
+                      <span className="text-4xl font-black text-gray-900">{tier.price}</span>
+                      <span className="text-sm text-gray-500 mb-1.5">{tier.period}</span>
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed">{tier.desc}</p>
+                    <p className="text-xs text-gray-500 leading-relaxed">{tier.desc}</p>
                   </div>
 
                   {/* CTA */}
@@ -226,18 +226,18 @@ export default function PricingPage() {
 
                   {/* Features */}
                   <div>
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
                       Included
                     </p>
                     <ul className="space-y-2.5">
                       {tier.features.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-sm text-slate-300">
+                        <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                           {f}
                         </li>
                       ))}
                       {tier.missing.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-sm text-slate-600">
+                        <li key={f} className="flex items-start gap-2 text-sm text-gray-500">
                           <X className="w-4 h-4 flex-shrink-0 mt-0.5" />
                           {f}
                         </li>
@@ -251,7 +251,7 @@ export default function PricingPage() {
         </section>
 
         {/* Comparison Table */}
-        <section className="py-20 bg-mesh-section">
+        <section className="py-20 bg-gray-50">
           <div className="max-w-4xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -259,20 +259,20 @@ export default function PricingPage() {
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-3xl font-black gradient-text">Compare plans</h2>
+              <h2 className="text-3xl font-black gradient-text-light">Compare plans</h2>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="glass-card overflow-hidden"
+              className="light-card overflow-hidden"
             >
               {/* Table header */}
-              <div className="grid grid-cols-4 gap-4 p-5 border-b border-white/[0.07] bg-white/[0.02]">
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Feature</div>
+              <div className="grid grid-cols-4 gap-4 p-5 border-b border-gray-100 bg-gray-50">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Feature</div>
                 {["Free", "Pro", "Elite"].map((t) => (
-                  <div key={t} className={`text-xs font-bold text-center uppercase tracking-wide ${t === "Pro" ? "text-indigo-400" : "text-slate-400"}`}>
+                  <div key={t} className={`text-xs font-bold text-center uppercase tracking-wide ${t === "Pro" ? "text-blue-600" : "text-gray-600"}`}>
                     {t}
                   </div>
                 ))}
@@ -282,10 +282,10 @@ export default function PricingPage() {
                 <div
                   key={row.feature}
                   className={`grid grid-cols-4 gap-4 px-5 py-4 ${
-                    i < comparison.length - 1 ? "border-b border-white/[0.04]" : ""
-                  } ${i % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"}`}
+                    i < comparison.length - 1 ? "border-b border-gray-100" : ""
+                  } ${i % 2 === 0 ? "bg-transparent" : "bg-gray-50"}`}
                 >
-                  <div className="text-sm text-slate-300">{row.feature}</div>
+                  <div className="text-sm text-gray-700">{row.feature}</div>
                   <div className="text-center"><CheckOrX value={row.free} /></div>
                   <div className="text-center"><CheckOrX value={row.pro} /></div>
                   <div className="text-center"><CheckOrX value={row.elite} /></div>
@@ -304,7 +304,7 @@ export default function PricingPage() {
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-3xl font-black gradient-text">Billing questions</h2>
+              <h2 className="text-3xl font-black gradient-text-light">Billing questions</h2>
             </motion.div>
             <motion.div
               initial={{ opacity: 0 }}
@@ -319,15 +319,15 @@ export default function PricingPage() {
         </section>
 
         {/* CTA strip */}
-        <section className="py-16 border-t border-white/[0.06]">
+        <section className="py-16 border-t border-gray-100">
           <div className="max-w-6xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <p className="text-slate-400 text-lg mb-6">
-                Still deciding? Start with Free. Upgrade when the Claw Agent earns it.
+              <p className="text-gray-600 text-lg mb-6">
+                Still deciding? Start with Free. Upgrade when the Jonno Agent earns it.
               </p>
               <Button variant="glow" size="lg" asChild>
                 <Link href="/login">Create Free Account</Link>

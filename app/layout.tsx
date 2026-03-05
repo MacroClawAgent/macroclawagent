@@ -15,17 +15,17 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#08090D",
+  themeColor: "#0066EE",
 };
 
 export const metadata: Metadata = {
-  title: "MacroClawAgent — AI Nutrition for Athletes",
+  title: "Jonno — AI Nutrition for Athletes",
   description:
-    "MacroClawAgent syncs your Strava runs and orders the exact fuel you need. AI-powered nutrition planning, automatically delivered.",
+    "Jonno syncs your Strava runs and orders the exact fuel you need. AI-powered nutrition planning, automatically delivered.",
   keywords: ["nutrition", "AI", "Strava", "meal planning", "athlete", "fitness"],
-  authors: [{ name: "MacroClawAgent" }],
+  authors: [{ name: "Jonno" }],
   openGraph: {
-    title: "MacroClawAgent — AI Nutrition for Athletes",
+    title: "Jonno — AI Nutrition for Athletes",
     description: "Your AI nutrition coach, built for athletes.",
     type: "website",
   },
@@ -39,12 +39,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="dark"
-      style={{ colorScheme: "dark" }}
       suppressHydrationWarning
     >
       <body
-        className={`${inter.variable} ${geistMono.variable} font-sans min-h-screen bg-[#08090D] text-slate-100 antialiased`}
+        className={`${inter.variable} ${geistMono.variable} font-sans min-h-screen bg-white text-gray-900 antialiased`}
       >
         {children}
       </body>

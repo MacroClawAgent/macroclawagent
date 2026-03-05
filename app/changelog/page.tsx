@@ -26,10 +26,10 @@ const releases = [
     version: "v0.2.0",
     date: "Jan 15, 2026",
     tag: "Major",
-    tagColor: "text-indigo-400 bg-indigo-500/10",
-    title: "Claw Agent AI + Uber Eats smart cart",
+    tagColor: "text-blue-600 bg-blue-50",
+    title: "Jonno Agent AI + Uber Eats smart cart",
     changes: [
-      "Claw Agent chat interface — ask any nutrition question and get context-aware answers",
+      "Jonno Agent chat interface — ask any nutrition question and get context-aware answers",
       "Uber Eats smart cart builder — AI selects meals matched to your remaining macros",
       "One-click cart creation from AI recommendations",
       "Macro-matched restaurant search via Uber Direct API",
@@ -60,7 +60,7 @@ const releases = [
 
 export default function ChangelogPage() {
   return (
-    <div className="min-h-screen bg-[#08090D]">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <main className="pt-16">
         {/* Header */}
@@ -72,13 +72,13 @@ export default function ChangelogPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-4">
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-4">
                 Changelog
               </p>
-              <h1 className="text-5xl font-black tracking-tight gradient-text mb-4">
+              <h1 className="text-5xl font-black tracking-tight gradient-text-light mb-4">
                 What&apos;s new.
               </h1>
-              <p className="text-lg text-slate-400">
+              <p className="text-lg text-gray-600">
                 We ship fast. Here&apos;s the proof.
               </p>
             </motion.div>
@@ -90,7 +90,7 @@ export default function ChangelogPage() {
           <div className="max-w-3xl mx-auto px-6">
             <div className="relative">
               {/* Vertical line */}
-              <div className="absolute left-[88px] top-0 bottom-0 w-px bg-white/[0.06] hidden md:block" />
+              <div className="absolute left-[88px] top-0 bottom-0 w-px bg-gray-100 hidden md:block" />
 
               <div className="flex flex-col gap-0">
                 {releases.map((release, i) => (
@@ -104,8 +104,8 @@ export default function ChangelogPage() {
                   >
                     {/* Left: version + date */}
                     <div className="md:w-[180px] flex-shrink-0 flex md:flex-col items-start md:items-end gap-3 md:gap-1 pt-0.5">
-                      <span className="font-mono text-sm font-bold text-slate-300">{release.version}</span>
-                      <span className="text-xs text-slate-600">{release.date}</span>
+                      <span className="font-mono text-sm font-bold text-gray-700">{release.version}</span>
+                      <span className="text-xs text-gray-500">{release.date}</span>
                       <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${release.tagColor}`}>
                         {release.tag}
                       </span>
@@ -117,12 +117,12 @@ export default function ChangelogPage() {
                     </div>
 
                     {/* Right: content */}
-                    <div className="flex-1 glass-card p-6">
-                      <h3 className="text-lg font-bold text-slate-100 mb-4">{release.title}</h3>
+                    <div className="flex-1 light-card p-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-4">{release.title}</h3>
                       <ul className="space-y-2.5">
                         {release.changes.map((change) => (
-                          <li key={change} className="flex items-start gap-2.5 text-sm text-slate-400">
-                            <CheckCircle2 className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
+                          <li key={change} className="flex items-start gap-2.5 text-sm text-gray-600">
+                            <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                             {change}
                           </li>
                         ))}

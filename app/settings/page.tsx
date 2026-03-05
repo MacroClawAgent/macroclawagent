@@ -335,7 +335,7 @@ export default function SettingsPage() {
               {activeTab === "goals" && (
                 <div className="glass-card p-6 rounded-2xl flex flex-col gap-5">
                   <h2 className="text-base font-bold text-slate-100">Daily Nutrition Goals</h2>
-                  <p className="text-sm text-slate-500 -mt-2">These targets will be used by the Claw Agent when generating your meal plans.</p>
+                  <p className="text-sm text-slate-500 -mt-2">These targets will be used by the Jonno Agent when generating your meal plans.</p>
 
                   {[
                     { key: "calorie_goal", label: "Daily Calories", unit: "kcal", color: "text-orange-400", min: 1200, max: 5000, desc: "Total daily energy intake" },
@@ -544,7 +544,7 @@ export default function SettingsPage() {
                       <span className="text-slate-500 text-sm mb-1">/month</span>
                     </div>
                     <div className="flex flex-col gap-2 mb-5">
-                      {["Unlimited meal plans", "Full Strava history sync", "Real-time Claw Agent chat", "Uber Eats cart automation", "Advanced macro analytics", "Priority support"].map((f) => (
+                      {["Unlimited meal plans", "Full Strava history sync", "Real-time Jonno Agent chat", "Uber Eats cart automation", "Advanced macro analytics", "Priority support"].map((f) => (
                         <div key={f} className="flex items-center gap-2 text-sm text-slate-300">
                           <Check className="w-4 h-4 text-indigo-400 flex-shrink-0" />{f}
                         </div>

@@ -60,7 +60,7 @@ export default function JoinPage() {
   const handleShare = async () => {
     const url = window.location.href;
     if (navigator.share) {
-      await navigator.share({ title: "MacroClaw Beta", text: "Join me on MacroClaw — AI nutrition for athletes!", url });
+      await navigator.share({ title: "Jonno Beta", text: "Join me on Jonno — AI nutrition for athletes!", url });
     } else {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -89,14 +89,14 @@ export default function JoinPage() {
             <div className="w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center overflow-hidden">
               <Image
                 src="/logo.png"
-                alt="MacroClaw"
+                alt="Jonno"
                 width={24}
                 height={24}
                 className="object-contain"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
             </div>
-            <span className="text-slate-100 font-black text-lg tracking-tight">MacroClaw</span>
+            <span className="text-slate-100 font-black text-lg tracking-tight">Jonno</span>
           </div>
 
           {/* Beta badge */}
@@ -117,7 +117,7 @@ export default function JoinPage() {
 
           {/* Subtext */}
           <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
-            MacroClaw syncs your Strava activities, calculates your exact macro targets, and plans your meals — all with AI.
+            Jonno syncs your Strava activities, calculates your exact macro targets, and plans your meals — all with AI.
             Join the beta and be the first to train with it.
           </p>
         </motion.div>
@@ -374,7 +374,7 @@ export default function JoinPage() {
 
         {/* ── Zone 5: Minimal footer ── */}
         <div className="flex justify-center gap-4 text-xs text-slate-700">
-          <span>© 2026 MacroClaw</span>
+          <span>© 2026 Jonno</span>
           <span>·</span>
           <Link href="/privacy" className="hover:text-slate-500 transition-colors">Privacy</Link>
           <span>·</span>

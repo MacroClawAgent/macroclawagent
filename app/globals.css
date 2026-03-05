@@ -60,7 +60,7 @@
   }
 
   body {
-    @apply bg-[#08090D] text-slate-100 antialiased;
+    @apply bg-white text-gray-900 antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
@@ -71,22 +71,22 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #08090D;
+    background: #f1f5f9;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.25);
+    background: rgba(0, 102, 238, 0.30);
     border-radius: 99px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.45);
+    background: rgba(0, 102, 238, 0.55);
   }
 
   /* Selection color */
   ::selection {
-    background: rgba(99, 102, 241, 0.25);
-    color: #f8fafc;
+    background: rgba(0, 102, 238, 0.15);
+    color: #111827;
   }
 }
 

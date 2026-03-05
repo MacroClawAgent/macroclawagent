@@ -125,7 +125,7 @@ function PhoneMockup() {
               <span className="text-[9px] text-white font-black">✦</span>
             </div>
             <div>
-              <p className="text-[8px] font-bold text-blue-800 mb-0.5">Claw Agent</p>
+              <p className="text-[8px] font-bold text-blue-800 mb-0.5">Jonno Agent</p>
               <p className="text-[8.5px] text-blue-700 leading-relaxed">Protein 34g short today. Add grilled chicken to hit your target. 🎯</p>
             </div>
           </div>

@@ -109,7 +109,7 @@ export default function LoginPage() {
             🦀
           </span>
           <span className="font-bold text-slate-100 tracking-tight">
-            MacroClawAgent
+            Jonno
           </span>
         </Link>
         <Link

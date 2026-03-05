@@ -82,7 +82,7 @@ const apps = [
 ];
 
 const statCards = [
-  { value: "12,400+", numericValue: 12400, suffix: "+", label: "Athletes using MacroClawAgent", delay: 0 },
+  { value: "12,400+", numericValue: 12400, suffix: "+", label: "Athletes using Jonno", delay: 0 },
   { value: "94%", numericValue: 94, suffix: "%", label: "Macro targets hit", delay: 0.1 },
   { value: "3.2M", numericValue: 3, suffix: ".2M", label: "Meals planned by AI", delay: 0.2 },
   { value: "4.9", numericValue: 4, suffix: ".9★", label: "Average user rating", delay: 0.3 },

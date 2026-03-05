@@ -68,7 +68,7 @@ export function AgentChat() {
                   <Sparkles className="w-4 h-4 text-indigo-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-100">Claw Agent</p>
+                  <p className="text-sm font-bold text-slate-100">Jonno Agent</p>
                   <p className="text-xs text-slate-500 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     Online

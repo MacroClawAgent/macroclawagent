@@ -27,7 +27,7 @@ function Ring({
       <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={strokeWidth}
+          fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth={strokeWidth}
         />
         <circle
           cx={size / 2} cy={size / 2} r={r}
@@ -37,8 +37,8 @@ function Ring({
           strokeDashoffset={circ * (1 - pct)}
         />
       </svg>
-      <span className="text-[10px] text-slate-400">{label}</span>
-      <span className="text-[11px] font-bold text-slate-200">{value}</span>
+      <span className="text-[10px] text-gray-400">{label}</span>
+      <span className="text-[11px] font-bold text-gray-700">{value}</span>
     </div>
   );
 }
@@ -46,13 +46,13 @@ function Ring({
 /* ── Card A: Dashboard ── */
 function DashboardCard() {
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-5 p-6 glass-card glow-border rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-5 p-6 light-card border-2 border-blue-100 rounded-2xl">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Dashboard</p>
-          <h3 className="text-base font-bold text-slate-100">Today&apos;s Performance</h3>
+          <p className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold mb-0.5">Dashboard</p>
+          <h3 className="text-base font-bold text-gray-900">Today&apos;s Performance</h3>
         </div>
-        <div className="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-sm font-bold text-indigo-300">
+        <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold text-white">
           A
         </div>
       </div>
@@ -60,20 +60,20 @@ function DashboardCard() {
       {/* Activity rings */}
       <div className="flex items-center justify-around flex-1 py-2">
         <Ring pct={0.76} strokeColor="#f97316" size={72} strokeWidth={7} label="Calories" value="2140" />
-        <Ring pct={0.79} strokeColor="#10b981" size={72} strokeWidth={7} label="Protein" value="142g" />
+        <Ring pct={0.79} strokeColor="#0066EE" size={72} strokeWidth={7} label="Protein" value="142g" />
         <Ring pct={0.64} strokeColor="#f59e0b" size={72} strokeWidth={7} label="Carbs" value="220g" />
       </div>
 
       {/* Stat pills */}
       <div className="flex flex-wrap gap-2">
         {[
-          { label: "647 kcal burned", color: "text-orange-400" },
-          { label: "8.2km", color: "text-slate-300" },
-          { label: "74 BPM avg", color: "text-red-400" },
+          { label: "647 kcal burned", color: "text-orange-500" },
+          { label: "8.2km", color: "text-gray-600" },
+          { label: "74 BPM avg", color: "text-red-500" },
         ].map((s) => (
           <span
             key={s.label}
-            className={`text-[11px] font-semibold ${s.color} px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/[0.07]`}
+            className={`text-[11px] font-semibold ${s.color} px-2.5 py-1 rounded-full bg-gray-50 border border-gray-200`}
           >
             {s.label}
           </span>
@@ -83,18 +83,18 @@ function DashboardCard() {
   );
 }
 
-/* ── Card B: Claw Agent chat ── */
+/* ── Card B: Jonno Agent chat ── */
 function AgentCard() {
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 glass-card rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 light-card rounded-2xl">
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-xl bg-indigo-500/20 border border-indigo-500/25 flex items-center justify-center">
-          <Bot className="w-3.5 h-3.5 text-indigo-400" />
+        <div className="w-7 h-7 rounded-xl bg-blue-600 flex items-center justify-center">
+          <Bot className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <p className="text-[11px] font-bold text-slate-200">Claw Agent</p>
-          <p className="text-[10px] text-emerald-400 flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse inline-block" />
+          <p className="text-[11px] font-bold text-gray-800">Jonno Agent</p>
+          <p className="text-[10px] text-green-600 flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse inline-block" />
             Online
           </p>
         </div>
@@ -104,13 +104,13 @@ function AgentCard() {
       <div className="flex flex-col gap-2 flex-1 overflow-hidden">
         {/* User */}
         <div className="flex justify-end">
-          <div className="bg-white/[0.06] border border-white/[0.07] rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] text-slate-300 max-w-[85%]">
+          <div className="bg-gray-100 border border-gray-200 rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] text-gray-700 max-w-[85%]">
             What should I eat before my long run?
           </div>
         </div>
         {/* Agent */}
         <div className="flex justify-start">
-          <div className="bg-indigo-600/20 border border-indigo-500/20 rounded-2xl rounded-tl-sm px-3 py-2 text-[11px] text-indigo-200 leading-snug max-w-[90%]">
+          <div className="bg-blue-600 rounded-2xl rounded-tl-sm px-3 py-2 text-[11px] text-white leading-snug max-w-[90%]">
             Based on your 15km plan, aim for 80g carbs 3hrs before. Oat porridge + banana fits perfectly.
           </div>
         </div>
@@ -127,11 +127,11 @@ function CartCard() {
     { name: "Quinoa Power Bowl", macros: "22P · 68C · 12F", price: "$15.20" },
   ];
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 glass-card rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 light-card rounded-2xl">
       <div className="flex items-center gap-2">
-        <ShoppingBag className="w-4 h-4 text-emerald-400" />
-        <p className="text-sm font-bold text-slate-100">Smart Cart</p>
-        <span className="ml-auto text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+        <ShoppingBag className="w-4 h-4 text-emerald-600" />
+        <p className="text-sm font-bold text-gray-900">Smart Cart</p>
+        <span className="ml-auto text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
           Macro-matched
         </span>
       </div>
@@ -140,18 +140,18 @@ function CartCard() {
         {meals.map((m) => (
           <div
             key={m.name}
-            className="flex items-center justify-between gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-xl"
+            className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl"
           >
             <div>
-              <p className="text-[11px] font-semibold text-slate-200">{m.name}</p>
-              <p className="text-[10px] text-slate-500 font-medium">{m.macros}</p>
+              <p className="text-[11px] font-semibold text-gray-800">{m.name}</p>
+              <p className="text-[10px] text-gray-400 font-medium">{m.macros}</p>
             </div>
-            <span className="text-[11px] font-bold text-slate-300 flex-shrink-0">{m.price}</span>
+            <span className="text-[11px] font-bold text-gray-600 flex-shrink-0">{m.price}</span>
           </div>
         ))}
       </div>
 
-      <button className="w-full py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold tracking-wide hover:bg-emerald-600/30 transition-colors">
+      <button className="w-full py-2 rounded-xl bg-emerald-600 text-white text-[11px] font-bold tracking-wide hover:bg-emerald-700 transition-colors">
         Build Cart →
       </button>
     </div>
@@ -161,24 +161,24 @@ function CartCard() {
 /* ── Card D: Strava Sync ── */
 function StravaCard() {
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 glass-card rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 light-card rounded-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Image src="/strava.png" alt="Strava" width={16} height={16} className="object-contain" />
-          <p className="text-sm font-bold text-slate-100">Strava Sync</p>
+          <p className="text-sm font-bold text-gray-900">Strava Sync</p>
         </div>
-        <span className="text-[10px] text-emerald-400 font-semibold">● Live</span>
+        <span className="text-[10px] text-green-600 font-semibold">● Live</span>
       </div>
       <div>
-        <p className="text-[11px] text-slate-500 mb-0.5">Last activity synced 2 min ago</p>
-        <p className="text-sm font-bold text-slate-100">Morning Ride</p>
-        <p className="text-[11px] text-slate-400 mt-0.5">28.4km · 1h 12m · 924 kcal</p>
+        <p className="text-[11px] text-gray-400 mb-0.5">Last activity synced 2 min ago</p>
+        <p className="text-sm font-bold text-gray-900">Morning Ride</p>
+        <p className="text-[11px] text-gray-500 mt-0.5">28.4km · 1h 12m · 924 kcal</p>
       </div>
       <div className="flex items-end gap-0.5 h-8">
         {[45, 60, 40, 75, 65, 85, 55, 70, 80, 50, 65, 90].map((h, i) => (
           <div
             key={i}
-            className="flex-1 rounded-full bg-orange-500/50"
+            className="flex-1 rounded-full bg-orange-400"
             style={{ height: `${h}%` }}
           />
         ))}
@@ -190,21 +190,21 @@ function StravaCard() {
 /* ── Card E: Macro Target ── */
 function MacroCard() {
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 glass-card rounded-2xl justify-center bg-gradient-to-br from-indigo-900/20 to-transparent">
-      <p className="text-[11px] text-indigo-400 uppercase tracking-widest font-semibold">Daily Target</p>
+    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 rounded-2xl justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+      <p className="text-[11px] text-blue-200 uppercase tracking-widest font-semibold">Daily Target</p>
       <div>
-        <p className="text-4xl font-black text-slate-100 leading-none">2,840</p>
-        <p className="text-sm text-slate-500 mt-1">kcal today</p>
+        <p className="text-4xl font-black text-white leading-none">2,840</p>
+        <p className="text-sm text-blue-200 mt-1">kcal today</p>
       </div>
       <div className="flex gap-3 mt-1">
         {[
-          { macro: "P", val: "180g", color: "text-emerald-400" },
-          { macro: "C", val: "280g", color: "text-amber-400" },
-          { macro: "F", val: "95g", color: "text-orange-400" },
+          { macro: "P", val: "180g", color: "text-emerald-300" },
+          { macro: "C", val: "280g", color: "text-amber-300" },
+          { macro: "F", val: "95g", color: "text-orange-300" },
         ].map((m) => (
           <div key={m.macro} className="flex flex-col">
             <span className={`text-[10px] font-bold ${m.color}`}>{m.macro}</span>
-            <span className="text-xs font-semibold text-slate-300">{m.val}</span>
+            <span className="text-xs font-semibold text-white">{m.val}</span>
           </div>
         ))}
       </div>
@@ -216,24 +216,24 @@ function MacroCard() {
 function StreakCard() {
   const days = Array.from({ length: 28 }, (_, i) => i < 14 || (i >= 18 && i < 21));
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 glass-card rounded-2xl">
+    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 light-card rounded-2xl">
       <div className="flex items-center gap-2">
-        <Flame className="w-4 h-4 text-orange-400" />
-        <p className="text-sm font-bold text-slate-100">Streak</p>
+        <Flame className="w-4 h-4 text-orange-500" />
+        <p className="text-sm font-bold text-gray-900">Streak</p>
       </div>
       <div>
-        <p className="text-3xl font-black text-slate-100 leading-none">14</p>
-        <p className="text-[11px] text-slate-500 mt-0.5">consecutive days</p>
+        <p className="text-3xl font-black text-gray-900 leading-none">14</p>
+        <p className="text-[11px] text-gray-400 mt-0.5">consecutive days</p>
       </div>
       <div className="grid grid-cols-7 gap-1">
         {days.map((active, i) => (
           <div
             key={i}
-            className={`aspect-square rounded-sm ${active ? "bg-indigo-500/60" : "bg-white/[0.05]"}`}
+            className={`aspect-square rounded-sm ${active ? "bg-blue-600" : "bg-gray-100"}`}
           />
         ))}
       </div>
-      <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold">
+      <div className="flex items-center gap-1 text-[10px] text-green-600 font-semibold">
         <Check className="w-3 h-3" />
         All macros hit yesterday
       </div>
@@ -243,7 +243,7 @@ function StreakCard() {
 
 export function BentoShowcase() {
   return (
-    <section className="relative py-28 px-6 bg-mesh-section overflow-hidden">
+    <section className="relative py-28 px-6 overflow-hidden" style={{ backgroundColor: "#EEF4FF" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -253,14 +253,14 @@ export function BentoShowcase() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <p className="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">
+          <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-4">
             Product Preview
           </p>
-          <h2 className="text-4xl md:text-5xl font-black text-slate-100 tracking-tight">
+          <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
             Everything you need.{" "}
-            <span className="gradient-text">Nothing you don&apos;t.</span>
+            <span className="gradient-text-light">Nothing you don&apos;t.</span>
           </h2>
-          <p className="mt-4 text-slate-400 max-w-xl mx-auto">
+          <p className="mt-4 text-gray-600 max-w-xl mx-auto">
             One platform. Activity intelligence, AI meal planning, and smart food delivery — all connected.
           </p>
         </motion.div>

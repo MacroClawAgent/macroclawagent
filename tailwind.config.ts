@@ -154,7 +154,7 @@ const config: Config = {
             animation: "shimmer 2s infinite",
           },
         },
-        // Gradient text utility — indigo → violet → blue
+        // Gradient text utility — indigo → violet → blue (dark theme, animated)
         ".gradient-text": {
           background:
             "linear-gradient(135deg, #6366F1 0%, #8B5CF6 40%, #A78BFA 70%, #6366F1 100%)",
@@ -164,10 +164,24 @@ const config: Config = {
           WebkitTextFillColor: "transparent",
           animation: "gradient-shift 4s ease infinite",
         },
-        // Indigo glow border
+        // Gradient text — blue → orange (light theme, static)
+        ".gradient-text-light": {
+          background: "linear-gradient(135deg, #0066EE 0%, #F97316 100%)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        },
+        // Indigo glow border (dark theme)
         ".glow-border": {
           border: "1px solid rgba(99, 102, 241, 0.35)",
           boxShadow: "0 0 24px rgba(99, 102, 241, 0.10)",
+        },
+        // Light theme card
+        ".light-card": {
+          backgroundColor: "#ffffff",
+          border: "1px solid #E5E7EB",
+          borderRadius: "1rem",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
         },
       });
     }),

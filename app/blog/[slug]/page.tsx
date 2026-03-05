@@ -50,7 +50,7 @@ const posts: Record<string, BlogPost> = {
       "Carbohydrate requirements for cyclists",
       "The three-window fueling framework",
       "Protein on ride days",
-      "How MacroClawAgent automates this",
+      "How Jonno automates this",
       "Practical next step",
     ],
     author: {
@@ -58,7 +58,7 @@ const posts: Record<string, BlogPost> = {
       role: "Co-founder & CEO",
       initials: "MR",
       gradient: "from-orange-500 to-red-600",
-      bio: "Cyclist and ex-consultant. Built MacroClawAgent after years of training hard and eating wrong.",
+      bio: "Cyclist and ex-consultant. Built Jonno after years of training hard and eating wrong.",
     },
     relatedSlugs: ["ai-nutrition-coaching", "protein-targets-athletes"],
     body: (
@@ -83,7 +83,7 @@ const posts: Record<string, BlogPost> = {
         </p>
         <p>
           The fix is simple in principle: your nutrition targets should update every time your Strava
-          data updates. MacroClawAgent does this automatically via the Strava OAuth sync.
+          data updates. Jonno does this automatically via the Strava OAuth sync.
         </p>
 
         <h2>Carbohydrate requirements for cyclists</h2>
@@ -136,15 +136,15 @@ const posts: Record<string, BlogPost> = {
           Prioritise protein at breakfast and post-ride, then fill carbohydrates around it.
         </p>
 
-        <h2>How MacroClawAgent automates this</h2>
+        <h2>How Jonno automates this</h2>
         <p>
-          When you sync a Strava ride, MacroClawAgent:
+          When you sync a Strava ride, Jonno:
         </p>
         <ol>
           <li>Reads the activity type, duration, average heart rate, and estimated calorie burn from Strava</li>
           <li>Recalculates your TDEE for the day using your profile weight and the activity data</li>
           <li>Updates your macro targets (calories, carbs, protein) in real time</li>
-          <li>The Claw Agent uses those updated targets in meal recommendations for the rest of the day</li>
+          <li>The Jonno Agent uses those updated targets in meal recommendations for the rest of the day</li>
           <li>If it's post-ride, the agent prioritises recovery meals with high carb + protein ratios</li>
         </ol>
         <p>
@@ -154,8 +154,8 @@ const posts: Record<string, BlogPost> = {
 
         <h2>Practical next step</h2>
         <p>
-          Connect your Strava account in MacroClawAgent settings and do a test ride. After the activity
-          syncs, open the dashboard and watch your daily targets update. Then ask the Claw Agent for
+          Connect your Strava account in Jonno settings and do a test ride. After the activity
+          syncs, open the dashboard and watch your daily targets update. Then ask the Jonno Agent for
           post-ride meal options — it will build an Uber Eats cart matched to your recovery macros.
         </p>
         <p>
@@ -168,8 +168,8 @@ const posts: Record<string, BlogPost> = {
   "ai-nutrition-coaching": {
     slug: "ai-nutrition-coaching",
     tag: "AI + Nutrition",
-    tagColor: "text-indigo-400 bg-indigo-500/10",
-    tagBorder: "border-indigo-500/20",
+    tagColor: "text-blue-600 bg-blue-50",
+    tagBorder: "border-blue-200",
     title: "Why AI Nutrition Coaching is Changing Athletic Performance",
     excerpt: "Human coaches are expensive and unavailable at 11pm when you're logging your third meal. Here's why AI is closing that gap.",
     date: "Feb 10, 2026",
@@ -181,7 +181,7 @@ const posts: Record<string, BlogPost> = {
       "What makes AI coaching different from a nutrition app",
       "The three gaps AI fills",
       "Where AI nutrition still requires human judgement",
-      "The model behind MacroClawAgent",
+      "The model behind Jonno",
       "What this looks like in practice",
     ],
     author: {
@@ -189,7 +189,7 @@ const posts: Record<string, BlogPost> = {
       role: "Co-founder & CTO",
       initials: "LW",
       gradient: "from-indigo-500 to-violet-600",
-      bio: "Marathon runner and engineer. Built MacroClawAgent to make intelligent nutrition guidance available at 11pm, not just in scheduled appointments.",
+      bio: "Marathon runner and engineer. Built Jonno to make intelligent nutrition guidance available at 11pm, not just in scheduled appointments.",
     },
     relatedSlugs: ["fueling-strava-rides", "protein-targets-athletes"],
     body: (
@@ -215,7 +215,7 @@ const posts: Record<string, BlogPost> = {
         </p>
         <p>
           Ask MyFitnessPal what to eat after a hard 10km run and it will show you a food search bar.
-          Ask the Claw Agent and it will:
+          Ask the Jonno Agent and it will:
         </p>
         <ul>
           <li>Check your Strava data and see you ran at 5:15/km average, burning 650 kcal</li>
@@ -245,7 +245,7 @@ const posts: Record<string, BlogPost> = {
           logs and food history can build the same contextual model — and recall it instantly.
         </p>
         <p>
-          MacroClawAgent's Claw Agent is given your training history, macro targets, and food preferences
+          Jonno's Jonno Agent is given your training history, macro targets, and food preferences
           with every interaction. It doesn't start from scratch each conversation.
         </p>
 
@@ -264,7 +264,7 @@ const posts: Record<string, BlogPost> = {
         <p>
           AI nutrition tools are not medical devices and should not replace clinical nutrition assessment
           for people with disordered eating, specific medical conditions, or complex dietary requirements.
-          The Claw Agent operates within a well-defined domain: helping athletes hit macro targets to
+          The Jonno Agent operates within a well-defined domain: helping athletes hit macro targets to
           support training and recovery. It is not a dietitian, and it doesn't pretend to be.
         </p>
         <p>
@@ -273,9 +273,9 @@ const posts: Record<string, BlogPost> = {
           accelerates good habits. It doesn't replace professional clinical care.
         </p>
 
-        <h2>The model behind MacroClawAgent</h2>
+        <h2>The model behind Jonno</h2>
         <p>
-          The Claw Agent is built on Anthropic's Claude. Anthropic is one of the leading AI safety
+          The Jonno Agent is built on Anthropic's Claude. Anthropic is one of the leading AI safety
           companies in the world, and Claude is specifically designed to be honest, helpful, and harmless.
           That matters for nutrition advice — where overconfidence or incorrect recommendations can
           genuinely harm performance or health.
@@ -434,12 +434,12 @@ const posts: Record<string, BlogPost> = {
           you are almost certainly running below optimal.
         </p>
         <p>
-          MacroClawAgent sets your protein targets based on your training volume (synced from Strava),
+          Jonno sets your protein targets based on your training volume (synced from Strava),
           body weight, and goals — defaulting to performance-optimised ranges rather than minimum
           adequacy thresholds.
         </p>
         <p>
-          The Claw Agent also monitors your per-meal protein distribution, flagging when you're
+          The Jonno Agent also monitors your per-meal protein distribution, flagging when you're
           front-loading or back-loading protein in a way that reduces your MPS window throughout the day.
         </p>
         <p>
@@ -466,7 +466,7 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://macroclawagent.com/blog/${post.slug}`)}`;
 
   return (
-    <div className="min-h-screen bg-[#08090D]">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <BlogProgress />
       <main className="pt-16">
@@ -489,8 +489,8 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
 
             <div className="relative z-10 max-w-4xl mx-auto px-6 pb-12 w-full">
               {/* Breadcrumb */}
-              <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-                <Link href="/blog" className="hover:text-slate-300 transition-colors">Blog</Link>
+              <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+                <Link href="/blog" className="hover:text-gray-700 transition-colors">Blog</Link>
                 <span>/</span>
                 <span className={post.tagColor.split(" ")[0]}>{post.tag}</span>
               </div>
@@ -500,18 +500,18 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${post.tagColor} ${post.tagBorder}`}>
                   {post.tag}
                 </span>
-                <span className="text-xs text-slate-400">{post.date}</span>
-                <span className="text-slate-600">·</span>
-                <span className="text-xs text-slate-400">{post.readTime}</span>
+                <span className="text-xs text-gray-600">{post.date}</span>
+                <span className="text-gray-500">·</span>
+                <span className="text-xs text-gray-600">{post.readTime}</span>
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl md:text-5xl font-black text-slate-100 leading-tight mb-4">
+              <h1 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight mb-4">
                 {post.title}
               </h1>
 
               {/* Excerpt */}
-              <p className="text-lg text-slate-300 leading-relaxed mb-6 max-w-2xl">
+              <p className="text-lg text-gray-700 leading-relaxed mb-6 max-w-2xl">
                 {post.excerpt}
               </p>
 
@@ -521,8 +521,8 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
                   {post.author.initials}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-200">{post.author.name}</p>
-                  <p className="text-xs text-slate-500">{post.author.role}</p>
+                  <p className="text-sm font-semibold text-gray-800">{post.author.name}</p>
+                  <p className="text-xs text-gray-500">{post.author.role}</p>
                 </div>
               </div>
             </div>
@@ -536,32 +536,32 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
 
               {/* Main article */}
               <div className="min-w-0">
-                <div className="glass-card p-8 md:p-12 article-body">
+                <div className="light-card p-8 md:p-12 article-body">
                   {post.body}
                 </div>
 
                 {/* Author card */}
-                <div className="mt-8 glass-card p-6 flex items-start gap-5">
+                <div className="mt-8 light-card p-6 flex items-start gap-5">
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${post.author.gradient} flex items-center justify-center text-lg font-black text-white flex-shrink-0`}>
                     {post.author.initials}
                   </div>
                   <div>
-                    <p className="font-bold text-slate-100 mb-0.5">{post.author.name}</p>
-                    <p className="text-xs text-indigo-400 font-medium mb-2">{post.author.role}</p>
-                    <p className="text-sm text-slate-400 leading-relaxed">{post.author.bio}</p>
-                    <p className="text-xs text-slate-600 mt-3">Written for MacroClawAgent · {post.date}</p>
+                    <p className="font-bold text-gray-900 mb-0.5">{post.author.name}</p>
+                    <p className="text-xs text-blue-600 font-medium mb-2">{post.author.role}</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{post.author.bio}</p>
+                    <p className="text-xs text-gray-500 mt-3">Written for Jonno · {post.date}</p>
                   </div>
                 </div>
 
                 {/* Share row */}
                 <div className="mt-6 flex items-center gap-3">
-                  <span className="text-sm text-slate-500 font-medium">Share:</span>
+                  <span className="text-sm text-gray-500 font-medium">Share:</span>
                   <CopyLinkButton />
                   <a
                     href={twitterUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-slate-400 hover:text-slate-200 hover:border-white/20 transition-all duration-200"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 border border-gray-100 text-sm text-gray-600 hover:text-gray-800 hover:border-gray-200 transition-all duration-200"
                   >
                     <Twitter className="w-3.5 h-3.5" />
                     Share on X
@@ -571,7 +571,7 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
                 {/* Related posts */}
                 {relatedPosts.length > 0 && (
                   <div className="mt-12">
-                    <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-5">
+                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-5">
                       Related articles
                     </p>
                     <div className="grid sm:grid-cols-2 gap-4">
@@ -579,15 +579,15 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
                         <Link
                           key={related.slug}
                           href={`/blog/${related.slug}`}
-                          className="glass-card p-5 flex flex-col gap-2 hover:border-indigo-500/30 transition-colors group"
+                          className="light-card p-5 flex flex-col gap-2 hover:border-blue-200 transition-colors group"
                         >
                           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full self-start border ${related.tagColor} ${related.tagBorder}`}>
                             {related.tag}
                           </span>
-                          <p className="text-sm font-bold text-slate-200 leading-snug group-hover:text-indigo-200 transition-colors">
+                          <p className="text-sm font-bold text-gray-800 leading-snug group-hover:text-indigo-200 transition-colors">
                             {related.title}
                           </p>
-                          <span className="text-xs text-slate-600">{related.readTime}</span>
+                          <span className="text-xs text-gray-500">{related.readTime}</span>
                         </Link>
                       ))}
                     </div>
@@ -595,18 +595,18 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
                 )}
 
                 {/* Bottom CTA */}
-                <div className="mt-12 glass-card glow-border p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6">
+                <div className="mt-12 light-card border border-gray-200 p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6">
                   <Image
                     src="/mascot.png"
-                    alt="MacroClaw"
+                    alt="Jonno"
                     width={72}
                     height={72}
                     className="object-contain flex-shrink-0"
                   />
                   <div className="flex-1 text-center sm:text-left">
-                    <p className="font-bold text-slate-100 mb-1">Let the Claw Agent apply this.</p>
-                    <p className="text-sm text-slate-400">
-                      MacroClawAgent syncs your Strava data and sets evidence-based targets automatically.
+                    <p className="font-bold text-gray-900 mb-1">Let the Jonno Agent apply this.</p>
+                    <p className="text-sm text-gray-600">
+                      Jonno syncs your Strava data and sets evidence-based targets automatically.
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
@@ -628,15 +628,15 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
 
               {/* Sidebar */}
               <aside className="hidden lg:block sticky top-24 space-y-4">
-                <div className="glass-card p-5">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">
+                <div className="light-card p-5">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">
                     In this article
                   </p>
                   <nav className="flex flex-col gap-1">
                     {post.toc.map((heading, i) => (
                       <span
                         key={i}
-                        className="text-sm text-slate-400 hover:text-slate-200 leading-snug cursor-pointer transition-colors py-1 border-l-2 border-transparent hover:border-indigo-500 pl-3"
+                        className="text-sm text-gray-600 hover:text-gray-800 leading-snug cursor-pointer transition-colors py-1 border-l-2 border-transparent hover:border-indigo-500 pl-3"
                       >
                         {heading}
                       </span>
@@ -644,9 +644,9 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
                   </nav>
                 </div>
 
-                <div className="glass-card border border-indigo-500/20 p-5 flex flex-col gap-3">
-                  <p className="text-sm font-bold text-slate-100">Let the Claw apply this →</p>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                <div className="light-card border border-blue-200 p-5 flex flex-col gap-3">
+                  <p className="text-sm font-bold text-gray-900">Let the Claw apply this →</p>
+                  <p className="text-xs text-gray-600 leading-relaxed">
                     Connect Strava. Get evidence-based targets. Order recovery meals automatically.
                   </p>
                   <Button variant="glow" size="sm" asChild className="w-full">

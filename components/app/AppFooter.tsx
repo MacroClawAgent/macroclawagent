@@ -5,7 +5,7 @@ export function AppFooter() {
     <footer className="border-t border-white/[0.05] bg-[#08090D] mt-auto">
       <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-5">
-          <p className="text-xs text-slate-700">© 2026 MacroClawAgent</p>
+          <p className="text-xs text-slate-700">© 2026 Jonno</p>
           <div className="flex items-center gap-4">
             {[
               { label: "Privacy", href: "/privacy" },

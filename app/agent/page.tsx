@@ -12,7 +12,7 @@ import type { AgentMessage, AgentContext } from "@/types/database";
 const INITIAL_MESSAGE: AgentMessage = {
   id: "initial",
   role: "assistant",
-  content: "Hey! I'm your Claw Agent. Ask me anything about your nutrition, training, or meal planning.",
+  content: "Hey! I'm your Jonno Agent. Ask me anything about your nutrition, training, or meal planning.",
   created_at: new Date().toISOString(),
 };
 
@@ -122,7 +122,7 @@ export default function AgentPage() {
           {/* Left sidebar: context panel */}
           <div className="hidden lg:flex flex-col gap-4">
             <div>
-              <p className="text-indigo-400 text-xs font-semibold uppercase tracking-widest mb-1">Claw Agent</p>
+              <p className="text-indigo-400 text-xs font-semibold uppercase tracking-widest mb-1">Jonno Agent</p>
               <h1 className="text-xl font-black text-slate-100">AI Assistant</h1>
             </div>
 
@@ -198,7 +198,7 @@ export default function AgentPage() {
                 <Sparkles className="w-4 h-4 text-indigo-400" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-100">Claw Agent</p>
+                <p className="text-sm font-bold text-slate-100">Jonno Agent</p>
                 <p className="text-xs text-emerald-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Online · Powered by Claude AI

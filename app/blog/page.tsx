@@ -30,8 +30,8 @@ const posts = [
   {
     slug: "ai-nutrition-coaching",
     tag: "AI + Nutrition",
-    tagColor: "text-indigo-400 bg-indigo-500/10",
-    tagBorder: "border-indigo-500/20",
+    tagColor: "text-blue-600 bg-blue-50",
+    tagBorder: "border-blue-200",
     gradient: "from-indigo-900/40 to-[#0F111A]",
     coverImage: "/gym.png" as string | null,
     title: "Why AI Nutrition Coaching is Changing Athletic Performance",
@@ -74,7 +74,7 @@ export default function BlogPage() {
   const secondary = filtered.slice(1);
 
   return (
-    <div className="min-h-screen bg-[#08090D]">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <main className="pt-16">
 
@@ -88,14 +88,14 @@ export default function BlogPage() {
               transition={{ duration: 0.5 }}
               className="text-center md:text-left"
             >
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-4">
-                The Claw Blog
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-4">
+                The Jonno Blog
               </p>
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight gradient-text mb-4">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight gradient-text-light mb-4">
                 Nutrition intel for
                 <br className="hidden md:block" /> serious athletes.
               </h1>
-              <p className="text-lg text-slate-400 max-w-xl mb-6">
+              <p className="text-lg text-gray-600 max-w-xl mb-6">
                 Evidence-based articles on performance nutrition, AI coaching, and training fueling.
               </p>
 
@@ -104,7 +104,7 @@ export default function BlogPage() {
                 {["3 articles", "Evidence-based", "Updated regularly"].map((s) => (
                   <span
                     key={s}
-                    className="text-xs px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] text-slate-500"
+                    className="text-xs px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-gray-500"
                   >
                     {s}
                   </span>
@@ -119,8 +119,8 @@ export default function BlogPage() {
                     onClick={() => setActiveCategory(cat)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 ${
                       activeCategory === cat
-                        ? "bg-indigo-500/15 border-indigo-500/30 text-indigo-300"
-                        : "bg-transparent border-white/[0.08] text-slate-500 hover:text-slate-300 hover:border-white/20"
+                        ? "bg-blue-50 border-blue-200 text-blue-500"
+                        : "bg-transparent border-gray-100 text-gray-500 hover:text-gray-700 hover:border-gray-200"
                     }`}
                   >
                     {cat}
@@ -145,7 +145,7 @@ export default function BlogPage() {
               >
                 <Link
                   href={`/blog/${featured.slug}`}
-                  className="block glass-card glow-border overflow-hidden hover:border-indigo-500/40 transition-colors duration-300 group"
+                  className="block light-card border border-gray-200 overflow-hidden hover:border-indigo-500/40 transition-colors duration-300 group"
                 >
                   {/* Cover */}
                   <div className="relative h-64 md:h-80 overflow-hidden">
@@ -170,14 +170,14 @@ export default function BlogPage() {
                       >
                         {featured.tag}
                       </span>
-                      <span className="text-xs text-slate-600">{featured.date}</span>
+                      <span className="text-xs text-gray-500">{featured.date}</span>
                       <span className="text-slate-700">·</span>
-                      <span className="text-xs text-slate-600">{featured.readTime}</span>
+                      <span className="text-xs text-gray-500">{featured.readTime}</span>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-100 leading-tight group-hover:text-indigo-200 transition-colors">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 leading-tight group-hover:text-indigo-200 transition-colors">
                       {featured.title}
                     </h2>
-                    <p className="text-slate-400 leading-relaxed max-w-2xl">
+                    <p className="text-gray-600 leading-relaxed max-w-2xl">
                       {featured.excerpt}
                     </p>
                     <div className="flex items-center justify-between mt-2">
@@ -187,9 +187,9 @@ export default function BlogPage() {
                         >
                           {featured.authorInitials}
                         </div>
-                        <span className="text-sm text-slate-400">{featured.author}</span>
+                        <span className="text-sm text-gray-600">{featured.author}</span>
                       </div>
-                      <span className="flex items-center gap-1.5 text-sm text-indigo-400 font-semibold group-hover:gap-2.5 transition-all">
+                      <span className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold group-hover:gap-2.5 transition-all">
                         Read article
                         <ArrowRight className="w-3.5 h-3.5" />
                       </span>
@@ -211,7 +211,7 @@ export default function BlogPage() {
                   >
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="block glass-card overflow-hidden hover:border-indigo-500/30 transition-colors duration-300 group h-full"
+                      className="block light-card overflow-hidden hover:border-blue-200 transition-colors duration-300 group h-full"
                     >
                       <div className="relative h-40 overflow-hidden">
                         {post.coverImage ? (
@@ -237,12 +237,12 @@ export default function BlogPage() {
                           >
                             {post.tag}
                           </span>
-                          <span className="text-xs text-slate-600">{post.readTime}</span>
+                          <span className="text-xs text-gray-500">{post.readTime}</span>
                         </div>
-                        <h2 className="text-lg font-bold text-slate-100 leading-snug group-hover:text-indigo-200 transition-colors">
+                        <h2 className="text-lg font-bold text-gray-900 leading-snug group-hover:text-indigo-200 transition-colors">
                           {post.title}
                         </h2>
-                        <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">
+                        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
                           {post.excerpt}
                         </p>
                         <div className="flex items-center justify-between mt-2">
@@ -252,11 +252,11 @@ export default function BlogPage() {
                             >
                               {post.authorInitials}
                             </div>
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-gray-500">
                               {post.author} · {post.date}
                             </span>
                           </div>
-                          <span className="flex items-center gap-1 text-xs text-indigo-400 font-semibold group-hover:gap-2 transition-all">
+                          <span className="flex items-center gap-1 text-xs text-blue-600 font-semibold group-hover:gap-2 transition-all">
                             Read
                             <ArrowRight className="w-3 h-3" />
                           </span>
@@ -273,7 +273,7 @@ export default function BlogPage() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-16 text-slate-500"
+                className="text-center py-16 text-gray-500"
               >
                 No articles in this category yet. More coming soon.
               </motion.div>
@@ -284,13 +284,13 @@ export default function BlogPage() {
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="glass-heavy rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-6"
+              className="bg-gray-50 border border-gray-200 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-6"
             >
               <div className="flex-1 text-center md:text-left">
-                <p className="font-black text-xl text-slate-100 mb-1">
+                <p className="font-black text-xl text-gray-900 mb-1">
                   Weekly nutrition intel for athletes.
                 </p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-gray-600">
                   Evidence-based articles on training fueling, AI coaching, and performance nutrition.
                   No spam.
                 </p>
@@ -299,7 +299,7 @@ export default function BlogPage() {
                 <input
                   type="email"
                   placeholder="your@email.com"
-                  className="flex-1 md:w-56 px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.09] text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500/40"
+                  className="flex-1 md:w-56 px-4 py-2.5 rounded-xl bg-gray-100 border border-gray-100 text-sm text-gray-800 placeholder-slate-600 focus:outline-none focus:border-indigo-500/40"
                 />
                 <Button variant="glow" size="default">
                   Subscribe

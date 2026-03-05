@@ -87,14 +87,14 @@ export function AppNav() {
         <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0 group">
           <Image
             src="/logo.png"
-            alt="MacroClawAgent"
+            alt="Jonno"
             width={72}
             height={22}
             className="object-contain transition-opacity group-hover:opacity-85"
             onError={() => {}}
           />
           <span className="font-bold text-sm text-slate-100 tracking-tight hidden lg:block">
-            MacroClawAgent
+            Jonno
           </span>
         </Link>
 

@@ -37,14 +37,14 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
           <Image
             src="/logo.png"
-            alt="MacroClawAgent logo"
+            alt="Jonno logo"
             width={28}
             height={28}
             className="object-contain"
             priority
           />
           <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${atTop ? "text-white" : "text-blue-600"}`}>
-            MacroClaw
+            Jonno
           </span>
         </Link>
 
