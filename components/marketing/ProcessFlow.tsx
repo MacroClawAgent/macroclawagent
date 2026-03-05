@@ -8,35 +8,32 @@ const steps = [
   {
     step: "01",
     icon: <Image src="/strava.png" alt="Strava" width={28} height={28} className="object-contain" />,
-    iconBg: "bg-orange-500/15 text-orange-400",
-    glowColor: "rgba(249, 115, 22, 0.10)",
+    iconBg: "bg-orange-50 text-orange-500 border border-orange-200",
     title: "Sync Your Activity",
     description:
       "Connect Strava and import runs, rides, and workouts automatically. MacroClawAgent reads your real-time calorie deficit.",
     tag: "Strava API",
-    tagColor: "text-orange-400 bg-orange-500/10 border-orange-500/20",
+    tagColor: "text-orange-600 bg-orange-50 border-orange-200",
   },
   {
     step: "02",
     icon: <Sparkles className="w-7 h-7" />,
-    iconBg: "bg-indigo-500/15 text-indigo-400",
-    glowColor: "rgba(99, 102, 241, 0.12)",
+    iconBg: "bg-blue-50 text-blue-600 border border-blue-200",
     title: "AI Plans Your Meals",
     description:
       "Claude analyzes your workout, current macros, and goals. It builds a personalized meal plan optimized for recovery and performance.",
     tag: "Claude AI",
-    tagColor: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+    tagColor: "text-blue-600 bg-blue-50 border-blue-200",
   },
   {
     step: "03",
     icon: <ShoppingCart className="w-7 h-7" />,
-    iconBg: "bg-emerald-500/15 text-emerald-400",
-    glowColor: "rgba(16, 185, 129, 0.10)",
+    iconBg: "bg-emerald-50 text-emerald-600 border border-emerald-200",
     title: "Uber Eats Delivers",
     description:
       "Your optimized meal cart is built and ready to order with one tap. The exact macros you need, delivered to your door.",
     tag: "Uber Eats API",
-    tagColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    tagColor: "text-emerald-600 bg-emerald-50 border-emerald-200",
   },
 ];
 
@@ -44,7 +41,7 @@ export function ProcessFlow() {
   return (
     <section
       id="how-it-works"
-      className="relative py-32 px-6 bg-mesh-section overflow-hidden"
+      className="relative py-32 px-6 bg-white overflow-hidden"
     >
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -68,14 +65,14 @@ export function ProcessFlow() {
 
           {/* Text — centered across full container width */}
           <div className="text-center">
-            <p className="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">
+            <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-4">
               How It Works
             </p>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-100 tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
               How the{" "}
-              <span className="gradient-text">Claw Works</span>
+              <span className="gradient-text-light">Claw Works</span>
             </h2>
-            <p className="mt-4 text-slate-400 max-w-xl text-lg mx-auto">
+            <p className="mt-4 text-gray-600 max-w-xl text-lg mx-auto">
               Three steps from sweat to sustenance. Fully automated.
             </p>
           </div>
@@ -85,7 +82,7 @@ export function ProcessFlow() {
         <div className="relative">
           {/* Desktop connecting line */}
           <div className="hidden md:block absolute top-16 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px">
-            <div className="h-full border-t border-dashed border-white/10" />
+            <div className="h-full border-t border-dashed border-gray-200" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
@@ -99,10 +96,7 @@ export function ProcessFlow() {
                 className="relative"
               >
                 <div
-                  className="glass-card p-8 h-full flex flex-col gap-6 hover:border-white/12 transition-all duration-300 group"
-                  style={{
-                    boxShadow: `0 0 60px ${step.glowColor}`,
-                  }}
+                  className="light-card p-8 h-full flex flex-col gap-6 hover:border-gray-200 transition-all duration-300 group"
                 >
                   {/* Step number + icon */}
                   <div className="flex items-start justify-between">
@@ -111,17 +105,17 @@ export function ProcessFlow() {
                     >
                       {step.icon}
                     </div>
-                    <span className="text-4xl font-black text-white/[0.08] leading-none font-mono">
+                    <span className="text-4xl font-black text-blue-100 leading-none font-mono">
                       {step.step}
                     </span>
                   </div>
 
                   {/* Content */}
                   <div className="flex flex-col gap-3 flex-1">
-                    <h3 className="text-xl font-bold text-slate-100">
+                    <h3 className="text-xl font-bold text-gray-900">
                       {step.title}
                     </h3>
-                    <p className="text-slate-400 text-sm leading-relaxed flex-1">
+                    <p className="text-gray-600 text-sm leading-relaxed flex-1">
                       {step.description}
                     </p>
                   </div>
@@ -139,7 +133,7 @@ export function ProcessFlow() {
                 {/* Mobile arrow connector */}
                 {index < steps.length - 1 && (
                   <div className="md:hidden flex justify-center py-2">
-                    <ArrowRight className="w-5 h-5 text-white/20 rotate-90" />
+                    <ArrowRight className="w-5 h-5 text-gray-300 rotate-90" />
                   </div>
                 )}
               </motion.div>

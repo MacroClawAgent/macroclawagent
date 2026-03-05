@@ -32,7 +32,7 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="relative py-28 px-6 overflow-hidden">
+    <section className="relative py-28 px-6 overflow-hidden bg-gray-50">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -42,12 +42,12 @@ export function Testimonials() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <p className="text-indigo-400 text-sm font-semibold uppercase tracking-widest mb-4">
+          <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-4">
             Athletes
           </p>
-          <h2 className="text-4xl md:text-5xl font-black text-slate-100 tracking-tight">
+          <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
             Who eat{" "}
-            <span className="gradient-text">smarter.</span>
+            <span className="gradient-text-light">smarter.</span>
           </h2>
         </motion.div>
 
@@ -60,30 +60,30 @@ export function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="glass-card p-7 flex flex-col gap-5"
+              className="light-card p-7 flex flex-col gap-5"
             >
               {/* Stars */}
               <div className="flex gap-1">
                 {Array.from({ length: 5 }).map((_, s) => (
-                  <Star key={s} className="w-4 h-4 text-indigo-400 fill-indigo-400" />
+                  <Star key={s} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                 ))}
               </div>
 
               {/* Quote */}
-              <p className="text-slate-300 text-sm leading-relaxed flex-1">
+              <p className="text-gray-700 text-sm leading-relaxed flex-1">
                 &ldquo;{t.quote}&rdquo;
               </p>
 
               {/* Author */}
-              <div className="flex items-center gap-3 pt-2 border-t border-white/[0.06]">
+              <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
                 <div
                   className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.avatarBg} flex items-center justify-center text-sm font-black text-white flex-shrink-0`}
                 >
                   {t.initials}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-100">{t.name}</p>
-                  <p className="text-xs text-slate-500">{t.title}</p>
+                  <p className="text-sm font-bold text-gray-900">{t.name}</p>
+                  <p className="text-xs text-gray-500">{t.title}</p>
                 </div>
               </div>
             </motion.div>

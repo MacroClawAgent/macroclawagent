@@ -3,7 +3,6 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { ShoppingBag, Heart, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -47,10 +46,10 @@ function StatCard({ value, numericValue, suffix, label, delay }: {
       transition={{ duration: 0.5, delay }}
       className="text-center"
     >
-      <p className="text-4xl md:text-5xl font-black gradient-text">
+      <p className="text-4xl md:text-5xl font-black text-blue-600">
         {isInView ? `${count.toLocaleString()}${suffix}` : value}
       </p>
-      <p className="text-slate-500 text-sm mt-2">{label}</p>
+      <p className="text-gray-600 text-sm mt-2">{label}</p>
     </motion.div>
   );
 }
@@ -61,23 +60,23 @@ const apps = [
     name: "Strava",
     status: "Connected",
     color: "",
-    bg: "bg-orange-500/10 border-orange-500/20",
+    bg: "bg-orange-50 border-orange-200",
     dot: "bg-orange-400",
   },
   {
     icon: <ShoppingBag className="w-6 h-6" />,
     name: "Uber Eats",
     status: "Connected",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10 border-emerald-500/20",
+    color: "text-emerald-600",
+    bg: "bg-emerald-50 border-emerald-200",
     dot: "bg-emerald-400",
   },
   {
     icon: <Heart className="w-6 h-6" />,
     name: "Apple Health",
     status: "Connected",
-    color: "text-red-400",
-    bg: "bg-red-500/10 border-red-500/20",
+    color: "text-red-500",
+    bg: "bg-red-50 border-red-200",
     dot: "bg-red-400",
   },
 ];
@@ -91,9 +90,7 @@ const statCards = [
 
 export function TrustSignals() {
   return (
-    <section className="relative py-32 px-6 overflow-hidden">
-      {/* Subtle top border */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+    <section className="relative py-32 px-6 overflow-hidden bg-white">
 
       <div className="max-w-5xl mx-auto">
         {/* Stats row */}
@@ -111,10 +108,10 @@ export function TrustSignals() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <p className="text-slate-500 text-sm font-medium uppercase tracking-widest mb-3">
+          <p className="text-blue-600 text-sm font-medium uppercase tracking-widest mb-3">
             Works With
           </p>
-          <h2 className="text-3xl md:text-4xl font-black text-slate-100">
+          <h2 className="text-3xl md:text-4xl font-black text-gray-900">
             Your Favorite Apps
           </h2>
         </motion.div>
@@ -133,12 +130,12 @@ export function TrustSignals() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-              className={`flex items-center gap-4 px-6 py-4 rounded-2xl glass border ${app.bg} min-w-[200px]`}
+              className={`flex items-center gap-4 px-6 py-4 rounded-2xl bg-white border ${app.bg} min-w-[200px] shadow-sm`}
             >
               <div className={`${app.color} flex-shrink-0`}>{app.icon}</div>
               <div className="flex flex-col">
-                <span className="font-semibold text-slate-100 text-sm">{app.name}</span>
-                <span className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                <span className="font-semibold text-gray-900 text-sm">{app.name}</span>
+                <span className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
                   <span className={`w-1.5 h-1.5 rounded-full ${app.dot}`} />
                   {app.status}
                 </span>
@@ -152,14 +149,14 @@ export function TrustSignals() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="flex items-center gap-4 px-6 py-4 rounded-2xl glass border border-white/[0.05] min-w-[200px]"
+            className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-white border border-gray-200 min-w-[200px] shadow-sm"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/[0.05] flex items-center justify-center">
-              <Plus className="w-5 h-5 text-white/25" />
+            <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
+              <Plus className="w-5 h-5 text-gray-300" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-slate-400 text-sm">More Soon</span>
-              <span className="text-xs text-slate-600 mt-0.5">Whoop, Garmin, Oura</span>
+              <span className="font-semibold text-gray-500 text-sm">More Soon</span>
+              <span className="text-xs text-gray-400 mt-0.5">Whoop, Garmin, Oura</span>
             </div>
           </motion.div>
         </motion.div>
@@ -172,18 +169,19 @@ export function TrustSignals() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-center mt-16"
         >
-          <div className="glass-card p-12 glow-border max-w-2xl mx-auto">
-            <h3 className="text-3xl font-black text-slate-100 mb-4">
-              Ready to eat like an <span className="gradient-text">athlete</span>?
+          <div className="bg-blue-600 p-12 rounded-2xl max-w-2xl mx-auto">
+            <h3 className="text-3xl font-black text-white mb-4">
+              Ready to eat like an athlete?
             </h3>
-            <p className="text-slate-400 mb-8">
+            <p className="text-blue-100 mb-8">
               Join thousands of athletes who never guess their macros again.
             </p>
-            <Button size="xl" variant="glow" asChild>
-              <Link href="/login">
-                Start for Free — No Credit Card
-              </Link>
-            </Button>
+            <Link
+              href="/login"
+              className="inline-block bg-white text-blue-600 font-bold px-8 py-3.5 rounded-full text-sm hover:bg-blue-50 transition-colors"
+            >
+              Start for Free — No Credit Card
+            </Link>
           </div>
         </motion.div>
       </div>
