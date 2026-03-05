@@ -16,7 +16,7 @@ const features = [
 ];
 
 const inputClass =
-  "w-full px-4 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.09] text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.08] transition-all duration-200";
+  "w-full px-4 py-3.5 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200";
 
 export default function JoinPage() {
   const [form, setForm] = useState({ full_name: "", email: "", phone: "", sport: "" });
@@ -69,11 +69,11 @@ export default function JoinPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090D] overflow-x-hidden relative">
+    <div className="min-h-screen bg-white overflow-x-hidden relative">
       {/* Decorative orbs */}
-      <div className="pointer-events-none absolute top-0 right-0 w-72 h-72 rounded-full bg-indigo-900/20 blur-[100px]" />
-      <div className="pointer-events-none absolute bottom-1/3 left-0 w-56 h-56 rounded-full bg-orange-900/15 blur-[80px]" />
-      <div className="pointer-events-none absolute bottom-0 right-1/4 w-48 h-48 rounded-full bg-violet-900/10 blur-[80px]" />
+      <div className="pointer-events-none absolute top-0 right-0 w-96 h-96 rounded-full bg-blue-100/60 blur-[120px]" />
+      <div className="pointer-events-none absolute top-0 left-0 w-72 h-72 rounded-full bg-orange-100/40 blur-[100px]" />
+      <div className="pointer-events-none absolute bottom-1/3 right-0 w-56 h-56 rounded-full bg-blue-50/80 blur-[80px]" />
 
       <div className="relative z-10 max-w-[440px] mx-auto px-5 pt-10 pb-16 flex flex-col gap-8">
 
@@ -86,7 +86,7 @@ export default function JoinPage() {
         >
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center overflow-hidden">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center overflow-hidden">
               <Image
                 src="/logo.png"
                 alt="Jonno"
@@ -96,29 +96,29 @@ export default function JoinPage() {
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
             </div>
-            <span className="text-slate-100 font-black text-lg tracking-tight">Jonno</span>
+            <span className="text-gray-900 font-black text-lg tracking-tight">Jonno</span>
           </div>
 
           {/* Beta badge */}
-          <div className="glass glow-border rounded-full px-4 py-1.5 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            <span className="text-xs font-bold text-indigo-300 uppercase tracking-widest">Beta Access — Limited Spots</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 text-white shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span className="text-xs font-bold uppercase tracking-widest">Beta Access — Limited Spots</span>
           </div>
 
           {/* Headline */}
           <div>
-            <h1 className="text-4xl font-black tracking-tight leading-none mb-1">
-              <span className="gradient-text">Train smarter.</span>
+            <h1 className="text-4xl font-black tracking-tight leading-none mb-2">
+              <span className="gradient-text-light">Fuel your training.</span>
             </h1>
-            <h1 className="text-4xl font-black tracking-tight text-slate-100 leading-none">
-              Eat with precision.
+            <h1 className="text-4xl font-black tracking-tight text-gray-900 leading-none">
+              Automatically.
             </h1>
           </div>
 
           {/* Subtext */}
-          <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
-            Jonno syncs your Strava activities, calculates your exact macro targets, and plans your meals — all with AI.
-            Join the beta and be the first to train with it.
+          <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
+            Jonno syncs your Strava, calculates your exact macros, and plans your meals with AI.
+            <strong className="text-gray-700"> Join 400+ athletes</strong> on the waitlist — be first in.
           </p>
         </motion.div>
 
@@ -132,14 +132,14 @@ export default function JoinPage() {
           {features.map(({ icon: Icon, label, color }) => (
             <div
               key={label}
-              className="glass rounded-full px-3.5 py-2 flex items-center gap-2 text-xs font-semibold text-slate-300"
+              className="bg-white border border-gray-200 shadow-sm rounded-full px-3.5 py-2 flex items-center gap-2 text-xs font-semibold text-gray-600"
             >
               <Icon className={`w-3.5 h-3.5 ${color}`} />
               {label}
             </div>
           ))}
-          <div className="glass rounded-full px-3.5 py-2 flex items-center gap-2 text-xs font-semibold text-slate-300">
-            <span className="text-amber-400 text-xs">🏅</span>
+          <div className="bg-white border border-gray-200 shadow-sm rounded-full px-3.5 py-2 flex items-center gap-2 text-xs font-semibold text-gray-600">
+            <span className="text-amber-500 text-xs">🏅</span>
             Performance Macros
           </div>
         </motion.div>
@@ -156,11 +156,11 @@ export default function JoinPage() {
             >
               <form
                 onSubmit={handleSubmit}
-                className="glass-card glow-border p-6 flex flex-col gap-4"
+                className="light-card p-6 flex flex-col gap-4 border border-gray-200 shadow-lg"
               >
                 <div>
-                  <p className="text-base font-black text-slate-100 mb-0.5">Claim your free beta spot</p>
-                  <p className="text-xs text-slate-500">No credit card. No commitment. Cancel any time.</p>
+                  <p className="text-base font-black text-gray-900 mb-0.5">Claim your free beta spot</p>
+                  <p className="text-xs text-gray-500">No credit card. No commitment. Cancel any time.</p>
                 </div>
 
                 {/* Error banner */}
@@ -180,7 +180,7 @@ export default function JoinPage() {
 
                 {/* Full name */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Full Name</label>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Full Name</label>
                   <input
                     type="text"
                     name="full_name"
@@ -195,7 +195,7 @@ export default function JoinPage() {
 
                 {/* Email */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email Address</label>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email Address</label>
                   <input
                     type="email"
                     name="email"
@@ -210,7 +210,7 @@ export default function JoinPage() {
 
                 {/* Phone */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     Phone <span className="normal-case text-slate-600">(optional)</span>
                   </label>
                   <input
@@ -226,7 +226,7 @@ export default function JoinPage() {
 
                 {/* Sport select */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">What do you train for?</label>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">What do you train for?</label>
                   <div className="relative">
                     <select
                       name="sport"
@@ -234,12 +234,12 @@ export default function JoinPage() {
                       onChange={handleChange}
                       className={`${inputClass} appearance-none pr-10 cursor-pointer`}
                     >
-                      <option value="" disabled className="bg-[#0F111A] text-slate-400">Select your sport…</option>
+                      <option value="" disabled className="bg-white text-gray-400">Select your sport…</option>
                       {sports.map((s) => (
-                        <option key={s} value={s} className="bg-[#0F111A] text-slate-100">{s}</option>
+                        <option key={s} value={s} className="bg-white text-gray-900">{s}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
 
@@ -262,9 +262,9 @@ export default function JoinPage() {
                 </Button>
 
                 {/* Privacy */}
-                <p className="text-center text-xs text-slate-700 leading-relaxed">
+                <p className="text-center text-xs text-gray-400 leading-relaxed">
                   By signing up you agree to our{" "}
-                  <Link href="/privacy" className="text-slate-500 hover:text-slate-400 underline underline-offset-2">
+                  <Link href="/privacy" className="text-gray-500 hover:text-gray-700 underline underline-offset-2">
                     Privacy Policy
                   </Link>
                   . We&apos;ll never spam you.
@@ -277,50 +277,94 @@ export default function JoinPage() {
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: "spring", stiffness: 280, damping: 22 }}
-              className="glass-card glow-border p-8 flex flex-col items-center text-center gap-5"
+              className="flex flex-col gap-4"
             >
-              {/* Check icon */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
-                className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center"
-              >
-                <CheckCircle2 className="w-10 h-10 text-emerald-400" />
-              </motion.div>
+              {/* Success card */}
+              <div className="light-card border border-gray-200 shadow-lg p-8 flex flex-col items-center text-center gap-5">
+                {/* Check icon */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
+                  className="w-20 h-20 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center"
+                >
+                  <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+                </motion.div>
 
-              <div>
-                <h2 className="text-2xl font-black gradient-text mb-2">You&apos;re on the list!</h2>
-                <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
-                  Hey {submittedName}! We&apos;ll send your beta credentials to{" "}
-                  <span className="text-slate-300 font-semibold">{submittedEmail}</span> soon.
-                  See you at the finish line. 🏅
-                </p>
-              </div>
+                <div>
+                  <h2 className="text-2xl font-black gradient-text-light mb-2">You&apos;re on the list!</h2>
+                  <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
+                    Hey {submittedName}! We&apos;ll send your beta credentials to{" "}
+                    <span className="text-gray-800 font-semibold">{submittedEmail}</span> soon.
+                    See you at the finish line. 🏅
+                  </p>
+                </div>
 
-              {/* Confirmation pills */}
-              <div className="w-full flex flex-col gap-2 text-left">
-                <div className="glass rounded-xl px-4 py-3 flex items-center gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-slate-500">Email</p>
-                    <p className="text-sm text-slate-200 font-semibold">{submittedEmail}</p>
+                {/* Confirmation pills */}
+                <div className="w-full flex flex-col gap-2 text-left">
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-gray-400">Confirmation sent to</p>
+                      <p className="text-sm text-gray-800 font-semibold">{submittedEmail}</p>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                    <Zap className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                    <p className="text-xs text-gray-500">Strava sync ready when you log in for the first time</p>
                   </div>
                 </div>
-                <div className="glass rounded-xl px-4 py-3 flex items-center gap-3">
-                  <Zap className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-                  <p className="text-xs text-slate-400">Strava sync ready when you log in for the first time</p>
-                </div>
+
+                {/* Share */}
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm text-gray-500 hover:text-gray-800 hover:border-gray-300 shadow-sm transition-all duration-200"
+                >
+                  <Share2 className="w-4 h-4" />
+                  {copied ? "Link copied!" : "Share with a training partner"}
+                </button>
               </div>
 
-              {/* Share */}
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-slate-400 hover:text-slate-200 hover:border-white/20 transition-all duration-200"
+              {/* Survey CTA card */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="relative overflow-hidden rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 p-6 flex flex-col gap-3 shadow-md"
               >
-                <Share2 className="w-4 h-4" />
-                {copied ? "Link copied!" : "Share with a training partner"}
-              </button>
+                {/* Prize badge */}
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🏆</span>
+                  <span className="text-xs font-bold text-amber-700 uppercase tracking-widest bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-full">
+                    Win $200
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-black text-gray-900 leading-snug">
+                    Help us build it right.
+                    <br />
+                    <span className="text-amber-600">Win $200 in the process.</span>
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">
+                    Take our 3-minute athlete survey. One respondent wins a $200 gift card — we draw at launch.
+                    <span className="font-semibold text-gray-700"> Completely optional.</span>
+                  </p>
+                </div>
+
+                <a
+                  href="https://tally.so/r/SURVEY_ID_HERE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm tracking-wide text-center transition-colors duration-200 shadow-sm"
+                >
+                  Take the 3-min survey →
+                </a>
+
+                <p className="text-center text-xs text-gray-400">
+                  No account needed · Takes 3 minutes · Skip anytime
+                </p>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -348,7 +392,7 @@ export default function JoinPage() {
                 bg: "bg-indigo-500/10",
                 border: "border-indigo-500/15",
                 title: "AI Nutrition Agent",
-                desc: "Ask anything about your diet. The Claw analyses your day and gives evidence-based guidance.",
+                desc: "Ask the Jonno Agent anything about your diet. It analyses your training load and gives evidence-based guidance.",
               },
               {
                 icon: ShoppingBag,
@@ -359,13 +403,13 @@ export default function JoinPage() {
                 desc: "Get personalised meal plans that match your macro goals — built around foods you actually eat.",
               },
             ].map(({ icon: Icon, color, bg, border, title, desc }) => (
-              <div key={title} className="glass-card p-4 flex items-start gap-3.5">
+              <div key={title} className="light-card border border-gray-200 shadow-sm p-4 flex items-start gap-3.5">
                 <div className={`w-9 h-9 rounded-lg ${bg} border ${border} flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                  <Icon className={`w-4.5 h-4.5 ${color}`} />
+                  <Icon className={`w-4 h-4 ${color}`} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-100 mb-0.5">{title}</p>
-                  <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
+                  <p className="text-sm font-bold text-gray-900 mb-0.5">{title}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}
@@ -373,12 +417,12 @@ export default function JoinPage() {
         )}
 
         {/* ── Zone 5: Minimal footer ── */}
-        <div className="flex justify-center gap-4 text-xs text-slate-700">
+        <div className="flex justify-center gap-4 text-xs text-gray-400">
           <span>© 2026 Jonno</span>
           <span>·</span>
-          <Link href="/privacy" className="hover:text-slate-500 transition-colors">Privacy</Link>
+          <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
           <span>·</span>
-          <Link href="/" className="hover:text-slate-500 transition-colors">Home</Link>
+          <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
         </div>
 
       </div>
