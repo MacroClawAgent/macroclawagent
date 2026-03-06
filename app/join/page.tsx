@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Zap, ShoppingBag, CheckCircle2, ChevronDown, AlertCircle, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SurveyModal } from "@/components/join/SurveyModal";
 
 const sports = ["Running", "Cycling", "Gym / Strength", "Swimming", "Triathlon", "Other"];
 
@@ -26,6 +27,9 @@ export default function JoinPage() {
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  // Survey modal state
+  const [surveyOpen, setSurveyOpen] = useState(false);
+  const [surveyCompleted, setSurveyCompleted] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -50,6 +54,8 @@ export default function JoinPage() {
       setSubmittedName(form.full_name.split(" ")[0]);
       setSubmittedEmail(form.email);
       setSuccess(true);
+      // Auto-open the survey modal after a short delay so the success animation plays first
+      setTimeout(() => setSurveyOpen(true), 800);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setError("Network error. Please try again.");
@@ -396,29 +402,44 @@ export default function JoinPage() {
                     </span>
                   </div>
 
-                  <div>
-                    <h3 className="text-lg font-black text-gray-900 leading-snug">
-                      Help us build it right.{" "}
-                      <span className="text-amber-600">Win $200 in the process.</span>
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">
-                      Take our 3-minute athlete survey. One respondent wins a $200 gift card — we draw at launch.{" "}
-                      <span className="font-semibold text-gray-700">Completely optional.</span>
-                    </p>
-                  </div>
+                  {surveyCompleted ? (
+                    /* Completed state */
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        <h3 className="text-base font-black text-gray-900">Survey complete — you&apos;re entered!</h3>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        Thanks for helping shape Jonno. We&apos;ll announce the $200 winner at launch.
+                      </p>
+                    </div>
+                  ) : (
+                    /* CTA to open survey */
+                    <>
+                      <div>
+                        <h3 className="text-lg font-black text-gray-900 leading-snug">
+                          Help us build it right.{" "}
+                          <span className="text-amber-600">Win $200 in the process.</span>
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">
+                          Take our 3-minute athlete survey. One respondent wins a $200 gift card — we draw at launch.{" "}
+                          <span className="font-semibold text-gray-700">Completely optional.</span>
+                        </p>
+                      </div>
 
-                  <a
-                    href="https://tally.so/r/SURVEY_ID_HERE"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm tracking-wide text-center transition-colors duration-200 shadow-sm"
-                  >
-                    Take the 3-min survey →
-                  </a>
+                      <button
+                        type="button"
+                        onClick={() => setSurveyOpen(true)}
+                        className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm tracking-wide text-center transition-colors duration-200 shadow-sm"
+                      >
+                        Take the 3-min survey →
+                      </button>
 
-                  <p className="text-center text-xs text-gray-400">
-                    No account needed · Takes 3 minutes · Skip anytime
-                  </p>
+                      <p className="text-center text-xs text-gray-400">
+                        No account needed · Takes 3 minutes · Skip anytime
+                      </p>
+                    </>
+                  )}
                 </motion.div>
               </motion.div>
             )}
@@ -426,6 +447,17 @@ export default function JoinPage() {
         </div>
 
       </div>
+
+      {/* ── Survey modal — rendered at root so it overlays everything ── */}
+      <SurveyModal
+        isOpen={surveyOpen}
+        onClose={() => setSurveyOpen(false)}
+        onComplete={() => {
+          setSurveyCompleted(true);
+          setSurveyOpen(false);
+        }}
+        waitlistEmail={submittedEmail}
+      />
 
       {/* ── Footer ── */}
       <div className="relative z-10 border-t border-gray-100 py-6">
