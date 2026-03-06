@@ -84,27 +84,36 @@ function QuestionBlock({
   onSingle,
   onMultiToggle,
   onText,
+  onAutoAdvance,
 }: {
   question: Question;
   answers: Answers;
   onSingle: (id: string, val: string) => void;
   onMultiToggle: (id: string, val: string) => void;
   onText: (id: string, val: string) => void;
+  /** Called after a single-select answer so the step can auto-advance when ready */
+  onAutoAdvance?: () => void;
 }) {
   const value = answers[question.id];
   const selectedArr = Array.isArray(value) ? value : [];
   const selectedStr = typeof value === "string" ? value : "";
 
+  const handleSinglePick = (id: string, val: string) => {
+    onSingle(id, val);
+    // Auto-advance: brief delay so the selection highlight is visible first
+    if (onAutoAdvance) setTimeout(onAutoAdvance, 340);
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <p className="text-sm font-semibold text-gray-900 leading-snug">{question.label}</p>
+        <p className="text-base font-bold text-gray-900 leading-snug">{question.label}</p>
         {question.helperText && (
-          <p className="text-xs text-gray-400 mt-0.5">{question.helperText}</p>
+          <p className="text-xs text-gray-400 mt-1">{question.helperText}</p>
         )}
       </div>
 
-      {/* Single select */}
+      {/* Single select — auto-advances on pick */}
       {question.type === "single" && question.options && (
         <div className="flex flex-col gap-2">
           {question.options.map((opt) => (
@@ -112,7 +121,7 @@ function QuestionBlock({
               key={opt}
               label={opt}
               selected={selectedStr === opt}
-              onClick={() => onSingle(question.id, opt)}
+              onClick={() => handleSinglePick(question.id, opt)}
             />
           ))}
         </div>
@@ -140,7 +149,7 @@ function QuestionBlock({
           value={selectedStr}
           onChange={(e) => onText(question.id, e.target.value)}
           placeholder={question.placeholder}
-          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-150"
+          className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-150"
         />
       )}
 
@@ -151,7 +160,7 @@ function QuestionBlock({
           onChange={(e) => onText(question.id, e.target.value)}
           placeholder={question.placeholder}
           rows={4}
-          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-150 resize-none"
+          className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-150 resize-none"
         />
       )}
     </div>
@@ -187,6 +196,11 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
       if (Array.isArray(ans)) return ans.length > 0;
       return Boolean(ans && String(ans).trim());
     });
+
+  // Auto-advance is enabled when the step has exactly one visible single-select question
+  // (multi-question steps always require the explicit Next button)
+  const autoAdvanceEnabled =
+    visibleQuestions.length === 1 && visibleQuestions[0].type === "single";
 
   // Progress: 0–100 across steps (submitted = 100)
   const progress = submitted ? 100 : Math.round((stepIndex / totalSteps) * 100);
@@ -454,6 +468,7 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
                         onSingle={handleSingle}
                         onMultiToggle={handleMultiToggle}
                         onText={handleText}
+                        onAutoAdvance={autoAdvanceEnabled ? goNext : undefined}
                       />
                     ))}
                   </motion.div>
