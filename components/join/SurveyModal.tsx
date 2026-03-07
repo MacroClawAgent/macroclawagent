@@ -55,16 +55,16 @@ function OptionPill({
       onClick={onClick}
       className="group relative flex items-center gap-2.5 w-full px-4 py-3 rounded-xl border text-sm font-medium text-left transition-all duration-150 cursor-pointer"
       style={selected
-        ? { borderColor: "#F29A69", backgroundColor: "rgba(242,154,105,0.08)", color: "#C4693A", boxShadow: "0 1px 4px rgba(242,154,105,0.15)" }
-        : { borderColor: "#CFC7C2", backgroundColor: "#FFFDFB", color: "#4A454A" }
+        ? { borderColor: "#20C7B7", backgroundColor: "rgba(32,199,183,0.08)", color: "#1BA89A", boxShadow: "0 1px 4px rgba(32,199,183,0.15)" }
+        : { borderColor: "#E5E7EB", backgroundColor: "#FFFFFF", color: "#1C1C1E" }
       }
     >
       {/* Check indicator */}
       <span
         className={`flex-shrink-0 w-[18px] h-[18px] rounded-${multi ? "sm" : "full"} border-2 flex items-center justify-center transition-all duration-150`}
         style={selected
-          ? { borderColor: "#F29A69", backgroundColor: "#F29A69" }
-          : { borderColor: "#CFC7C2", backgroundColor: "#FFFDFB" }
+          ? { borderColor: "#20C7B7", backgroundColor: "#20C7B7" }
+          : { borderColor: "#E5E7EB", backgroundColor: "#FFFFFF" }
         }
       >
         {selected && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
@@ -104,13 +104,13 @@ function QuestionBlock({
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <p className="text-base font-bold leading-snug" style={{ color: "#4A454A" }}>{question.label}</p>
+        <p className="text-base font-bold leading-snug" style={{ color: "#1C1C1E" }}>{question.label}</p>
         {question.helperText && (
-          <p className="text-xs mt-1" style={{ color: "#7C7472" }}>{question.helperText}</p>
+          <p className="text-xs mt-1" style={{ color: "#6B7280" }}>{question.helperText}</p>
         )}
       </div>
 
-      {/* Single select — auto-advances on pick */}
+      {/* Single select auto-advances on pick */}
       {question.type === "single" && question.options && (
         <div className="flex flex-col gap-2">
           {question.options.map((opt) => (
@@ -147,9 +147,9 @@ function QuestionBlock({
           onChange={(e) => onText(question.id, e.target.value)}
           placeholder={question.placeholder}
           className="w-full px-4 py-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 transition-all duration-150"
-          style={{ borderColor: "#CFC7C2", backgroundColor: "#FFFDFB", color: "#4A454A" }}
-          onFocus={e => { e.currentTarget.style.borderColor = "#F29A69"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(242,154,105,0.15)"; }}
-          onBlur={e => { e.currentTarget.style.borderColor = "#CFC7C2"; e.currentTarget.style.boxShadow = "none"; }}
+          style={{ borderColor: "#E5E7EB", backgroundColor: "#FFFFFF", color: "#1C1C1E" }}
+          onFocus={e => { e.currentTarget.style.borderColor = "#20C7B7"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(32,199,183,0.15)"; }}
+          onBlur={e => { e.currentTarget.style.borderColor = "#E5E7EB"; e.currentTarget.style.boxShadow = "none"; }}
         />
       )}
 
@@ -161,9 +161,9 @@ function QuestionBlock({
           placeholder={question.placeholder}
           rows={4}
           className="w-full px-4 py-3.5 rounded-xl border text-sm focus:outline-none transition-all duration-150 resize-none"
-          style={{ borderColor: "#CFC7C2", backgroundColor: "#FFFDFB", color: "#4A454A" }}
-          onFocus={e => { e.currentTarget.style.borderColor = "#F29A69"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(242,154,105,0.15)"; }}
-          onBlur={e => { e.currentTarget.style.borderColor = "#CFC7C2"; e.currentTarget.style.boxShadow = "none"; }}
+          style={{ borderColor: "#E5E7EB", backgroundColor: "#FFFFFF", color: "#1C1C1E" }}
+          onFocus={e => { e.currentTarget.style.borderColor = "#20C7B7"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(32,199,183,0.15)"; }}
+          onBlur={e => { e.currentTarget.style.borderColor = "#E5E7EB"; e.currentTarget.style.boxShadow = "none"; }}
         />
       )}
     </div>
@@ -302,7 +302,7 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
 
       const { error } = await client.from("survey_responses").insert(payload);
       if (error) {
-        // Log but don't block — still show thank-you so user isn't penalised
+        // Log but don't block still show thank-you so user isn't penalised
         console.error("[Jonno] Survey insert error:", error.message);
       }
     } catch (err) {
@@ -344,23 +344,23 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
             className="relative z-10 w-full max-w-xl rounded-3xl shadow-2xl flex flex-col overflow-hidden"
-            style={{ backgroundColor: "#FFFDFB", maxHeight: "90vh" }}
+            style={{ backgroundColor: "#FFFFFF", maxHeight: "90vh" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* ── Header ── */}
-            <div className="flex-shrink-0 px-6 pt-6 pb-4" style={{ borderBottom: "1px solid #E8DDD8" }}>
+            <div className="flex-shrink-0 px-6 pt-6 pb-4" style={{ borderBottom: "1px solid #E5E7EB" }}>
               {/* Progress bar */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(239,217,204,0.5)" }}>
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(244,245,247,0.5)" }}>
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ backgroundColor: "#F29A69" }}
+                    style={{ backgroundColor: "#20C7B7" }}
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                   />
                 </div>
-                <span className="text-xs font-semibold tabular-nums whitespace-nowrap" style={{ color: "#7C7472" }}>
+                <span className="text-xs font-semibold tabular-nums whitespace-nowrap" style={{ color: "#6B7280" }}>
                   {submitted ? "Done" : `${stepIndex + 1} / ${totalSteps}`}
                 </span>
               </div>
@@ -369,24 +369,24 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
               <div className="flex items-start justify-between gap-4">
                 {!submitted && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "#F29A69" }}>
-                      Step {stepIndex + 1} — {currentStep.id.replace(/_/g, " ")}
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "#20C7B7" }}>
+                      Step {stepIndex + 1} {currentStep.id.replace(/_/g, " ")}
                     </p>
-                    <h2 className="text-xl font-black leading-tight" style={{ color: "#4A454A" }}>
+                    <h2 className="text-xl font-black leading-tight" style={{ color: "#1C1C1E" }}>
                       {currentStep.title}
                     </h2>
-                    <p className="text-sm mt-0.5" style={{ color: "#7C7472" }}>{currentStep.subtitle}</p>
+                    <p className="text-sm mt-0.5" style={{ color: "#6B7280" }}>{currentStep.subtitle}</p>
                   </div>
                 )}
-                {/* Close button — always visible */}
+                {/* Close button always visible */}
                 {!submitted && (
                   <button
                     type="button"
                     onClick={onClose}
                     className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-150"
-                    style={{ backgroundColor: "#FAF4EF", color: "#7C7472" }}
+                    style={{ backgroundColor: "#F4F5F7", color: "#6B7280" }}
                     onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#EFD9CC")}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#FAF4EF")}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#F4F5F7")}
                     aria-label="Close survey"
                   >
                     <X className="w-4 h-4" />
@@ -412,38 +412,38 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
                       className="w-20 h-20 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: "rgba(242,154,105,0.10)", border: "1px solid rgba(242,154,105,0.30)" }}
+                      style={{ backgroundColor: "rgba(32,199,183,0.10)", border: "1px solid rgba(32,199,183,0.30)" }}
                     >
-                      <CheckCircle2 className="w-10 h-10" style={{ color: "#F29A69" }} />
+                      <CheckCircle2 className="w-10 h-10" style={{ color: "#20C7B7" }} />
                     </motion.div>
 
                     <div>
                       <div className="flex items-center justify-center gap-1.5 mb-3">
-                        <Sparkles className="w-4 h-4" style={{ color: "#F29A69" }} />
-                        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#F29A69" }}>
+                        <Sparkles className="w-4 h-4" style={{ color: "#20C7B7" }} />
+                        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#20C7B7" }}>
                           Survey complete
                         </span>
-                        <Sparkles className="w-4 h-4" style={{ color: "#F29A69" }} />
+                        <Sparkles className="w-4 h-4" style={{ color: "#20C7B7" }} />
                       </div>
-                      <h3 className="text-2xl font-black leading-tight mb-2" style={{ color: "#4A454A" }}>
-                        Thank you — you&apos;re shaping Jonno.
+                      <h3 className="text-2xl font-black leading-tight mb-2" style={{ color: "#1C1C1E" }}>
+                        Thank you you&apos;re shaping Jonno.
                       </h3>
-                      <p className="text-sm leading-relaxed max-w-xs mx-auto" style={{ color: "#7C7472" }}>
+                      <p className="text-sm leading-relaxed max-w-xs mx-auto" style={{ color: "#6B7280" }}>
                         Every response directly influences what we build. You&apos;re entered into
-                        the <strong style={{ color: "#4A454A" }}>$200 gift card draw</strong> at
+                        the <strong style={{ color: "#1C1C1E" }}>$200 gift card draw</strong> at
                         launch. We&apos;ll be in touch.
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-2 w-full text-left rounded-2xl p-4" style={{ backgroundColor: "#FAF4EF", border: "1px solid #E8DDD8" }}>
+                    <div className="flex flex-col gap-2 w-full text-left rounded-2xl p-4" style={{ backgroundColor: "#F4F5F7", border: "1px solid #E5E7EB" }}>
                       {[
                         "Your responses have been saved",
                         "You're entered in the $200 draw",
                         "Beta access waiting for you at launch",
                       ].map((item) => (
                         <div key={item} className="flex items-center gap-2.5">
-                          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#F29A69" }} />
-                          <p className="text-sm" style={{ color: "#7C7472" }}>{item}</p>
+                          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#20C7B7" }} />
+                          <p className="text-sm" style={{ color: "#6B7280" }}>{item}</p>
                         </div>
                       ))}
                     </div>
@@ -452,7 +452,7 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
                       type="button"
                       onClick={onClose}
                       className="px-8 py-3 rounded-full text-white text-sm font-bold transition-all duration-150"
-                      style={{ background: "linear-gradient(135deg, #F29A69 0%, #E88367 100%)", boxShadow: "0 4px 16px rgba(242,154,105,0.30)" }}
+                      style={{ background: "linear-gradient(135deg, #20C7B7 0%, #E88367 100%)", boxShadow: "0 4px 16px rgba(32,199,183,0.30)" }}
                     >
                       Close
                     </button>
@@ -487,7 +487,7 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
 
             {/* ── Footer navigation ── */}
             {!submitted && (
-              <div className="flex-shrink-0 px-6 py-4 flex items-center justify-between gap-3" style={{ borderTop: "1px solid #E8DDD8", backgroundColor: "#FFFDFB" }}>
+              <div className="flex-shrink-0 px-6 py-4 flex items-center justify-between gap-3" style={{ borderTop: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}>
                 {/* Back */}
                 <button
                   type="button"
@@ -495,8 +495,8 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
                   disabled={stepIndex === 0}
                   className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150"
                   style={stepIndex === 0
-                    ? { color: "#CFC7C2", cursor: "not-allowed" }
-                    : { color: "#7C7472" }
+                    ? { color: "#E5E7EB", cursor: "not-allowed" }
+                    : { color: "#6B7280" }
                   }
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -509,7 +509,7 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
                     type="button"
                     onClick={goNext}
                     className="text-sm transition-colors duration-150 underline underline-offset-2"
-                    style={{ color: "#7C7472" }}
+                    style={{ color: "#6B7280" }}
                   >
                     Skip & finish
                   </button>
@@ -522,8 +522,8 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
                   disabled={!isStepValid || submitting}
                   className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-150 ml-auto"
                   style={isStepValid && !submitting
-                    ? { background: "linear-gradient(135deg, #F29A69 0%, #E88367 100%)", color: "white", boxShadow: "0 4px 12px rgba(242,154,105,0.30)" }
-                    : { backgroundColor: "#FAF4EF", color: "#CFC7C2", cursor: "not-allowed" }
+                    ? { background: "linear-gradient(135deg, #20C7B7 0%, #E88367 100%)", color: "white", boxShadow: "0 4px 12px rgba(32,199,183,0.30)" }
+                    : { backgroundColor: "#F4F5F7", color: "#E5E7EB", cursor: "not-allowed" }
                   }
                 >
                   {submitting ? (
