@@ -678,43 +678,23 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-2xl overflow-hidden border" style={{ borderColor: "#E5E7EB" }}
+              className="rounded-2xl p-10 md:p-16 text-center flex flex-col items-center gap-6 border" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}
             >
-              <div className="grid md:grid-cols-2 items-center">
-                {/* Image */}
-                <div className="relative h-64 md:h-full min-h-[280px] bg-white">
-                  <Image
-                    src="/fuelsmarter.png"
-                    alt="Fuel smarter"
-                    fill
-                    className="object-cover object-center"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0F111A] hidden md:block" />
-                </div>
-
-                {/* Text */}
-                <div className="p-10 md:p-12 flex flex-col items-start gap-6">
-                  <span className="text-4xl">🦀</span>
-                  <h2 className="text-3xl md:text-4xl font-black text-[#20C7B7] leading-tight">
-                    The mission
-                  </h2>
-                  <p className="text-lg leading-relaxed" style={{ color: "#1C1C1E" }}>
-                    "Nutrition should be as data-driven as your training. We're building the infrastructure
-                    that makes that true, one athlete at a time."
-                  </p>
-                  <p className="text-xs text-gray-500">Jonno, 2026</p>
-                  <div className="flex flex-wrap gap-3 pt-2">
-                    <Button variant="glow" size="lg" asChild>
-                      <Link href="/join">
-                        Get Started Free
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Link>
-                    </Button>
-                    <Button variant="outline" size="lg" asChild>
-                      <Link href="/pricing">See Pricing</Link>
-                    </Button>
-                  </div>
-                </div>
+              <h2 className="text-3xl md:text-4xl font-black text-[#20C7B7] leading-tight">
+                The mission
+              </h2>
+              <p className="text-xl md:text-2xl leading-relaxed font-medium max-w-2xl" style={{ color: "#1C1C1E" }}>
+                "Nutrition should be as data-driven as your training. We're building the infrastructure
+                that makes that true, one athlete at a time."
+              </p>
+              <p className="text-xs text-gray-400">Jonno, 2026</p>
+              <div className="flex flex-wrap gap-3 justify-center pt-2">
+                <Button variant="glow" size="lg" asChild>
+                  <Link href="/join">
+                    Get Started Free
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
               </div>
             </motion.div>
           </div>

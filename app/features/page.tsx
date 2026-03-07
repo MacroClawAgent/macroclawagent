@@ -668,38 +668,21 @@ export default function FeaturesPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-2xl p-10 lg:p-14 flex flex-col lg:flex-row items-center gap-10 lg:gap-14 border" style={{ borderColor: "#E5E7EB" }}
+              className="rounded-2xl p-10 lg:p-16 text-center flex flex-col items-center gap-6 border" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}
             >
-              {/* Mascot — left */}
-              <div className="flex-shrink-0">
-                <Image
-                  src="/fuelsmarter.png"
-                  alt="Jonno mascot"
-                  width={240}
-                  height={240}
-                  className="object-contain drop-shadow-xl"
-                  onError={(e) => { e.currentTarget.style.display = "none"; }}
-                />
+              <h2 className="text-4xl md:text-5xl font-black text-[#20C7B7]">Ready to fuel smarter?</h2>
+              <p className="text-lg max-w-lg" style={{ color: "#6B7280" }}>
+                Create your free account and let the Jonno Agent take over your nutrition in under 5 minutes.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button variant="glow" size="lg" asChild>
+                  <Link href="/join">
+                    Get Started Free
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
               </div>
-              {/* Text — right */}
-              <div className="flex flex-col gap-6 text-center lg:text-left">
-                <h2 className="text-4xl md:text-5xl font-black text-[#20C7B7]">Ready to fuel smarter?</h2>
-                <p className="text-lg max-w-md" style={{ color: "#6B7280" }}>
-                  Create your free account and let the Jonno Agent take over your nutrition in under 5 minutes.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                  <Button variant="glow" size="lg" asChild>
-                    <Link href="/join">
-                      Get Started Free
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" size="lg" asChild>
-                    <Link href="/pricing">See Pricing</Link>
-                  </Button>
-                </div>
-                <p className="text-xs" style={{ color: "#6B7280" }}>No credit card required · Cancel anytime</p>
-              </div>
+              <p className="text-xs" style={{ color: "#6B7280" }}>No credit card required · Cancel anytime</p>
             </motion.div>
           </div>
         </section>
