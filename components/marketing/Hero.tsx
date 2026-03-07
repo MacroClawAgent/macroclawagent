@@ -155,17 +155,16 @@ function PhoneMockup() {
   );
 }
 
-/* ── Background scene: fitness props on the right ── */
+/* ── Background scene: fitness props ── */
 function HeroBackgroundScene() {
   return (
     <div
-      className="absolute inset-y-0 right-0 w-[62%] pointer-events-none z-0 hidden lg:block"
+      className="absolute inset-0 pointer-events-none z-0"
       style={{
         backgroundImage: "url('/background.png')",
         backgroundSize: "cover",
         backgroundPosition: "center center",
         backgroundRepeat: "no-repeat",
-        opacity: 0.92,
       }}
     />
   );
@@ -180,15 +179,7 @@ export function Hero() {
       {/* Layer 2: Photographic fitness scene — right 62% */}
       <HeroBackgroundScene />
 
-      {/* Layer 3a: Horizontal fade — left text column stays crisp */}
-      <div
-        className="absolute inset-0 pointer-events-none z-[1] hidden lg:block"
-        style={{
-          background:
-            "linear-gradient(to right, #F4F5F7 36%, rgba(244,245,247,0.88) 50%, rgba(244,245,247,0.18) 70%, transparent 100%)",
-        }}
-      />
-      {/* Layer 3b: Bottom fade into the next section */}
+      {/* Bottom fade into the next section */}
       <div
         className="absolute bottom-0 left-0 right-0 pointer-events-none z-[1]"
         style={{
