@@ -234,7 +234,7 @@ export default function AboutPage() {
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <Button variant="glow" size="lg" asChild>
-                    <Link href="/login">Get Started Free</Link>
+                    <Link href="/join">Get Started Free</Link>
                   </Button>
                   <Button variant="outline" size="lg" asChild>
                     <a href="#story">
@@ -244,7 +244,7 @@ export default function AboutPage() {
                 </div>
               </motion.div>
 
-              {/* Right column — mascot */}
+              {/* Right column — app preview card */}
               <motion.div
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -254,18 +254,35 @@ export default function AboutPage() {
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-80 h-80 rounded-full bg-[rgba(32,199,183,0.08)] blur-3xl" />
                 </div>
-                <div className="bg-white rounded-2xl p-8 relative z-10 flex flex-col items-center gap-6 max-w-xs w-full">
-                  <Image
-                    src="/mascot.png"
-                    alt="Jonno mascot"
-                    width={260}
-                    height={260}
-                    className="object-contain drop-shadow-2xl"
-                    priority
-                  />
-                  <div className="text-center">
-                    <p className="font-bold text-gray-900 text-lg">The Jonno Agent</p>
-                    <p className="text-sm text-gray-500">Your AI nutrition coach</p>
+                <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 relative z-10 flex flex-col gap-5 w-full max-w-sm shadow-lg">
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium">Good morning</p>
+                      <p className="text-base font-black text-gray-900">Alex 👋</p>
+                    </div>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white" style={{ backgroundColor: "#4C7DFF" }}>A</div>
+                  </div>
+                  {/* Macro card */}
+                  <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg, #20C7B7 0%, #1BA89A 100%)" }}>
+                    <p className="text-[10px] uppercase tracking-widest font-semibold mb-1" style={{ color: "rgba(255,255,255,0.75)" }}>Today&apos;s Goal</p>
+                    <p className="text-3xl font-black text-white leading-none">2,140 <span className="text-base font-normal opacity-70">/ 2,840 kcal</span></p>
+                    <div className="flex gap-4 mt-3">
+                      {[["142g", "Protein"], ["220g", "Carbs"], ["62g", "Fat"]].map(([v, l]) => (
+                        <div key={l}>
+                          <p className="text-sm font-black text-white">{v}</p>
+                          <p className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.65)" }}>{l}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* AI nudge */}
+                  <div className="rounded-xl p-3 flex gap-2.5 items-start" style={{ backgroundColor: "rgba(32,199,183,0.08)", border: "1px solid rgba(32,199,183,0.20)" }}>
+                    <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-black text-white" style={{ backgroundColor: "#20C7B7" }}>✦</div>
+                    <div>
+                      <p className="text-xs font-bold mb-0.5" style={{ color: "#1BA89A" }}>Jonno Agent</p>
+                      <p className="text-xs leading-relaxed text-gray-700">Protein 34g short. Add grilled chicken to hit your target. 🎯</p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -328,7 +345,7 @@ export default function AboutPage() {
                 </div>
               </motion.div>
 
-              {/* Mascot column */}
+              {/* Timeline visual column */}
               <motion.div
                 initial={{ opacity: 0, x: 24 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -336,21 +353,22 @@ export default function AboutPage() {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="relative flex items-center justify-center"
               >
-                {/* Atmospheric glow */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-72 h-72 rounded-full bg-[rgba(32,199,183,0.08)] blur-3xl" />
-                </div>
-                <div className="bg-white rounded-2xl p-6 relative z-10 flex flex-col items-center gap-4 max-w-sm w-full">
-                  <Image
-                    src="/mascot.png"
-                    alt="Jonno mascot"
-                    width={280}
-                    height={280}
-                    className="object-contain drop-shadow-2xl"
-                  />
-                  <div className="text-center">
-                    <p className="font-bold text-gray-900">The Jonno Agent</p>
-                    <p className="text-sm text-gray-500">Your AI nutrition coach</p>
+                <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 w-full max-w-sm shadow-sm flex flex-col gap-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#20C7B7" }}>The problem we solved</p>
+                  {[
+                    { label: "Old apps", value: "Static 2,000 kcal", bad: true },
+                    { label: "After 4hr ride", value: "Still 2,000 kcal", bad: true },
+                    { label: "With Jonno", value: "3,840 kcal updated", bad: false },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between py-3 border-b border-[#F4F5F7] last:border-0">
+                      <span className="text-sm text-gray-500">{row.label}</span>
+                      <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${row.bad ? "bg-red-50 text-red-500" : "text-white"}`} style={row.bad ? {} : { backgroundColor: "#20C7B7" }}>
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="rounded-xl p-3 text-sm text-center font-semibold" style={{ backgroundColor: "rgba(32,199,183,0.10)", color: "#1BA89A" }}>
+                    Jonno adjusts automatically. Every session.
                   </div>
                 </div>
               </motion.div>
@@ -544,21 +562,33 @@ export default function AboutPage() {
               ))}
             </div>
 
-            {/* How it works diagram */}
+            {/* How it works — inline flow */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-2xl p-6 text-center"
+              className="bg-white border border-[#E5E7EB] rounded-2xl p-8"
             >
-              <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">System architecture</p>
-              <Image
-                src="/howitworks.png"
-                alt="How Jonno works"
-                width={900}
-                height={400}
-                className="w-full object-contain rounded-lg max-h-72"
-              />
+              <p className="text-xs text-gray-400 uppercase tracking-widest mb-8 text-center">System architecture</p>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-3">
+                {[
+                  { icon: "🏃", label: "Strava", sub: "Activity data", color: "bg-orange-50 border-orange-200 text-orange-600" },
+                  { icon: "✦", label: "Jonno Agent", sub: "AI reasoning", color: "bg-[rgba(32,199,183,0.10)] border-[rgba(32,199,183,0.30)] text-[#1BA89A]" },
+                  { icon: "🎯", label: "Macro Targets", sub: "Updated daily", color: "bg-blue-50 border-blue-200 text-blue-600" },
+                  { icon: "🛒", label: "Uber Eats", sub: "Cart auto-built", color: "bg-emerald-50 border-emerald-200 text-emerald-600" },
+                ].map((node, i, arr) => (
+                  <div key={node.label} className="flex items-center gap-3">
+                    <div className={`flex flex-col items-center gap-2 px-5 py-4 rounded-xl border ${node.color} min-w-[110px] text-center`}>
+                      <span className="text-2xl">{node.icon}</span>
+                      <p className="text-sm font-bold">{node.label}</p>
+                      <p className="text-[10px] opacity-70">{node.sub}</p>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <div className="hidden md:flex items-center text-gray-300 text-xl font-thin">→</div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </div>
         </section>
@@ -675,7 +705,7 @@ export default function AboutPage() {
                   <p className="text-xs text-gray-500">Jonno, 2026</p>
                   <div className="flex flex-wrap gap-3 pt-2">
                     <Button variant="glow" size="lg" asChild>
-                      <Link href="/login">
+                      <Link href="/join">
                         Get Started Free
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Link>

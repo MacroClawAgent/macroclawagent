@@ -435,7 +435,7 @@ export default function FeaturesPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button variant="glow" size="lg" asChild>
-                    <Link href="/login">
+                    <Link href="/join">
                       Start Free
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Link>
@@ -503,7 +503,7 @@ export default function FeaturesPage() {
                     ))}
                   </ul>
                   <Link
-                    href="/login"
+                    href="/join"
                     className={`inline-flex items-center gap-1.5 text-sm font-semibold ${pillar.checkColor} hover:opacity-80 transition-opacity`}
                   >
                     {pillar.linkText}
@@ -689,7 +689,7 @@ export default function FeaturesPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                   <Button variant="glow" size="lg" asChild>
-                    <Link href="/login">
+                    <Link href="/join">
                       Get Started Free
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Link>
