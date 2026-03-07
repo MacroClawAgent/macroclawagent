@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { User } from "lucide-react";
 
 const navLinks = [
   { label: "Features", href: "/features" },
@@ -64,15 +63,8 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* Right: Sign In + Join Waitlist — always visible */}
+        {/* Right: Join Waitlist — always visible */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[#6B7280] hover:text-[#1C1C1E] transition-colors duration-200 px-3 py-2"
-          >
-            <User className="w-4 h-4" />
-            Sign In
-          </Link>
           <Link
             href="/join"
             className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full text-white text-sm font-bold transition-all duration-200 hover:opacity-90"
@@ -107,13 +99,6 @@ export function Navbar() {
             </Link>
           ))}
           <div className="pt-3 flex flex-col gap-2">
-            <Link
-              href="/login"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center w-full px-5 py-3 rounded-full border border-[#E5E7EB] text-[#1C1C1E] text-sm font-semibold hover:bg-[#F4F5F7] transition-colors"
-            >
-              Sign In
-            </Link>
             <Link
               href="/join"
               onClick={() => setMobileOpen(false)}
