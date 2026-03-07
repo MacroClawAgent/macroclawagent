@@ -155,24 +155,47 @@ function PhoneMockup() {
   );
 }
 
+/* ── Background scene: fitness props on the right ── */
+function HeroBackgroundScene() {
+  return (
+    <div className="absolute inset-y-0 right-0 w-[62%] pointer-events-none z-0 hidden lg:flex items-end overflow-hidden">
+      <Image
+        src="/background.png"
+        alt=""
+        fill
+        className="object-cover object-center"
+        style={{ opacity: 0.92 }}
+        priority
+      />
+    </div>
+  );
+}
+
 export function Hero() {
   return (
     <section
       className="relative overflow-hidden pt-16"
-      style={{
-        backgroundImage: "url('/background.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
+      style={{ backgroundColor: "#F4F5F7" }}
     >
-      {/* Overlay to keep text readable */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(244,245,247,0.72)" }} />
+      {/* Layer 2: Photographic fitness scene — right 62% */}
+      <HeroBackgroundScene />
 
-      {/* Decorative blobs */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(32,199,183,0.14) 0%, transparent 70%)" }} />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(76,125,255,0.10) 0%, transparent 70%)" }} />
-      <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(34,197,94,0.08) 0%, transparent 70%)" }} />
+      {/* Layer 3a: Horizontal fade — left text column stays crisp */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[1] hidden lg:block"
+        style={{
+          background:
+            "linear-gradient(to right, #F4F5F7 36%, rgba(244,245,247,0.88) 50%, rgba(244,245,247,0.18) 70%, transparent 100%)",
+        }}
+      />
+      {/* Layer 3b: Bottom fade into the next section */}
+      <div
+        className="absolute bottom-0 left-0 right-0 pointer-events-none z-[1]"
+        style={{
+          height: 120,
+          background: "linear-gradient(to bottom, transparent, #F4F5F7)",
+        }}
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-end">
@@ -186,7 +209,14 @@ export function Hero() {
           >
             {/* Beta badge */}
             <motion.div variants={itemVariants}>
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide" style={{ backgroundColor: "rgba(32,199,183,0.10)", border: "1px solid rgba(32,199,183,0.30)", color: "#1BA89A" }}>
+              <span
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide"
+                style={{
+                  backgroundColor: "rgba(32,199,183,0.10)",
+                  border: "1px solid rgba(32,199,183,0.30)",
+                  color: "#1BA89A",
+                }}
+              >
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#22C55E" }} />
                 Beta Access — Limited Spots
               </span>
@@ -250,8 +280,8 @@ export function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* ── RIGHT: Phone mockup ── */}
-          <div className="flex justify-center lg:justify-end items-end pb-0">
+          {/* ── RIGHT: Phone mockup floating above the scene ── */}
+          <div className="relative z-10 flex justify-center lg:justify-center items-end pb-0">
             <PhoneMockup />
           </div>
         </div>
