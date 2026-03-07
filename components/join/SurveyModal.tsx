@@ -344,8 +344,7 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
             className="relative z-10 w-full max-w-xl rounded-3xl shadow-2xl flex flex-col overflow-hidden"
-            style={{ backgroundColor: "#FFFDFB" }}
-            style={{ maxHeight: "90vh" }}
+            style={{ backgroundColor: "#FFFDFB", maxHeight: "90vh" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* ── Header ── */}
