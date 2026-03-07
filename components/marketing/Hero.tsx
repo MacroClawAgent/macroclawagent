@@ -159,8 +159,16 @@ export function Hero() {
   return (
     <section
       className="relative overflow-hidden pt-16"
-      style={{ backgroundColor: "#F4F5F7" }}
+      style={{
+        backgroundImage: "url('/background.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
     >
+      {/* Overlay to keep text readable */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(244,245,247,0.72)" }} />
+
       {/* Decorative blobs */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(32,199,183,0.14) 0%, transparent 70%)" }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(76,125,255,0.10) 0%, transparent 70%)" }} />
