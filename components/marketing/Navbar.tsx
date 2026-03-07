@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { User } from "lucide-react";
 
 const navLinks = [
@@ -14,6 +15,8 @@ const navLinks = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -49,7 +52,7 @@ export function Navbar() {
         </Link>
 
         {/* Nav Links — desktop, hidden until scrolled */}
-        <div className={`hidden md:flex items-center gap-8 transition-all duration-300 ${atTop ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+        <div className={`hidden md:flex items-center gap-8 transition-all duration-300 ${atTop && isHome ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
           {navLinks.map((item) => (
             <Link
               key={item.label}
