@@ -158,16 +158,16 @@ function PhoneMockup() {
 /* ── Background scene: fitness props on the right ── */
 function HeroBackgroundScene() {
   return (
-    <div className="absolute inset-y-0 right-0 w-[62%] pointer-events-none z-0 hidden lg:flex items-end overflow-hidden">
-      <Image
-        src="/background.png"
-        alt=""
-        fill
-        className="object-cover object-center"
-        style={{ opacity: 0.92 }}
-        priority
-      />
-    </div>
+    <div
+      className="absolute inset-y-0 right-0 w-[62%] pointer-events-none z-0 hidden lg:block"
+      style={{
+        backgroundImage: "url('/background.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+        backgroundRepeat: "no-repeat",
+        opacity: 0.92,
+      }}
+    />
   );
 }
 
