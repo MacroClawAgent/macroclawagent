@@ -410,7 +410,7 @@ export default function FeaturesPage() {
       <main className="pt-16">
 
         {/* ── Hero ── */}
-        <section className="relative py-24 md:py-32 overflow-hidden">
+        <section className="relative py-14 md:py-20 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
           <div className="max-w-6xl mx-auto px-6 relative">
@@ -474,7 +474,7 @@ export default function FeaturesPage() {
         {pillars.map((pillar, i) => (
           <section
             key={pillar.tag}
-            className={`py-24`}
+            className="py-14"
             style={i % 2 === 1 ? { backgroundColor: "#F4F5F7" } : {}}
           >
             <div className="max-w-6xl mx-auto px-6">
@@ -526,7 +526,7 @@ export default function FeaturesPage() {
         ))}
 
         {/* ── Feature Grid ── */}
-        <section className="py-24" style={{ backgroundColor: "#F4F5F7" }}>
+        <section className="py-14" style={{ backgroundColor: "#F4F5F7" }}>
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -571,7 +571,7 @@ export default function FeaturesPage() {
         </section>
 
         {/* ── Integrations ── */}
-        <section className="py-24">
+        <section className="py-14">
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -616,7 +616,7 @@ export default function FeaturesPage() {
         </section>
 
         {/* ── Social Proof ── */}
-        <section className="py-24" style={{ backgroundColor: "#F4F5F7" }}>
+        <section className="py-14" style={{ backgroundColor: "#F4F5F7" }}>
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -662,7 +662,7 @@ export default function FeaturesPage() {
         </section>
 
         {/* ── CTA ── */}
-        <section className="py-24">
+        <section className="py-14">
           <div className="max-w-5xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

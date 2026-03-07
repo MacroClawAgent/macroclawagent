@@ -137,9 +137,9 @@ export default function FAQPage() {
       <Navbar />
       <main className="pt-16">
         {/* Header */}
-        <section className="relative py-24 overflow-hidden">
+        <section className="relative py-14 overflow-hidden">
           <div className="absolute top-1/3 left-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
-          <div className="max-w-3xl mx-auto px-6 text-center">
+          <div className="max-w-4xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
@@ -160,7 +160,7 @@ export default function FAQPage() {
 
         {/* FAQ Sections */}
         <section className="pb-24">
-          <div className="max-w-3xl mx-auto px-6 flex flex-col gap-14">
+          <div className="max-w-4xl mx-auto px-6 flex flex-col gap-14">
             {sections.map((section, si) => (
               <motion.div
                 key={section.title}
@@ -182,7 +182,7 @@ export default function FAQPage() {
 
         {/* Still have questions */}
         <section className="py-16 border-t" style={{ borderColor: "#E5E7EB" }}>
-          <div className="max-w-3xl mx-auto px-6 text-center">
+          <div className="max-w-4xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}

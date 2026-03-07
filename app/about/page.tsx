@@ -198,7 +198,7 @@ export default function AboutPage() {
       <main className="pt-16">
 
         {/* ── Hero ── */}
-        <section className="relative py-28 md:py-36 overflow-hidden">
+        <section className="relative py-16 md:py-20 overflow-hidden">
           {/* Atmospheric orbs */}
           <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] rounded-full blur-[120px] pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
           <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
@@ -276,7 +276,7 @@ export default function AboutPage() {
 
         {/* ── Stats Bar ── */}
         <section className="py-14 border-y backdrop-blur-sm" style={{ borderColor: "#E5E7EB", backgroundColor: "rgba(255,253,251,0.60)" }}>
-          <div className="max-w-5xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-10 divide-x divide-white/[0.06]">
               {stats.map((s) => (
                 <div key={s.label} className="text-center pl-4 first:pl-0">
@@ -288,7 +288,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Our Story ── */}
-        <section id="story" className="py-24" style={{ backgroundColor: "#F4F5F7" }}>
+        <section id="story" className="py-14" style={{ backgroundColor: "#F4F5F7" }}>
           <div className="max-w-6xl mx-auto px-6">
             <div className="grid md:grid-cols-2 gap-16 items-center">
               {/* Text column */}
@@ -359,8 +359,8 @@ export default function AboutPage() {
         </section>
 
         {/* ── Company Timeline ── */}
-        <section className="py-24">
-          <div className="max-w-4xl mx-auto px-6">
+        <section className="py-14">
+          <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -454,7 +454,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Team ── */}
-        <section className="py-24">
+        <section className="py-14">
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -565,7 +565,7 @@ export default function AboutPage() {
 
         {/* ── Press / Featured In ── */}
         <section className="py-16 border-y" style={{ borderColor: "#E5E7EB" }}>
-          <div className="max-w-5xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -590,8 +590,8 @@ export default function AboutPage() {
         </section>
 
         {/* ── Join Us ── */}
-        <section className="py-24">
-          <div className="max-w-4xl mx-auto px-6">
+        <section className="py-14">
+          <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -643,7 +643,7 @@ export default function AboutPage() {
 
         {/* ── Mission / CTA ── */}
         <section className="py-20 border-t" style={{ borderColor: "#E5E7EB" }}>
-          <div className="max-w-5xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
