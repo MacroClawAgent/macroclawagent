@@ -28,7 +28,7 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-blue-400/20" style={{ background: "linear-gradient(150deg, #0052CC 0%, #0066EE 55%, #1a85ff 100%)" }}>
+    <footer className="border-t" style={{ borderColor: "#CFC7C2", background: "linear-gradient(160deg, #4A454A 0%, #3A3538 100%)" }}>
       <div className="max-w-6xl mx-auto px-6 pt-16 pb-8">
         {/* Top section: logo col + link cols */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
@@ -46,7 +46,7 @@ export function Footer() {
                 Jonno
               </span>
             </Link>
-            <p className="text-sm text-blue-100/80 leading-relaxed max-w-xs">
+            <p className="text-sm leading-relaxed max-w-xs" style={{ color: "rgba(255,253,251,0.60)" }}>
               AI-powered nutrition for serious athletes. Sync your training,
               plan your meals, fuel your performance.
             </p>
@@ -55,7 +55,7 @@ export function Footer() {
               <a
                 href="#"
                 aria-label="Twitter / X"
-                className="w-9 h-9 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-white/70 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:opacity-90" style={{ backgroundColor: "rgba(255,253,251,0.10)", border: "1px solid rgba(255,253,251,0.15)", color: "rgba(255,253,251,0.65)" }}
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.261 5.635 5.902-5.635zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -64,7 +64,7 @@ export function Footer() {
               <a
                 href="#"
                 aria-label="GitHub"
-                className="w-9 h-9 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-white/70 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:opacity-90" style={{ backgroundColor: "rgba(255,253,251,0.10)", border: "1px solid rgba(255,253,251,0.15)", color: "rgba(255,253,251,0.65)" }}
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
@@ -75,7 +75,7 @@ export function Footer() {
 
           {/* Col 2: Product */}
           <div>
-            <h3 className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "rgba(255,253,251,0.45)" }}>
               Product
             </h3>
             <ul className="space-y-3">
@@ -83,7 +83,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-blue-100/75 hover:text-white transition-colors duration-200"
+                    className="text-sm transition-colors duration-200 hover:text-white" style={{ color: "rgba(255,253,251,0.60)" }}
                   >
                     {link.label}
                   </Link>
@@ -94,7 +94,7 @@ export function Footer() {
 
           {/* Col 3: Company */}
           <div>
-            <h3 className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "rgba(255,253,251,0.45)" }}>
               Company
             </h3>
             <ul className="space-y-3">
@@ -102,7 +102,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-blue-100/75 hover:text-white transition-colors duration-200"
+                    className="text-sm transition-colors duration-200 hover:text-white" style={{ color: "rgba(255,253,251,0.60)" }}
                   >
                     {link.label}
                   </Link>
@@ -113,7 +113,7 @@ export function Footer() {
 
           {/* Col 4: Support + Legal */}
           <div>
-            <h3 className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "rgba(255,253,251,0.45)" }}>
               Support
             </h3>
             <ul className="space-y-3 mb-8">
@@ -121,14 +121,14 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-blue-100/75 hover:text-white transition-colors duration-200"
+                    className="text-sm transition-colors duration-200 hover:text-white" style={{ color: "rgba(255,253,251,0.60)" }}
                   >
                     {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
-            <h3 className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "rgba(255,253,251,0.45)" }}>
               Legal
             </h3>
             <ul className="space-y-3">
@@ -136,7 +136,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-blue-100/75 hover:text-white transition-colors duration-200"
+                    className="text-sm transition-colors duration-200 hover:text-white" style={{ color: "rgba(255,253,251,0.60)" }}
                   >
                     {link.label}
                   </Link>
@@ -147,18 +147,18 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="h-px bg-white/20 mb-8" />
+        <div className="h-px mb-8" style={{ backgroundColor: "rgba(255,253,251,0.12)" }} />
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-white/60">
+          <p className="text-xs" style={{ color: "rgba(255,253,251,0.45)" }}>
             © 2026 Jonno. Built for athletes who eat with intention.
           </p>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/15 border border-white/20">
-            <span className="text-xs text-white/80 font-medium">Powered by</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: "rgba(255,253,251,0.08)", border: "1px solid rgba(255,253,251,0.12)" }}>
+            <span className="text-xs font-medium" style={{ color: "rgba(255,253,251,0.65)" }}>Powered by</span>
             <span className="text-xs font-bold text-white">Claude AI</span>
-            <span className="text-xs text-white/50">·</span>
-            <span className="text-xs text-orange-300 font-medium">Strava</span>
-            <span className="text-xs text-white/50">·</span>
-            <span className="text-xs text-emerald-300 font-medium">Uber Eats</span>
+            <span className="text-xs" style={{ color: "rgba(255,253,251,0.35)" }}>·</span>
+            <span className="text-xs font-medium" style={{ color: "#F29A69" }}>Strava</span>
+            <span className="text-xs" style={{ color: "rgba(255,253,251,0.35)" }}>·</span>
+            <span className="text-xs font-medium" style={{ color: "#8FD3F4" }}>Uber Eats</span>
           </div>
         </div>
       </div>

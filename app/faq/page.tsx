@@ -9,7 +9,7 @@ import { ChevronDown } from "lucide-react";
 const sections = [
   {
     title: "General",
-    color: "text-blue-600",
+    color: "text-[#F29A69]",
     faqs: [
       {
         q: "What is Jonno?",
@@ -101,15 +101,17 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="border-b border-gray-100 py-5 cursor-pointer"
+      className="py-5 cursor-pointer border-b"
+      style={{ borderColor: "#E8DDD8" }}
       onClick={() => setOpen((o) => !o)}
     >
       <div className="flex items-start justify-between gap-4">
-        <p className={`text-sm font-semibold text-gray-900 ${open ? "text-indigo-200" : ""} transition-colors`}>
+        <p className="text-sm font-semibold transition-colors" style={{ color: open ? "#F29A69" : "#4A454A" }}>
           {q}
         </p>
         <ChevronDown
-          className={`w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5 transition-transform duration-200 ${open ? "rotate-180 text-blue-600" : ""}`}
+          className={`w-4 h-4 flex-shrink-0 mt-0.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          style={{ color: open ? "#F29A69" : "#7C7472" }}
         />
       </div>
       <AnimatePresence>
@@ -131,25 +133,25 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
       <Navbar />
       <main className="pt-16">
         {/* Header */}
         <section className="relative py-24 overflow-hidden">
-          <div className="absolute top-1/3 left-1/4 w-80 h-80 rounded-full bg-indigo-900/10 blur-3xl pointer-events-none" />
+          <div className="absolute top-1/3 left-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
           <div className="max-w-3xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-4">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#F29A69" }}>
                 Got questions
               </p>
               <h1 className="text-5xl font-black tracking-tight gradient-text-light mb-4">
                 Frequently asked questions.
               </h1>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg" style={{ color: "#7C7472" }}>
                 Everything you need to know about Jonno.
               </p>
             </motion.div>
@@ -179,20 +181,21 @@ export default function FAQPage() {
         </section>
 
         {/* Still have questions */}
-        <section className="py-16 border-t border-gray-100">
+        <section className="py-16 border-t" style={{ borderColor: "#E8DDD8" }}>
           <div className="max-w-3xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <p className="text-2xl font-bold text-gray-900 mb-3">Still have questions?</p>
-              <p className="text-gray-600 mb-6">
+              <p className="text-2xl font-bold mb-3" style={{ color: "#4A454A" }}>Still have questions?</p>
+              <p className="mb-6" style={{ color: "#7C7472" }}>
                 We reply to every message. Usually within a few hours.
               </p>
               <a
                 href="mailto:hello@macroclawagent.com"
-                className="text-blue-600 hover:text-blue-500 transition-colors font-semibold"
+                className="font-semibold transition-colors hover:opacity-80"
+                style={{ color: "#F29A69" }}
               >
                 hello@macroclawagent.com
               </a>

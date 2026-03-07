@@ -98,7 +98,7 @@ function AIScreen() {
       <div className="px-4">
         {/* Header */}
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #8FD3F4, #69BDEB)" }}>
             <Sparkles className="w-3 h-3 text-white" />
           </div>
           <div>
@@ -137,7 +137,7 @@ function AIScreen() {
             </div>
           </div>
           <div className="flex justify-start">
-            <div className="bg-blue-600 rounded-[12px] rounded-tl-sm px-2.5 py-2 text-[8.5px] text-white leading-relaxed max-w-[88%]">
+            <div className="rounded-[12px] rounded-tl-sm px-2.5 py-2 text-[8.5px] text-white leading-relaxed max-w-[88%]" style={{ background: "linear-gradient(135deg, #8FD3F4, #69BDEB)" }}>
               Based on your 15km plan, aim for 80g carbs 3hrs before. Oat porridge + banana fits perfectly. 🍌
             </div>
           </div>
@@ -147,7 +147,7 @@ function AIScreen() {
             </div>
           </div>
           <div className="flex justify-start">
-            <div className="bg-blue-600 rounded-[12px] rounded-tl-sm px-2.5 py-2 text-[8.5px] text-white leading-relaxed max-w-[88%]">
+            <div className="rounded-[12px] rounded-tl-sm px-2.5 py-2 text-[8.5px] text-white leading-relaxed max-w-[88%]" style={{ background: "linear-gradient(135deg, #8FD3F4, #69BDEB)" }}>
               Done ✓ Your plan is ready in Smart Cart.
             </div>
           </div>
@@ -194,7 +194,7 @@ function CartScreen() {
           </div>
         ))}
         {/* Order button */}
-        <button className="mt-2 w-full py-2.5 rounded-xl bg-emerald-600 text-white text-[9px] font-black tracking-wide">
+        <button className="mt-2 w-full py-2.5 rounded-xl text-white text-[9px] font-black tracking-wide" style={{ background: "linear-gradient(135deg, #F29A69, #E88367)" }}>
           Order on Uber Eats →
         </button>
       </div>
@@ -206,7 +206,7 @@ const steps = [
   {
     number: "01",
     label: "Strava API",
-    labelColor: "text-orange-600 bg-orange-50 border-orange-200",
+    labelColor: "text-[#C4693A] bg-[#FDF0E8] border-[#F2C4A8]",
     subtitle: "Connected automatically",
     title: "Sync your training.",
     description:
@@ -217,7 +217,7 @@ const steps = [
   {
     number: "02",
     label: "Claude AI",
-    labelColor: "text-blue-600 bg-blue-50 border-blue-200",
+    labelColor: "text-[#3A9EC4] bg-[#EBF7FD] border-[#A8DEF2]",
     subtitle: "Personalized to your goals",
     title: "AI plans your macros.",
     description:
@@ -228,7 +228,7 @@ const steps = [
   {
     number: "03",
     label: "Uber Eats",
-    labelColor: "text-emerald-600 bg-emerald-50 border-emerald-200",
+    labelColor: "text-[#3A9EC4] bg-[#EBF7FD] border-[#A8DEF2]",
     subtitle: "One tap to your door",
     title: "Order food that fits.",
     description:
@@ -240,7 +240,7 @@ const steps = [
 
 export function ProcessFlow() {
   return (
-    <section id="how-it-works" className="bg-white py-24 px-6 overflow-hidden">
+    <section id="how-it-works" className="py-24 px-6 overflow-hidden" style={{ backgroundColor: "#FFFDFB" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -250,14 +250,14 @@ export function ProcessFlow() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#F29A69" }}>
             How It Works
           </p>
-          <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight" style={{ color: "#4A454A" }}>
             Hit your goals in{" "}
             <span className="gradient-text-light">3 steps.</span>
           </h2>
-          <p className="mt-4 text-gray-600 text-lg max-w-xl mx-auto">
+          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "#7C7472" }}>
             From training session to optimised plate — fully automated.
           </p>
         </motion.div>
@@ -275,14 +275,14 @@ export function ProcessFlow() {
             >
               {/* Text column */}
               <div className="flex-1 flex flex-col gap-5">
-                <span className="text-[88px] font-black text-blue-50 leading-none font-mono select-none -mb-4">
+                <span className="text-[88px] font-black leading-none font-mono select-none -mb-4" style={{ color: "#EFD9CC" }}>
                   {step.number}
                 </span>
                 <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{step.subtitle}</p>
-                  <h3 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">{step.title}</h3>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7C7472" }}>{step.subtitle}</p>
+                  <h3 className="text-3xl md:text-4xl font-black leading-tight" style={{ color: "#4A454A" }}>{step.title}</h3>
                 </div>
-                <p className="text-gray-600 leading-relaxed text-base max-w-md">{step.description}</p>
+                <p className="leading-relaxed text-base max-w-md" style={{ color: "#7C7472" }}>{step.description}</p>
                 <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border w-fit ${step.labelColor}`}>
                   {step.label}
                 </span>

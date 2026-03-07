@@ -4,49 +4,49 @@
 
 @layer base {
   :root {
-    --background: 228 30% 4%;
-    --foreground: 210 40% 98%;
-    --card: 228 25% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 228 25% 6%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 228 30% 4%;
-    --secondary: 228 20% 12%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 228 15% 14%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 239 84% 67%;
-    --accent-foreground: 228 30% 4%;
+    /* Pastel Coastal Fitness palette */
+    --background: 24 43% 95%;       /* #F5ECE6 warm off-white */
+    --foreground: 300 3% 29%;       /* #4A454A charcoal */
+    --card: 28 50% 97%;             /* #FAF4EF soft cream */
+    --card-foreground: 300 3% 29%;
+    --popover: 28 50% 97%;
+    --popover-foreground: 300 3% 29%;
+    --primary: 22 85% 68%;          /* #F29A69 soft peach */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 24 35% 91%;        /* #EFD9CC sand blush */
+    --secondary-foreground: 300 3% 29%;
+    --muted: 24 35% 93%;
+    --muted-foreground: 4 4% 48%;   /* #7C7472 muted gray */
+    --accent: 22 75% 65%;           /* #E88367 warm coral */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 228 15% 10%;
-    --input: 228 15% 10%;
-    --ring: 239 84% 67%;
-    --radius: 0.75rem;
+    --border: 22 18% 80%;           /* #CFC7C2 border gray */
+    --input: 22 18% 80%;
+    --ring: 22 85% 68%;
+    --radius: 1rem;
   }
 
-  /* Force dark mode */
   .dark {
-    --background: 228 30% 4%;
-    --foreground: 210 40% 98%;
-    --card: 228 25% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 228 25% 6%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 228 30% 4%;
-    --secondary: 228 20% 12%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 228 15% 14%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 239 84% 67%;
-    --accent-foreground: 228 30% 4%;
+    --background: 24 43% 95%;
+    --foreground: 300 3% 29%;
+    --card: 28 50% 97%;
+    --card-foreground: 300 3% 29%;
+    --popover: 28 50% 97%;
+    --popover-foreground: 300 3% 29%;
+    --primary: 22 85% 68%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 24 35% 91%;
+    --secondary-foreground: 300 3% 29%;
+    --muted: 24 35% 93%;
+    --muted-foreground: 4 4% 48%;
+    --accent: 22 75% 65%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
-    --border: 228 15% 10%;
-    --input: 228 15% 10%;
-    --ring: 239 84% 67%;
+    --border: 22 18% 80%;
+    --input: 22 18% 80%;
+    --ring: 22 85% 68%;
   }
 }
 
@@ -60,7 +60,9 @@
   }
 
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply antialiased;
+    background-color: #FFFDFB;
+    color: #4A454A;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
@@ -71,39 +73,39 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: #F5ECE6;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(0, 102, 238, 0.30);
+    background: rgba(242, 154, 105, 0.40);
     border-radius: 99px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 102, 238, 0.55);
+    background: rgba(232, 131, 103, 0.65);
   }
 
   /* Selection color */
   ::selection {
-    background: rgba(0, 102, 238, 0.15);
-    color: #111827;
+    background: rgba(242, 154, 105, 0.20);
+    color: #4A454A;
   }
 }
 
 @layer utilities {
-  /* Mesh gradient backgrounds */
+  /* Mesh gradient backgrounds — Coastal Sunrise palette */
   .bg-mesh-hero {
     background:
-      radial-gradient(ellipse 80% 60% at 50% -20%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 40% at 80% 60%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse 50% 50% at 20% 80%, rgba(15, 17, 26, 0.8) 0%, transparent 50%),
-      #08090D;
+      radial-gradient(ellipse 80% 60% at 50% -20%, rgba(242, 154, 105, 0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 80% 60%, rgba(143, 211, 244, 0.20) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 50% at 20% 80%, rgba(239, 217, 204, 0.50) 0%, transparent 50%),
+      #F5ECE6;
   }
 
   .bg-mesh-section {
     background:
-      radial-gradient(ellipse 60% 40% at 50% 50%, rgba(15, 17, 26, 0.9) 0%, transparent 70%),
-      #08090D;
+      radial-gradient(ellipse 60% 40% at 50% 50%, rgba(250, 244, 239, 0.90) 0%, transparent 70%),
+      #FAF4EF;
   }
 
   /* Text balance for headings */
@@ -132,6 +134,17 @@
   }
   .animate-marquee:hover {
     animation-play-state: paused;
+  }
+
+  /* Coastal sunrise section backgrounds */
+  .bg-coastal-warm {
+    background: linear-gradient(150deg, #F5ECE6 0%, #EFD9CC 50%, #FAF4EF 100%);
+  }
+  .bg-coastal-cool {
+    background: linear-gradient(135deg, #EEF7FD 0%, #D8EEF9 50%, #FAF4EF 100%);
+  }
+  .bg-coastal-blend {
+    background: linear-gradient(135deg, #F5ECE6 0%, #EFD9CC 35%, #8FD3F4 100%);
   }
 
 }

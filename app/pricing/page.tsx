@@ -113,13 +113,15 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="border-b border-gray-100 py-5 cursor-pointer"
+      className="py-5 cursor-pointer border-b"
+      style={{ borderColor: "#E8DDD8" }}
       onClick={() => setOpen((o) => !o)}
     >
       <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-semibold text-gray-900">{q}</p>
+        <p className="text-sm font-semibold" style={{ color: "#4A454A" }}>{q}</p>
         <ChevronDown
-          className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          style={{ color: "#7C7472" }}
         />
       </div>
       <AnimatePresence>
@@ -141,37 +143,37 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 function CheckOrX({ value }: { value: boolean | string }) {
   if (typeof value === "string") {
-    return <span className="text-xs font-semibold text-blue-500">{value}</span>;
+    return <span className="text-xs font-semibold" style={{ color: "#F29A69" }}>{value}</span>;
   }
   return value ? (
     <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" />
   ) : (
-    <X className="w-4 h-4 text-slate-700 mx-auto" />
+    <X className="w-4 h-4 mx-auto" style={{ color: "#CFC7C2" }} />
   );
 }
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
       <Navbar />
       <main className="pt-16">
         {/* Hero */}
         <section className="relative py-24 overflow-hidden">
-          <div className="absolute top-1/3 left-1/4 w-96 h-96 rounded-full bg-indigo-900/10 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-violet-900/08 blur-3xl pointer-events-none" />
+          <div className="absolute top-1/3 left-1/4 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
           <div className="max-w-6xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-4">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#F29A69" }}>
                 Simple pricing
               </p>
               <h1 className="text-5xl md:text-6xl font-black tracking-tight gradient-text-light mb-4">
                 Start free.<br className="hidden md:block" /> Upgrade when you're ready.
               </h1>
-              <p className="text-lg text-gray-600 max-w-xl mx-auto">
+              <p className="text-lg max-w-xl mx-auto" style={{ color: "#7C7472" }}>
                 No hidden fees. No annual lock-in. Cancel anytime.
               </p>
             </motion.div>
@@ -194,7 +196,7 @@ export default function PricingPage() {
                 >
                   {tier.badge && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="flex items-center gap-1.5 px-4 py-1 rounded-full bg-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-500/30">
+                      <span className="flex items-center gap-1.5 px-4 py-1 rounded-full text-white text-xs font-bold shadow-lg" style={{ background: "linear-gradient(135deg, #F29A69, #E88367)" }}>
                         <Zap className="w-3 h-3" />
                         {tier.badge}
                       </span>
@@ -251,7 +253,7 @@ export default function PricingPage() {
         </section>
 
         {/* Comparison Table */}
-        <section className="py-20 bg-gray-50">
+        <section className="py-20" style={{ backgroundColor: "#FAF4EF" }}>
           <div className="max-w-4xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -269,10 +271,10 @@ export default function PricingPage() {
               className="light-card overflow-hidden"
             >
               {/* Table header */}
-              <div className="grid grid-cols-4 gap-4 p-5 border-b border-gray-100 bg-gray-50">
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Feature</div>
+              <div className="grid grid-cols-4 gap-4 p-5 border-b" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8" }}>
+                <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#7C7472" }}>Feature</div>
                 {["Free", "Pro", "Elite"].map((t) => (
-                  <div key={t} className={`text-xs font-bold text-center uppercase tracking-wide ${t === "Pro" ? "text-blue-600" : "text-gray-600"}`}>
+                  <div key={t} className="text-xs font-bold text-center uppercase tracking-wide" style={{ color: t === "Pro" ? "#F29A69" : "#7C7472" }}>
                     {t}
                   </div>
                 ))}
@@ -281,11 +283,13 @@ export default function PricingPage() {
               {comparison.map((row, i) => (
                 <div
                   key={row.feature}
-                  className={`grid grid-cols-4 gap-4 px-5 py-4 ${
-                    i < comparison.length - 1 ? "border-b border-gray-100" : ""
-                  } ${i % 2 === 0 ? "bg-transparent" : "bg-gray-50"}`}
+                  className={`grid grid-cols-4 gap-4 px-5 py-4`}
+                  style={{
+                    borderBottom: i < comparison.length - 1 ? "1px solid #E8DDD8" : undefined,
+                    backgroundColor: i % 2 === 0 ? "transparent" : "#FAF4EF",
+                  }}
                 >
-                  <div className="text-sm text-gray-700">{row.feature}</div>
+                  <div className="text-sm" style={{ color: "#4A454A" }}>{row.feature}</div>
                   <div className="text-center"><CheckOrX value={row.free} /></div>
                   <div className="text-center"><CheckOrX value={row.pro} /></div>
                   <div className="text-center"><CheckOrX value={row.elite} /></div>
@@ -319,14 +323,14 @@ export default function PricingPage() {
         </section>
 
         {/* CTA strip */}
-        <section className="py-16 border-t border-gray-100">
+        <section className="py-16 border-t" style={{ borderColor: "#E8DDD8" }}>
           <div className="max-w-6xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <p className="text-gray-600 text-lg mb-6">
+              <p className="text-lg mb-6" style={{ color: "#7C7472" }}>
                 Still deciding? Start with Free. Upgrade when the Jonno Agent earns it.
               </p>
               <Button variant="glow" size="lg" asChild>

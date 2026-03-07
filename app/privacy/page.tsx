@@ -4,16 +4,16 @@ import { Footer } from "@/components/marketing/Footer";
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
       <Navbar />
       <main className="pt-16">
         <section className="py-20">
           <div className="max-w-3xl mx-auto px-6">
             {/* Header */}
             <div className="mb-12">
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">Legal</p>
-              <h1 className="text-4xl font-black text-gray-900 mb-3">Privacy Policy</h1>
-              <p className="text-sm text-gray-500">Last updated: February 18, 2026</p>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>Legal</p>
+              <h1 className="text-4xl font-black mb-3" style={{ color: "#4A454A" }}>Privacy Policy</h1>
+              <p className="text-sm" style={{ color: "#7C7472" }}>Last updated: February 18, 2026</p>
             </div>
 
             <div className="light-card p-8 md:p-12 prose-legal">

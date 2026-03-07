@@ -94,8 +94,8 @@ const values = [
   },
   {
     icon: <Brain className="w-6 h-6" />,
-    color: "text-blue-600",
-    bg: "bg-blue-50",
+    color: "text-[#69BDEB]",
+    bg: "bg-[rgba(105,189,235,0.10)]",
     title: "AI-First Coaching",
     desc: "The Jonno Agent isn't a calculator with a chat interface. It reasons across your training history, food preferences, and goals to give context-aware recommendations.",
     featured: true,
@@ -149,9 +149,9 @@ const stack = [
     name: "Anthropic Claude",
     role: "The AI brain",
     desc: "Claude API powers the Jonno Agent — reasoning across nutrition data, activity history, and food preferences to generate genuinely useful advice.",
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
+    color: "text-[#69BDEB]",
+    bg: "bg-[rgba(105,189,235,0.10)]",
+    border: "border-[rgba(105,189,235,0.25)]",
     icon: <Brain className="w-8 h-8" />,
   },
   {
@@ -193,15 +193,15 @@ const openRoles = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
       <Navbar />
       <main className="pt-16">
 
         {/* ── Hero ── */}
         <section className="relative py-28 md:py-36 overflow-hidden">
           {/* Atmospheric orbs */}
-          <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] rounded-full bg-indigo-900/12 blur-[120px] pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-violet-900/10 blur-3xl pointer-events-none" />
+          <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] rounded-full blur-[120px] pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
+          <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
 
           <div className="relative z-10 max-w-6xl mx-auto px-6 w-full">
             <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -212,14 +212,14 @@ export default function AboutPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 mb-6">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                  <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Our story</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6 border" style={{ backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#F29A69" }} />
+                  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#F29A69" }}>Our story</span>
                 </div>
                 <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
                   <span className="gradient-text-light">We built the nutrition tool</span>
                   <br />
-                  <span className="text-gray-900">we always wanted.</span>
+                  <span style={{ color: "#4A454A" }}>we always wanted.</span>
                 </h1>
                 <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8 max-w-xl">
                   Founded by athletes. Frustrated by static calorie apps that ignore training data.
@@ -275,7 +275,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Stats Bar ── */}
-        <section className="py-14 border-y border-gray-100 bg-white/60 backdrop-blur-sm">
+        <section className="py-14 border-y backdrop-blur-sm" style={{ borderColor: "#E8DDD8", backgroundColor: "rgba(255,253,251,0.60)" }}>
           <div className="max-w-5xl mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-10 divide-x divide-white/[0.06]">
               {stats.map((s) => (
@@ -288,7 +288,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Our Story ── */}
-        <section id="story" className="py-24 bg-gray-50">
+        <section id="story" className="py-24" style={{ backgroundColor: "#FAF4EF" }}>
           <div className="max-w-6xl mx-auto px-6">
             <div className="grid md:grid-cols-2 gap-16 items-center">
               {/* Text column */}
@@ -298,7 +298,7 @@ export default function AboutPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
               >
-                <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-4">
+                <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#F29A69" }}>
                   Origin story
                 </p>
                 <h2 className="text-4xl md:text-5xl font-black gradient-text-light mb-6 leading-tight">
@@ -321,7 +321,7 @@ export default function AboutPage() {
                 </blockquote>
                 <div className="flex flex-wrap gap-2 mt-6">
                   {["2024 — Idea born", "Jan 2025 — First beta", "2026 — Public launch"].map((badge) => (
-                    <span key={badge} className="px-3 py-1 text-xs rounded-full bg-blue-50 border border-blue-200 text-blue-500">
+                    <span key={badge} className="px-3 py-1 text-xs rounded-full border" style={{ backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)", color: "#C4693A" }}>
                       {badge}
                     </span>
                   ))}
@@ -367,7 +367,7 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>
                 Company history
               </p>
               <h2 className="text-4xl font-black gradient-text-light">From frustration to product.</h2>
@@ -394,11 +394,11 @@ export default function AboutPage() {
 
                     {/* Card */}
                     <div className={`light-card p-6 ml-14 md:ml-0 ${i % 2 === 0 ? "md:mr-auto md:pr-16" : "md:ml-auto md:pl-16"} md:w-[45%]`}>
-                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200 mb-3">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold mb-3 border" style={{ backgroundColor: "rgba(242,154,105,0.10)", color: "#F29A69", borderColor: "rgba(242,154,105,0.30)" }}>
                         {item.date}
                       </span>
-                      <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                      <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+                      <h3 className="font-bold mb-2" style={{ color: "#4A454A" }}>{item.title}</h3>
+                      <p className="text-sm leading-relaxed" style={{ color: "#7C7472" }}>{item.desc}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -408,7 +408,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Values ── */}
-        <section className="py-20 bg-gray-50">
+        <section className="py-20" style={{ backgroundColor: "#FAF4EF" }}>
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -416,7 +416,7 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-6"
             >
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>
                 How we work
               </p>
               <h2 className="text-4xl font-black gradient-text-light">What we believe in.</h2>
@@ -427,7 +427,7 @@ export default function AboutPage() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-center text-2xl md:text-3xl font-bold text-gray-700 italic max-w-2xl mx-auto mb-14"
+              className="text-center text-2xl md:text-3xl font-bold italic max-w-2xl mx-auto mb-14" style={{ color: "#7C7472" }}
             >
               "Train like a pro. Eat like you know why."
             </motion.p>
@@ -445,8 +445,8 @@ export default function AboutPage() {
                   <div className={`w-12 h-12 rounded-xl ${v.bg} ${v.color} flex items-center justify-center`}>
                     {v.icon}
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">{v.title}</h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">{v.desc}</p>
+                  <h3 className="text-lg font-bold" style={{ color: "#4A454A" }}>{v.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "#7C7472" }}>{v.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -462,11 +462,11 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>
                 The team
               </p>
               <h2 className="text-4xl font-black gradient-text-light">The athletes behind Jonno.</h2>
-              <p className="text-gray-600 mt-4 max-w-lg mx-auto">
+              <p className="mt-4 max-w-lg mx-auto" style={{ color: "#7C7472" }}>
                 Remote-first. Performance-obsessed. All active athletes who use the product daily.
               </p>
             </motion.div>
@@ -486,11 +486,11 @@ export default function AboutPage() {
                     {member.initials}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">{member.name}</p>
-                    <p className="text-xs text-blue-600 font-medium mt-0.5">{member.role}</p>
+                    <p className="font-bold" style={{ color: "#4A454A" }}>{member.name}</p>
+                    <p className="text-xs font-medium mt-0.5" style={{ color: "#F29A69" }}>{member.role}</p>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{member.bio}</p>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+                  <p className="text-sm leading-relaxed" style={{ color: "#7C7472" }}>{member.bio}</p>
+                  <div className="flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border" style={{ color: "#7C7472", backgroundColor: "#FAF4EF", borderColor: "#E8DDD8" }}>
                     <MapPin className="w-3 h-3" />
                     {member.badge}
                   </div>
@@ -501,7 +501,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Tech Stack ── */}
-        <section className="py-20 bg-gray-50">
+        <section className="py-20" style={{ backgroundColor: "#FAF4EF" }}>
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -509,11 +509,11 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>
                 Technology
               </p>
               <h2 className="text-4xl font-black gradient-text-light">Built on the best APIs.</h2>
-              <p className="text-lg text-gray-600 mt-4 max-w-xl mx-auto">
+              <p className="text-lg mt-4 max-w-xl mx-auto" style={{ color: "#7C7472" }}>
                 We didn't build a new AI. We orchestrated the world's best tools into one athlete-first workflow.
               </p>
             </motion.div>
@@ -564,7 +564,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Press / Featured In ── */}
-        <section className="py-16 border-y border-gray-100">
+        <section className="py-16 border-y" style={{ borderColor: "#E8DDD8" }}>
           <div className="max-w-5xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0 }}
@@ -579,7 +579,7 @@ export default function AboutPage() {
                 {press.map((name) => (
                   <span
                     key={name}
-                    className="px-5 py-2 rounded-lg border border-white/5 bg-gray-50 text-gray-500 font-semibold text-sm"
+                    className="px-5 py-2 rounded-lg font-semibold text-sm border" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8", color: "#7C7472" }}
                   >
                     {name}
                   </span>
@@ -642,13 +642,13 @@ export default function AboutPage() {
         </section>
 
         {/* ── Mission / CTA ── */}
-        <section className="py-20 border-t border-gray-100">
+        <section className="py-20 border-t" style={{ borderColor: "#E8DDD8" }}>
           <div className="max-w-5xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="light-card border border-gray-200 overflow-hidden"
+              className="light-card overflow-hidden border" style={{ borderColor: "#E8DDD8" }}
             >
               <div className="grid md:grid-cols-2 items-center">
                 {/* Image */}
@@ -668,7 +668,7 @@ export default function AboutPage() {
                   <h2 className="text-3xl md:text-4xl font-black gradient-text-light leading-tight">
                     The mission
                   </h2>
-                  <p className="text-lg text-gray-700 leading-relaxed">
+                  <p className="text-lg leading-relaxed" style={{ color: "#4A454A" }}>
                     "Nutrition should be as data-driven as your training. We're building the infrastructure
                     that makes that true — one athlete at a time."
                   </p>

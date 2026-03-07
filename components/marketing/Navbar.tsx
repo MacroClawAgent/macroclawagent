@@ -28,9 +28,10 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         atTop
-          ? "bg-transparent border-b border-blue-100/50"
-          : "bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm"
+          ? "bg-transparent border-b border-[#CFC7C2]/30"
+          : "backdrop-blur-md border-b border-[#CFC7C2]/50 shadow-sm"
       }`}
+      style={!atTop ? { backgroundColor: "rgba(255,253,251,0.92)" } : undefined}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
@@ -43,7 +44,7 @@ export function Navbar() {
             className="object-contain"
             priority
           />
-          <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${atTop ? "text-gray-900" : "text-blue-600"}`}>
+          <span className="font-bold text-lg tracking-tight text-[#4A454A] transition-colors duration-300 group-hover:text-[#F29A69]">
             Jonno
           </span>
         </Link>
@@ -54,9 +55,7 @@ export function Navbar() {
             <Link
               key={item.label}
               href={item.href}
-              className={`text-sm font-medium transition-colors duration-200 ${
-                atTop ? "text-gray-600 hover:text-blue-600" : "text-gray-600 hover:text-blue-600"
-              }`}
+              className="text-sm font-medium text-[#7C7472] hover:text-[#4A454A] transition-colors duration-200"
             >
               {item.label}
             </Link>
@@ -67,16 +66,15 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className={`hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold transition-colors duration-200 px-3 py-2 ${
-              atTop ? "text-gray-700 hover:text-blue-600" : "text-gray-700 hover:text-blue-600"
-            }`}
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[#7C7472] hover:text-[#4A454A] transition-colors duration-200 px-3 py-2"
           >
             <User className="w-4 h-4" />
             Sign In
           </Link>
           <Link
             href="/join"
-            className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors duration-200 shadow-sm"
+            className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full text-white text-sm font-bold transition-all duration-200 shadow-sm shadow-[#F29A69]/25 hover:shadow-[#E88367]/35 hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, #F29A69 0%, #E88367 100%)" }}
           >
             Join Waitlist
           </Link>
@@ -86,22 +84,22 @@ export function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            <span className={`block h-0.5 w-5 transition-all duration-200 bg-gray-700 ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} />
-            <span className={`block h-0.5 w-5 transition-all duration-200 bg-gray-700 ${mobileOpen ? "opacity-0" : ""}`} />
-            <span className={`block h-0.5 w-5 transition-all duration-200 bg-gray-700 ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 bg-[#7C7472] ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 bg-[#7C7472] ${mobileOpen ? "opacity-0" : ""}`} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 bg-[#7C7472] ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} />
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-6 py-4 flex flex-col gap-1 shadow-lg">
+        <div className="md:hidden border-t border-[#CFC7C2]/50 px-6 py-4 flex flex-col gap-1 shadow-lg" style={{ backgroundColor: "#FFFDFB" }}>
           {navLinks.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-blue-600 border-b border-gray-100 last:border-0 transition-colors"
+              className="py-3 px-2 text-sm font-medium text-[#7C7472] hover:text-[#4A454A] border-b border-[#CFC7C2]/40 last:border-0 transition-colors"
             >
               {item.label}
             </Link>
@@ -110,14 +108,15 @@ export function Navbar() {
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center w-full px-5 py-3 rounded-full border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center w-full px-5 py-3 rounded-full border border-[#CFC7C2] text-[#4A454A] text-sm font-semibold hover:bg-[#F5ECE6] transition-colors"
             >
               Sign In
             </Link>
             <Link
               href="/join"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center w-full px-5 py-3 rounded-full bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors"
+              className="flex items-center justify-center w-full px-5 py-3 rounded-full text-white text-sm font-bold transition-all"
+              style={{ background: "linear-gradient(135deg, #F29A69 0%, #E88367 100%)" }}
             >
               Join Waitlist
             </Link>

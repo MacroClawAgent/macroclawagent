@@ -19,11 +19,19 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Midnight Athletic palette
-        midnight: {
-          DEFAULT: "#08090D",
-          surface: "#0F111A",
-          elevated: "#161925",
+        // Coastal Sunrise palette
+        coastal: {
+          warm: "#F5ECE6",
+          sand: "#EFD9CC",
+          cream: "#FAF4EF",
+          white: "#FFFDFB",
+          peach: "#F29A69",
+          coral: "#E88367",
+          sky: "#8FD3F4",
+          aqua: "#69BDEB",
+          charcoal: "#4A454A",
+          muted: "#7C7472",
+          border: "#CFC7C2",
         },
         // Shadcn CSS variable mappings
         border: "hsl(var(--border))",
@@ -76,11 +84,11 @@ const config: Config = {
         },
         float: {
           "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-6px)" },
+          "50%": { transform: "translateY(-8px)" },
         },
         "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(99, 102, 241, 0.3)" },
-          "50%": { boxShadow: "0 0 40px rgba(99, 102, 241, 0.6)" },
+          "0%, 100%": { boxShadow: "0 0 20px rgba(242, 154, 105, 0.30)" },
+          "50%": { boxShadow: "0 0 40px rgba(232, 131, 103, 0.50)" },
         },
         "slide-up": {
           "0%": { opacity: "0", transform: "translateY(30px)" },
@@ -119,27 +127,27 @@ const config: Config = {
   plugins: [
     plugin(({ addUtilities }) => {
       addUtilities({
-        // Base glass effect
+        // Coastal soft glass
         ".glass": {
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          backgroundColor: "rgba(255, 255, 255, 0.04)",
-          border: "1px solid rgba(255, 255, 255, 0.07)",
+          backgroundColor: "rgba(255, 253, 251, 0.70)",
+          border: "1px solid rgba(207, 199, 194, 0.50)",
         },
-        // Premium card glass effect
+        // Premium warm card glass
         ".glass-card": {
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          backgroundColor: "rgba(15, 17, 26, 0.80)",
-          border: "1px solid rgba(255, 255, 255, 0.07)",
-          borderRadius: "1rem",
+          backgroundColor: "rgba(250, 244, 239, 0.85)",
+          border: "1px solid rgba(207, 199, 194, 0.50)",
+          borderRadius: "1.25rem",
         },
-        // Stronger glass for overlays
+        // Heavier warm glass overlay
         ".glass-heavy": {
           backdropFilter: "blur(32px)",
           WebkitBackdropFilter: "blur(32px)",
-          backgroundColor: "rgba(8, 9, 13, 0.90)",
-          border: "1px solid rgba(99, 102, 241, 0.15)",
+          backgroundColor: "rgba(245, 236, 230, 0.92)",
+          border: "1px solid rgba(242, 154, 105, 0.20)",
         },
         // Shimmer skeleton overlay
         ".skeleton-shimmer": {
@@ -150,38 +158,45 @@ const config: Config = {
             position: "absolute",
             inset: "0",
             background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)",
+              "linear-gradient(90deg, transparent, rgba(242,154,105,0.08), transparent)",
             animation: "shimmer 2s infinite",
           },
         },
-        // Gradient text utility — indigo → violet → blue (dark theme, animated)
+        // Gradient text — peach → coral (animated)
         ".gradient-text": {
           background:
-            "linear-gradient(135deg, #6366F1 0%, #8B5CF6 40%, #A78BFA 70%, #6366F1 100%)",
+            "linear-gradient(135deg, #F29A69 0%, #E88367 40%, #F29A69 70%, #E88367 100%)",
           backgroundSize: "300% 300%",
           WebkitBackgroundClip: "text",
           backgroundClip: "text",
           WebkitTextFillColor: "transparent",
           animation: "gradient-shift 4s ease infinite",
         },
-        // Gradient text — blue → orange (light theme, static)
+        // Gradient text — sky blue → peach (static, primary highlight)
         ".gradient-text-light": {
-          background: "linear-gradient(135deg, #0066EE 0%, #F97316 100%)",
+          background: "linear-gradient(135deg, #F29A69 0%, #E88367 100%)",
           WebkitBackgroundClip: "text",
           backgroundClip: "text",
           WebkitTextFillColor: "transparent",
         },
-        // Indigo glow border (dark theme)
+        // Soft coral glow border
         ".glow-border": {
-          border: "1px solid rgba(99, 102, 241, 0.35)",
-          boxShadow: "0 0 24px rgba(99, 102, 241, 0.10)",
+          border: "1px solid rgba(242, 154, 105, 0.40)",
+          boxShadow: "0 0 24px rgba(242, 154, 105, 0.12)",
         },
-        // Light theme card
+        // Coastal card (white/cream with warm shadow)
         ".light-card": {
-          backgroundColor: "#ffffff",
-          border: "1px solid #E5E7EB",
-          borderRadius: "1rem",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+          backgroundColor: "#FFFDFB",
+          border: "1px solid #E8DDD8",
+          borderRadius: "1.25rem",
+          boxShadow: "0 2px 12px rgba(74, 69, 74, 0.06), 0 1px 3px rgba(74, 69, 74, 0.04)",
+        },
+        // Sand card
+        ".sand-card": {
+          backgroundColor: "#FAF4EF",
+          border: "1px solid #CFC7C2",
+          borderRadius: "1.25rem",
+          boxShadow: "0 2px 8px rgba(74, 69, 74, 0.05)",
         },
       });
     }),
