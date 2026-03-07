@@ -61,8 +61,8 @@
 
   body {
     @apply antialiased;
-    background-color: #FFFDFB;
-    color: #4A454A;
+    background-color: #F4F5F7;
+    color: #1C1C1E;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
@@ -73,22 +73,22 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #F5ECE6;
+    background: #E5E7EB;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(242, 154, 105, 0.40);
+    background: rgba(32, 199, 183, 0.40);
     border-radius: 99px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(232, 131, 103, 0.65);
+    background: rgba(76, 125, 255, 0.60);
   }
 
   /* Selection color */
   ::selection {
-    background: rgba(242, 154, 105, 0.20);
-    color: #4A454A;
+    background: rgba(32, 199, 183, 0.18);
+    color: #1C1C1E;
   }
 }
 

@@ -82,9 +82,9 @@ function StravaScreen() {
           </div>
         ))}
         {/* Macro adjusted pill */}
-        <div className="mt-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 flex items-center gap-2">
-          <Sparkles className="w-3 h-3 text-blue-600 flex-shrink-0" />
-          <p className="text-[8px] text-blue-700 font-semibold leading-tight">Macro targets updated for today&apos;s load</p>
+        <div className="mt-2 rounded-xl px-3 py-2 flex items-center gap-2" style={{ backgroundColor: "rgba(32,199,183,0.10)", border: "1px solid rgba(32,199,183,0.25)" }}>
+          <Sparkles className="w-3 h-3 flex-shrink-0" style={{ color: "#20C7B7" }} />
+          <p className="text-[8px] font-semibold leading-tight" style={{ color: "#1BA89A" }}>Macro targets updated for today&apos;s load</p>
         </div>
       </div>
     </MiniPhone>
@@ -98,7 +98,7 @@ function AIScreen() {
       <div className="px-4">
         {/* Header */}
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #8FD3F4, #69BDEB)" }}>
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#20C7B7" }}>
             <Sparkles className="w-3 h-3 text-white" />
           </div>
           <div>
@@ -111,9 +111,9 @@ function AIScreen() {
         {/* Macro rings row */}
         <div className="flex gap-1.5 mb-3">
           {[
-            { label: "Cal", val: "2140", pct: 0.75, color: "#0066EE", track: "#DBEAFE" },
-            { label: "P", val: "142g", pct: 0.79, color: "#f97316", track: "#FEF3C7" },
-            { label: "C", val: "220g", pct: 0.65, color: "#10b981", track: "#D1FAE5" },
+            { label: "Cal", val: "2140", pct: 0.75, color: "#20C7B7", track: "#CCEFEC" },
+            { label: "P", val: "142g", pct: 0.79, color: "#4C7DFF", track: "#DBEAFE" },
+            { label: "C", val: "220g", pct: 0.65, color: "#22C55E", track: "#D1FAE5" },
           ].map((m) => {
             const r = 14; const circ = 2 * Math.PI * r;
             return (
@@ -137,7 +137,7 @@ function AIScreen() {
             </div>
           </div>
           <div className="flex justify-start">
-            <div className="rounded-[12px] rounded-tl-sm px-2.5 py-2 text-[8.5px] text-white leading-relaxed max-w-[88%]" style={{ background: "linear-gradient(135deg, #8FD3F4, #69BDEB)" }}>
+            <div className="rounded-[12px] rounded-tl-sm px-2.5 py-2 text-[8.5px] text-white leading-relaxed max-w-[88%]" style={{ backgroundColor: "#20C7B7" }}>
               Based on your 15km plan, aim for 80g carbs 3hrs before. Oat porridge + banana fits perfectly. 🍌
             </div>
           </div>
@@ -147,7 +147,7 @@ function AIScreen() {
             </div>
           </div>
           <div className="flex justify-start">
-            <div className="rounded-[12px] rounded-tl-sm px-2.5 py-2 text-[8.5px] text-white leading-relaxed max-w-[88%]" style={{ background: "linear-gradient(135deg, #8FD3F4, #69BDEB)" }}>
+            <div className="rounded-[12px] rounded-tl-sm px-2.5 py-2 text-[8.5px] text-white leading-relaxed max-w-[88%]" style={{ backgroundColor: "#20C7B7" }}>
               Done ✓ Your plan is ready in Smart Cart.
             </div>
           </div>
@@ -194,7 +194,7 @@ function CartScreen() {
           </div>
         ))}
         {/* Order button */}
-        <button className="mt-2 w-full py-2.5 rounded-xl text-white text-[9px] font-black tracking-wide" style={{ background: "linear-gradient(135deg, #F29A69, #E88367)" }}>
+        <button className="mt-2 w-full py-2.5 rounded-xl text-white text-[9px] font-black tracking-wide" style={{ backgroundColor: "#4C7DFF" }}>
           Order on Uber Eats →
         </button>
       </div>
@@ -206,7 +206,7 @@ const steps = [
   {
     number: "01",
     label: "Strava API",
-    labelColor: "text-[#C4693A] bg-[#FDF0E8] border-[#F2C4A8]",
+    labelColor: "text-[#1BA89A] bg-[rgba(32,199,183,0.08)] border-[rgba(32,199,183,0.30)]",
     subtitle: "Connected automatically",
     title: "Sync your training.",
     description:
@@ -217,7 +217,7 @@ const steps = [
   {
     number: "02",
     label: "Claude AI",
-    labelColor: "text-[#3A9EC4] bg-[#EBF7FD] border-[#A8DEF2]",
+    labelColor: "text-[#3A6FEE] bg-[rgba(76,125,255,0.08)] border-[rgba(76,125,255,0.28)]",
     subtitle: "Personalized to your goals",
     title: "AI plans your macros.",
     description:
@@ -228,7 +228,7 @@ const steps = [
   {
     number: "03",
     label: "Uber Eats",
-    labelColor: "text-[#3A9EC4] bg-[#EBF7FD] border-[#A8DEF2]",
+    labelColor: "text-[#16A34A] bg-[rgba(34,197,94,0.08)] border-[rgba(34,197,94,0.28)]",
     subtitle: "One tap to your door",
     title: "Order food that fits.",
     description:
@@ -240,7 +240,7 @@ const steps = [
 
 export function ProcessFlow() {
   return (
-    <section id="how-it-works" className="py-24 px-6 overflow-hidden" style={{ backgroundColor: "#FFFDFB" }}>
+    <section id="how-it-works" className="py-24 px-6 overflow-hidden" style={{ backgroundColor: "#FFFFFF" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -250,14 +250,14 @@ export function ProcessFlow() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#F29A69" }}>
+          <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
             How It Works
           </p>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight" style={{ color: "#4A454A" }}>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight" style={{ color: "#1C1C1E" }}>
             Hit your goals in{" "}
-            <span className="gradient-text-light">3 steps.</span>
+            <span style={{ color: "#20C7B7" }}>3 steps.</span>
           </h2>
-          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "#7C7472" }}>
+          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "#6B7280" }}>
             From training session to optimised plate — fully automated.
           </p>
         </motion.div>
@@ -275,14 +275,14 @@ export function ProcessFlow() {
             >
               {/* Text column */}
               <div className="flex-1 flex flex-col gap-5">
-                <span className="text-[88px] font-black leading-none font-mono select-none -mb-4" style={{ color: "#EFD9CC" }}>
+                <span className="text-[88px] font-black leading-none font-mono select-none -mb-4" style={{ color: "#E5E7EB" }}>
                   {step.number}
                 </span>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7C7472" }}>{step.subtitle}</p>
-                  <h3 className="text-3xl md:text-4xl font-black leading-tight" style={{ color: "#4A454A" }}>{step.title}</h3>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#6B7280" }}>{step.subtitle}</p>
+                  <h3 className="text-3xl md:text-4xl font-black leading-tight" style={{ color: "#1C1C1E" }}>{step.title}</h3>
                 </div>
-                <p className="leading-relaxed text-base max-w-md" style={{ color: "#7C7472" }}>{step.description}</p>
+                <p className="leading-relaxed text-base max-w-md" style={{ color: "#6B7280" }}>{step.description}</p>
                 <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border w-fit ${step.labelColor}`}>
                   {step.label}
                 </span>

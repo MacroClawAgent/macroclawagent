@@ -65,18 +65,18 @@ function PhoneMockup() {
               <p className="text-[8.5px] text-gray-400 font-medium">Good morning</p>
               <p className="text-[13px] font-black text-gray-900">Alex 👋</p>
             </div>
-            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-black text-white shadow-sm">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-sm" style={{ backgroundColor: "#4C7DFF" }}>
               A
             </div>
           </div>
 
           {/* Calorie card */}
-          <div className="mx-4 rounded-[22px] p-4" style={{ background: "linear-gradient(135deg, #0066EE 0%, #0052CC 100%)" }}>
+          <div className="mx-4 rounded-[22px] p-4" style={{ background: "linear-gradient(135deg, #20C7B7 0%, #1BA89A 100%)" }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[8px] text-blue-200 uppercase tracking-widest font-semibold mb-0.5">Today's Goal</p>
+                <p className="text-[8px] uppercase tracking-widest font-semibold mb-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>Today&apos;s Goal</p>
                 <p className="text-[26px] font-black text-white leading-none">2,140</p>
-                <p className="text-[8.5px] text-blue-200 mt-0.5">of 2,840 kcal</p>
+                <p className="text-[8.5px] mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>of 2,840 kcal</p>
               </div>
               {/* Progress ring */}
               <svg width="54" height="54" className="-rotate-90">
@@ -91,13 +91,13 @@ function PhoneMockup() {
             {/* Macro row */}
             <div className="flex gap-3 mt-3">
               {[
-                { label: "Protein", val: "142g", color: "text-orange-300" },
-                { label: "Carbs", val: "220g", color: "text-blue-200" },
-                { label: "Fat", val: "62g", color: "text-amber-300" },
+                { label: "Protein", val: "142g" },
+                { label: "Carbs", val: "220g" },
+                { label: "Fat", val: "62g" },
               ].map((m) => (
                 <div key={m.label}>
-                  <p className={`text-[10px] font-black ${m.color}`}>{m.val}</p>
-                  <p className="text-[7px] text-blue-300 font-medium">{m.label}</p>
+                  <p className="text-[10px] font-black text-white">{m.val}</p>
+                  <p className="text-[7px] font-medium" style={{ color: "rgba(255,255,255,0.65)" }}>{m.label}</p>
                 </div>
               ))}
             </div>
@@ -120,13 +120,13 @@ function PhoneMockup() {
           </div>
 
           {/* AI suggestion */}
-          <div className="mx-4 mt-2 bg-blue-50 border border-blue-100 rounded-[18px] p-3 flex gap-2 items-start">
-            <div className="w-5 h-5 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <div className="mx-4 mt-2 rounded-[18px] p-3 flex gap-2 items-start" style={{ backgroundColor: "rgba(32,199,183,0.10)", border: "1px solid rgba(32,199,183,0.25)" }}>
+            <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: "#20C7B7" }}>
               <span className="text-[9px] text-white font-black">✦</span>
             </div>
             <div>
-              <p className="text-[8px] font-bold text-blue-800 mb-0.5">Jonno Agent</p>
-              <p className="text-[8.5px] text-blue-700 leading-relaxed">Protein 34g short today. Add grilled chicken to hit your target. 🎯</p>
+              <p className="text-[8px] font-bold mb-0.5" style={{ color: "#1BA89A" }}>Jonno Agent</p>
+              <p className="text-[8.5px] leading-relaxed" style={{ color: "#1C1C1E" }}>Protein 34g short today. Add grilled chicken to hit your target. 🎯</p>
             </div>
           </div>
 
@@ -140,7 +140,7 @@ function PhoneMockup() {
             ].map(({ icon, active }, i) => (
               <div key={i} className="flex flex-col items-center gap-0.5">
                 <span className="text-[14px]">{icon}</span>
-                <div className={`w-1 h-1 rounded-full ${active ? "bg-blue-600" : "bg-transparent"}`} />
+                <div className="w-1 h-1 rounded-full" style={{ backgroundColor: active ? "#4C7DFF" : "transparent" }} />
               </div>
             ))}
           </div>
@@ -159,12 +159,12 @@ export function Hero() {
   return (
     <section
       className="relative overflow-hidden pt-16"
-      style={{ background: "linear-gradient(150deg, #F5ECE6 0%, #EFD9CC 40%, #C8E7F5 100%)" }}
+      style={{ backgroundColor: "#F4F5F7" }}
     >
       {/* Decorative blobs */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(143,211,244,0.35) 0%, transparent 70%)" }} />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(242,154,105,0.18) 0%, transparent 70%)" }} />
-      <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(239,217,204,0.40) 0%, transparent 70%)" }} />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(32,199,183,0.14) 0%, transparent 70%)" }} />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(76,125,255,0.10) 0%, transparent 70%)" }} />
+      <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(34,197,94,0.08) 0%, transparent 70%)" }} />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-end">
@@ -178,8 +178,8 @@ export function Hero() {
           >
             {/* Beta badge */}
             <motion.div variants={itemVariants}>
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide" style={{ backgroundColor: "rgba(242,154,105,0.15)", border: "1px solid rgba(242,154,105,0.35)", color: "#C4693A" }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#F29A69] animate-pulse" />
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide" style={{ backgroundColor: "rgba(32,199,183,0.10)", border: "1px solid rgba(32,199,183,0.30)", color: "#1BA89A" }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#22C55E" }} />
                 Beta Access — Limited Spots
               </span>
             </motion.div>
@@ -188,18 +188,18 @@ export function Hero() {
             <motion.h1
               variants={itemVariants}
               className="text-5xl md:text-6xl lg:text-[68px] font-black tracking-tight leading-[0.92]"
-              style={{ color: "#4A454A" }}
+              style={{ color: "#1C1C1E" }}
             >
               Fitness tracking
               <br />
-              <span className="gradient-text-light">for your best days.</span>
+              <span style={{ color: "#20C7B7" }}>for your best days.</span>
             </motion.h1>
 
             {/* Sub */}
             <motion.p
               variants={itemVariants}
               className="text-lg leading-relaxed max-w-lg"
-              style={{ color: "#7C7472" }}
+              style={{ color: "#6B7280" }}
             >
               Sync Strava. Get AI macro targets. Order macro-matched meals from Uber Eats — all in one app.
               Nutrition that finally keeps up with your active lifestyle.
@@ -212,16 +212,16 @@ export function Hero() {
             >
               <Link
                 href="/join"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-white text-base font-bold transition-all hover:opacity-90 shadow-lg"
-                style={{ background: "linear-gradient(135deg, #F29A69 0%, #E88367 100%)", boxShadow: "0 6px 24px rgba(242,154,105,0.35)" }}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-white text-base font-bold transition-all hover:opacity-90"
+                style={{ backgroundColor: "#4C7DFF", boxShadow: "0 6px 24px rgba(76,125,255,0.30)" }}
               >
                 Join the Waitlist
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
                 href="#how-it-works"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold transition-colors shadow-sm"
-                style={{ backgroundColor: "rgba(255,253,251,0.80)", border: "1px solid #CFC7C2", color: "#4A454A", backdropFilter: "blur(8px)" }}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold transition-colors"
+                style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#1C1C1E" }}
               >
                 See how it works
               </a>
@@ -235,8 +235,8 @@ export function Hero() {
                 { value: "4.9★", label: "User rating" },
               ].map((s) => (
                 <div key={s.label} className="flex flex-col items-center lg:items-start">
-                  <span className="text-xl font-black" style={{ color: "#4A454A" }}>{s.value}</span>
-                  <span className="text-xs font-medium" style={{ color: "#7C7472" }}>{s.label}</span>
+                  <span className="text-xl font-black" style={{ color: "#1C1C1E" }}>{s.value}</span>
+                  <span className="text-xs font-medium" style={{ color: "#6B7280" }}>{s.label}</span>
                 </div>
               ))}
             </motion.div>
@@ -256,7 +256,7 @@ export function Hero() {
           preserveAspectRatio="none"
           className="absolute bottom-0 left-0 w-full h-full"
         >
-          <path d="M0,60 L0,35 Q360,0 720,30 Q1080,55 1440,25 L1440,60 Z" fill="#FFFDFB" />
+          <path d="M0,60 L0,35 Q360,0 720,30 Q1080,55 1440,25 L1440,60 Z" fill="#FFFFFF" />
         </svg>
       </div>
     </section>
