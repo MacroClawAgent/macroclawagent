@@ -28,7 +28,7 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         atTop
-          ? "bg-transparent border-b border-white/10"
+          ? "bg-transparent border-b border-blue-100/50"
           : "bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm"
       }`}
     >
@@ -43,7 +43,7 @@ export function Navbar() {
             className="object-contain"
             priority
           />
-          <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${atTop ? "text-white" : "text-blue-600"}`}>
+          <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${atTop ? "text-gray-900" : "text-blue-600"}`}>
             Jonno
           </span>
         </Link>
@@ -55,7 +55,7 @@ export function Navbar() {
               key={item.label}
               href={item.href}
               className={`text-sm font-medium transition-colors duration-200 ${
-                atTop ? "text-white/80 hover:text-white" : "text-gray-600 hover:text-blue-600"
+                atTop ? "text-gray-600 hover:text-blue-600" : "text-gray-600 hover:text-blue-600"
               }`}
             >
               {item.label}
@@ -68,7 +68,7 @@ export function Navbar() {
           <Link
             href="/login"
             className={`hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold transition-colors duration-200 px-3 py-2 ${
-              atTop ? "text-white/80 hover:text-white" : "text-gray-700 hover:text-blue-600"
+              atTop ? "text-gray-700 hover:text-blue-600" : "text-gray-700 hover:text-blue-600"
             }`}
           >
             <User className="w-4 h-4" />
@@ -76,7 +76,7 @@ export function Navbar() {
           </Link>
           <Link
             href="/join"
-            className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors duration-200 shadow-sm"
+            className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors duration-200 shadow-sm"
           >
             Join Waitlist
           </Link>
@@ -86,9 +86,9 @@ export function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            <span className={`block h-0.5 w-5 transition-all duration-200 ${atTop ? "bg-white" : "bg-gray-700"} ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} />
-            <span className={`block h-0.5 w-5 transition-all duration-200 ${atTop ? "bg-white" : "bg-gray-700"} ${mobileOpen ? "opacity-0" : ""}`} />
-            <span className={`block h-0.5 w-5 transition-all duration-200 ${atTop ? "bg-white" : "bg-gray-700"} ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 bg-gray-700 ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 bg-gray-700 ${mobileOpen ? "opacity-0" : ""}`} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 bg-gray-700 ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} />
           </button>
         </div>
       </div>

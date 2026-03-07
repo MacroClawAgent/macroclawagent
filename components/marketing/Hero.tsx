@@ -159,11 +159,11 @@ export function Hero() {
   return (
     <section
       className="relative overflow-hidden pt-16"
-      style={{ background: "linear-gradient(150deg, #0052CC 0%, #0066EE 55%, #1a85ff 100%)" }}
+      style={{ background: "linear-gradient(150deg, #F5F9FF 0%, #EEF4FF 45%, #DDEEFF 100%)" }}
     >
       {/* Decorative orbs */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-blue-400/20 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-1/3 w-64 h-64 rounded-full bg-orange-500/10 blur-2xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-blue-200/30 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-1/3 w-64 h-64 rounded-full bg-orange-300/10 blur-2xl pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-end">
@@ -177,8 +177,8 @@ export function Hero() {
           >
             {/* Beta badge */}
             <motion.div variants={itemVariants}>
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-white tracking-wide">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-700 tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                 Beta Access — Limited Spots
               </span>
             </motion.div>
@@ -186,20 +186,20 @@ export function Hero() {
             {/* H1 */}
             <motion.h1
               variants={itemVariants}
-              className="text-5xl md:text-6xl lg:text-[68px] font-black tracking-tight leading-[0.92] text-white"
+              className="text-5xl md:text-6xl lg:text-[68px] font-black tracking-tight leading-[0.92] text-gray-900"
             >
-              Nutrition tracking
+              Fitness tracking
               <br />
-              <span className="text-orange-400">for real athletes.</span>
+              <span className="text-orange-500">for your best days.</span>
             </motion.h1>
 
             {/* Sub */}
             <motion.p
               variants={itemVariants}
-              className="text-lg text-blue-100 leading-relaxed max-w-lg"
+              className="text-lg text-gray-600 leading-relaxed max-w-lg"
             >
               Sync Strava. Get AI macro targets. Order macro-matched meals from Uber Eats — all in one app.
-              Nutrition that finally keeps up with your training.
+              Nutrition that finally keeps up with your active lifestyle.
             </motion.p>
 
             {/* CTAs */}
@@ -209,14 +209,14 @@ export function Hero() {
             >
               <Link
                 href="/join"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-orange-500 text-white text-base font-bold hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/30"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-blue-600 text-white text-base font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/25"
               >
                 Join the Waitlist
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
                 href="#how-it-works"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white/10 border border-white/25 text-white text-base font-semibold hover:bg-white/20 transition-colors"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white border border-gray-200 text-gray-700 text-base font-semibold hover:bg-gray-50 transition-colors shadow-sm"
               >
                 See how it works
               </a>
@@ -230,8 +230,8 @@ export function Hero() {
                 { value: "4.9★", label: "User rating" },
               ].map((s) => (
                 <div key={s.label} className="flex flex-col items-center lg:items-start">
-                  <span className="text-xl font-black text-white">{s.value}</span>
-                  <span className="text-xs text-blue-200 font-medium">{s.label}</span>
+                  <span className="text-xl font-black text-gray-900">{s.value}</span>
+                  <span className="text-xs text-gray-500 font-medium">{s.label}</span>
                 </div>
               ))}
             </motion.div>
