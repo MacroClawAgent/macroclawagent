@@ -173,7 +173,7 @@ function HeroBackgroundScene() {
 export function Hero() {
   return (
     <section
-      className="relative overflow-hidden pt-16"
+      className="relative overflow-hidden pt-16 min-h-[92vh] flex flex-col justify-center"
       style={{ backgroundColor: "#F4F5F7" }}
     >
       {/* Layer 2: Photographic fitness scene — right 62% */}
@@ -188,15 +188,15 @@ export function Hero() {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-end">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-6 pb-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
           {/* ── LEFT: Content ── */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-8 items-center lg:items-start text-center lg:text-left pb-16 lg:pb-24"
+            className="flex flex-col gap-7 items-center lg:items-start text-center lg:text-left pb-6 lg:pb-10"
           >
             {/* Beta badge */}
             <motion.div variants={itemVariants}>

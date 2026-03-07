@@ -28,13 +28,13 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         atTop
-          ? "bg-transparent border-b border-[#E5E7EB]/40"
+          ? "bg-transparent border-b border-transparent"
           : "backdrop-blur-md border-b border-[#E5E7EB] shadow-sm"
       }`}
       style={!atTop ? { backgroundColor: "rgba(255,255,255,0.94)" } : undefined}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
+        {/* Logo — always visible */}
         <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
           <Image
             src="/logo.png"
@@ -49,8 +49,8 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Nav Links — desktop */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Nav Links — desktop, hidden until scrolled */}
+        <div className={`hidden md:flex items-center gap-8 transition-all duration-300 ${atTop ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
           {navLinks.map((item) => (
             <Link
               key={item.label}
@@ -62,8 +62,8 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* Right: Sign In + Join Waitlist */}
-        <div className="flex items-center gap-3">
+        {/* Right: Sign In + Join Waitlist — hidden until scrolled */}
+        <div className={`flex items-center gap-3 transition-all duration-300 ${atTop ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
           <Link
             href="/login"
             className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[#6B7280] hover:text-[#1C1C1E] transition-colors duration-200 px-3 py-2"
