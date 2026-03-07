@@ -62,7 +62,7 @@ const timeline = [
     date: "2024",
     title: "The frustration becomes a plan",
     desc: "Two cyclists finish a 200km sportive and realise every nutrition app still shows a static 2,000 kcal target. The problem is obvious. The solution isn't built yet.",
-    color: "bg-orange-500",
+    color: "bg-[#20C7B7]",
   },
   {
     date: "Jan 2025",
@@ -87,8 +87,8 @@ const timeline = [
 const values = [
   {
     icon: <Database className="w-6 h-6" />,
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
+    color: "text-[#20C7B7]",
+    bg: "bg-[rgba(32,199,183,0.10)]",
     title: "Data-Driven Recovery",
     desc: "Every macro recommendation is grounded in your actual training load. No generic advice. No one-size-fits-all targets. Your numbers, your plan.",
   },
@@ -112,7 +112,7 @@ const values = [
 const team = [
   {
     initials: "MR",
-    gradient: "from-orange-500 to-red-600",
+    gradient: "from-[#20C7B7] to-[#4C7DFF]",
     name: "Marco R.",
     role: "Co-founder & CEO",
     bio: "10-year amateur cyclist and ex-consultant obsessed with performance analytics.",
@@ -158,9 +158,9 @@ const stack = [
     name: "Strava API",
     role: "Activity intelligence",
     desc: "Real-time OAuth sync pulls your workouts, calculates TDEE, and feeds that data directly to the AI. Your nutrition targets move every time you move.",
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
-    border: "border-orange-500/20",
+    color: "text-[#20C7B7]",
+    bg: "bg-[rgba(32,199,183,0.10)]",
+    border: "border-[rgba(32,199,183,0.20)]",
     icon: null, // rendered as Image
   },
   {
@@ -200,8 +200,8 @@ export default function AboutPage() {
         {/* ── Hero ── */}
         <section className="relative py-28 md:py-36 overflow-hidden">
           {/* Atmospheric orbs */}
-          <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] rounded-full blur-[120px] pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
-          <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
+          <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] rounded-full blur-[120px] pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
+          <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
 
           <div className="relative z-10 max-w-6xl mx-auto px-6 w-full">
             <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -212,7 +212,7 @@ export default function AboutPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6 border" style={{ backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)" }}>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6 border" style={{ backgroundColor: "rgba(32,199,183,0.10)", borderColor: "rgba(32,199,183,0.30)" }}>
                   <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#20C7B7" }} />
                   <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#20C7B7" }}>Our story</span>
                 </div>
@@ -252,7 +252,7 @@ export default function AboutPage() {
                 className="relative flex items-center justify-center"
               >
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-80 h-80 rounded-full bg-orange-500/8 blur-3xl" />
+                  <div className="w-80 h-80 rounded-full bg-[rgba(32,199,183,0.08)] blur-3xl" />
                 </div>
                 <div className="bg-white rounded-2xl p-8 relative z-10 flex flex-col items-center gap-6 max-w-xs w-full">
                   <Image
@@ -321,7 +321,7 @@ export default function AboutPage() {
                 </blockquote>
                 <div className="flex flex-wrap gap-2 mt-6">
                   {["2024 — Idea born", "Jan 2025 — First beta", "2026 — Public launch"].map((badge) => (
-                    <span key={badge} className="px-3 py-1 text-xs rounded-full border" style={{ backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)", color: "#1BA89A" }}>
+                    <span key={badge} className="px-3 py-1 text-xs rounded-full border" style={{ backgroundColor: "rgba(32,199,183,0.10)", borderColor: "rgba(32,199,183,0.30)", color: "#1BA89A" }}>
                       {badge}
                     </span>
                   ))}
@@ -338,7 +338,7 @@ export default function AboutPage() {
               >
                 {/* Atmospheric glow */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-72 h-72 rounded-full bg-orange-500/8 blur-3xl" />
+                  <div className="w-72 h-72 rounded-full bg-[rgba(32,199,183,0.08)] blur-3xl" />
                 </div>
                 <div className="bg-white rounded-2xl p-6 relative z-10 flex flex-col items-center gap-4 max-w-sm w-full">
                   <Image
@@ -394,7 +394,7 @@ export default function AboutPage() {
 
                     {/* Card */}
                     <div className={`light-card p-6 ml-14 md:ml-0 ${i % 2 === 0 ? "md:mr-auto md:pr-16" : "md:ml-auto md:pl-16"} md:w-[45%]`}>
-                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold mb-3 border" style={{ backgroundColor: "rgba(242,154,105,0.10)", color: "#20C7B7", borderColor: "rgba(242,154,105,0.30)" }}>
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold mb-3 border" style={{ backgroundColor: "rgba(32,199,183,0.10)", color: "#20C7B7", borderColor: "rgba(32,199,183,0.30)" }}>
                         {item.date}
                       </span>
                       <h3 className="font-bold mb-2" style={{ color: "#1C1C1E" }}>{item.title}</h3>

@@ -71,7 +71,7 @@ function HeroPreview() {
             <p className="text-[11px] uppercase tracking-widest font-semibold mb-0.5" style={{ color: "#6B7280" }}>Dashboard</p>
             <h3 className="text-base font-bold" style={{ color: "#1C1C1E" }}>Today&apos;s Performance</h3>
           </div>
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border" style={{ backgroundColor: "rgba(242,154,105,0.15)", borderColor: "#E5E7EB", color: "#20C7B7" }}>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border" style={{ backgroundColor: "rgba(32,199,183,0.15)", borderColor: "#E5E7EB", color: "#20C7B7" }}>
             A
           </div>
         </div>
@@ -82,7 +82,7 @@ function HeroPreview() {
         </div>
         <div className="flex flex-wrap gap-2">
           {[
-            { label: "647 kcal burned", color: "text-orange-400" },
+            { label: "647 kcal burned", color: "text-[#20C7B7]" },
             { label: "8.2km", color: "text-gray-700" },
             { label: "74 BPM avg", color: "text-red-400" },
           ].map((s) => (
@@ -113,10 +113,10 @@ function HeroPreview() {
 /* ── Strava spotlight mockup ── */
 function StravaSpotlightCard() {
   return (
-    <div className="bg-white rounded-2xl border-orange-500/20 p-6 flex flex-col gap-5 rounded-2xl">
+    <div className="bg-white rounded-2xl border-[rgba(32,199,183,0.20)] p-6 flex flex-col gap-5 rounded-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-orange-400" />
+          <Activity className="w-5 h-5 text-[#20C7B7]" />
           <p className="text-base font-bold" style={{ color: "#1C1C1E" }}>Strava Sync</p>
         </div>
         <span className="text-[11px] font-semibold flex items-center gap-1.5" style={{ color: "#4C7DFF" }}>
@@ -133,7 +133,7 @@ function StravaSpotlightCard() {
         {[45, 60, 40, 75, 65, 85, 55, 70, 80, 50, 65, 90].map((h, i) => (
           <div
             key={i}
-            className="flex-1 rounded-full bg-orange-500/50"
+            className="flex-1 rounded-full bg-[#20C7B7]/50"
             style={{ height: `${h}%` }}
           />
         ))}
@@ -233,7 +233,7 @@ function CartSpotlightCard() {
 const pillars = [
   {
     tag: "Strava API",
-    tagColor: "text-orange-400 bg-orange-500/10 border-orange-500/20",
+    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)] border-[rgba(32,199,183,0.20)]",
     heading: "Training-aware nutrition. Automatically.",
     desc: "Every run, ride, and lift auto-syncs from Strava. Jonno reads your training load and recalculates your TDEE in real time — so your calorie targets move with your performance.",
     bullets: [
@@ -242,7 +242,7 @@ const pillars = [
       "Workout history & trends",
       "Training load detection",
     ],
-    checkColor: "text-orange-400",
+    checkColor: "text-[#20C7B7]",
     linkText: "Connect Strava",
     mockupRight: true,
     Mockup: StravaSpotlightCard,
@@ -292,9 +292,9 @@ const features = [
   },
   {
     icon: <Activity className="w-5 h-5" />,
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
-    accentColor: "bg-orange-500",
+    color: "text-[#20C7B7]",
+    bg: "bg-[rgba(32,199,183,0.10)]",
+    accentColor: "bg-[#20C7B7]",
     title: "Activity Rings",
     desc: "A glanceable summary of your daily targets: calories burned, protein hit, carbs consumed. Like Apple Watch, but for your plate.",
   },
@@ -335,9 +335,9 @@ const features = [
 const integrations = [
   {
     name: "Strava",
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
-    border: "border-orange-500/20",
+    color: "text-[#20C7B7]",
+    bg: "bg-[rgba(32,199,183,0.10)]",
+    border: "border-[rgba(32,199,183,0.20)]",
     pulseColor: "bg-emerald-400",
     desc: "Full activity sync",
     status: "Connected",
@@ -384,7 +384,7 @@ const testimonials = [
     name: "Marcus T.",
     role: "Triathlete",
     avatar: "MT",
-    avatarGradient: "from-orange-500 to-amber-500",
+    avatarGradient: "from-[#20C7B7] to-[#4C7DFF]",
     quote: "I went from guessing my post-ride nutrition to nailing my carb targets every single day. The Strava sync is seamless. It knows what I burned before I even open the app.",
   },
   {
@@ -411,8 +411,8 @@ export default function FeaturesPage() {
 
         {/* ── Hero ── */}
         <section className="relative py-24 md:py-32 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
           <div className="max-w-6xl mx-auto px-6 relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               {/* Left */}
@@ -422,7 +422,7 @@ export default function FeaturesPage() {
                 transition={{ duration: 0.6 }}
                 className="flex flex-col gap-7"
               >
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide self-start border" style={{ backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)", color: "#1BA89A" }}>
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide self-start border" style={{ backgroundColor: "rgba(32,199,183,0.10)", borderColor: "rgba(32,199,183,0.30)", color: "#1BA89A" }}>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Built for Strava athletes
                 </span>

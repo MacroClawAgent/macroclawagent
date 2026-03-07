@@ -78,14 +78,14 @@ export default function JoinPage() {
     <div className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "#F4F5F7" }}>
       {/* Decorative orbs */}
       <div className="pointer-events-none absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-[140px]" style={{ background: "radial-gradient(ellipse at center, rgba(143,211,244,0.25) 0%, transparent 70%)" }} />
-      <div className="pointer-events-none absolute top-0 left-0 w-80 h-80 rounded-full blur-[100px]" style={{ background: "radial-gradient(ellipse at center, rgba(242,154,105,0.20) 0%, transparent 70%)" }} />
+      <div className="pointer-events-none absolute top-0 left-0 w-80 h-80 rounded-full blur-[100px]" style={{ background: "radial-gradient(ellipse at center, rgba(32,199,183,0.20) 0%, transparent 70%)" }} />
       <div className="pointer-events-none absolute bottom-0 left-1/3 w-56 h-56 rounded-full blur-[80px]" style={{ background: "radial-gradient(ellipse at center, rgba(239,217,204,0.50) 0%, transparent 70%)" }} />
 
       {/* ── Top nav ── */}
       <nav className="relative z-20 backdrop-blur-sm" style={{ borderBottom: "1px solid #E5E7EB", backgroundColor: "rgba(250,244,239,0.85)" }}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden" style={{ backgroundColor: "rgba(242,154,105,0.12)", border: "1px solid rgba(242,154,105,0.30)" }}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden" style={{ backgroundColor: "rgba(32,199,183,0.12)", border: "1px solid rgba(32,199,183,0.30)" }}>
               <Image
                 src="/logo.png"
                 alt="Jonno"
@@ -153,7 +153,7 @@ export default function JoinPage() {
               </div>
               <div className="grid grid-cols-1 gap-3 max-w-lg">
                 {[
-                  { icon: Zap, iconColor: "#20C7B7", bg: "rgba(242,154,105,0.10)", border: "rgba(242,154,105,0.30)", title: "Strava-Powered Fueling", desc: "Your macro targets adjust automatically based on your training load — runs, rides, swims." },
+                  { icon: Zap, iconColor: "#20C7B7", bg: "rgba(32,199,183,0.10)", border: "rgba(32,199,183,0.30)", title: "Strava-Powered Fueling", desc: "Your macro targets adjust automatically based on your training load — runs, rides, swims." },
                   { icon: Bot, iconColor: "#4C7DFF", bg: "rgba(105,189,235,0.10)", border: "rgba(143,211,244,0.35)", title: "AI Nutrition Agent", desc: "Ask the Jonno Agent anything about your diet. It reasons across your training load and goals." },
                   { icon: ShoppingBag, iconColor: "#4C7DFF", bg: "rgba(143,211,244,0.10)", border: "rgba(143,211,244,0.35)", title: "Smart Meal Planning", desc: "Get macro-matched meal plans built around foods you actually eat — and order in one tap." },
                 ].map(({ icon: Icon, iconColor, bg, border, title, desc }) => (
@@ -194,7 +194,7 @@ export default function JoinPage() {
                 </div>
                 <AnimatePresence>
                   {error && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex items-center gap-2.5 px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(232,131,103,0.08)", border: "1px solid rgba(232,131,103,0.30)" }}>
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex items-center gap-2.5 px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(76,125,255,0.08)", border: "1px solid rgba(76,125,255,0.30)" }}>
                       <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#4C7DFF" }} />
                       <p className="text-xs" style={{ color: "#1BA89A" }}>{error}</p>
                     </motion.div>
@@ -260,7 +260,7 @@ export default function JoinPage() {
                 transition={{ type: "spring", stiffness: 280, damping: 20, delay: 0.1 }}
                 className="relative"
               >
-                <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg" style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)", boxShadow: "0 8px 30px rgba(242,154,105,0.35)" }}>
+                <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg" style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)", boxShadow: "0 8px 30px rgba(32,199,183,0.35)" }}>
                   <CheckCircle2 className="w-12 h-12 text-white" />
                 </div>
                 {/* Ping ring */}
@@ -322,7 +322,7 @@ export default function JoinPage() {
                   </div>
                 ) : (
                   /* Survey not yet taken */
-                  <div className="w-full rounded-2xl overflow-hidden" style={{ border: "1px solid #E5E7EB", boxShadow: "0 8px 32px rgba(242,154,105,0.15)" }}>
+                  <div className="w-full rounded-2xl overflow-hidden" style={{ border: "1px solid #E5E7EB", boxShadow: "0 8px 32px rgba(32,199,183,0.15)" }}>
                     {/* Card top — warm gradient */}
                     <div className="px-6 pt-6 pb-7 flex flex-col gap-4 text-white" style={{ background: "linear-gradient(135deg, #20C7B7 0%, #4C7DFF 60%, #C8E7F5 100%)" }}>
                       <div className="flex items-center gap-2 w-fit">
@@ -347,7 +347,7 @@ export default function JoinPage() {
                         type="button"
                         onClick={() => setSurveyOpen(true)}
                         className="w-full py-4 rounded-xl text-white font-black text-base tracking-wide transition-opacity duration-150 hover:opacity-90"
-                        style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)", boxShadow: "0 4px 16px rgba(242,154,105,0.30)" }}
+                        style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)", boxShadow: "0 4px 16px rgba(32,199,183,0.30)" }}
                       >
                         Take the survey →
                       </button>

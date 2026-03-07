@@ -13,9 +13,9 @@ const posts = [
   {
     slug: "fueling-strava-rides",
     tag: "Performance",
-    tagColor: "text-orange-400 bg-orange-500/10",
-    tagBorder: "border-orange-500/20",
-    gradient: "from-orange-900/40 to-[#0F111A]",
+    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
+    tagBorder: "border-[rgba(32,199,183,0.20)]",
+    gradient: "from-[rgba(32,199,183,0.40)] to-[#0F111A]",
     coverImage: "/cyclists.png",
     title: "How to Fuel Your Strava Rides with Precision Macros",
     excerpt:
@@ -24,7 +24,7 @@ const posts = [
     readTime: "6 min read",
     author: "Marco R.",
     authorInitials: "MR",
-    authorGradient: "from-orange-500 to-red-600",
+    authorGradient: "from-[#20C7B7] to-[#4C7DFF]",
     emoji: "🚴",
   },
   {
@@ -80,7 +80,7 @@ export default function BlogPage() {
 
         {/* ── Header ── */}
         <section className="relative py-20 md:py-24 overflow-hidden">
-          <div className="absolute top-1/4 left-1/3 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
+          <div className="absolute top-1/4 left-1/3 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -120,7 +120,7 @@ export default function BlogPage() {
                     className="px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200"
                     style={
                       activeCategory === cat
-                        ? { backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)", color: "#20C7B7" }
+                        ? { backgroundColor: "rgba(32,199,183,0.10)", borderColor: "rgba(32,199,183,0.30)", color: "#20C7B7" }
                         : { backgroundColor: "transparent", borderColor: "#E5E7EB", color: "#6B7280" }
                     }
                   >

@@ -43,7 +43,7 @@ const releases = [
     version: "v0.1.0",
     date: "Dec 20, 2025",
     tag: "Launch",
-    tagColor: "text-orange-400 bg-orange-500/10",
+    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
     title: "Initial launch — Strava sync & dashboard",
     changes: [
       "Strava OAuth integration — sync all activities automatically",
@@ -65,7 +65,7 @@ export default function ChangelogPage() {
       <main className="pt-16">
         {/* Header */}
         <section className="relative py-24 overflow-hidden">
-          <div className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(242,154,105,0.10) 0%, transparent 70%)" }} />
+          <div className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.10) 0%, transparent 70%)" }} />
           <div className="max-w-3xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -113,7 +113,7 @@ export default function ChangelogPage() {
 
                     {/* Dot on timeline */}
                     <div className="hidden md:flex items-start justify-center w-8 flex-shrink-0 pt-1">
-                      <div className="w-3 h-3 rounded-full ring-2 ring-[rgba(242,154,105,0.30)] ring-offset-2 ring-offset-[#FFFFFF]" style={{ backgroundColor: "#20C7B7" }} />
+                      <div className="w-3 h-3 rounded-full ring-2 ring-[rgba(32,199,183,0.30)] ring-offset-2 ring-offset-[#FFFFFF]" style={{ backgroundColor: "#20C7B7" }} />
                     </div>
 
                     {/* Right: content */}

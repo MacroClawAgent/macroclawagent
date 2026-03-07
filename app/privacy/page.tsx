@@ -184,7 +184,7 @@ export default function PrivacyPage() {
                 </p>
                 <ul className="space-y-2 text-gray-600">
                   <li className="flex items-start gap-2">
-                    <span className="text-orange-400 mt-1">•</span>
+                    <span className="text-[#20C7B7] mt-1">•</span>
                     <strong className="text-gray-700">Strava:</strong> Activity and health data — strava.com/legal/privacy
                   </li>
                   <li className="flex items-start gap-2">
