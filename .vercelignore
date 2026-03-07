@@ -1,0 +1,4 @@
+# Expo React Native app — excluded from Vercel builds entirely.
+# Vercel deploys only the Next.js root; mobile/ has its own build pipeline.
+mobile/
+shared/
