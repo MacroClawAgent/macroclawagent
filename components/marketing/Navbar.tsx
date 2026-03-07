@@ -62,8 +62,8 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* Right: Sign In + Join Waitlist — hidden until scrolled */}
-        <div className={`flex items-center gap-3 transition-all duration-300 ${atTop ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+        {/* Right: Sign In + Join Waitlist — always visible */}
+        <div className="flex items-center gap-3">
           <Link
             href="/login"
             className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[#6B7280] hover:text-[#1C1C1E] transition-colors duration-200 px-3 py-2"

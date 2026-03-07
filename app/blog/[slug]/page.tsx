@@ -536,7 +536,7 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
 
               {/* Main article */}
               <div className="min-w-0">
-                <div className="light-card p-8 md:p-12 article-body">
+                <div className="bg-white rounded-2xl p-8 md:p-12 article-body">
                   {post.body}
                 </div>
 
@@ -579,7 +579,7 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
                         <Link
                           key={related.slug}
                           href={`/blog/${related.slug}`}
-                          className="light-card p-5 flex flex-col gap-2 hover:border-blue-200 transition-colors group"
+                          className="bg-white rounded-2xl p-5 flex flex-col gap-2 hover:border-blue-200 transition-colors group"
                         >
                           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full self-start border ${related.tagColor} ${related.tagBorder}`}>
                             {related.tag}
@@ -628,7 +628,7 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
 
               {/* Sidebar */}
               <aside className="hidden lg:block sticky top-24 space-y-4">
-                <div className="light-card p-5">
+                <div className="bg-white rounded-2xl p-5">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">
                     In this article
                   </p>
@@ -644,7 +644,7 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
                   </nav>
                 </div>
 
-                <div className="light-card border border-blue-200 p-5 flex flex-col gap-3">
+                <div className="bg-white rounded-2xl border border-blue-200 p-5 flex flex-col gap-3">
                   <p className="text-sm font-bold text-gray-900">Let the Claw apply this →</p>
                   <p className="text-xs text-gray-600 leading-relaxed">
                     Connect Strava. Get evidence-based targets. Order recovery meals automatically.

@@ -10,7 +10,7 @@ const testimonials = [
     initials: "MT",
     avatarStyle: { background: "linear-gradient(135deg, #4C7DFF, #3A6FEE)" },
     quote:
-      "I went from guessing my post-ride nutrition to nailing my carb targets every single day. The Strava sync is seamless — it just works.",
+      "I went from guessing my post-ride nutrition to nailing my carb targets every single day. The Strava sync is seamless. It just works.",
   },
   {
     name: "Priya K.",
@@ -18,7 +18,7 @@ const testimonials = [
     initials: "PK",
     avatarStyle: { background: "linear-gradient(135deg, #20C7B7, #1BA89A)" },
     quote:
-      "The AI chat is genuinely useful. It doesn't just tell me what to eat — it explains why, based on my actual training load and recovery needs.",
+      "The AI chat is genuinely useful. It doesn't just tell me what to eat. It explains why, based on my actual training load and recovery needs.",
   },
   {
     name: "Jake R.",

@@ -264,7 +264,7 @@ export function BentoShowcase() {
             <span style={{ color: "#20C7B7" }}>Nothing you don&apos;t.</span>
           </h2>
           <p className="mt-4 max-w-xl mx-auto" style={{ color: "#6B7280" }}>
-            One platform. Activity intelligence, AI meal planning, and smart food delivery — all connected.
+            One platform. Activity intelligence, AI meal planning and smart food delivery. All connected.
           </p>
         </motion.div>
 

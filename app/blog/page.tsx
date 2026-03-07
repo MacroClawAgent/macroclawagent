@@ -30,7 +30,7 @@ const posts = [
   {
     slug: "ai-nutrition-coaching",
     tag: "AI + Nutrition",
-    tagColor: "text-[#69BDEB] bg-[rgba(105,189,235,0.10)]",
+    tagColor: "text-[#4C7DFF] bg-[rgba(105,189,235,0.10)]",
     tagBorder: "border-[rgba(105,189,235,0.25)]",
     gradient: "from-indigo-900/40 to-[#0F111A]",
     coverImage: "/gym.png" as string | null,
@@ -74,7 +74,7 @@ export default function BlogPage() {
   const secondary = filtered.slice(1);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFFFF" }}>
       <Navbar />
       <main className="pt-16">
 
@@ -88,14 +88,14 @@ export default function BlogPage() {
               transition={{ duration: 0.5 }}
               className="text-center md:text-left"
             >
-              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#F29A69" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
                 The Jonno Blog
               </p>
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight gradient-text-light mb-4">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight text-[#20C7B7] mb-4">
                 Nutrition intel for
                 <br className="hidden md:block" /> serious athletes.
               </h1>
-              <p className="text-lg max-w-xl mb-6" style={{ color: "#7C7472" }}>
+              <p className="text-lg max-w-xl mb-6" style={{ color: "#6B7280" }}>
                 Evidence-based articles on performance nutrition, AI coaching, and training fueling.
               </p>
 
@@ -104,7 +104,7 @@ export default function BlogPage() {
                 {["3 articles", "Evidence-based", "Updated regularly"].map((s) => (
                   <span
                     key={s}
-                    className="text-xs px-3 py-1 rounded-full border" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8", color: "#7C7472" }}
+                    className="text-xs px-3 py-1 rounded-full border" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB", color: "#6B7280" }}
                   >
                     {s}
                   </span>
@@ -120,8 +120,8 @@ export default function BlogPage() {
                     className="px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200"
                     style={
                       activeCategory === cat
-                        ? { backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)", color: "#F29A69" }
-                        : { backgroundColor: "transparent", borderColor: "#E8DDD8", color: "#7C7472" }
+                        ? { backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)", color: "#20C7B7" }
+                        : { backgroundColor: "transparent", borderColor: "#E5E7EB", color: "#6B7280" }
                     }
                   >
                     {cat}
@@ -146,7 +146,7 @@ export default function BlogPage() {
               >
                 <Link
                   href={`/blog/${featured.slug}`}
-                  className="block light-card overflow-hidden transition-colors duration-300 group border" style={{ borderColor: "#E8DDD8" }}
+                  className="block light-card overflow-hidden transition-colors duration-300 group border" style={{ borderColor: "#E5E7EB" }}
                 >
                   {/* Cover */}
                   <div className="relative h-64 md:h-80 overflow-hidden">
@@ -175,10 +175,10 @@ export default function BlogPage() {
                       <span className="text-slate-700">·</span>
                       <span className="text-xs text-gray-500">{featured.readTime}</span>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-black leading-tight transition-colors" style={{ color: "#4A454A" }}>
+                    <h2 className="text-2xl md:text-3xl font-black leading-tight transition-colors" style={{ color: "#1C1C1E" }}>
                       {featured.title}
                     </h2>
-                    <p className="leading-relaxed max-w-2xl" style={{ color: "#7C7472" }}>
+                    <p className="leading-relaxed max-w-2xl" style={{ color: "#6B7280" }}>
                       {featured.excerpt}
                     </p>
                     <div className="flex items-center justify-between mt-2">
@@ -188,9 +188,9 @@ export default function BlogPage() {
                         >
                           {featured.authorInitials}
                         </div>
-                        <span className="text-sm" style={{ color: "#7C7472" }}>{featured.author}</span>
+                        <span className="text-sm" style={{ color: "#6B7280" }}>{featured.author}</span>
                       </div>
-                      <span className="flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all" style={{ color: "#F29A69" }}>
+                      <span className="flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all" style={{ color: "#20C7B7" }}>
                         Read article
                         <ArrowRight className="w-3.5 h-3.5" />
                       </span>
@@ -240,10 +240,10 @@ export default function BlogPage() {
                           </span>
                           <span className="text-xs text-gray-500">{post.readTime}</span>
                         </div>
-                        <h2 className="text-lg font-bold leading-snug transition-colors" style={{ color: "#4A454A" }}>
+                        <h2 className="text-lg font-bold leading-snug transition-colors" style={{ color: "#1C1C1E" }}>
                           {post.title}
                         </h2>
-                        <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "#7C7472" }}>
+                        <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "#6B7280" }}>
                           {post.excerpt}
                         </p>
                         <div className="flex items-center justify-between mt-2">
@@ -253,11 +253,11 @@ export default function BlogPage() {
                             >
                               {post.authorInitials}
                             </div>
-                            <span className="text-xs" style={{ color: "#7C7472" }}>
+                            <span className="text-xs" style={{ color: "#6B7280" }}>
                               {post.author} · {post.date}
                             </span>
                           </div>
-                          <span className="flex items-center gap-1 text-xs font-semibold group-hover:gap-2 transition-all" style={{ color: "#F29A69" }}>
+                          <span className="flex items-center gap-1 text-xs font-semibold group-hover:gap-2 transition-all" style={{ color: "#20C7B7" }}>
                             Read
                             <ArrowRight className="w-3 h-3" />
                           </span>
@@ -285,13 +285,13 @@ export default function BlogPage() {
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 border" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8" }}
+              className="rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 border" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}
             >
               <div className="flex-1 text-center md:text-left">
-                <p className="font-black text-xl mb-1" style={{ color: "#4A454A" }}>
+                <p className="font-black text-xl mb-1" style={{ color: "#1C1C1E" }}>
                   Weekly nutrition intel for athletes.
                 </p>
-                <p className="text-sm" style={{ color: "#7C7472" }}>
+                <p className="text-sm" style={{ color: "#6B7280" }}>
                   Evidence-based articles on training fueling, AI coaching, and performance nutrition.
                   No spam.
                 </p>
@@ -300,7 +300,7 @@ export default function BlogPage() {
                 <input
                   type="email"
                   placeholder="your@email.com"
-                  className="flex-1 md:w-56 px-4 py-2.5 rounded-xl text-sm focus:outline-none border" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8", color: "#4A454A" }}
+                  className="flex-1 md:w-56 px-4 py-2.5 rounded-xl text-sm focus:outline-none border" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB", color: "#1C1C1E" }}
                 />
                 <Button variant="glow" size="default">
                   Subscribe

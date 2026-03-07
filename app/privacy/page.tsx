@@ -4,19 +4,19 @@ import { Footer } from "@/components/marketing/Footer";
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFFFF" }}>
       <Navbar />
       <main className="pt-16">
         <section className="py-20">
           <div className="max-w-3xl mx-auto px-6">
             {/* Header */}
             <div className="mb-12">
-              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>Legal</p>
-              <h1 className="text-4xl font-black mb-3" style={{ color: "#4A454A" }}>Privacy Policy</h1>
-              <p className="text-sm" style={{ color: "#7C7472" }}>Last updated: February 18, 2026</p>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#20C7B7" }}>Legal</p>
+              <h1 className="text-4xl font-black mb-3" style={{ color: "#1C1C1E" }}>Privacy Policy</h1>
+              <p className="text-sm" style={{ color: "#6B7280" }}>Last updated: February 18, 2026</p>
             </div>
 
-            <div className="light-card p-8 md:p-12 prose-legal">
+            <div className="bg-white rounded-2xl p-8 md:p-12 prose-legal">
               <p className="text-gray-600 leading-relaxed mb-8">
                 Jonno (&ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;) is committed to protecting your privacy.
                 This Privacy Policy explains how we collect, use, and protect your information when you

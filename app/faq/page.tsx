@@ -9,7 +9,7 @@ import { ChevronDown } from "lucide-react";
 const sections = [
   {
     title: "General",
-    color: "text-[#F29A69]",
+    color: "text-[#20C7B7]",
     faqs: [
       {
         q: "What is Jonno?",
@@ -17,19 +17,19 @@ const sections = [
       },
       {
         q: "How is Jonno different from MyFitnessPal or Cronometer?",
-        a: "Traditional macro trackers are calculators — you log food and they show totals. Jonno is an AI reasoning engine. It connects your training data to your nutrition targets in real time, has a conversational AI coach you can actually ask questions, and goes one step further by helping you order the right food. It adapts to what you did today, not just who you are on paper.",
+        a: "Traditional macro trackers are calculators. You log food and they show totals. Jonno is an AI reasoning engine. It connects your training data to your nutrition targets in real time, has a conversational AI coach you can actually ask questions, and goes one step further by helping you order the right food. It adapts to what you did today, not just who you are on paper.",
       },
       {
         q: "Is this for weight loss or performance?",
-        a: "Jonno is built for performance — for athletes who want to fuel training, optimise recovery, and hit macro targets precisely. While weight management is a side-effect of controlled nutrition, we don't use weight-loss language or position the product that way. If you're looking for a calorie deficit app, this probably isn't your tool. If you want to eat like your training actually matters, you're in the right place.",
+        a: "Jonno is built for performance, for athletes who want to fuel training, optimise recovery, and hit macro targets precisely. While weight management is a side-effect of controlled nutrition, we don't use weight-loss language or position the product that way. If you're looking for a calorie deficit app, this probably isn't your tool. If you want to eat like your training actually matters, you're in the right place.",
       },
       {
         q: "What devices and platforms are supported?",
-        a: "Jonno is a web application that works on any device with a browser — no app download required. We sync with Strava (any device Strava supports: Garmin, Apple Watch, Wahoo, Polar, etc.), Uber Eats (available markets), and Apple Health. We're working on native iOS and Android apps.",
+        a: "Jonno is a web application that works on any device with a browser, no app download required. We sync with Strava (any device Strava supports: Garmin, Apple Watch, Wahoo, Polar, etc.), Uber Eats (available markets), and Apple Health. We're working on native iOS and Android apps.",
       },
       {
         q: "Do I need a Strava account to use Jonno?",
-        a: "Strava is not required to use the core features. You can use Jonno for manual macro tracking and AI coaching without Strava. However, the activity-synced TDEE calculation and workout-aware meal planning require a Strava connection. We strongly recommend connecting it — it's where most of the magic happens.",
+        a: "Strava is not required to use the core features. You can use Jonno for manual macro tracking and AI coaching without Strava. However, the activity-synced TDEE calculation and workout-aware meal planning require a Strava connection. We strongly recommend connecting it. That's where most of the magic happens.",
       },
     ],
   },
@@ -51,7 +51,7 @@ const sections = [
       },
       {
         q: "Will you add Garmin, Whoop, or Oura direct integrations?",
-        a: "Yes — all three are on the roadmap. For now, if you use Garmin or Whoop, you can sync those devices to Strava first, and Jonno will pick up the data via Strava. Oura's sleep data integration for recovery-adjusted nutrition targets is particularly high on our priority list.",
+        a: "Yes, all three are on the roadmap. For now, if you use Garmin or Whoop, you can sync those devices to Strava first, and Jonno will pick up the data via Strava. Oura's sleep data integration for recovery-adjusted nutrition targets is particularly high on our priority list.",
       },
     ],
   },
@@ -61,11 +61,11 @@ const sections = [
     faqs: [
       {
         q: "What AI model powers the Jonno Agent?",
-        a: "The Jonno Agent is built on Anthropic's Claude — one of the most capable and safety-focused large language models available. We chose Claude specifically because of Anthropic's commitment to honest, helpful, and harmless AI behaviour. For nutrition guidance where accuracy matters, we didn't want a model that would hallucinate or overstate confidence.",
+        a: "The Jonno Agent is built on Anthropic's Claude, one of the most capable and safety-focused large language models available. We chose Claude specifically because of Anthropic's commitment to honest, helpful, and harmless AI behaviour. For nutrition guidance where accuracy matters, we didn't want a model that would hallucinate or overstate confidence.",
       },
       {
         q: "Does the Jonno Agent learn my preferences over time?",
-        a: "Yes. The Jonno Agent is given your profile data, recent meal history, training data, and any stated preferences at the start of each conversation. Over time, as you log meals and interact with the agent, it builds a richer picture of your preferences — foods you like, foods that don't sit well with your training, your usual meal timing, and more. This context makes recommendations progressively more personalised.",
+        a: "Yes. The Jonno Agent is given your profile data, recent meal history, training data, and any stated preferences at the start of each conversation. Over time, as you log meals and interact with the agent, it builds a richer picture of your preferences: foods you like, foods that don't sit well with your training, your usual meal timing, and more. This context makes recommendations progressively more personalised.",
       },
       {
         q: "Is the nutrition advice medically validated?",
@@ -83,7 +83,7 @@ const sections = [
     faqs: [
       {
         q: "Can I cancel my subscription at any time?",
-        a: "Yes, absolutely. Cancel from your account settings at any moment. Your Pro or Elite access continues until the end of the current billing period. After that, your account reverts to the Free tier — your data, meal history, and activity records are preserved.",
+        a: "Yes, absolutely. Cancel from your account settings at any moment. Your Pro or Elite access continues until the end of the current billing period. After that, your account reverts to the Free tier, and your data, meal history, and activity records are preserved.",
       },
       {
         q: "Is there a free trial?",
@@ -91,7 +91,7 @@ const sections = [
       },
       {
         q: "What happens to my data if I cancel?",
-        a: "Your data is yours. If you cancel, your account moves to the Free tier but all your historical data — meal logs, activity data, profile, and preferences — is retained. You can export your data at any time from account settings. We don't delete data on cancellation.",
+        a: "Your data is yours. If you cancel, your account moves to the Free tier but all your historical data: meal logs, activity data, profile, and preferences — is retained. You can export your data at any time from account settings. We don't delete data on cancellation.",
       },
     ],
   },
@@ -102,16 +102,16 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   return (
     <div
       className="py-5 cursor-pointer border-b"
-      style={{ borderColor: "#E8DDD8" }}
+      style={{ borderColor: "#E5E7EB" }}
       onClick={() => setOpen((o) => !o)}
     >
       <div className="flex items-start justify-between gap-4">
-        <p className="text-sm font-semibold transition-colors" style={{ color: open ? "#F29A69" : "#4A454A" }}>
+        <p className="text-sm font-semibold transition-colors" style={{ color: open ? "#20C7B7" : "#1C1C1E" }}>
           {q}
         </p>
         <ChevronDown
           className={`w-4 h-4 flex-shrink-0 mt-0.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          style={{ color: open ? "#F29A69" : "#7C7472" }}
+          style={{ color: open ? "#20C7B7" : "#6B7280" }}
         />
       </div>
       <AnimatePresence>
@@ -133,7 +133,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFFFF" }}>
       <Navbar />
       <main className="pt-16">
         {/* Header */}
@@ -145,13 +145,13 @@ export default function FAQPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#F29A69" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
                 Got questions
               </p>
-              <h1 className="text-5xl font-black tracking-tight gradient-text-light mb-4">
+              <h1 className="text-5xl font-black tracking-tight text-[#20C7B7] mb-4">
                 Frequently asked questions.
               </h1>
-              <p className="text-lg" style={{ color: "#7C7472" }}>
+              <p className="text-lg" style={{ color: "#6B7280" }}>
                 Everything you need to know about Jonno.
               </p>
             </motion.div>
@@ -181,21 +181,21 @@ export default function FAQPage() {
         </section>
 
         {/* Still have questions */}
-        <section className="py-16 border-t" style={{ borderColor: "#E8DDD8" }}>
+        <section className="py-16 border-t" style={{ borderColor: "#E5E7EB" }}>
           <div className="max-w-3xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <p className="text-2xl font-bold mb-3" style={{ color: "#4A454A" }}>Still have questions?</p>
-              <p className="mb-6" style={{ color: "#7C7472" }}>
+              <p className="text-2xl font-bold mb-3" style={{ color: "#1C1C1E" }}>Still have questions?</p>
+              <p className="mb-6" style={{ color: "#6B7280" }}>
                 We reply to every message. Usually within a few hours.
               </p>
               <a
                 href="mailto:hello@macroclawagent.com"
                 className="font-semibold transition-colors hover:opacity-80"
-                style={{ color: "#F29A69" }}
+                style={{ color: "#20C7B7" }}
               >
                 hello@macroclawagent.com
               </a>

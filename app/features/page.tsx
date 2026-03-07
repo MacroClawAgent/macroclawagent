@@ -55,8 +55,8 @@ function Ring({
           strokeDashoffset={circ * (1 - pct)}
         />
       </svg>
-      <span className="text-[10px]" style={{ color: "#7C7472" }}>{label}</span>
-      <span className="text-[11px] font-bold" style={{ color: "#4A454A" }}>{value}</span>
+      <span className="text-[10px]" style={{ color: "#6B7280" }}>{label}</span>
+      <span className="text-[11px] font-bold" style={{ color: "#1C1C1E" }}>{value}</span>
     </div>
   );
 }
@@ -65,13 +65,13 @@ function Ring({
 function HeroPreview() {
   return (
     <div className="flex flex-col gap-4">
-      <div className="light-card border border-gray-200 p-6 flex flex-col gap-5 rounded-2xl">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-5 rounded-2xl">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-widest font-semibold mb-0.5" style={{ color: "#7C7472" }}>Dashboard</p>
-            <h3 className="text-base font-bold" style={{ color: "#4A454A" }}>Today&apos;s Performance</h3>
+            <p className="text-[11px] uppercase tracking-widest font-semibold mb-0.5" style={{ color: "#6B7280" }}>Dashboard</p>
+            <h3 className="text-base font-bold" style={{ color: "#1C1C1E" }}>Today&apos;s Performance</h3>
           </div>
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border" style={{ backgroundColor: "rgba(242,154,105,0.15)", borderColor: "#E8DDD8", color: "#F29A69" }}>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border" style={{ backgroundColor: "rgba(242,154,105,0.15)", borderColor: "#E5E7EB", color: "#20C7B7" }}>
             A
           </div>
         </div>
@@ -88,20 +88,20 @@ function HeroPreview() {
           ].map((s) => (
             <span
               key={s.label}
-              className={`text-[11px] font-semibold ${s.color} px-2.5 py-1 rounded-full border`} style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8" }}
+              className={`text-[11px] font-semibold ${s.color} px-2.5 py-1 rounded-full border`} style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}
             >
               {s.label}
             </span>
           ))}
         </div>
       </div>
-      <div className="light-card p-4 rounded-2xl flex items-start gap-3">
+      <div className="bg-white rounded-2xl p-4 rounded-2xl flex items-start gap-3">
         <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 border" style={{ backgroundColor: "rgba(105,189,235,0.15)", borderColor: "rgba(105,189,235,0.25)" }}>
-          <Bot className="w-3.5 h-3.5" style={{ color: "#69BDEB" }} />
+          <Bot className="w-3.5 h-3.5" style={{ color: "#4C7DFF" }} />
         </div>
         <div>
-          <p className="text-[10px] font-semibold mb-1.5" style={{ color: "#7C7472" }}>Jonno Agent</p>
-          <div className="rounded-xl px-3 py-2 text-[11px] leading-snug border" style={{ backgroundColor: "rgba(105,189,235,0.15)", borderColor: "#8FD3F4", color: "#4A454A" }}>
+          <p className="text-[10px] font-semibold mb-1.5" style={{ color: "#6B7280" }}>Jonno Agent</p>
+          <div className="rounded-xl px-3 py-2 text-[11px] leading-snug border" style={{ backgroundColor: "rgba(105,189,235,0.15)", borderColor: "#4C7DFF", color: "#1C1C1E" }}>
             Your protein is 34g short. Add grilled chicken to hit your target.
           </div>
         </div>
@@ -113,21 +113,21 @@ function HeroPreview() {
 /* ── Strava spotlight mockup ── */
 function StravaSpotlightCard() {
   return (
-    <div className="light-card border-orange-500/20 p-6 flex flex-col gap-5 rounded-2xl">
+    <div className="bg-white rounded-2xl border-orange-500/20 p-6 flex flex-col gap-5 rounded-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-orange-400" />
-          <p className="text-base font-bold" style={{ color: "#4A454A" }}>Strava Sync</p>
+          <p className="text-base font-bold" style={{ color: "#1C1C1E" }}>Strava Sync</p>
         </div>
-        <span className="text-[11px] font-semibold flex items-center gap-1.5" style={{ color: "#8FD3F4" }}>
-          <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#8FD3F4" }} />
+        <span className="text-[11px] font-semibold flex items-center gap-1.5" style={{ color: "#4C7DFF" }}>
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#4C7DFF" }} />
           Live
         </span>
       </div>
       <div>
-        <p className="text-[11px] mb-1" style={{ color: "#7C7472" }}>Last activity synced 2 min ago</p>
-        <p className="text-lg font-bold" style={{ color: "#4A454A" }}>Morning Ride</p>
-        <p className="text-sm mt-0.5" style={{ color: "#7C7472" }}>28.4km · 1h 12m · 924 kcal</p>
+        <p className="text-[11px] mb-1" style={{ color: "#6B7280" }}>Last activity synced 2 min ago</p>
+        <p className="text-lg font-bold" style={{ color: "#1C1C1E" }}>Morning Ride</p>
+        <p className="text-sm mt-0.5" style={{ color: "#6B7280" }}>28.4km · 1h 12m · 924 kcal</p>
       </div>
       <div className="flex items-end gap-1 h-10">
         {[45, 60, 40, 75, 65, 85, 55, 70, 80, 50, 65, 90].map((h, i) => (
@@ -139,8 +139,8 @@ function StravaSpotlightCard() {
         ))}
       </div>
       <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border" style={{ backgroundColor: "rgba(105,189,235,0.10)", borderColor: "rgba(105,189,235,0.25)" }}>
-        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#69BDEB" }} />
-        <p className="text-[11px] font-semibold" style={{ color: "#69BDEB" }}>TDEE recalculated: 3,140 kcal</p>
+        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#4C7DFF" }} />
+        <p className="text-[11px] font-semibold" style={{ color: "#4C7DFF" }}>TDEE recalculated: 3,140 kcal</p>
       </div>
     </div>
   );
@@ -149,34 +149,34 @@ function StravaSpotlightCard() {
 /* ── Agent spotlight mockup ── */
 function AgentSpotlightCard() {
   return (
-    <div className="light-card border-blue-200 p-6 flex flex-col gap-4 rounded-2xl">
+    <div className="bg-white rounded-2xl border-blue-200 p-6 flex flex-col gap-4 rounded-2xl">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-xl flex items-center justify-center border" style={{ backgroundColor: "rgba(105,189,235,0.15)", borderColor: "rgba(105,189,235,0.25)" }}>
-          <Bot className="w-4 h-4" style={{ color: "#69BDEB" }} />
+          <Bot className="w-4 h-4" style={{ color: "#4C7DFF" }} />
         </div>
         <div>
-          <p className="text-sm font-bold" style={{ color: "#4A454A" }}>Jonno Agent</p>
-          <p className="text-[10px] flex items-center gap-1" style={{ color: "#8FD3F4" }}>
-            <span className="w-1 h-1 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#8FD3F4" }} />
+          <p className="text-sm font-bold" style={{ color: "#1C1C1E" }}>Jonno Agent</p>
+          <p className="text-[10px] flex items-center gap-1" style={{ color: "#4C7DFF" }}>
+            <span className="w-1 h-1 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#4C7DFF" }} />
             Online
           </p>
         </div>
       </div>
       <div className="flex flex-col gap-3">
         <div className="flex justify-end">
-          <div className="rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] max-w-[85%] border" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8", color: "#4A454A" }}>
+          <div className="rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] max-w-[85%] border" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB", color: "#1C1C1E" }}>
             What should I eat after my 15km run?
           </div>
         </div>
         <div className="flex justify-start">
-          <div className="rounded-2xl rounded-tl-sm px-3 py-2 text-[11px] leading-snug max-w-[90%] border" style={{ backgroundColor: "rgba(105,189,235,0.15)", borderColor: "#8FD3F4", color: "#4A454A" }}>
+          <div className="rounded-2xl rounded-tl-sm px-3 py-2 text-[11px] leading-snug max-w-[90%] border" style={{ backgroundColor: "rgba(105,189,235,0.15)", borderColor: "#4C7DFF", color: "#1C1C1E" }}>
             Based on 924 kcal burned, aim for 55g protein + 90g carbs within 45 min. Here&apos;s your top match:
           </div>
         </div>
-        <div className="rounded-xl px-3 py-2.5 flex items-center justify-between border" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8" }}>
+        <div className="rounded-xl px-3 py-2.5 flex items-center justify-between border" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}>
           <div>
-            <p className="text-[11px] font-semibold" style={{ color: "#4A454A" }}>Grilled Salmon Bowl</p>
-            <p className="text-[10px]" style={{ color: "#7C7472" }}>42P · 38C · 18F</p>
+            <p className="text-[11px] font-semibold" style={{ color: "#1C1C1E" }}>Grilled Salmon Bowl</p>
+            <p className="text-[10px]" style={{ color: "#6B7280" }}>42P · 38C · 18F</p>
           </div>
           <button className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg">
             Order →
@@ -195,10 +195,10 @@ function CartSpotlightCard() {
     { name: "Quinoa Power Bowl", macros: "22P · 68C · 12F", price: "$15.20" },
   ];
   return (
-    <div className="light-card border-emerald-500/20 p-6 flex flex-col gap-4 rounded-2xl">
+    <div className="bg-white rounded-2xl border-emerald-500/20 p-6 flex flex-col gap-4 rounded-2xl">
       <div className="flex items-center gap-2">
         <ShoppingBag className="w-5 h-5 text-emerald-400" />
-        <p className="text-base font-bold" style={{ color: "#4A454A" }}>Smart Cart</p>
+        <p className="text-base font-bold" style={{ color: "#1C1C1E" }}>Smart Cart</p>
         <span className="ml-auto text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
           Macro-matched
         </span>
@@ -208,19 +208,19 @@ function CartSpotlightCard() {
           <div
             key={m.name}
             className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl border"
-            style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8" }}
+            style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}
           >
             <div>
-              <p className="text-[11px] font-semibold" style={{ color: "#4A454A" }}>{m.name}</p>
-              <p className="text-[10px] font-medium" style={{ color: "#7C7472" }}>{m.macros}</p>
+              <p className="text-[11px] font-semibold" style={{ color: "#1C1C1E" }}>{m.name}</p>
+              <p className="text-[10px] font-medium" style={{ color: "#6B7280" }}>{m.macros}</p>
             </div>
-            <span className="text-[11px] font-bold flex-shrink-0" style={{ color: "#4A454A" }}>{m.price}</span>
+            <span className="text-[11px] font-bold flex-shrink-0" style={{ color: "#1C1C1E" }}>{m.price}</span>
           </div>
         ))}
       </div>
-      <div className="px-3 py-2.5 rounded-xl border" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8" }}>
-        <p className="text-[10px] font-medium" style={{ color: "#7C7472" }}>Remaining macros</p>
-        <p className="text-[11px] font-bold mt-0.5" style={{ color: "#4A454A" }}>102P · 128C · 50F</p>
+      <div className="px-3 py-2.5 rounded-xl border" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}>
+        <p className="text-[10px] font-medium" style={{ color: "#6B7280" }}>Remaining macros</p>
+        <p className="text-[11px] font-bold mt-0.5" style={{ color: "#1C1C1E" }}>102P · 128C · 50F</p>
       </div>
       <button className="w-full py-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold tracking-wide hover:bg-emerald-600/30 transition-colors">
         Build Cart →
@@ -235,7 +235,7 @@ const pillars = [
     tag: "Strava API",
     tagColor: "text-orange-400 bg-orange-500/10 border-orange-500/20",
     heading: "Training-aware nutrition. Automatically.",
-    desc: "Every run, ride, and lift auto-syncs from Strava. Jonno reads your training load and recalculates your TDEE in real time — so your calorie targets move with your performance, not against it.",
+    desc: "Every run, ride, and lift auto-syncs from Strava. Jonno reads your training load and recalculates your TDEE in real time — so your calorie targets move with your performance.",
     bullets: [
       "Auto-sync via Strava OAuth",
       "Real-time TDEE recalculation",
@@ -249,7 +249,7 @@ const pillars = [
   },
   {
     tag: "Claude AI",
-    tagColor: "text-[#69BDEB] bg-[rgba(105,189,235,0.10)] border-[rgba(105,189,235,0.25)]",
+    tagColor: "text-[#4C7DFF] bg-[rgba(105,189,235,0.10)] border-[rgba(105,189,235,0.25)]",
     heading: "An AI coach that knows your training load.",
     desc: "The Jonno Agent — powered by Anthropic's Claude — builds a personalised meal plan around your macros, schedule, and food preferences. Ask it anything: meal swaps, restaurant picks, late-night options.",
     bullets: [
@@ -258,7 +258,7 @@ const pillars = [
       "Context-aware food recommendations",
       "Adapts to your eating habits",
     ],
-    checkColor: "text-[#69BDEB]",
+    checkColor: "text-[#4C7DFF]",
     linkText: "Try the Agent",
     mockupRight: false,
     Mockup: AgentSpotlightCard,
@@ -385,14 +385,14 @@ const testimonials = [
     role: "Triathlete",
     avatar: "MT",
     avatarGradient: "from-orange-500 to-amber-500",
-    quote: "I went from guessing my post-ride nutrition to nailing my carb targets every single day. The Strava sync is seamless — it knows what I burned before I even open the app.",
+    quote: "I went from guessing my post-ride nutrition to nailing my carb targets every single day. The Strava sync is seamless. It knows what I burned before I even open the app.",
   },
   {
     name: "Priya K.",
     role: "Marathon Runner",
     avatar: "PK",
     avatarGradient: "from-indigo-500 to-violet-500",
-    quote: "The AI chat is genuinely useful. It doesn't just tell me what to eat — it explains why based on my actual training load. Like having a sports dietitian in my pocket.",
+    quote: "The AI chat is genuinely useful. It doesn't just tell me what to eat. It explains why based on my actual training load. Like having a sports dietitian in my pocket.",
   },
   {
     name: "Jake R.",
@@ -405,7 +405,7 @@ const testimonials = [
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFFFF" }}>
       <Navbar />
       <main className="pt-16">
 
@@ -422,11 +422,11 @@ export default function FeaturesPage() {
                 transition={{ duration: 0.6 }}
                 className="flex flex-col gap-7"
               >
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide self-start border" style={{ backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)", color: "#C4693A" }}>
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide self-start border" style={{ backgroundColor: "rgba(242,154,105,0.10)", borderColor: "rgba(242,154,105,0.30)", color: "#1BA89A" }}>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Built for Strava athletes
                 </span>
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.92] gradient-text-light">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.92] text-[#20C7B7]">
                   Every tool a serious athlete needs.
                 </h1>
                 <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
@@ -450,9 +450,9 @@ export default function FeaturesPage() {
                     { value: "94%", label: "Macro accuracy" },
                     { value: "3.2M", label: "Meals logged" },
                   ].map((s) => (
-                    <div key={s.label} className="flex items-center gap-2 px-4 py-2 rounded-full border" style={{ backgroundColor: "#FFFDFB", borderColor: "#E8DDD8" }}>
-                      <span className="text-sm font-black" style={{ color: "#4A454A" }}>{s.value}</span>
-                      <span className="text-xs" style={{ color: "#7C7472" }}>{s.label}</span>
+                    <div key={s.label} className="flex items-center gap-2 px-4 py-2 rounded-full border" style={{ backgroundColor: "#FFFFFF", borderColor: "#E5E7EB" }}>
+                      <span className="text-sm font-black" style={{ color: "#1C1C1E" }}>{s.value}</span>
+                      <span className="text-xs" style={{ color: "#6B7280" }}>{s.label}</span>
                     </div>
                   ))}
                 </div>
@@ -475,7 +475,7 @@ export default function FeaturesPage() {
           <section
             key={pillar.tag}
             className={`py-24`}
-            style={i % 2 === 1 ? { backgroundColor: "#FAF4EF" } : {}}
+            style={i % 2 === 1 ? { backgroundColor: "#F4F5F7" } : {}}
           >
             <div className="max-w-6xl mx-auto px-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -490,13 +490,13 @@ export default function FeaturesPage() {
                   <span className={`inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full border self-start ${pillar.tagColor}`}>
                     {pillar.tag}
                   </span>
-                  <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight" style={{ color: "#4A454A" }}>
+                  <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight" style={{ color: "#1C1C1E" }}>
                     {pillar.heading}
                   </h2>
-                  <p className="leading-relaxed" style={{ color: "#7C7472" }}>{pillar.desc}</p>
+                  <p className="leading-relaxed" style={{ color: "#6B7280" }}>{pillar.desc}</p>
                   <ul className="space-y-3">
                     {pillar.bullets.map((b) => (
-                      <li key={b} className="flex items-center gap-2.5 text-sm" style={{ color: "#7C7472" }}>
+                      <li key={b} className="flex items-center gap-2.5 text-sm" style={{ color: "#6B7280" }}>
                         <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${pillar.checkColor}`} />
                         {b}
                       </li>
@@ -526,7 +526,7 @@ export default function FeaturesPage() {
         ))}
 
         {/* ── Feature Grid ── */}
-        <section className="py-24" style={{ backgroundColor: "#FAF4EF" }}>
+        <section className="py-24" style={{ backgroundColor: "#F4F5F7" }}>
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -534,14 +534,14 @@ export default function FeaturesPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#20C7B7" }}>
                 Built-in tools
               </p>
-              <h2 className="text-4xl font-black tracking-tight" style={{ color: "#4A454A" }}>
+              <h2 className="text-4xl font-black tracking-tight" style={{ color: "#1C1C1E" }}>
                 Everything{" "}
-                <span className="gradient-text-light">included.</span>
+                <span className="text-[#20C7B7]">included.</span>
               </h2>
-              <p className="text-lg mt-4 max-w-xl mx-auto" style={{ color: "#7C7472" }}>
+              <p className="text-lg mt-4 max-w-xl mx-auto" style={{ color: "#6B7280" }}>
                 No add-ons, no plugins. Every feature ships in the core product.
               </p>
             </motion.div>
@@ -554,14 +554,14 @@ export default function FeaturesPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.35, delay: i * 0.07 }}
-                  className="light-card p-6 flex flex-col gap-4 group hover:border-gray-100 transition-all duration-300"
+                  className="bg-white rounded-2xl p-6 flex flex-col gap-4 group hover:border-gray-100 transition-all duration-300"
                 >
                   <div className={`w-12 h-12 rounded-2xl ${f.bg} ${f.color} flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110`}>
                     {f.icon}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold mb-1.5" style={{ color: "#4A454A" }}>{f.title}</h3>
-                    <p className="text-sm leading-relaxed" style={{ color: "#7C7472" }}>{f.desc}</p>
+                    <h3 className="font-bold mb-1.5" style={{ color: "#1C1C1E" }}>{f.title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: "#6B7280" }}>{f.desc}</p>
                   </div>
                   <div className={`h-0.5 w-full rounded-full ${f.accentColor}/30`} />
                 </motion.div>
@@ -579,11 +579,11 @@ export default function FeaturesPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#20C7B7" }}>
                 Integrations
               </p>
-              <h2 className="text-4xl font-black gradient-text-light">Fits into your life.</h2>
-              <p className="text-lg mt-4 max-w-xl mx-auto" style={{ color: "#7C7472" }}>
+              <h2 className="text-4xl font-black text-[#20C7B7]">Fits into your life.</h2>
+              <p className="text-lg mt-4 max-w-xl mx-auto" style={{ color: "#6B7280" }}>
                 Works with the apps you already use. More integrations launching soon.
               </p>
             </motion.div>
@@ -616,7 +616,7 @@ export default function FeaturesPage() {
         </section>
 
         {/* ── Social Proof ── */}
-        <section className="py-24" style={{ backgroundColor: "#FAF4EF" }}>
+        <section className="py-24" style={{ backgroundColor: "#F4F5F7" }}>
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -624,10 +624,10 @@ export default function FeaturesPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#F29A69" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#20C7B7" }}>
                 Athlete reviews
               </p>
-              <h2 className="text-4xl font-black gradient-text-light">Athletes who eat smarter.</h2>
+              <h2 className="text-4xl font-black text-[#20C7B7]">Athletes who eat smarter.</h2>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -638,21 +638,21 @@ export default function FeaturesPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="light-card p-7 flex flex-col gap-5"
+                  className="bg-white rounded-2xl p-7 flex flex-col gap-5"
                 >
                   <div className="flex gap-1">
                     {Array.from({ length: 5 }).map((_, si) => (
-                      <Star key={si} className="w-4 h-4 fill-[#F29A69]" style={{ color: "#F29A69" }} />
+                      <Star key={si} className="w-4 h-4 fill-[#20C7B7]" style={{ color: "#20C7B7" }} />
                     ))}
                   </div>
-                  <p className="text-sm leading-relaxed flex-1" style={{ color: "#4A454A" }}>&ldquo;{t.quote}&rdquo;</p>
+                  <p className="text-sm leading-relaxed flex-1" style={{ color: "#1C1C1E" }}>&ldquo;{t.quote}&rdquo;</p>
                   <div className="flex items-center gap-3">
                     <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${t.avatarGradient} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
                       {t.avatar}
                     </div>
                     <div>
-                      <p className="text-sm font-bold" style={{ color: "#4A454A" }}>{t.name}</p>
-                      <p className="text-xs" style={{ color: "#7C7472" }}>{t.role}</p>
+                      <p className="text-sm font-bold" style={{ color: "#1C1C1E" }}>{t.name}</p>
+                      <p className="text-xs" style={{ color: "#6B7280" }}>{t.role}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -668,7 +668,7 @@ export default function FeaturesPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="light-card p-10 lg:p-14 flex flex-col lg:flex-row items-center gap-10 lg:gap-14 border" style={{ borderColor: "#E8DDD8" }}
+              className="bg-white rounded-2xl p-10 lg:p-14 flex flex-col lg:flex-row items-center gap-10 lg:gap-14 border" style={{ borderColor: "#E5E7EB" }}
             >
               {/* Mascot — left */}
               <div className="flex-shrink-0">
@@ -683,8 +683,8 @@ export default function FeaturesPage() {
               </div>
               {/* Text — right */}
               <div className="flex flex-col gap-6 text-center lg:text-left">
-                <h2 className="text-4xl md:text-5xl font-black gradient-text-light">Ready to fuel smarter?</h2>
-                <p className="text-lg max-w-md" style={{ color: "#7C7472" }}>
+                <h2 className="text-4xl md:text-5xl font-black text-[#20C7B7]">Ready to fuel smarter?</h2>
+                <p className="text-lg max-w-md" style={{ color: "#6B7280" }}>
                   Create your free account and let the Jonno Agent take over your nutrition in under 5 minutes.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
@@ -698,7 +698,7 @@ export default function FeaturesPage() {
                     <Link href="/pricing">See Pricing</Link>
                   </Button>
                 </div>
-                <p className="text-xs" style={{ color: "#7C7472" }}>No credit card required · Cancel anytime</p>
+                <p className="text-xs" style={{ color: "#6B7280" }}>No credit card required · Cancel anytime</p>
               </div>
             </motion.div>
           </div>

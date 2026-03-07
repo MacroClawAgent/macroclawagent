@@ -11,9 +11,9 @@ import { SurveyModal } from "@/components/join/SurveyModal";
 const sports = ["Running", "Cycling", "Gym / Strength", "Swimming", "Triathlon", "Other"];
 
 const features = [
-  { icon: Zap, label: "Strava Sync", color: "text-[#F29A69]" },
-  { icon: Bot, label: "AI Macros", color: "text-[#69BDEB]" },
-  { icon: ShoppingBag, label: "Smart Cart", color: "text-[#8FD3F4]" },
+  { icon: Zap, label: "Strava Sync", color: "text-[#20C7B7]" },
+  { icon: Bot, label: "AI Macros", color: "text-[#4C7DFF]" },
+  { icon: ShoppingBag, label: "Smart Cart", color: "text-[#4C7DFF]" },
 ];
 
 const inputClass =
@@ -75,14 +75,14 @@ export default function JoinPage() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "#FAF4EF" }}>
+    <div className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "#F4F5F7" }}>
       {/* Decorative orbs */}
       <div className="pointer-events-none absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-[140px]" style={{ background: "radial-gradient(ellipse at center, rgba(143,211,244,0.25) 0%, transparent 70%)" }} />
       <div className="pointer-events-none absolute top-0 left-0 w-80 h-80 rounded-full blur-[100px]" style={{ background: "radial-gradient(ellipse at center, rgba(242,154,105,0.20) 0%, transparent 70%)" }} />
       <div className="pointer-events-none absolute bottom-0 left-1/3 w-56 h-56 rounded-full blur-[80px]" style={{ background: "radial-gradient(ellipse at center, rgba(239,217,204,0.50) 0%, transparent 70%)" }} />
 
       {/* ── Top nav ── */}
-      <nav className="relative z-20 backdrop-blur-sm" style={{ borderBottom: "1px solid #CFC7C2", backgroundColor: "rgba(250,244,239,0.85)" }}>
+      <nav className="relative z-20 backdrop-blur-sm" style={{ borderBottom: "1px solid #E5E7EB", backgroundColor: "rgba(250,244,239,0.85)" }}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden" style={{ backgroundColor: "rgba(242,154,105,0.12)", border: "1px solid rgba(242,154,105,0.30)" }}>
@@ -95,9 +95,9 @@ export default function JoinPage() {
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
             </div>
-            <span className="font-black text-base tracking-tight" style={{ color: "#4A454A" }}>Jonno</span>
+            <span className="font-black text-base tracking-tight" style={{ color: "#1C1C1E" }}>Jonno</span>
           </Link>
-          <Link href="/" className="text-sm transition-colors" style={{ color: "#7C7472" }}>
+          <Link href="/" className="text-sm transition-colors" style={{ color: "#6B7280" }}>
             ← Back to home
           </Link>
         </div>
@@ -123,60 +123,60 @@ export default function JoinPage() {
               transition={{ duration: 0.55 }}
               className="flex-1 flex flex-col gap-8 lg:pt-16 lg:pb-16 lg:sticky lg:top-8"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full w-fit text-white shadow-sm text-xs font-bold uppercase tracking-widest" style={{ background: "linear-gradient(135deg, #F29A69, #E88367)" }}>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full w-fit text-white shadow-sm text-xs font-bold uppercase tracking-widest" style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)" }}>
                 <span className="w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse" />
-                Beta Access — Limited Spots
+                Beta Access · Limited Spots
               </div>
               <div className="flex flex-col gap-2">
                 <h1 className="text-5xl lg:text-6xl font-black tracking-tight leading-[0.93]">
-                  <span className="gradient-text-light">Fuel your training.</span>
+                  <span className="text-[#20C7B7]">Fuel your training.</span>
                 </h1>
-                <h1 className="text-5xl lg:text-6xl font-black tracking-tight leading-[0.93]" style={{ color: "#4A454A" }}>
+                <h1 className="text-5xl lg:text-6xl font-black tracking-tight leading-[0.93]" style={{ color: "#1C1C1E" }}>
                   Automatically.
                 </h1>
               </div>
-              <p className="text-lg leading-relaxed max-w-lg" style={{ color: "#7C7472" }}>
+              <p className="text-lg leading-relaxed max-w-lg" style={{ color: "#6B7280" }}>
                 Jonno syncs your Strava, calculates your exact macros, and plans your meals with AI.{" "}
-                <strong style={{ color: "#4A454A" }}>Join 400+ athletes</strong> on the waitlist.
+                <strong style={{ color: "#1C1C1E" }}>Join 400+ athletes</strong> on the waitlist.
               </p>
               <div className="flex flex-wrap gap-2">
                 {features.map(({ icon: Icon, label, color }) => (
-                  <div key={label} className="rounded-full px-3.5 py-2 flex items-center gap-2 text-sm font-semibold" style={{ backgroundColor: "#FFFDFB", border: "1px solid #E8DDD8", boxShadow: "0 1px 4px rgba(74,69,74,0.06)", color: "#4A454A" }}>
+                  <div key={label} className="rounded-full px-3.5 py-2 flex items-center gap-2 text-sm font-semibold" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 1px 4px rgba(74,69,74,0.06)", color: "#1C1C1E" }}>
                     <Icon className={`w-4 h-4 ${color}`} />
                     {label}
                   </div>
                 ))}
-                <div className="rounded-full px-3.5 py-2 flex items-center gap-2 text-sm font-semibold" style={{ backgroundColor: "#FFFDFB", border: "1px solid #E8DDD8", boxShadow: "0 1px 4px rgba(74,69,74,0.06)", color: "#4A454A" }}>
+                <div className="rounded-full px-3.5 py-2 flex items-center gap-2 text-sm font-semibold" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 1px 4px rgba(74,69,74,0.06)", color: "#1C1C1E" }}>
                   <span>🏅</span>
                   Performance Macros
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-3 max-w-lg">
                 {[
-                  { icon: Zap, iconColor: "#F29A69", bg: "rgba(242,154,105,0.10)", border: "rgba(242,154,105,0.30)", title: "Strava-Powered Fueling", desc: "Your macro targets adjust automatically based on your training load — runs, rides, swims." },
-                  { icon: Bot, iconColor: "#69BDEB", bg: "rgba(105,189,235,0.10)", border: "rgba(143,211,244,0.35)", title: "AI Nutrition Agent", desc: "Ask the Jonno Agent anything about your diet. It reasons across your training load and goals." },
-                  { icon: ShoppingBag, iconColor: "#8FD3F4", bg: "rgba(143,211,244,0.10)", border: "rgba(143,211,244,0.35)", title: "Smart Meal Planning", desc: "Get macro-matched meal plans built around foods you actually eat — and order in one tap." },
+                  { icon: Zap, iconColor: "#20C7B7", bg: "rgba(242,154,105,0.10)", border: "rgba(242,154,105,0.30)", title: "Strava-Powered Fueling", desc: "Your macro targets adjust automatically based on your training load — runs, rides, swims." },
+                  { icon: Bot, iconColor: "#4C7DFF", bg: "rgba(105,189,235,0.10)", border: "rgba(143,211,244,0.35)", title: "AI Nutrition Agent", desc: "Ask the Jonno Agent anything about your diet. It reasons across your training load and goals." },
+                  { icon: ShoppingBag, iconColor: "#4C7DFF", bg: "rgba(143,211,244,0.10)", border: "rgba(143,211,244,0.35)", title: "Smart Meal Planning", desc: "Get macro-matched meal plans built around foods you actually eat — and order in one tap." },
                 ].map(({ icon: Icon, iconColor, bg, border, title, desc }) => (
-                  <div key={title} className="rounded-2xl p-4 flex items-start gap-3.5" style={{ backgroundColor: "#FFFDFB", border: "1px solid #E8DDD8", boxShadow: "0 2px 8px rgba(74,69,74,0.05)" }}>
+                  <div key={title} className="rounded-2xl p-4 flex items-start gap-3.5" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 8px rgba(74,69,74,0.05)" }}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: bg, border: `1px solid ${border}` }}>
                       <Icon className="w-4 h-4" style={{ color: iconColor }} />
                     </div>
                     <div>
-                      <p className="text-sm font-bold mb-0.5" style={{ color: "#4A454A" }}>{title}</p>
-                      <p className="text-xs leading-relaxed" style={{ color: "#7C7472" }}>{desc}</p>
+                      <p className="text-sm font-bold mb-0.5" style={{ color: "#1C1C1E" }}>{title}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: "#6B7280" }}>{desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
               <div className="flex items-center gap-4 pt-2">
                 <div className="flex -space-x-2">
-                  {[["#F29A69","A"],["#69BDEB","J"],["#E88367","M"],["#8FD3F4","R"]].map(([bg, letter], i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: bg, borderColor: "#FAF4EF" }}>
+                  {[["#20C7B7","A"],["#4C7DFF","J"],["#4C7DFF","M"],["#4C7DFF","R"]].map(([bg, letter], i) => (
+                    <div key={i} className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: bg, borderColor: "#F4F5F7" }}>
                       {letter}
                     </div>
                   ))}
                 </div>
-                <p className="text-sm" style={{ color: "#7C7472" }}><strong style={{ color: "#4A454A" }}>400+ athletes</strong> already waiting</p>
+                <p className="text-sm" style={{ color: "#6B7280" }}><strong style={{ color: "#1C1C1E" }}>400+ athletes</strong> already waiting</p>
               </div>
             </motion.div>
 
@@ -187,41 +187,41 @@ export default function JoinPage() {
               transition={{ duration: 0.4, delay: 0.1 }}
               className="w-full lg:w-[440px] lg:flex-shrink-0 lg:pt-16 lg:pb-16"
             >
-              <form onSubmit={handleSubmit} className="rounded-2xl p-7 flex flex-col gap-4" style={{ backgroundColor: "#FFFDFB", border: "1px solid #E8DDD8", boxShadow: "0 8px 40px rgba(74,69,74,0.10)" }}>
+              <form onSubmit={handleSubmit} className="rounded-2xl p-7 flex flex-col gap-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 8px 40px rgba(74,69,74,0.10)" }}>
                 <div>
-                  <p className="text-xl font-black mb-1" style={{ color: "#4A454A" }}>Claim your free beta spot</p>
-                  <p className="text-sm" style={{ color: "#7C7472" }}>No credit card. No commitment. Cancel any time.</p>
+                  <p className="text-xl font-black mb-1" style={{ color: "#1C1C1E" }}>Claim your free beta spot</p>
+                  <p className="text-sm" style={{ color: "#6B7280" }}>No credit card. No commitment. Cancel any time.</p>
                 </div>
                 <AnimatePresence>
                   {error && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex items-center gap-2.5 px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(232,131,103,0.08)", border: "1px solid rgba(232,131,103,0.30)" }}>
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#E88367" }} />
-                      <p className="text-xs" style={{ color: "#C4693A" }}>{error}</p>
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#4C7DFF" }} />
+                      <p className="text-xs" style={{ color: "#1BA89A" }}>{error}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#7C7472" }}>Full Name</label>
-                  <input type="text" name="full_name" placeholder="Alex Johnson" value={form.full_name} onChange={handleChange} required autoComplete="name" className={inputClass} style={{ backgroundColor: "#FFFDFB", border: "1px solid #CFC7C2", color: "#4A454A" }} />
+                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#6B7280" }}>Full Name</label>
+                  <input type="text" name="full_name" placeholder="Alex Johnson" value={form.full_name} onChange={handleChange} required autoComplete="name" className={inputClass} style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#1C1C1E" }} />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#7C7472" }}>Email Address</label>
-                  <input type="email" name="email" placeholder="alex@example.com" value={form.email} onChange={handleChange} required autoComplete="email" className={inputClass} style={{ backgroundColor: "#FFFDFB", border: "1px solid #CFC7C2", color: "#4A454A" }} />
+                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#6B7280" }}>Email Address</label>
+                  <input type="email" name="email" placeholder="alex@example.com" value={form.email} onChange={handleChange} required autoComplete="email" className={inputClass} style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#1C1C1E" }} />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#7C7472" }}>
-                    Phone <span className="normal-case font-normal" style={{ color: "#CFC7C2" }}>(optional)</span>
+                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#6B7280" }}>
+                    Phone <span className="normal-case font-normal" style={{ color: "#E5E7EB" }}>(optional)</span>
                   </label>
-                  <input type="tel" name="phone" placeholder="+1 555 000 0000" value={form.phone} onChange={handleChange} autoComplete="tel" className={inputClass} style={{ backgroundColor: "#FFFDFB", border: "1px solid #CFC7C2", color: "#4A454A" }} />
+                  <input type="tel" name="phone" placeholder="+1 555 000 0000" value={form.phone} onChange={handleChange} autoComplete="tel" className={inputClass} style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#1C1C1E" }} />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#7C7472" }}>What do you train for?</label>
+                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#6B7280" }}>What do you train for?</label>
                   <div className="relative">
-                    <select name="sport" value={form.sport} onChange={handleChange} className={`${inputClass} appearance-none pr-10 cursor-pointer`} style={{ backgroundColor: "#FFFDFB", border: "1px solid #CFC7C2", color: "#4A454A" }}>
+                    <select name="sport" value={form.sport} onChange={handleChange} className={`${inputClass} appearance-none pr-10 cursor-pointer`} style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#1C1C1E" }}>
                       <option value="" disabled>Select your sport…</option>
                       {sports.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "#7C7472" }} />
+                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "#6B7280" }} />
                   </div>
                 </div>
                 <Button type="submit" variant="glow" size="lg" disabled={loading} className="w-full h-14 text-base mt-1">
@@ -232,9 +232,9 @@ export default function JoinPage() {
                     </span>
                   ) : "Get Early Access →"}
                 </Button>
-                <p className="text-center text-xs leading-relaxed" style={{ color: "#7C7472" }}>
+                <p className="text-center text-xs leading-relaxed" style={{ color: "#6B7280" }}>
                   By signing up you agree to our{" "}
-                  <Link href="/privacy" className="underline underline-offset-2 hover:opacity-80 transition-opacity" style={{ color: "#7C7472" }}>Privacy Policy</Link>
+                  <Link href="/privacy" className="underline underline-offset-2 hover:opacity-80 transition-opacity" style={{ color: "#6B7280" }}>Privacy Policy</Link>
                   . We&apos;ll never spam you.
                 </p>
               </form>
@@ -260,11 +260,11 @@ export default function JoinPage() {
                 transition={{ type: "spring", stiffness: 280, damping: 20, delay: 0.1 }}
                 className="relative"
               >
-                <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg" style={{ background: "linear-gradient(135deg, #F29A69, #E88367)", boxShadow: "0 8px 30px rgba(242,154,105,0.35)" }}>
+                <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg" style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)", boxShadow: "0 8px 30px rgba(242,154,105,0.35)" }}>
                   <CheckCircle2 className="w-12 h-12 text-white" />
                 </div>
                 {/* Ping ring */}
-                <span className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: "#F29A69" }} />
+                <span className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: "#20C7B7" }} />
               </motion.div>
 
               {/* Headline */}
@@ -274,16 +274,16 @@ export default function JoinPage() {
                 transition={{ delay: 0.25, duration: 0.5 }}
                 className="flex flex-col gap-3"
               >
-                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#F29A69" }}>
+                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#20C7B7" }}>
                   You&apos;re in the building 🎉
                 </p>
-                <h1 className="text-4xl lg:text-5xl font-black leading-[1.05]" style={{ color: "#4A454A" }}>
+                <h1 className="text-4xl lg:text-5xl font-black leading-[1.05]" style={{ color: "#1C1C1E" }}>
                   {submittedName}, you&apos;re<br />
-                  <span className="gradient-text-light">one of the first.</span>
+                  <span className="text-[#20C7B7]">one of the first.</span>
                 </h1>
-                <p className="text-base leading-relaxed max-w-sm mx-auto" style={{ color: "#7C7472" }}>
+                <p className="text-base leading-relaxed max-w-sm mx-auto" style={{ color: "#6B7280" }}>
                   You&apos;ve secured your spot on the Jonno waitlist. We&apos;re building fast — your beta invite lands at{" "}
-                  <span className="font-semibold" style={{ color: "#4A454A" }}>{submittedEmail}</span> when we launch.
+                  <span className="font-semibold" style={{ color: "#1C1C1E" }}>{submittedEmail}</span> when we launch.
                 </p>
               </motion.div>
 
@@ -295,13 +295,13 @@ export default function JoinPage() {
                 className="flex items-center gap-3"
               >
                 <div className="flex -space-x-2">
-                  {[["#F29A69","A"],["#69BDEB","J"],["#E88367","M"],["#8FD3F4","R"],["#EFD9CC","S"]].map(([bg, letter], i) => (
-                    <div key={i} className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-[9px] font-black" style={{ backgroundColor: bg, borderColor: "#FAF4EF", color: i === 4 ? "#4A454A" : "white" }}>
+                  {[["#20C7B7","A"],["#4C7DFF","J"],["#4C7DFF","M"],["#4C7DFF","R"],["#EFD9CC","S"]].map(([bg, letter], i) => (
+                    <div key={i} className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-[9px] font-black" style={{ backgroundColor: bg, borderColor: "#F4F5F7", color: i === 4 ? "#1C1C1E" : "white" }}>
                       {letter}
                     </div>
                   ))}
                 </div>
-                <p className="text-sm" style={{ color: "#7C7472" }}>+400 others already waiting</p>
+                <p className="text-sm" style={{ color: "#6B7280" }}>+400 others already waiting</p>
               </motion.div>
 
               {/* Survey CTA — the main action on this page */}
@@ -315,16 +315,16 @@ export default function JoinPage() {
                   /* Survey done state */
                   <div className="flex flex-col gap-3 items-center">
                     <div className="flex items-center gap-2.5 px-5 py-3.5 rounded-2xl w-full justify-center" style={{ backgroundColor: "rgba(143,211,244,0.12)", border: "1px solid rgba(105,189,235,0.30)" }}>
-                      <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: "#69BDEB" }} />
+                      <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: "#4C7DFF" }} />
                       <p className="text-sm font-bold" style={{ color: "#3A9EC4" }}>Survey done — you&apos;re entered in the $200 draw!</p>
                     </div>
-                    <p className="text-xs" style={{ color: "#7C7472" }}>Thanks for helping shape Jonno. We&apos;ll announce the winner at launch.</p>
+                    <p className="text-xs" style={{ color: "#6B7280" }}>Thanks for helping shape Jonno. We&apos;ll announce the winner at launch.</p>
                   </div>
                 ) : (
                   /* Survey not yet taken */
-                  <div className="w-full rounded-2xl overflow-hidden" style={{ border: "1px solid #E8DDD8", boxShadow: "0 8px 32px rgba(242,154,105,0.15)" }}>
+                  <div className="w-full rounded-2xl overflow-hidden" style={{ border: "1px solid #E5E7EB", boxShadow: "0 8px 32px rgba(242,154,105,0.15)" }}>
                     {/* Card top — warm gradient */}
-                    <div className="px-6 pt-6 pb-7 flex flex-col gap-4 text-white" style={{ background: "linear-gradient(135deg, #F29A69 0%, #E88367 60%, #C8E7F5 100%)" }}>
+                    <div className="px-6 pt-6 pb-7 flex flex-col gap-4 text-white" style={{ background: "linear-gradient(135deg, #20C7B7 0%, #4C7DFF 60%, #C8E7F5 100%)" }}>
                       <div className="flex items-center gap-2 w-fit">
                         <span className="text-xl">🏆</span>
                         <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full" style={{ backgroundColor: "rgba(255,253,251,0.20)" }}>
@@ -333,7 +333,7 @@ export default function JoinPage() {
                       </div>
                       <div className="text-left">
                         <h3 className="text-xl font-black leading-snug">
-                          While you wait — help us build the right product.
+                          While you wait, help us build the right product.
                         </h3>
                         <p className="text-sm mt-1.5 leading-relaxed" style={{ color: "rgba(255,253,251,0.85)" }}>
                           Answer 7 quick questions. One respondent wins a $200 gift card, drawn at launch.{" "}
@@ -342,16 +342,16 @@ export default function JoinPage() {
                       </div>
                     </div>
                     {/* Card bottom — cream */}
-                    <div className="px-6 py-5 flex flex-col gap-3" style={{ backgroundColor: "#FFFDFB" }}>
+                    <div className="px-6 py-5 flex flex-col gap-3" style={{ backgroundColor: "#FFFFFF" }}>
                       <button
                         type="button"
                         onClick={() => setSurveyOpen(true)}
                         className="w-full py-4 rounded-xl text-white font-black text-base tracking-wide transition-opacity duration-150 hover:opacity-90"
-                        style={{ background: "linear-gradient(135deg, #F29A69, #E88367)", boxShadow: "0 4px 16px rgba(242,154,105,0.30)" }}
+                        style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)", boxShadow: "0 4px 16px rgba(242,154,105,0.30)" }}
                       >
                         Take the survey →
                       </button>
-                      <p className="text-center text-xs" style={{ color: "#7C7472" }}>
+                      <p className="text-center text-xs" style={{ color: "#6B7280" }}>
                         3 minutes · skip any question · no account needed
                       </p>
                     </div>
@@ -366,7 +366,7 @@ export default function JoinPage() {
                 transition={{ delay: 0.7 }}
                 type="button"
                 onClick={handleShare}
-                className="flex items-center gap-2 text-sm transition-colors duration-150" style={{ color: "#7C7472" }}
+                className="flex items-center gap-2 text-sm transition-colors duration-150" style={{ color: "#6B7280" }}
               >
                 <Share2 className="w-4 h-4" />
                 {copied ? "Link copied!" : "Share Jonno with a friend"}
@@ -389,10 +389,10 @@ export default function JoinPage() {
       />
 
       {/* ── Footer ── */}
-      <div className="relative z-10 py-6" style={{ borderTop: "1px solid #CFC7C2" }}>
+      <div className="relative z-10 py-6" style={{ borderTop: "1px solid #E5E7EB" }}>
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs" style={{ color: "#7C7472" }}>© 2026 Jonno. Built for athletes who eat with intention.</p>
-          <div className="flex items-center gap-4 text-xs" style={{ color: "#7C7472" }}>
+          <p className="text-xs" style={{ color: "#6B7280" }}>© 2026 Jonno. Built for athletes who eat with intention.</p>
+          <div className="flex items-center gap-4 text-xs" style={{ color: "#6B7280" }}>
             <Link href="/privacy" className="hover:opacity-80 transition-opacity">Privacy</Link>
             <Link href="/terms" className="hover:opacity-80 transition-opacity">Terms</Link>
             <Link href="/" className="hover:opacity-80 transition-opacity">Home</Link>

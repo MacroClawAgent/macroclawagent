@@ -89,7 +89,7 @@ const comparison = [
 const faqs = [
   {
     q: "Is there a free trial for Pro?",
-    a: "Yes — new accounts get a 14-day Pro trial with full access to all Pro features. No credit card required to start. You'll only be charged if you choose to stay after the trial.",
+    a: "Yes — new accounts get a 14-day Pro trial with full access to all Pro features. No credit card required to start.",
   },
   {
     q: "Can I cancel anytime?",
@@ -114,14 +114,14 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   return (
     <div
       className="py-5 cursor-pointer border-b"
-      style={{ borderColor: "#E8DDD8" }}
+      style={{ borderColor: "#E5E7EB" }}
       onClick={() => setOpen((o) => !o)}
     >
       <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-semibold" style={{ color: "#4A454A" }}>{q}</p>
+        <p className="text-sm font-semibold" style={{ color: "#1C1C1E" }}>{q}</p>
         <ChevronDown
           className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          style={{ color: "#7C7472" }}
+          style={{ color: "#6B7280" }}
         />
       </div>
       <AnimatePresence>
@@ -143,18 +143,18 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 function CheckOrX({ value }: { value: boolean | string }) {
   if (typeof value === "string") {
-    return <span className="text-xs font-semibold" style={{ color: "#F29A69" }}>{value}</span>;
+    return <span className="text-xs font-semibold" style={{ color: "#20C7B7" }}>{value}</span>;
   }
   return value ? (
     <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" />
   ) : (
-    <X className="w-4 h-4 mx-auto" style={{ color: "#CFC7C2" }} />
+    <X className="w-4 h-4 mx-auto" style={{ color: "#E5E7EB" }} />
   );
 }
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FFFDFB" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#FFFFFF" }}>
       <Navbar />
       <main className="pt-16">
         {/* Hero */}
@@ -167,13 +167,13 @@ export default function PricingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#F29A69" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
                 Simple pricing
               </p>
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight gradient-text-light mb-4">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight text-[#20C7B7] mb-4">
                 Start free.<br className="hidden md:block" /> Upgrade when you're ready.
               </h1>
-              <p className="text-lg max-w-xl mx-auto" style={{ color: "#7C7472" }}>
+              <p className="text-lg max-w-xl mx-auto" style={{ color: "#6B7280" }}>
                 No hidden fees. No annual lock-in. Cancel anytime.
               </p>
             </motion.div>
@@ -196,7 +196,7 @@ export default function PricingPage() {
                 >
                   {tier.badge && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="flex items-center gap-1.5 px-4 py-1 rounded-full text-white text-xs font-bold shadow-lg" style={{ background: "linear-gradient(135deg, #F29A69, #E88367)" }}>
+                      <span className="flex items-center gap-1.5 px-4 py-1 rounded-full text-white text-xs font-bold shadow-lg" style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)" }}>
                         <Zap className="w-3 h-3" />
                         {tier.badge}
                       </span>
@@ -253,7 +253,7 @@ export default function PricingPage() {
         </section>
 
         {/* Comparison Table */}
-        <section className="py-20" style={{ backgroundColor: "#FAF4EF" }}>
+        <section className="py-20" style={{ backgroundColor: "#F4F5F7" }}>
           <div className="max-w-4xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -261,20 +261,20 @@ export default function PricingPage() {
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-3xl font-black gradient-text-light">Compare plans</h2>
+              <h2 className="text-3xl font-black text-[#20C7B7]">Compare plans</h2>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="light-card overflow-hidden"
+              className="bg-white rounded-2xl overflow-hidden"
             >
               {/* Table header */}
-              <div className="grid grid-cols-4 gap-4 p-5 border-b" style={{ backgroundColor: "#FAF4EF", borderColor: "#E8DDD8" }}>
-                <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#7C7472" }}>Feature</div>
+              <div className="grid grid-cols-4 gap-4 p-5 border-b" style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}>
+                <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#6B7280" }}>Feature</div>
                 {["Free", "Pro", "Elite"].map((t) => (
-                  <div key={t} className="text-xs font-bold text-center uppercase tracking-wide" style={{ color: t === "Pro" ? "#F29A69" : "#7C7472" }}>
+                  <div key={t} className="text-xs font-bold text-center uppercase tracking-wide" style={{ color: t === "Pro" ? "#20C7B7" : "#6B7280" }}>
                     {t}
                   </div>
                 ))}
@@ -285,11 +285,11 @@ export default function PricingPage() {
                   key={row.feature}
                   className={`grid grid-cols-4 gap-4 px-5 py-4`}
                   style={{
-                    borderBottom: i < comparison.length - 1 ? "1px solid #E8DDD8" : undefined,
-                    backgroundColor: i % 2 === 0 ? "transparent" : "#FAF4EF",
+                    borderBottom: i < comparison.length - 1 ? "1px solid #E5E7EB" : undefined,
+                    backgroundColor: i % 2 === 0 ? "transparent" : "#F4F5F7",
                   }}
                 >
-                  <div className="text-sm" style={{ color: "#4A454A" }}>{row.feature}</div>
+                  <div className="text-sm" style={{ color: "#1C1C1E" }}>{row.feature}</div>
                   <div className="text-center"><CheckOrX value={row.free} /></div>
                   <div className="text-center"><CheckOrX value={row.pro} /></div>
                   <div className="text-center"><CheckOrX value={row.elite} /></div>
@@ -308,7 +308,7 @@ export default function PricingPage() {
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-3xl font-black gradient-text-light">Billing questions</h2>
+              <h2 className="text-3xl font-black text-[#20C7B7]">Billing questions</h2>
             </motion.div>
             <motion.div
               initial={{ opacity: 0 }}
@@ -323,14 +323,14 @@ export default function PricingPage() {
         </section>
 
         {/* CTA strip */}
-        <section className="py-16 border-t" style={{ borderColor: "#E8DDD8" }}>
+        <section className="py-16 border-t" style={{ borderColor: "#E5E7EB" }}>
           <div className="max-w-6xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <p className="text-lg mb-6" style={{ color: "#7C7472" }}>
+              <p className="text-lg mb-6" style={{ color: "#6B7280" }}>
                 Still deciding? Start with Free. Upgrade when the Jonno Agent earns it.
               </p>
               <Button variant="glow" size="lg" asChild>

@@ -209,7 +209,7 @@ export function Hero() {
                 }}
               >
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#22C55E" }} />
-                Beta Access — Limited Spots
+                Beta Access · Limited Spots
               </span>
             </motion.div>
 
@@ -230,8 +230,8 @@ export function Hero() {
               className="text-lg leading-relaxed max-w-lg"
               style={{ color: "#6B7280" }}
             >
-              Sync Strava. Get AI macro targets. Order macro-matched meals from Uber Eats — all in one app.
-              Nutrition that finally keeps up with your active lifestyle.
+              Sync Strava. Get AI macro targets. Order macro-matched meals from Uber Eats. All in one app.
+              Nutrition that keeps up with your active lifestyle.
             </motion.p>
 
             {/* CTAs */}

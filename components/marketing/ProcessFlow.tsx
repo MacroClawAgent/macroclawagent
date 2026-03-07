@@ -210,7 +210,7 @@ const steps = [
     subtitle: "Connected automatically",
     title: "Sync your training.",
     description:
-      "Connect Strava once and your activities sync automatically. Jonno reads your real-time training load — runs, rides, swims — and adjusts your daily calorie and macro targets to match exactly what your body burned.",
+      "Connect Strava once and your activities sync automatically. Jonno reads your real-time training load (runs, rides, swims) and adjusts your daily calorie and macro targets to match exactly what your body burned.",
     screen: <StravaScreen />,
     reverse: false,
   },
@@ -221,7 +221,7 @@ const steps = [
     subtitle: "Personalized to your goals",
     title: "AI plans your macros.",
     description:
-      "Claude analyzes your workout intensity, recovery needs, and personal goals. It calculates your exact protein, carbs, and fat targets — then answers any nutrition question you have in plain English, 24/7.",
+      "Claude analyzes your workout intensity, recovery needs, and personal goals. It calculates your exact protein, carbs, and fat targets, then answers any nutrition question you have in plain English, 24/7.",
     screen: <AIScreen />,
     reverse: true,
   },
@@ -232,7 +232,7 @@ const steps = [
     subtitle: "One tap to your door",
     title: "Order food that fits.",
     description:
-      "Your macro-matched meal cart is built and ready to order with one tap. Real restaurants, real meals, real macros — delivered to your door exactly when you need them. No more guessing.",
+      "Your macro-matched meal cart is built and ready to order with one tap. Real restaurants, real meals, real macros, delivered to your door exactly when you need them. No more guessing.",
     screen: <CartScreen />,
     reverse: false,
   },
@@ -258,7 +258,7 @@ export function ProcessFlow() {
             <span style={{ color: "#20C7B7" }}>3 steps.</span>
           </h2>
           <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "#6B7280" }}>
-            From training session to optimised plate — fully automated.
+            From training session to optimised plate. Fully automated.
           </p>
         </motion.div>
 

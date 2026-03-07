@@ -183,7 +183,7 @@ export function TrustSignals() {
               className="inline-block font-bold px-8 py-3.5 rounded-full text-sm transition-colors relative z-10"
               style={{ backgroundColor: "#FFFFFF", color: "#4C7DFF" }}
             >
-              Start for Free — No Credit Card
+              Start for Free, No Credit Card
             </Link>
           </div>
         </motion.div>
