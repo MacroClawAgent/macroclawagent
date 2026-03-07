@@ -1458,15 +1458,16 @@ export async function generateStaticParams() {
   return Object.keys(posts).map((slug) => ({ slug }));
 }
 
-export default function LearnArticlePage({ params }: { params: { slug: string } }) {
-  const post = posts[params.slug];
+export default async function LearnArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = posts[slug];
   if (!post) notFound();
 
   const relatedPosts = post.relatedSlugs
     ? post.relatedSlugs.map((s) => posts[s]).filter(Boolean)
     : [];
 
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://jonnoai.com/learn/${post.slug}`)}`;
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://jonnoai.com/learn/${slug}`)}`;
 
   return (
     <div className="min-h-screen bg-white">
