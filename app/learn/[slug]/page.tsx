@@ -1422,6 +1422,7 @@ export default async function LearnArticlePage({ params }: { params: Promise<{ s
                 src={post.coverImage}
                 alt={post.title}
                 fill
+                sizes="100vw"
                 className="object-cover object-center"
                 priority
               />
