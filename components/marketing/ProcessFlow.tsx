@@ -210,7 +210,7 @@ const steps = [
     subtitle: "Connected automatically",
     title: "Sync your training.",
     description:
-      "Connect Strava once and your activities sync automatically. Jonno reads your training load — runs, rides, swims — and adjusts your daily calorie and macro targets based on session type, intensity, and your goals.",
+      "Connect Strava once and your activities sync automatically. Jonno reads your training load (runs, rides, swims) and adjusts your daily calorie and macro targets based on session type, intensity, and your goals.",
     screen: <StravaScreen />,
     reverse: false,
   },
