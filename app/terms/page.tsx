@@ -122,12 +122,20 @@ export default function TermsPage() {
 
               <section className="mb-10">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">7. Third-Party Integrations</h2>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 leading-relaxed mb-3">
                   The Service integrates with Strava, Uber Eats, and other third-party platforms.
                   Your use of those integrations is also subject to the respective third-party terms
                   of service. We are not responsible for the availability, accuracy, or practices of
                   third-party services. Connecting or disconnecting a third-party integration is
                   always your choice.
+                </p>
+                <p className="text-gray-600 leading-relaxed">
+                  <strong className="text-gray-700">Strava data is used only to display your own activity information within the app.</strong>{" "}
+                  It is not passed to any AI model, not shared with third parties, and not used for
+                  any purpose beyond calculating your training-adjusted macro targets and showing
+                  your activity history to you. We access only the minimum data required for these
+                  purposes and do not access private notes, routes, or social features on your
+                  Strava account.
                 </p>
               </section>
 

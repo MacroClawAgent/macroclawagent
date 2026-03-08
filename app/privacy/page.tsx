@@ -37,10 +37,13 @@ export default function PrivacyPage() {
                 <p className="text-gray-600 leading-relaxed mb-4">
                   If you connect your Strava account, we access your activity data via the Strava
                   OAuth API. This includes activity type, duration, distance, average heart rate,
-                  and estimated calorie burn. We use this data to calculate your daily TDEE and
-                  personalise your macro targets. We do not access your private notes, saved routes,
-                  or social activity on Strava. You can disconnect Strava at any time from your
-                  account settings.
+                  and estimated calorie burn. This data is used solely to display your training
+                  history within the app and to calculate your daily TDEE and macro targets.
+                  <strong className="text-gray-700"> Your Strava data is never sent to any AI model</strong>,
+                  including the Jonno Agent. It is not used to train any models, shared with third
+                  parties, or used for any purpose other than showing you your own activity information.
+                  We do not access your private notes, saved routes, or social activity on Strava.
+                  You can disconnect Strava at any time from your account settings.
                 </p>
 
                 <h3 className="text-base font-semibold text-gray-800 mb-2">Meal and Nutrition Data</h3>
@@ -94,7 +97,7 @@ export default function PrivacyPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 mt-1">•</span>
-                    Power the Jonno Agent AI with context about your nutrition and training
+                    Power the Jonno Agent AI with context about your nutrition goals and meal logs (Strava data is not included in AI interactions)
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 mt-1">•</span>
