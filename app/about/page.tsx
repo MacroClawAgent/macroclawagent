@@ -9,13 +9,13 @@ import { Brain, Database, Target, ArrowRight, Zap } from "lucide-react";
 
 const timeline = [
   {
-    date: "Late 2024",
-    title: "The frustration.",
-    desc: "Two mates who trained together kept running into the same wall. After a long ride or a hard run, every app showed the same static target. We knew Strava had all the data. No one was using it to actually change what you ate.",
+    date: "Early 2026",
+    title: "The frustration becomes a plan.",
+    desc: "Two mates who trained together kept running into the same wall. After a long ride or a hard run, every app showed the same static target. We knew Strava had all the data. No one was using it to actually change what you ate. So we decided to build it.",
     dot: "#20C7B7",
   },
   {
-    date: "Early 2025",
+    date: "Early 2026",
     title: "First build.",
     desc: "We connected Strava via OAuth and built a basic macro engine that adjusted targets based on what you actually did that day. Showed it to a handful of runner and cycling friends. They stopped using their old apps.",
     dot: "#4C7DFF",
@@ -119,7 +119,7 @@ export default function AboutPage() {
                   Two friends who trained seriously and could never figure out what to eat after a hard session. Every app showed the same static number. Strava had all the data and nothing used it. So we started building.
                 </p>
                 <div className="flex flex-wrap gap-3 text-sm" style={{ color: "#9CA3AF" }}>
-                  <span>Founded 2024</span>
+                  <span>Founded 2026</span>
                   <span>·</span>
                   <span>Two-person team</span>
                   <span>·</span>
@@ -206,7 +206,7 @@ export default function AboutPage() {
                   <span style={{ color: "#20C7B7" }}>Same frustration.</span>
                 </h2>
                 <p className="leading-relaxed" style={{ color: "#6B7280" }}>
-                  We met at university and both trained seriously outside of lectures. One ran, one cycled. After long sessions we&apos;d check our nutrition apps and see the same thing: a static 2,000 kcal target, no matter what we&apos;d done that day.
+                  We met at university and trained seriously throughout. One ran, one cycled. After graduating we kept training, and kept running into the same thing: a static 2,000 kcal target on every app, no matter what we had done that day.
                 </p>
                 <p className="leading-relaxed" style={{ color: "#6B7280" }}>
                   Then came 20 minutes of googling post-ride meals, picking something that looked roughly right, and still wondering if it was enough protein. Strava had GPS routes, power data, heart rate curves. None of it fed back into what we ate.
