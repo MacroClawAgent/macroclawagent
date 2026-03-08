@@ -67,10 +67,15 @@ export default function NutritionScreen() {
   };
 
   async function fetchData() {
-    const res = await apiGet<{ log: NutritionData; goals: Goals }>("/api/nutrition/today");
-    setNutrition(res?.log ?? null);
-    setLoading(false);
-    setRefreshing(false);
+    try {
+      const res = await apiGet<{ log: NutritionData; goals: Goals }>("/api/nutrition/today");
+      setNutrition(res?.log ?? null);
+    } catch {
+      // Not signed in yet or network issue — show empty state
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }
 
   useEffect(() => { fetchData(); }, []);

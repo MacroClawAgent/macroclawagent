@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createClientFromToken, getBearerToken } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import type { MealItem, WeeklyDay } from "@/types/database";
 
@@ -9,9 +9,10 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
  * Returns today's nutrition log, user goals, today's meal plan meals,
  * and last 7 days of calorie data for the weekly chart.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const token = getBearerToken(request);
+    const supabase = token ? createClientFromToken(token) : await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -92,7 +93,8 @@ export async function GET() {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const token = getBearerToken(request);
+    const supabase = token ? createClientFromToken(token) : await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
