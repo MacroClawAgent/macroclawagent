@@ -1,44 +1,42 @@
 /**
  * Jonno mobile color tokens.
- * Pulled from shared/theme.ts — change colors there to update both web and app.
+ * Mirrors shared/theme.ts — keep in sync manually.
  */
-import { colors } from "../../shared/theme";
-
 const Colors = {
   light: {
     // Text
-    text: colors.gray900,
-    textSecondary: colors.gray500,
-    textMuted: colors.gray400,
+    text: "#111827",
+    textSecondary: "#6B7280",
+    textMuted: "#9CA3AF",
 
     // Backgrounds
-    background: colors.background,
-    surface: colors.surface,
-    surfaceElevated: colors.surfaceElevated,
+    background: "#FFFFFF",
+    surface: "#F9FAFB",
+    surfaceElevated: "#FFFFFF",
 
     // Brand
-    tint: colors.primary,
-    primary: colors.primary,
-    primaryLight: colors.primaryLight,
+    tint: "#0066EE",
+    primary: "#0066EE",
+    primaryLight: "#3B82F6",
 
     // Accents
-    orange: colors.orange,
-    emerald: colors.emerald,
-    amber: colors.amber,
-    indigo: colors.indigo,
+    orange: "#F97316",
+    emerald: "#10B981",
+    amber: "#F59E0B",
+    indigo: "#6366F1",
 
     // Tab bar
-    tabIconDefault: colors.gray300,
-    tabIconSelected: colors.primary,
-    tabBarBackground: colors.white,
+    tabIconDefault: "#D1D5DB",
+    tabIconSelected: "#0066EE",
+    tabBarBackground: "#FFFFFF",
 
     // Borders
-    border: colors.border,
+    border: "#E5E7EB",
 
     // Semantic
-    success: colors.success,
-    warning: colors.warning,
-    error: colors.error,
+    success: "#10B981",
+    warning: "#F59E0B",
+    error: "#EF4444",
   },
 } as const;
 
