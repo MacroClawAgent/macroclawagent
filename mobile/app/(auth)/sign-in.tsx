@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
 export default function SignInScreen() {
@@ -20,7 +20,11 @@ export default function SignInScreen() {
     setLoading(true);
     const { error } = await signIn(email.trim(), password);
     setLoading(false);
-    if (error) Alert.alert("Sign in failed", error);
+    if (error) {
+      Alert.alert("Sign in failed", error);
+    } else {
+      router.replace("/");
+    }
   }
 
   return (
