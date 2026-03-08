@@ -67,7 +67,7 @@ const posts = [
     tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
     tagBorder: "border-[rgba(32,199,183,0.20)]",
     gradient: "from-[rgba(76,125,255,0.40)] to-[#0F111A]",
-    coverImage: null,
+    coverImage: "/caloriesburning.png",
     title: "How Many Calories Do You Actually Burn Running?",
     excerpt:
       "Your running app's calorie estimate can be off by 30% or more. Here's the real science behind energy expenditure and how to get accurate numbers for your nutrition.",
@@ -84,7 +84,7 @@ const posts = [
     tagColor: "text-emerald-400 bg-emerald-500/10",
     tagBorder: "border-emerald-500/20",
     gradient: "from-amber-900/40 to-[#0F111A]",
-    coverImage: null,
+    coverImage: "/carbs.png",
     title: "Carbohydrate Loading for Race Day: What the Science Actually Says",
     excerpt:
       "Carb loading is one of the most misunderstood strategies in endurance sport. The protocol most athletes follow is outdated. Here's what the evidence actually supports.",
@@ -101,7 +101,7 @@ const posts = [
     tagColor: "text-violet-500 bg-violet-500/10",
     tagBorder: "border-violet-500/20",
     gradient: "from-violet-900/40 to-[#0F111A]",
-    coverImage: null,
+    coverImage: "/sleep.png",
     title: "Sleep, Recovery Nutrition, and Athletic Performance",
     excerpt:
       "Most athletes optimise their training and their diet. Almost none optimise the nutritional window that governs how well they recover between sessions: sleep.",
@@ -118,7 +118,7 @@ const posts = [
     tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
     tagBorder: "border-[rgba(32,199,183,0.20)]",
     gradient: "from-orange-900/40 to-[#0F111A]",
-    coverImage: null,
+    coverImage: "/zone2.png",
     title: "Zone 2 Training and Fat Adaptation: What It Means for Your Diet",
     excerpt:
       "Zone 2 training is having a moment. But does training low actually mean eating low? Here's what fat adaptation really means for your daily nutrition strategy.",
@@ -135,7 +135,7 @@ const posts = [
     tagColor: "text-emerald-400 bg-emerald-500/10",
     tagBorder: "border-emerald-500/20",
     gradient: "from-green-900/40 to-[#0F111A]",
-    coverImage: null,
+    coverImage: "/gut.png",
     title: "Gut Health for Athletes: Why Your Digestion Determines Your Performance",
     excerpt:
       "GI distress is the number one reason athletes abandon race-day nutrition plans. Understanding why your gut fails under stress, and how to fix it, can be the difference between a PR and a DNF.",

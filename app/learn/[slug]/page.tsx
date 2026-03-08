@@ -396,6 +396,7 @@ const posts: Record<string, LearnPost> = {
     date: "Mar 1, 2026",
     readTime: "9 min read",
     emoji: "🏃",
+    coverImage: "/caloriesburning.png",
     gradient: "from-[rgba(76,125,255,0.40)] to-[#0F111A]",
     toc: [
       "Why calorie estimates are often wrong",
@@ -591,6 +592,7 @@ const posts: Record<string, LearnPost> = {
     date: "Feb 25, 2026",
     readTime: "11 min read",
     emoji: "🍝",
+    coverImage: "/carbs.png",
     gradient: "from-amber-900/40 to-[#0F111A]",
     toc: [
       "What carbohydrate loading actually does",
@@ -786,6 +788,7 @@ const posts: Record<string, LearnPost> = {
     date: "Feb 20, 2026",
     readTime: "8 min read",
     emoji: "😴",
+    coverImage: "/sleep.png",
     gradient: "from-violet-900/40 to-[#0F111A]",
     toc: [
       "What happens physiologically during sleep",
@@ -982,6 +985,7 @@ const posts: Record<string, LearnPost> = {
     date: "Feb 14, 2026",
     readTime: "10 min read",
     emoji: "❤️",
+    coverImage: "/zone2.png",
     gradient: "from-orange-900/40 to-[#0F111A]",
     toc: [
       "What Zone 2 actually means",
@@ -1189,6 +1193,7 @@ const posts: Record<string, LearnPost> = {
     date: "Feb 5, 2026",
     readTime: "9 min read",
     emoji: "🦠",
+    coverImage: "/gut.png",
     gradient: "from-green-900/40 to-[#0F111A]",
     toc: [
       "Why runners and cyclists have GI problems",
