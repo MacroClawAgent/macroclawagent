@@ -219,9 +219,9 @@ export function Hero() {
               className="text-5xl md:text-6xl lg:text-[68px] font-black tracking-tight leading-[0.92]"
               style={{ color: "#1C1C1E" }}
             >
-              Fitness tracking
+              AI nutrition
               <br />
-              <span style={{ color: "#20C7B7" }}>for your best days.</span>
+              <span style={{ color: "#20C7B7" }}>for athletes.</span>
             </motion.h1>
 
             {/* Sub */}
@@ -230,8 +230,7 @@ export function Hero() {
               className="text-lg leading-relaxed max-w-lg"
               style={{ color: "#6B7280" }}
             >
-              Sync Strava. Get AI macro targets. Order macro-matched meals from Uber Eats. All in one app.
-              Nutrition that keeps up with your active lifestyle.
+              Jonno reads your training load from Strava, adjusts your calorie and macro targets, and helps you order meals that match your goals.
             </motion.p>
 
             {/* CTAs */}
@@ -256,17 +255,20 @@ export function Hero() {
               </a>
             </motion.div>
 
-            {/* Stats */}
-            <motion.div variants={itemVariants} className="flex gap-8 justify-center lg:justify-start">
+            {/* Trust pills */}
+            <motion.div variants={itemVariants} className="flex flex-wrap gap-2 justify-center lg:justify-start">
               {[
-                { value: "12,400+", label: "Athletes" },
-                { value: "94%", label: "Macro accuracy" },
-                { value: "4.9★", label: "User rating" },
+                "Built for runners, cyclists & triathletes",
+                "Syncs with Strava & Apple Health",
+                "Meal planning linked to delivery",
               ].map((s) => (
-                <div key={s.label} className="flex flex-col items-center lg:items-start">
-                  <span className="text-xl font-black" style={{ color: "#1C1C1E" }}>{s.value}</span>
-                  <span className="text-xs font-medium" style={{ color: "#6B7280" }}>{s.label}</span>
-                </div>
+                <span
+                  key={s}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full border"
+                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E5E7EB", color: "#6B7280" }}
+                >
+                  {s}
+                </span>
               ))}
             </motion.div>
           </motion.div>

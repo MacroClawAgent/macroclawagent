@@ -3,6 +3,7 @@ import { Hero } from "@/components/marketing/Hero";
 import { LogoMarquee } from "@/components/marketing/LogoMarquee";
 import { BentoShowcase } from "@/components/marketing/BentoShowcase";
 import { ProcessFlow } from "@/components/marketing/ProcessFlow";
+import { WhyDifferent } from "@/components/marketing/WhyDifferent";
 import { Testimonials } from "@/components/marketing/Testimonials";
 import { TrustSignals } from "@/components/marketing/TrustSignals";
 import { Footer } from "@/components/marketing/Footer";
@@ -15,6 +16,7 @@ export default function Home() {
       <LogoMarquee />
       <BentoShowcase />
       <ProcessFlow />
+      <WhyDifferent />
       <Testimonials />
       <TrustSignals />
       <Footer />

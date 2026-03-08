@@ -6,27 +6,30 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     name: "Marcus T.",
-    title: "Triathlete",
+    title: "Triathlete · 12h/week",
+    badge: "Beta tester",
     initials: "MT",
     avatarStyle: { background: "linear-gradient(135deg, #4C7DFF, #3A6FEE)" },
     quote:
-      "I went from guessing my post-ride nutrition to nailing my carb targets every single day. The Strava sync is seamless. It just works.",
+      "I went from guessing my post-ride nutrition to nailing my carb targets every single day. The Strava sync is seamless — it just works.",
   },
   {
     name: "Priya K.",
-    title: "Marathon Runner",
+    title: "Marathon Runner · 70km/week",
+    badge: "Beta tester",
     initials: "PK",
     avatarStyle: { background: "linear-gradient(135deg, #20C7B7, #1BA89A)" },
     quote:
-      "The AI chat is genuinely useful. It doesn't just tell me what to eat. It explains why, based on my actual training load and recovery needs.",
+      "The AI chat is genuinely useful. It doesn't just tell me what to eat — it explains why, based on my actual training load and recovery needs.",
   },
   {
     name: "Jake R.",
-    title: "Competitive Cyclist",
+    title: "Competitive Cyclist · 200km/week",
+    badge: "Beta tester",
     initials: "JR",
     avatarStyle: { background: "linear-gradient(135deg, #22C55E, #16A34A)" },
     quote:
-      "The Uber Eats integration alone is worth every penny. I order food that actually fits my macros after every hard ride. Life-changing.",
+      "The Uber Eats integration alone is worth it. I order food that actually fits my macros after every hard ride without thinking about it.",
   },
 ];
 
@@ -83,10 +86,13 @@ export function Testimonials() {
                 >
                   {t.initials}
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold" style={{ color: "#1C1C1E" }}>{t.name}</p>
                   <p className="text-xs" style={{ color: "#6B7280" }}>{t.title}</p>
                 </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: "rgba(32,199,183,0.10)", color: "#1BA89A", border: "1px solid rgba(32,199,183,0.25)" }}>
+                  {t.badge}
+                </span>
               </div>
             </motion.div>
           ))}

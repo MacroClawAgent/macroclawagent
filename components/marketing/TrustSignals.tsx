@@ -1,58 +1,9 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ShoppingBag, Heart, Plus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-/* ── Count-up hook ── */
-function useCountUp(target: number, duration = 1500, enabled = false) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!enabled) return;
-    let start: number | null = null;
-    const step = (timestamp: number) => {
-      if (!start) start = timestamp;
-      const progress = Math.min((timestamp - start) / duration, 1);
-      // Ease out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * target));
-      if (progress < 1) requestAnimationFrame(step);
-      else setCount(target);
-    };
-    requestAnimationFrame(step);
-  }, [target, duration, enabled]);
-  return count;
-}
-
-function StatCard({ value, numericValue, suffix, label, delay }: {
-  value: string;
-  numericValue: number;
-  suffix: string;
-  label: string;
-  delay: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
-  const count = useCountUp(numericValue, 1600, isInView);
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay }}
-      className="text-center"
-    >
-      <p className="text-4xl md:text-5xl font-black" style={{ color: "#20C7B7" }}>
-        {isInView ? `${count.toLocaleString()}${suffix}` : value}
-      </p>
-      <p className="text-sm mt-2" style={{ color: "#6B7280" }}>{label}</p>
-    </motion.div>
-  );
-}
 
 const apps = [
   {
@@ -81,11 +32,11 @@ const apps = [
   },
 ];
 
-const statCards = [
-  { value: "12,400+", numericValue: 12400, suffix: "+", label: "Athletes using Jonno", delay: 0 },
-  { value: "94%", numericValue: 94, suffix: "%", label: "Macro targets hit", delay: 0.1 },
-  { value: "3.2M", numericValue: 3, suffix: ".2M", label: "Meals planned by AI", delay: 0.2 },
-  { value: "4.9", numericValue: 4, suffix: ".9★", label: "Average user rating", delay: 0.3 },
+const featurePillars = [
+  { icon: "🏃", headline: "Built for endurance athletes", sub: "Runners, cyclists, triathletes, and hybrid athletes" },
+  { icon: "📡", headline: "Syncs with your training data", sub: "Strava and Apple Health connected on day one" },
+  { icon: "🎯", headline: "Adaptive targets, every day", sub: "Macros update based on your actual training load" },
+  { icon: "🛒", headline: "Targets turned into meals", sub: "From macro numbers to a real food order in one tap" },
 ];
 
 export function TrustSignals() {
@@ -93,10 +44,22 @@ export function TrustSignals() {
     <section className="relative py-32 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
 
       <div className="max-w-5xl mx-auto">
-        {/* Stats row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
-          {statCards.map((s) => (
-            <StatCard key={s.label} {...s} />
+        {/* Feature pillars */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-24">
+          {featurePillars.map((p, i) => (
+            <motion.div
+              key={p.headline}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.08 }}
+              className="text-center p-5 rounded-2xl"
+              style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB" }}
+            >
+              <p className="text-3xl mb-3">{p.icon}</p>
+              <p className="text-sm font-bold mb-1" style={{ color: "#1C1C1E" }}>{p.headline}</p>
+              <p className="text-xs leading-relaxed" style={{ color: "#6B7280" }}>{p.sub}</p>
+            </motion.div>
           ))}
         </div>
 
@@ -173,17 +136,17 @@ export function TrustSignals() {
             {/* Decorative blob */}
             <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(255,255,255,0.12) 0%, transparent 70%)" }} />
             <h3 className="text-3xl font-black text-white mb-4 relative z-10">
-              Ready to eat like an athlete?
+              Fuel smarter with Jonno.
             </h3>
             <p className="mb-8 relative z-10" style={{ color: "rgba(255,255,255,0.80)" }}>
-              Join thousands of athletes who never guess their macros again.
+              Stop guessing your macros. Get early access to adaptive nutrition built for serious athletes.
             </p>
             <Link
-              href="/login"
+              href="/join"
               className="inline-block font-bold px-8 py-3.5 rounded-full text-sm transition-colors relative z-10"
               style={{ backgroundColor: "#FFFFFF", color: "#4C7DFF" }}
             >
-              Start for Free, No Credit Card
+              Join the Waitlist
             </Link>
           </div>
         </motion.div>

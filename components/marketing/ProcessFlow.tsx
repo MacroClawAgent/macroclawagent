@@ -210,7 +210,7 @@ const steps = [
     subtitle: "Connected automatically",
     title: "Sync your training.",
     description:
-      "Connect Strava once and your activities sync automatically. Jonno reads your real-time training load (runs, rides, swims) and adjusts your daily calorie and macro targets to match exactly what your body burned.",
+      "Connect Strava once and your activities sync automatically. Jonno reads your training load — runs, rides, swims — and adjusts your daily calorie and macro targets based on session type, intensity, and your goals.",
     screen: <StravaScreen />,
     reverse: false,
   },
@@ -221,7 +221,7 @@ const steps = [
     subtitle: "Personalized to your goals",
     title: "AI plans your macros.",
     description:
-      "Claude analyzes your workout intensity, recovery needs, and personal goals. It calculates your exact protein, carbs, and fat targets, then answers any nutrition question you have in plain English, 24/7.",
+      "Claude analyzes your workout intensity, recovery needs, and personal goals. It calculates personalized daily macro targets for protein, carbs, and fat, then answers any nutrition question you have in plain English, 24/7.",
     screen: <AIScreen />,
     reverse: true,
   },
