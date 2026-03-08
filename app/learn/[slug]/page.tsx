@@ -64,103 +64,37 @@ const posts: Record<string, LearnPost> = {
     body: (
       <div className="prose-content">
         <p>
-          If you're logging every watt and every kilometre on Strava but still eating the same 2,000-calorie
-          diet on your long ride days as on your rest days, you're leaving recovery on the table.
-          Fueling precision isn't just for Tour de France professionals — it's a lever available to any
-          cyclist willing to sync their training data with their nutrition.
+          If you're logging every watt and every kilometre on Strava but still eating the same 2,000-calorie diet on your long ride days as on your rest days, you're leaving performance and recovery on the table. Most cyclists are meticulous about their training data — power, cadence, heart rate, elevation — yet nutrition remains a daily guess. Fueling precision isn't reserved for Tour de France professionals. It's a lever available to any cyclist willing to connect their training data to their plate, and the technology to do it automatically now exists.
         </p>
 
         <h2>Why your calorie target needs to move with your rides</h2>
         <p>
-          Total Daily Energy Expenditure (TDEE) is not a static number. A 90-minute Zone 2 ride burns
-          roughly 600–900 kcal depending on your body weight and intensity. A 4-hour fondo at threshold
-          effort? 2,500–3,500 kcal above your Basal Metabolic Rate.
-        </p>
-        <p>
-          Most nutrition apps calculate your TDEE once during setup — using an activity multiplier like
-          "moderately active" — and never update it. This creates systematic underfueling on hard days
-          and potential overfueling on recovery days.
-        </p>
-        <p>
-          The fix is simple in principle: your nutrition targets should update every time your Strava
-          data updates. Jonno does this automatically via the Strava OAuth sync.
+          Total Daily Energy Expenditure (TDEE) is not a fixed number — it shifts dramatically depending on what you did that day. A 90-minute Zone 2 ride burns roughly 600–900 kcal depending on body weight and intensity, while a 4-hour fondo at threshold effort can add 2,500–3,500 kcal above your Basal Metabolic Rate. These are not marginal differences; they represent the difference between a recovery day and a day where you need to essentially eat an extra meal's worth of fuel just to break even on energy balance. The tragedy is that most nutrition apps calculate your TDEE once during initial setup — choosing a static activity multiplier like "moderately active" — and never revisit it again regardless of what your Strava feed actually looks like. The result is systematic underfueling on hard training days and potential overfueling on recovery days, both of which compromise adaptation. Your nutrition targets should update every time your training data updates, which is exactly what Jonno does via the Strava OAuth sync.
         </p>
 
         <h2>Carbohydrate requirements for cyclists</h2>
         <p>
-          The dominant fuel source above 70% VO2max is glycogen — stored carbohydrate in your muscles
-          and liver. Research consistently shows endurance athletes require:
-        </p>
-        <ul>
-          <li><strong>Zone 2 / recovery rides (under 90 min):</strong> 3–5g carbs per kg bodyweight per day</li>
-          <li><strong>Moderate training (90–120 min moderate intensity):</strong> 5–7g/kg/day</li>
-          <li><strong>High intensity or long rides (2–5 hours):</strong> 6–10g/kg/day</li>
-          <li><strong>Extreme volume (Tour-style):</strong> 8–12g/kg/day</li>
-        </ul>
-        <p>
-          For a 70kg cyclist doing a 3-hour endurance ride, that's 420–700g of carbohydrates on that day.
-          That's not a number you hit by accident.
+          Glycogen — the polymerised form of glucose stored in your muscles and liver — is the dominant fuel source above approximately 70% of VO2max. At the intensities most amateur cyclists train and race at, glycogen provides the majority of energy, and its depletion is what causes the dreaded "bonk." Research on carbohydrate requirements for endurance athletes has produced fairly consistent ranges across training loads. Recovery rides under 90 minutes call for 3–5g of carbohydrate per kg of bodyweight per day; moderate sessions of 90–120 minutes at moderate intensity require 5–7g/kg; high-intensity or long rides of two to five hours demand 6–10g/kg; and extreme training volumes comparable to stage racing require 8–12g/kg per day. For a 70kg cyclist doing a 3-hour endurance ride, that translates to 420–700g of carbohydrates on that single day — a quantity that simply doesn't happen by accident and requires deliberate planning.
         </p>
 
         <h2>The three-window fueling framework</h2>
         <p>
-          Rather than thinking about daily totals in the abstract, structure your carb intake around three
-          windows relative to your ride:
-        </p>
-        <p>
-          <strong>Pre-ride (2–3 hours before):</strong> 1–4g/kg carbs, low fat, moderate protein. The goal
-          is to top up liver glycogen without causing GI distress. Oats, banana, white rice, white bread
-          with jam are all excellent options. Avoid high-fibre foods.
-        </p>
-        <p>
-          <strong>During (rides over 75 minutes):</strong> 30–90g carbs per hour depending on intensity.
-          For rides over 2.5 hours, multiple carbohydrate types (glucose + fructose in a 2:1 ratio) allow
-          absorption rates above 90g/hour. Sports gels, chews, or real food like dates and rice cakes work well.
-        </p>
-        <p>
-          <strong>Post-ride (within 30–60 minutes):</strong> 1–1.2g/kg carbs plus 0.3–0.4g/kg protein to
-          maximise glycogen resynthesis and initiate muscle repair. This is the window where ordering
-          the right food via Uber Eats actually matters most — your muscles are most receptive to nutrients
-          in this period.
+          Rather than thinking about daily carbohydrate totals in the abstract, the most practical framework structures intake around three specific windows relative to the ride. In the two to three hours before riding, the goal is consuming 1–4g/kg of easily digestible carbohydrates with low fat and moderate protein to top up liver glycogen without causing gastrointestinal distress. Oats, banana, white rice, and white bread with jam are excellent choices here — the key characteristic being low fibre content, which accelerates gastric emptying. During efforts lasting over 75 minutes, 30–90g of carbohydrates per hour is the evidence-based target, with the higher end of that range achievable only when mixing glucose and fructose in a 2:1 ratio, which engages two separate intestinal transporters and allows absorption rates above 90g/hour. Sports gels, chews, dates, or rice cakes all work well depending on personal preference. Finally, the post-ride window within 30–60 minutes of finishing calls for 1–1.2g/kg of carbohydrates combined with 0.3–0.4g/kg of protein to maximise glycogen resynthesis while simultaneously initiating muscle repair — this is the window where getting the right food quickly matters most, as muscle glycogen synthesis rates are highest immediately after exercise.
         </p>
 
         <h2>Protein on ride days</h2>
         <p>
-          Endurance athletes often overlook protein on heavy training days, focusing almost entirely on
-          carbohydrate replacement. But 2024 meta-analyses confirm that 1.6–2.0g/kg/day of protein
-          is optimal even for pure endurance athletes, and this number should be consistent regardless
-          of training volume.
-        </p>
-        <p>
-          On a big ride day, protein intake is often crowded out by the carbohydrate volume required.
-          Prioritise protein at breakfast and post-ride, then fill carbohydrates around it.
+          Endurance cyclists frequently fall into the trap of thinking that big ride days are purely about carbohydrate replacement, letting protein intake slide in favour of hitting the carb targets. This is a meaningful error. Meta-analyses published in 2024 confirm that 1.6–2.0g of protein per kg of bodyweight per day represents the optimal range even for pure endurance athletes, and this target should hold steady regardless of training volume or intensity. The challenge on high-volume training days is that the sheer quantity of carbohydrates required — potentially 600–800g — can crowd protein out of the diet if it isn't prioritised strategically. The practical solution is to front-load protein at breakfast and prioritise it in the post-ride recovery meal, then fill remaining calories with carbohydrates in the meals that follow. Spreading protein evenly across four to five meals throughout the day also produces superior muscle protein synthesis compared to concentrating it in one or two large servings.
         </p>
 
         <h2>How Jonno automates this</h2>
         <p>
-          When you sync a Strava ride, Jonno:
-        </p>
-        <ol>
-          <li>Reads the activity type, duration, average heart rate, and estimated calorie burn from Strava</li>
-          <li>Recalculates your TDEE for the day using your profile weight and the activity data</li>
-          <li>Updates your macro targets (calories, carbs, protein) in real time</li>
-          <li>The Jonno Agent uses those updated targets in meal recommendations for the rest of the day</li>
-          <li>If it's post-ride, the agent prioritises recovery meals with high carb plus protein ratios</li>
-        </ol>
-        <p>
-          The result: you never need to manually calculate ride-day adjustments. The data flows from
-          Strava to your nutrition targets automatically.
+          When a Strava ride syncs to Jonno, the system reads the activity type, duration, average heart rate, and estimated calorie burn from the Strava data feed. Using your current profile weight alongside this activity data, it recalculates your TDEE for the day and updates your macro targets — calories, carbohydrates, and protein — in real time. The Jonno Agent then incorporates these updated targets into every meal recommendation it makes for the remainder of the day. If the sync occurs post-ride, the agent prioritises recovery meals with high carbohydrate-to-protein ratios and can surface specific options from nearby restaurants on Uber Eats that match the calculated targets. The end result is that you never need to manually calculate ride-day nutrition adjustments. The data flows from Strava through to your nutrition plan entirely automatically, eliminating the daily cognitive overhead of figuring out how much more you need to eat when you've done a long session.
         </p>
 
         <h2>Practical next step</h2>
         <p>
-          Connect your Strava account in Jonno settings and do a test ride. After the activity
-          syncs, open the dashboard and watch your daily targets update. Then ask the Jonno Agent for
-          post-ride meal options. It will build an Uber Eats cart matched to your recovery macros.
-        </p>
-        <p>
-          Precision fueling doesn't require a sports dietitian on retainer. It requires the right data
-          flowing to the right tools.
+          Connect your Strava account in Jonno settings and complete a training ride. Once the activity syncs — which takes under a minute — open your dashboard and observe how your daily macro targets have shifted relative to a rest day. From there, open the Jonno Agent and ask for post-ride meal options. It will build an Uber Eats cart matched to your exact recovery macros based on what's available near you. Precision fueling at this level doesn't require a sports dietitian on retainer or hours of manual calculation. It requires the right data flowing into the right tools, and the entire setup takes less than five minutes.
         </p>
       </div>
     ),

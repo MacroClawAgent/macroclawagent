@@ -218,12 +218,6 @@ export default function JoinPage() {
                   </div>
                 </div>
 
-                {/* Urgency */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: "rgba(32,199,183,0.06)", border: "1px solid rgba(32,199,183,0.18)" }}>
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#22C55E" }} />
-                  <p className="text-xs font-medium" style={{ color: "#1BA89A" }}>47 beta spots left this week</p>
-                </div>
-
                 <Button type="submit" variant="glow" size="lg" disabled={loading} className="w-full h-14 text-base">
                   {loading ? (
                     <span className="flex items-center gap-2">
