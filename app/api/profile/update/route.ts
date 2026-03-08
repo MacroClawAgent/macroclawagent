@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createClientFromToken, getBearerToken } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -10,7 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const token = getBearerToken(request);
+    const supabase = token ? createClientFromToken(token) : await createClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
