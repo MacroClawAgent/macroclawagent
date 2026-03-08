@@ -30,10 +30,16 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "supabaseUrl": "https://kqbsznemkmhlhlqzbsmu.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYnN6bmVta21obGhscXpic211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5OTYyMDcsImV4cCI6MjA4NzU3MjIwN30.aAukr7OUh3dE3dOWqvcurxcTfyEHnU6WJJlb3tBW84g",
+      "apiBaseUrl": "https://jonnoai.com"
     }
   }
 }
