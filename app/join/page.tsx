@@ -121,7 +121,7 @@ export default function JoinPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55 }}
-              className="flex-1 flex flex-col gap-8 lg:pt-16 lg:pb-16 lg:sticky lg:top-8"
+              className="flex-1 flex flex-col gap-8 lg:pt-16 lg:pb-16 lg:sticky lg:top-8 order-2 lg:order-1"
             >
               {/* Urgency badge */}
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full w-fit text-white shadow-sm text-xs font-bold uppercase tracking-widest" style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)" }}>
@@ -178,7 +178,7 @@ export default function JoinPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="w-full lg:w-[440px] lg:flex-shrink-0 lg:pt-16 lg:pb-16"
+              className="w-full lg:w-[440px] lg:flex-shrink-0 lg:pt-16 lg:pb-16 order-1 lg:order-2"
             >
               <form onSubmit={handleSubmit} className="rounded-2xl p-7 flex flex-col gap-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 8px 40px rgba(0,0,0,0.08)" }}>
                 <div>
