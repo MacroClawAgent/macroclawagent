@@ -64,37 +64,37 @@ const posts: Record<string, LearnPost> = {
     body: (
       <div className="prose-content">
         <p>
-          If you're logging every watt and every kilometre on Strava but still eating the same 2,000-calorie diet on your long ride days as on your rest days, you're leaving performance and recovery on the table. Most cyclists are meticulous about their training data — power, cadence, heart rate, elevation — yet nutrition remains a daily guess. Fueling precision isn't reserved for Tour de France professionals. It's a lever available to any cyclist willing to connect their training data to their plate, and the technology to do it automatically now exists.
+          If you're logging every watt and every kilometre on Strava but still eating the same 2,000-calorie diet on your long ride days as on your rest days, you're leaving performance and recovery on the table. Most cyclists are meticulous about their training data, power, cadence, heart rate, elevation, yet nutrition remains a daily guess. Fueling precision isn't reserved for Tour de France professionals. It's a lever available to any cyclist willing to connect their training data to their plate, and the technology to do it automatically now exists.
         </p>
 
         <h2>Why your calorie target needs to move with your rides</h2>
         <p>
-          Total Daily Energy Expenditure (TDEE) is not a fixed number — it shifts dramatically depending on what you did that day. A 90-minute Zone 2 ride burns roughly 600–900 kcal depending on body weight and intensity, while a 4-hour fondo at threshold effort can add 2,500–3,500 kcal above your Basal Metabolic Rate. These are not marginal differences; they represent the difference between a recovery day and a day where you need to essentially eat an extra meal's worth of fuel just to break even on energy balance. The tragedy is that most nutrition apps calculate your TDEE once during initial setup — choosing a static activity multiplier like "moderately active" — and never revisit it again regardless of what your Strava feed actually looks like. The result is systematic underfueling on hard training days and potential overfueling on recovery days, both of which compromise adaptation. Your nutrition targets should update every time your training data updates, which is exactly what Jonno does via the Strava OAuth sync.
+          Total Daily Energy Expenditure (TDEE) is not a fixed number, it shifts dramatically depending on what you did that day. A 90-minute Zone 2 ride burns roughly 600–900 kcal depending on body weight and intensity, while a 4-hour fondo at threshold effort can add 2,500–3,500 kcal above your Basal Metabolic Rate. These are not marginal differences; they represent the difference between a recovery day and a day where you need to essentially eat an extra meal's worth of fuel just to break even on energy balance. The tragedy is that most nutrition apps calculate your TDEE once during initial setup, choosing a static activity multiplier like "moderately active", and never revisit it again regardless of what your Strava feed actually looks like. The result is systematic underfueling on hard training days and potential overfueling on recovery days, both of which compromise adaptation. Your nutrition targets should update every time your training data updates, which is exactly what Jonno does via the Strava OAuth sync.
         </p>
 
         <h2>Carbohydrate requirements for cyclists</h2>
         <p>
-          Glycogen — the polymerised form of glucose stored in your muscles and liver — is the dominant fuel source above approximately 70% of VO2max. At the intensities most amateur cyclists train and race at, glycogen provides the majority of energy, and its depletion is what causes the dreaded "bonk." Research on carbohydrate requirements for endurance athletes has produced fairly consistent ranges across training loads. Recovery rides under 90 minutes call for 3–5g of carbohydrate per kg of bodyweight per day; moderate sessions of 90–120 minutes at moderate intensity require 5–7g/kg; high-intensity or long rides of two to five hours demand 6–10g/kg; and extreme training volumes comparable to stage racing require 8–12g/kg per day. For a 70kg cyclist doing a 3-hour endurance ride, that translates to 420–700g of carbohydrates on that single day — a quantity that simply doesn't happen by accident and requires deliberate planning.
+          Glycogen, the polymerised form of glucose stored in your muscles and liver, is the dominant fuel source above approximately 70% of VO2max. At the intensities most amateur cyclists train and race at, glycogen provides the majority of energy, and its depletion is what causes the dreaded "bonk." Research on carbohydrate requirements for endurance athletes has produced fairly consistent ranges across training loads. Recovery rides under 90 minutes call for 3–5g of carbohydrate per kg of bodyweight per day; moderate sessions of 90–120 minutes at moderate intensity require 5–7g/kg; high-intensity or long rides of two to five hours demand 6–10g/kg; and extreme training volumes comparable to stage racing require 8–12g/kg per day. For a 70kg cyclist doing a 3-hour endurance ride, that translates to 420–700g of carbohydrates on that single day, a quantity that simply doesn't happen by accident and requires deliberate planning.
         </p>
 
         <h2>The three-window fueling framework</h2>
         <p>
-          Rather than thinking about daily carbohydrate totals in the abstract, the most practical framework structures intake around three specific windows relative to the ride. In the two to three hours before riding, the goal is consuming 1–4g/kg of easily digestible carbohydrates with low fat and moderate protein to top up liver glycogen without causing gastrointestinal distress. Oats, banana, white rice, and white bread with jam are excellent choices here — the key characteristic being low fibre content, which accelerates gastric emptying. During efforts lasting over 75 minutes, 30–90g of carbohydrates per hour is the evidence-based target, with the higher end of that range achievable only when mixing glucose and fructose in a 2:1 ratio, which engages two separate intestinal transporters and allows absorption rates above 90g/hour. Sports gels, chews, dates, or rice cakes all work well depending on personal preference. Finally, the post-ride window within 30–60 minutes of finishing calls for 1–1.2g/kg of carbohydrates combined with 0.3–0.4g/kg of protein to maximise glycogen resynthesis while simultaneously initiating muscle repair — this is the window where getting the right food quickly matters most, as muscle glycogen synthesis rates are highest immediately after exercise.
+          Rather than thinking about daily carbohydrate totals in the abstract, the most practical framework structures intake around three specific windows relative to the ride. In the two to three hours before riding, the goal is consuming 1–4g/kg of easily digestible carbohydrates with low fat and moderate protein to top up liver glycogen without causing gastrointestinal distress. Oats, banana, white rice, and white bread with jam are excellent choices here, the key characteristic being low fibre content, which accelerates gastric emptying. During efforts lasting over 75 minutes, 30–90g of carbohydrates per hour is the evidence-based target, with the higher end of that range achievable only when mixing glucose and fructose in a 2:1 ratio, which engages two separate intestinal transporters and allows absorption rates above 90g/hour. Sports gels, chews, dates, or rice cakes all work well depending on personal preference. Finally, the post-ride window within 30–60 minutes of finishing calls for 1–1.2g/kg of carbohydrates combined with 0.3–0.4g/kg of protein to maximise glycogen resynthesis while simultaneously initiating muscle repair, this is the window where getting the right food quickly matters most, as muscle glycogen synthesis rates are highest immediately after exercise.
         </p>
 
         <h2>Protein on ride days</h2>
         <p>
-          Endurance cyclists frequently fall into the trap of thinking that big ride days are purely about carbohydrate replacement, letting protein intake slide in favour of hitting the carb targets. This is a meaningful error. Meta-analyses published in 2024 confirm that 1.6–2.0g of protein per kg of bodyweight per day represents the optimal range even for pure endurance athletes, and this target should hold steady regardless of training volume or intensity. The challenge on high-volume training days is that the sheer quantity of carbohydrates required — potentially 600–800g — can crowd protein out of the diet if it isn't prioritised strategically. The practical solution is to front-load protein at breakfast and prioritise it in the post-ride recovery meal, then fill remaining calories with carbohydrates in the meals that follow. Spreading protein evenly across four to five meals throughout the day also produces superior muscle protein synthesis compared to concentrating it in one or two large servings.
+          Endurance cyclists frequently fall into the trap of thinking that big ride days are purely about carbohydrate replacement, letting protein intake slide in favour of hitting the carb targets. This is a meaningful error. Meta-analyses published in 2024 confirm that 1.6–2.0g of protein per kg of bodyweight per day represents the optimal range even for pure endurance athletes, and this target should hold steady regardless of training volume or intensity. The challenge on high-volume training days is that the sheer quantity of carbohydrates required, potentially 600–800g, can crowd protein out of the diet if it isn't prioritised strategically. The practical solution is to front-load protein at breakfast and prioritise it in the post-ride recovery meal, then fill remaining calories with carbohydrates in the meals that follow. Spreading protein evenly across four to five meals throughout the day also produces superior muscle protein synthesis compared to concentrating it in one or two large servings.
         </p>
 
         <h2>How Jonno automates this</h2>
         <p>
-          When a Strava ride syncs to Jonno, the system reads the activity type, duration, average heart rate, and estimated calorie burn from the Strava data feed. Using your current profile weight alongside this activity data, it recalculates your TDEE for the day and updates your macro targets — calories, carbohydrates, and protein — in real time. The Jonno Agent then incorporates these updated targets into every meal recommendation it makes for the remainder of the day. If the sync occurs post-ride, the agent prioritises recovery meals with high carbohydrate-to-protein ratios and can surface specific options from nearby restaurants on Uber Eats that match the calculated targets. The end result is that you never need to manually calculate ride-day nutrition adjustments. The data flows from Strava through to your nutrition plan entirely automatically, eliminating the daily cognitive overhead of figuring out how much more you need to eat when you've done a long session.
+          When a Strava ride syncs to Jonno, the system reads the activity type, duration, average heart rate, and estimated calorie burn from the Strava data feed. Using your current profile weight alongside this activity data, it recalculates your TDEE for the day and updates your macro targets, calories, carbohydrates, and protein, in real time. The Jonno Agent then incorporates these updated targets into every meal recommendation it makes for the remainder of the day. If the sync occurs post-ride, the agent prioritises recovery meals with high carbohydrate-to-protein ratios and can surface specific options from nearby restaurants on Uber Eats that match the calculated targets. The end result is that you never need to manually calculate ride-day nutrition adjustments. The data flows from Strava through to your nutrition plan entirely automatically, eliminating the daily cognitive overhead of figuring out how much more you need to eat when you've done a long session.
         </p>
 
         <h2>Practical next step</h2>
         <p>
-          Connect your Strava account in Jonno settings and complete a training ride. Once the activity syncs — which takes under a minute — open your dashboard and observe how your daily macro targets have shifted relative to a rest day. From there, open the Jonno Agent and ask for post-ride meal options. It will build an Uber Eats cart matched to your exact recovery macros based on what's available near you. Precision fueling at this level doesn't require a sports dietitian on retainer or hours of manual calculation. It requires the right data flowing into the right tools, and the entire setup takes less than five minutes.
+          Connect your Strava account in Jonno settings and complete a training ride. Once the activity syncs, which takes under a minute, open your dashboard and observe how your daily macro targets have shifted relative to a rest day. From there, open the Jonno Agent and ask for post-ride meal options. It will build an Uber Eats cart matched to your exact recovery macros based on what's available near you. Precision fueling at this level doesn't require a sports dietitian on retainer or hours of manual calculation. It requires the right data flowing into the right tools, and the entire setup takes less than five minutes.
         </p>
       </div>
     ),
@@ -132,7 +132,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           The best nutrition coaching in the world used to require two things: a qualified sports
           dietitian and money. A lot of both. Elite coaches charge $200–400 per hour and are booked
-          months out. For recreational athletes — even serious ones — personalised nutrition guidance
+          months out. For recreational athletes, even serious ones, personalised nutrition guidance
           has always been out of reach.
         </p>
         <p>
@@ -177,7 +177,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           A good coach remembers your history: the foods that gave you GI issues, the protein sources
           you prefer, the weeks you over-reached and crashed. AI systems that integrate your training
-          logs and food history can build the same contextual model — and recall it instantly.
+          logs and food history can build the same contextual model, and recall it instantly.
         </p>
         <p>
           Jonno's agent is given your training history, macro targets, and food preferences
@@ -203,8 +203,8 @@ const posts: Record<string, LearnPost> = {
           support training and recovery. It is not a dietitian, and it doesn't pretend to be.
         </p>
         <p>
-          Where precision matters most — competitive professional athletes, people with medical dietary
-          requirements, complex eating disorder recovery — human expertise remains essential. AI
+          Where precision matters most, competitive professional athletes, people with medical dietary
+          requirements, complex eating disorder recovery, human expertise remains essential. AI
           accelerates good habits. It doesn't replace professional clinical care.
         </p>
 
@@ -212,7 +212,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           The Jonno Agent is built on Anthropic's Claude. Anthropic is one of the leading AI safety
           companies in the world, and Claude is specifically designed to be honest, helpful, and harmless.
-          That matters for nutrition advice — where overconfidence or incorrect recommendations can
+          That matters for nutrition advice, where overconfidence or incorrect recommendations can
           genuinely harm performance or health.
         </p>
         <p>
@@ -221,7 +221,7 @@ const posts: Record<string, LearnPost> = {
           than generating generic advice.
         </p>
         <p>
-          The result is guidance that feels like it comes from a coach who knows you — because it's
+          The result is guidance that feels like it comes from a coach who knows you, because it's
           built on data that does.
         </p>
 
@@ -229,8 +229,8 @@ const posts: Record<string, LearnPost> = {
         <p>
           Athletes using AI nutrition coaching consistently report two outcomes: they hit their protein
           targets more consistently, and they spend less cognitive energy on food decisions. That
-          cognitive load reduction — not having to think through "what should I eat" from scratch
-          every meal — turns out to be a meaningful performance advantage in itself.
+          cognitive load reduction, not having to think through "what should I eat" from scratch
+          every meal, turns out to be a meaningful performance advantage in itself.
         </p>
         <p>
           Decision fatigue is real. Athletes already make hundreds of micro-decisions in a training
@@ -274,7 +274,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           Ask ten endurance athletes what their protein target is and you'll get ten different answers.
           0.8g/kg. 1.2g/kg. 1.6g/kg. Some will say "I just try to eat enough." The variance reflects
-          a genuine scientific debate that has evolved significantly over the past decade — and the
+          a genuine scientific debate that has evolved significantly over the past decade, and the
           consensus has shifted toward higher intakes than most popular nutrition apps recommend.
         </p>
 
@@ -285,7 +285,7 @@ const posts: Record<string, LearnPost> = {
           floor, not an optimisation target.
         </p>
         <p>
-          For athletes — particularly endurance athletes under high training loads — 0.8g/kg is clearly
+          For athletes, particularly endurance athletes under high training loads, 0.8g/kg is clearly
           insufficient. The 2024 International Society of Sports Nutrition (ISSN) position stand
           recommends 1.4–2.0g/kg/day for exercising individuals, with higher intakes during caloric
           restriction or periods of increased training load.
@@ -293,13 +293,13 @@ const posts: Record<string, LearnPost> = {
 
         <h2>Why endurance athletes need more protein than expected</h2>
         <p>
-          Endurance athletes often think of protein as a strength-sport nutrient — for bodybuilders and
+          Endurance athletes often think of protein as a strength-sport nutrient, for bodybuilders and
           powerlifters, not runners and cyclists. This is a significant misconception.
         </p>
         <p>
           During prolonged aerobic exercise, amino acid oxidation (using protein as fuel) increases
           substantially, particularly of branched-chain amino acids (BCAAs). A 2-hour run can oxidise
-          3–5g of leucine alone. This isn't muscle breakdown — it's normal substrate use — but it
+          3–5g of leucine alone. This isn't muscle breakdown, it's normal substrate use, but it
           increases the daily protein requirement to maintain nitrogen balance.
         </p>
         <p>
@@ -310,7 +310,7 @@ const posts: Record<string, LearnPost> = {
           <li><strong>Connective tissue synthesis:</strong> Tendons, ligaments, and cartilage all require amino acids for maintenance and adaptation. Collagen synthesis specifically requires adequate glycine and proline.</li>
           <li><strong>Immune function:</strong> High training loads suppress immune function. Protein inadequacy compounds this effect.</li>
           <li><strong>Haemoglobin production:</strong> Endurance athletes have higher erythropoiesis (red blood cell production). Haemoglobin is a protein.</li>
-          <li><strong>Enzyme synthesis:</strong> Aerobic metabolism depends on mitochondrial enzymes — all of which are proteins.</li>
+          <li><strong>Enzyme synthesis:</strong> Aerobic metabolism depends on mitochondrial enzymes, all of which are proteins.</li>
         </ul>
 
         <h2>Current evidence-based recommendations</h2>
@@ -329,7 +329,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           The muscle protein synthesis (MPS) response to protein is dose-dependent up to approximately
           0.4g/kg per meal (around 28g protein for a 70kg athlete), after which additional protein in a
-          single meal produces diminishing MPS returns — the excess is oxidised.
+          single meal produces diminishing MPS returns, the excess is oxidised.
         </p>
         <p>
           This means distributing protein across 4–5 meals per day produces greater MPS than consuming
@@ -340,7 +340,7 @@ const posts: Record<string, LearnPost> = {
           In practice, this means:
         </p>
         <ul>
-          <li>A protein-rich breakfast (30–40g) — often skipped by endurance athletes</li>
+          <li>A protein-rich breakfast (30–40g), often skipped by endurance athletes</li>
           <li>A pre-training snack with 15–20g protein if the session is 2+ hours post-breakfast</li>
           <li>A post-training recovery meal with 30–40g protein within 2 hours of finishing</li>
           <li>A protein-rich dinner</li>
@@ -360,18 +360,18 @@ const posts: Record<string, LearnPost> = {
         </ul>
         <p>
           Plant-based athletes should aim for the higher end of protein ranges (1.8–2.2g/kg) and
-          combine protein sources to ensure a complete amino acid profile — rice plus legumes, for example.
+          combine protein sources to ensure a complete amino acid profile, rice plus legumes, for example.
         </p>
 
         <h2>What this means for your app</h2>
         <p>
-          Most nutrition apps set protein targets at 0.8–1.2g/kg — the sedentary adult RDA or the
+          Most nutrition apps set protein targets at 0.8–1.2g/kg, the sedentary adult RDA or the
           lower end of athletic ranges. If you're an endurance athlete with significant training volume,
           you are almost certainly running below optimal.
         </p>
         <p>
           Jonno sets your protein targets based on your training volume (synced from Strava),
-          body weight, and goals — defaulting to performance-optimised ranges rather than minimum
+          body weight, and goals, defaulting to performance-optimised ranges rather than minimum
           adequacy thresholds.
         </p>
         <p>
@@ -427,13 +427,13 @@ const posts: Record<string, LearnPost> = {
         </p>
         <p>
           Understanding the real science behind running energy expenditure helps you make better decisions
-          about your nutrition — and helps you evaluate how much trust to place in any given estimate.
+          about your nutrition, and helps you evaluate how much trust to place in any given estimate.
         </p>
 
         <h2>Why calorie estimates are often wrong</h2>
         <p>
           Consumer fitness devices estimate calorie burn using one of two methods: activity-based
-          formulas (METs — Metabolic Equivalents of Task) or heart rate-based estimation. Neither is
+          formulas (METs, Metabolic Equivalents of Task) or heart rate-based estimation. Neither is
           highly accurate at the individual level because both approaches require assumptions about
           your physiology that may not match reality.
         </p>
@@ -444,7 +444,7 @@ const posts: Record<string, LearnPost> = {
         </p>
         <p>
           Heart rate methods are more individualised but require calibration against your personal
-          VO2max — a number most devices estimate (often poorly) rather than measure directly.
+          VO2max, a number most devices estimate (often poorly) rather than measure directly.
         </p>
         <p>
           A 2019 Stanford study tested seven popular fitness trackers and found average calorie
@@ -457,17 +457,17 @@ const posts: Record<string, LearnPost> = {
         <p>
           The most reliable equation for estimating calorie burn during running comes from laboratory
           measurements of oxygen consumption. Running at a steady pace consumes approximately
-          1 kcal per kg per km — a surprisingly simple and robust approximation.
+          1 kcal per kg per km, a surprisingly simple and robust approximation.
         </p>
         <p>
           This means a 70kg runner completing 10km burns roughly 700 kcal, regardless of pace.
           A 60kg runner doing the same 10km burns approximately 600 kcal. The pace matters less
-          than you might expect for total energy expenditure over a fixed distance — what changes
+          than you might expect for total energy expenditure over a fixed distance, what changes
           with speed is the rate of expenditure (kcal/hour), not the total per km.
         </p>
         <p>
-          This is the gross calorie figure. Net calories — the amount above your resting metabolic
-          rate — is somewhat lower, because you would have burned some calories sitting still during
+          This is the gross calorie figure. Net calories, the amount above your resting metabolic
+          rate, is somewhat lower, because you would have burned some calories sitting still during
           that same time period. For most practical nutrition purposes, gross calories are the
           relevant figure when calculating how much more food to eat on training days.
         </p>
@@ -475,7 +475,7 @@ const posts: Record<string, LearnPost> = {
         <h2>Body weight: the biggest variable</h2>
         <p>
           The single biggest determinant of calorie burn during running is body mass. Heavier runners
-          burn more calories per kilometre — proportionally so. A 90kg runner burns approximately
+          burn more calories per kilometre, proportionally so. A 90kg runner burns approximately
           900 kcal per 10km. A 55kg runner burns approximately 550 kcal for the same distance.
         </p>
         <p>
@@ -486,7 +486,7 @@ const posts: Record<string, LearnPost> = {
         </p>
         <p>
           Jonno re-calculates activity-based calorie expenditure using your current profile weight
-          every time a Strava activity syncs — not a cached number from your initial setup.
+          every time a Strava activity syncs, not a cached number from your initial setup.
         </p>
 
         <h2>The speed paradox: faster is not always more efficient</h2>
@@ -497,7 +497,7 @@ const posts: Record<string, LearnPost> = {
           walking-to-running gait transition and reduced running economy at low speeds.
         </p>
         <p>
-          At very high speeds — above threshold — energy expenditure per km rises again because the
+          At very high speeds, above threshold, energy expenditure per km rises again because the
           aerobic system is augmented by anaerobic glycolysis, which is metabolically expensive.
         </p>
         <p>
@@ -524,7 +524,7 @@ const posts: Record<string, LearnPost> = {
 
         <h2>Heart rate as a calorie proxy</h2>
         <p>
-          Heart rate correlates with oxygen consumption — and therefore calorie burn — when you're
+          Heart rate correlates with oxygen consumption, and therefore calorie burn, when you're
           working aerobically. This makes HR a useful proxy, but with important limitations:
         </p>
         <p>
@@ -533,8 +533,8 @@ const posts: Record<string, LearnPost> = {
           individual athlete can produce errors of 20–30%.
         </p>
         <p>
-          Furthermore, cardiac drift — the gradual rise in heart rate during long runs even at
-          constant pace — inflates HR-based calorie estimates for extended efforts. On a 3-hour
+          Furthermore, cardiac drift, the gradual rise in heart rate during long runs even at
+          constant pace, inflates HR-based calorie estimates for extended efforts. On a 3-hour
           marathon training run, cardiac drift may cause HR-based algorithms to overestimate calorie
           burn by 15% or more in the final hour.
         </p>
@@ -574,7 +574,7 @@ const posts: Record<string, LearnPost> = {
           over 2–3 week blocks to calibrate whether your calorie estimates are landing correctly.
         </p>
         <p>
-          The goal isn't perfect accuracy — it's consistent, principled estimation that you
+          The goal isn't perfect accuracy, it's consistent, principled estimation that you
           can adjust based on real-world feedback. Your body is the most accurate measuring
           device you have. The data is just a starting point.
         </p>
@@ -618,7 +618,7 @@ const posts: Record<string, LearnPost> = {
           The night before a big race, every amateur endurance athlete does the same thing: they eat
           a massive bowl of pasta. Sometimes two. They've heard about carbohydrate loading. They know
           glycogen is the primary fuel for racing. What they're less clear on is whether what they're
-          doing actually works — and the answer, based on current evidence, is: sometimes, and not
+          doing actually works, and the answer, based on current evidence, is: sometimes, and not
           in the way most people think.
         </p>
         <p>
@@ -629,14 +629,14 @@ const posts: Record<string, LearnPost> = {
 
         <h2>What carbohydrate loading actually does</h2>
         <p>
-          Your muscles store glycogen — the polymerised form of glucose — at rest. An average trained
+          Your muscles store glycogen, the polymerised form of glucose, at rest. An average trained
           athlete stores approximately 400–500g of glycogen total: roughly 300–400g in muscle tissue
           and 80–110g in the liver. At moderate racing intensity (around marathon pace), glycogen
           provides the majority of fuel and at typical depletion rates, muscle glycogen runs critically
           low around the 90-minute to 2-hour mark of continuous exertion.
         </p>
         <p>
-          This is "the wall" — glycogen depletion forcing a shift to fat oxidation, which is slower
+          This is "the wall", glycogen depletion forcing a shift to fat oxidation, which is slower
           and produces noticeably reduced power output. The goal of carbohydrate loading is to expand
           glycogen stores above normal resting levels before a race, pushing the depletion point further
           into the event.
@@ -644,14 +644,14 @@ const posts: Record<string, LearnPost> = {
         <p>
           Well-executed carbohydrate loading can increase muscle glycogen concentration by 20–40%
           above normal training levels. In practical terms, this can delay glycogen depletion by
-          20–30 minutes in a race lasting 2+ hours — a meaningful performance advantage.
+          20–30 minutes in a race lasting 2+ hours, a meaningful performance advantage.
         </p>
 
         <h2>The original protocol vs. modern evidence</h2>
         <p>
           The classic carbohydrate loading protocol, developed in the 1960s, involved a 3-day depletion
           phase (very high training load, low carbohydrate) followed by a 3-day loading phase (rest,
-          very high carbohydrate). The theory was that glycogen depletion would "supercompensate" —
+          very high carbohydrate). The theory was that glycogen depletion would "supercompensate",
           causing muscles to store more glycogen than normal when carbohydrates were reintroduced.
         </p>
         <p>
@@ -659,7 +659,7 @@ const posts: Record<string, LearnPost> = {
           demonstrated that trained athletes can achieve equivalent glycogen supercompensation with
           2–3 days of high carbohydrate intake plus exercise tapering alone, without the preceding
           depletion phase. The depletion protocol adds fatigue, muscle damage, and immune suppression
-          in the days before a race — a significant cost for no additional benefit.
+          in the days before a race, a significant cost for no additional benefit.
         </p>
         <p>
           Current best-practice involves 36–48 hours of high carbohydrate intake (10–12g/kg/day)
@@ -694,7 +694,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           <strong>2 days before race day (D-2):</strong> Carbohydrate intake of 8–10g/kg. Training should
           be light (30–40 min easy, or complete rest). Focus on familiar, easily digestible carbohydrates.
-          Total calorie intake will be significantly above normal — this is expected and necessary.
+          Total calorie intake will be significantly above normal, this is expected and necessary.
         </p>
         <p>
           <strong>1 day before race day (D-1):</strong> Carbohydrate intake of 10–12g/kg. Rest completely
@@ -734,11 +734,11 @@ const posts: Record<string, LearnPost> = {
           To minimise GI risk:
         </p>
         <ul>
-          <li>Eat familiar foods you've used in training — race week is not the time to experiment</li>
+          <li>Eat familiar foods you've used in training, race week is not the time to experiment</li>
           <li>Distribute intake across 4–5 smaller meals rather than 2–3 large ones</li>
-          <li>Avoid foods with artificial sweeteners (sorbitol, xylitol) — they cause osmotic diarrhoea</li>
-          <li>Stay well hydrated — aim for pale yellow urine throughout the loading phase</li>
-          <li>Avoid alcohol completely — it impairs glycogen storage and disrupts sleep</li>
+          <li>Avoid foods with artificial sweeteners (sorbitol, xylitol), they cause osmotic diarrhoea</li>
+          <li>Stay well hydrated, aim for pale yellow urine throughout the loading phase</li>
+          <li>Avoid alcohol completely, it impairs glycogen storage and disrupts sleep</li>
         </ul>
 
         <h2>Race morning nutrition</h2>
@@ -749,12 +749,12 @@ const posts: Record<string, LearnPost> = {
         </p>
         <p>
           Evidence-based pre-race breakfast: 1–4g/kg carbohydrates consumed 2–4 hours before the
-          gun. Timing matters — eating too close to race start can cause reactive hypoglycaemia
+          gun. Timing matters, eating too close to race start can cause reactive hypoglycaemia
           in some athletes. Familiar foods, low fat and fibre, moderate protein.
         </p>
         <p>
           Classic options: oats with banana and honey, white toast with jam, bagel with jam,
-          rice with fruit. Coffee is fine — and may improve performance directly through
+          rice with fruit. Coffee is fine, and may improve performance directly through
           caffeine's ergogenic effects.
         </p>
 
@@ -812,7 +812,7 @@ const posts: Record<string, LearnPost> = {
       <div className="prose-content">
         <p>
           Athletes obsess over their training splits, their protein timing, their post-workout shakes.
-          Most of them pay almost no attention to the 7–9 hours they spend unconscious — the period
+          Most of them pay almost no attention to the 7–9 hours they spend unconscious, the period
           during which the actual adaptation from training occurs. Sleep is the most underrated
           performance variable in endurance sport, and nutrition plays a direct role in how well you
           use it.
@@ -825,7 +825,7 @@ const posts: Record<string, LearnPost> = {
         <h2>What happens physiologically during sleep</h2>
         <p>
           During slow-wave (deep) sleep, the anterior pituitary releases the majority of the day's
-          growth hormone (GH). GH is anabolic — it drives protein synthesis, fat mobilisation,
+          growth hormone (GH). GH is anabolic, it drives protein synthesis, fat mobilisation,
           and tissue repair. The GH pulse during deep sleep is the primary anabolic event for
           most athletes, exceeding the post-workout GH response in magnitude and duration.
         </p>
@@ -837,7 +837,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           The net effect: sleep is the window during which your body performs the protein synthesis,
           glycogen resynthesis, and structural repair that your training session stimulated. Without
-          adequate sleep — and adequate nutrition to fuel that sleep — the adaptation doesn't occur.
+          adequate sleep, and adequate nutrition to fuel that sleep, the adaptation doesn't occur.
           You've done the training stimulus without capturing the adaptation.
         </p>
 
@@ -851,7 +851,7 @@ const posts: Record<string, LearnPost> = {
           Research from Maastricht University (Res et al., 2012 and multiple replications) demonstrates
           that consuming 40g of casein protein approximately 30 minutes before sleep significantly
           increases overnight muscle protein synthesis rates. The effect is additive to daytime protein
-          intake — it's not simply redistributing protein you would have absorbed anyway.
+          intake, it's not simply redistributing protein you would have absorbed anyway.
         </p>
         <p>
           Casein is preferred over whey for this purpose because it forms a slow-digesting gel in
@@ -864,9 +864,9 @@ const posts: Record<string, LearnPost> = {
         <ul>
           <li><strong>Cottage cheese:</strong> 25–28g protein per 200g serving, high casein fraction, relatively low calorie</li>
           <li><strong>Greek yoghurt:</strong> 15–20g protein per 200g, good casein content, palatable</li>
-          <li><strong>Milk:</strong> 80% casein, 20% whey — the original slow protein</li>
+          <li><strong>Milk:</strong> 80% casein, 20% whey, the original slow protein</li>
           <li><strong>Casein protein powder:</strong> Convenient, high dose achievable, micellar casein is the most studied form</li>
-          <li><strong>Cheese:</strong> High in casein but also high in saturated fat — moderation</li>
+          <li><strong>Cheese:</strong> High in casein but also high in saturated fat, moderation</li>
         </ul>
 
         <h2>Carbohydrates, serotonin, and sleep quality</h2>
@@ -875,7 +875,7 @@ const posts: Record<string, LearnPost> = {
           common advice to "avoid carbs at night" suggests. Carbohydrate consumption raises blood
           insulin, which clears competing large neutral amino acids from the bloodstream, increasing
           the brain-blood ratio of tryptophan. Tryptophan is the precursor to serotonin, which
-          is converted to melatonin — the sleep hormone.
+          is converted to melatonin, the sleep hormone.
         </p>
         <p>
           This means a moderate carbohydrate meal 3–4 hours before sleep may actually improve
@@ -887,7 +887,7 @@ const posts: Record<string, LearnPost> = {
           For athletes, the practical implication is that the common fear of evening carbohydrates
           is largely unfounded. A moderate evening meal including carbohydrates supports both
           glycogen resynthesis (needed for the next training session) and sleep quality. The
-          key is portion size and timing — not avoidance.
+          key is portion size and timing, not avoidance.
         </p>
 
         <h2>Micronutrients that affect recovery and sleep</h2>
@@ -916,7 +916,7 @@ const posts: Record<string, LearnPost> = {
           a small amount of fruit (for insulin response), 250ml warm milk, or a 40g casein protein shake.
         </p>
         <p>
-          Avoid large meals within 2 hours of sleep — elevated core temperature from digestion
+          Avoid large meals within 2 hours of sleep, elevated core temperature from digestion
           disrupts sleep architecture. Avoid high-fat meals close to bed as they significantly
           delay gastric emptying and may cause reflux. Avoid caffeine within 6 hours of sleep.
         </p>
@@ -925,7 +925,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           The interaction between training timing and sleep quality is an underappreciated variable.
           High-intensity exercise within 2–3 hours of sleep raises core body temperature, heart rate,
-          and cortisol — all of which delay sleep onset and reduce slow-wave sleep quality.
+          and cortisol, all of which delay sleep onset and reduce slow-wave sleep quality.
         </p>
         <p>
           If you train in the evening (which many athletes with daytime work commitments must),
@@ -954,7 +954,7 @@ const posts: Record<string, LearnPost> = {
         <h2>Building a recovery nutrition routine</h2>
         <p>
           The cumulative effect of consistent recovery nutrition is substantial. Athletes who
-          systematically eat for recovery — not just for performance — show significantly
+          systematically eat for recovery, not just for performance, show significantly
           better training adaptations over 8–12 week blocks compared to those who eat ad hoc.
         </p>
         <p>
@@ -968,7 +968,7 @@ const posts: Record<string, LearnPost> = {
         </ol>
         <p>
           Jonno's Agent tracks your daily protein distribution and flags when your pre-sleep
-          nutrition window is empty — one of the most commonly missed fueling opportunities
+          nutrition window is empty, one of the most commonly missed fueling opportunities
           for athletes who are otherwise careful about their nutrition.
         </p>
       </div>
@@ -1015,12 +1015,12 @@ const posts: Record<string, LearnPost> = {
         </p>
         <p>
           Some of this is accurate. Some of it is overstated. And most of the discussion leaves out
-          the dietary side entirely — which matters more than the training side for practical application.
+          the dietary side entirely, which matters more than the training side for practical application.
         </p>
 
         <h2>What Zone 2 actually means</h2>
         <p>
-          Zone 2 is not a precise universal definition — different coaches and researchers use different
+          Zone 2 is not a precise universal definition, different coaches and researchers use different
           zone systems. In the most common 5-zone model, Zone 2 is the intensity band where you can hold
           a conversation but are breathing noticeably: roughly 60–70% of maximum heart rate, or just
           below the first lactate threshold (VT1/LT1).
@@ -1038,7 +1038,7 @@ const posts: Record<string, LearnPost> = {
 
         <h2>The physiology of fat oxidation</h2>
         <p>
-          Fat oxidation — burning fat for fuel — is not a binary switch. Your body is always burning
+          Fat oxidation, burning fat for fuel, is not a binary switch. Your body is always burning
           a mixture of fat and carbohydrate, with the proportion shifting based on exercise intensity,
           training status, dietary history, and individual physiology.
         </p>
@@ -1048,7 +1048,7 @@ const posts: Record<string, LearnPost> = {
           (around marathon pace for most runners), you're burning predominantly carbohydrate.
         </p>
         <p>
-          Fat oxidation peaks — the "fatmax" point — typically occurs between 50–65% of VO2max for
+          Fat oxidation peaks, the "fatmax" point, typically occurs between 50–65% of VO2max for
           trained aerobic athletes. This is firmly within Zone 2 territory, which is why Zone 2 training
           is associated with fat adaptation: you are spending maximal time at the intensity where fat
           is the primary fuel.
@@ -1056,7 +1056,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           Training consistently in Zone 2 over months causes mitochondrial adaptations: increased
           mitochondrial density, greater fatty acid oxidation enzyme activity, and improved fat
-          transport into mitochondria. The practical effect is that your fatmax point shifts upward —
+          transport into mitochondria. The practical effect is that your fatmax point shifts upward,
           you oxidise fat at higher intensities than before.
         </p>
 
@@ -1066,8 +1066,8 @@ const posts: Record<string, LearnPost> = {
         </p>
         <ul>
           <li>Increase your peak fat oxidation rate (from roughly 0.5g/min in untrained individuals to 1.0–1.5g/min in highly trained aerobic athletes)</li>
-          <li>Shift the crossover point — the intensity at which carbohydrate becomes dominant — upward, sparing glycogen at any given speed</li>
-          <li>Improve metabolic flexibility — the ability to switch efficiently between fuel sources</li>
+          <li>Shift the crossover point, the intensity at which carbohydrate becomes dominant, upward, sparing glycogen at any given speed</li>
+          <li>Improve metabolic flexibility, the ability to switch efficiently between fuel sources</li>
           <li>Reduce reliance on exogenous carbohydrate during low-to-moderate intensity efforts</li>
         </ul>
         <p>
@@ -1087,7 +1087,7 @@ const posts: Record<string, LearnPost> = {
         <h2>Train low, compete high: periodised nutrition</h2>
         <p>
           The most evidence-supported application of fat-focused nutrition for endurance athletes
-          is periodised carbohydrate availability — sometimes called "train low, compete high."
+          is periodised carbohydrate availability, sometimes called "train low, compete high."
         </p>
         <p>
           The approach: perform some training sessions in a low-glycogen state (fasted early morning,
@@ -1105,7 +1105,7 @@ const posts: Record<string, LearnPost> = {
         </p>
         <ul>
           <li>Zone 2 sessions of 90 minutes or less can be performed fasted or in a low-carbohydrate state to enhance fat adaptation signals</li>
-          <li>High-intensity sessions should always be performed with full glycogen — compromised fuel availability at high intensity means compromised quality and adaptation</li>
+          <li>High-intensity sessions should always be performed with full glycogen, compromised fuel availability at high intensity means compromised quality and adaptation</li>
           <li>Long endurance sessions (3+ hours) should use full carbohydrate availability to support the volume without excessive fatigue</li>
         </ul>
 
@@ -1124,7 +1124,7 @@ const posts: Record<string, LearnPost> = {
         </p>
         <p>
           For ultradistance athletes racing at low relative intensity, fat oxidation can provide
-          a larger fraction of energy — which is why some ultramarathoners do benefit from more
+          a larger fraction of energy, which is why some ultramarathoners do benefit from more
           fat-focused dietary approaches. For marathon runners and faster distances, carbohydrate
           remains essential at race pace.
         </p>
@@ -1154,8 +1154,8 @@ const posts: Record<string, LearnPost> = {
           glycolytic enzyme activity in ways that persist.
         </p>
         <p>
-          For athletes competing at intensities above 70% VO2max — which includes most road running
-          events and cycling races — this trade-off is not advantageous. You gain fat oxidation
+          For athletes competing at intensities above 70% VO2max, which includes most road running
+          events and cycling races, this trade-off is not advantageous. You gain fat oxidation
           capacity you don't need at race pace while losing the glycolytic capacity you do need.
         </p>
         <p>
@@ -1165,7 +1165,7 @@ const posts: Record<string, LearnPost> = {
 
         <h2>Practical application with Jonno</h2>
         <p>
-          Jonno reads your Strava activity data and identifies training session types by intensity —
+          Jonno reads your Strava activity data and identifies training session types by intensity:
           Zone 2 sessions versus threshold versus intervals. Based on your session type, the agent
           adjusts your carbohydrate targets for the day accordingly:
         </p>
@@ -1218,7 +1218,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           Thirty to fifty percent of marathon runners experience significant gastrointestinal
           distress during races. In Ironman-distance triathletes, that figure exceeds 60%. GI
-          issues — nausea, cramping, bloating, diarrhoea, vomiting — are the leading cause of
+          issues, nausea, cramping, bloating, diarrhoea, vomiting, are the leading cause of
           athletes failing to execute their race-day nutrition plan, and one of the most common
           reasons for DNFs in ultra-distance events.
         </p>
@@ -1243,7 +1243,7 @@ const posts: Record<string, LearnPost> = {
         <p>
           <strong>Mechanical trauma:</strong> Running specifically creates repetitive vertical
           impact forces that literally jostle intestinal contents. This is why runners experience
-          significantly more GI distress than cyclists at comparable intensities — the mechanical
+          significantly more GI distress than cyclists at comparable intensities, the mechanical
           component is absent in cycling.
         </p>
         <p>
@@ -1261,13 +1261,13 @@ const posts: Record<string, LearnPost> = {
         <h2>The exercise-gut microbiome connection</h2>
         <p>
           Research over the past decade has established a clear relationship between exercise
-          and the gut microbiome — the community of trillions of microorganisms living in the
+          and the gut microbiome, the community of trillions of microorganisms living in the
           gastrointestinal tract.
         </p>
         <p>
           Elite endurance athletes have significantly more diverse gut microbiomes than sedentary
-          populations. They show enrichment of specific bacterial species — particularly
-          Akkermansia muciniphila, Faecalibacterium prausnitzii, and various Prevotella species —
+          populations. They show enrichment of specific bacterial species, particularly
+          Akkermansia muciniphila, Faecalibacterium prausnitzii, and various Prevotella species
           that are associated with improved metabolic efficiency, reduced inflammation, and better
           gut barrier function.
         </p>
@@ -1277,13 +1277,13 @@ const posts: Record<string, LearnPost> = {
           substrate utilisation during endurance exercise and faster recovery from hard efforts.
         </p>
         <p>
-          The practical implication: your dietary choices — not just your training — shape the gut
+          The practical implication: your dietary choices, not just your training, shape the gut
           ecosystem that determines how well you absorb nutrients during exercise.
         </p>
 
         <h2>Gut training: teaching your intestines to absorb more</h2>
         <p>
-          One of the most underutilised strategies in endurance sport is gut training — systematically
+          One of the most underutilised strategies in endurance sport is gut training, systematically
           practising consuming carbohydrates during exercise to train the gastrointestinal system
           to absorb and utilise them more efficiently.
         </p>
@@ -1303,7 +1303,7 @@ const posts: Record<string, LearnPost> = {
         </p>
         <ul>
           <li>Start with 30g/hour during long sessions and progressively increase over 6–8 weeks</li>
-          <li>Use the same products you plan to race with — gut training is product-specific</li>
+          <li>Use the same products you plan to race with, gut training is product-specific</li>
           <li>Practice on runs of 90+ minutes and rides of 2+ hours</li>
           <li>Train in heat conditions similar to your race to adapt to the temperature-gut interaction</li>
         </ul>
@@ -1314,11 +1314,11 @@ const posts: Record<string, LearnPost> = {
           the 2–6 hours before training or racing:
         </p>
         <ul>
-          <li><strong>High-fibre foods:</strong> Bran, beans, lentils, cruciferous vegetables, whole grains — these slow gastric emptying, increase bowel content, and often cause bloating and urgency during running</li>
+          <li><strong>High-fibre foods:</strong> Bran, beans, lentils, cruciferous vegetables, whole grains, these slow gastric emptying, increase bowel content, and often cause bloating and urgency during running</li>
           <li><strong>High-fat foods:</strong> Fat slows gastric emptying significantly. A high-fat pre-race meal means partially digested food sitting in the stomach during the event, causing nausea and GI distress</li>
           <li><strong>Spicy foods:</strong> Capsaicin directly increases gut motility and can trigger urgency and cramping during exercise</li>
           <li><strong>Fructose without glucose:</strong> Fructose in isolation (as in many fruit juices, agave) overwhelms the GLUT5 transporter, causing osmotic diarrhoea. Fructose consumed alongside glucose (2:1 ratio) uses a different transporter and is much better tolerated</li>
-          <li><strong>Artificial sweeteners:</strong> Sorbitol, xylitol, and other polyols are poorly absorbed and cause osmotic water drawing into the gut — a recipe for mid-race distress</li>
+          <li><strong>Artificial sweeteners:</strong> Sorbitol, xylitol, and other polyols are poorly absorbed and cause osmotic water drawing into the gut, a recipe for mid-race distress</li>
           <li><strong>Dairy (in some athletes):</strong> Lactose intolerance or high-fat dairy can cause significant GI issues during intense exercise</li>
         </ul>
 
@@ -1328,9 +1328,9 @@ const posts: Record<string, LearnPost> = {
         </p>
         <ul>
           <li><strong>Diverse plant foods:</strong> A variety of vegetables, fruits, and legumes (consumed away from training) feeds diverse beneficial bacteria. Aim for 30+ different plant foods per week.</li>
-          <li><strong>Fermented foods:</strong> Yoghurt, kefir, sauerkraut, kimchi, miso — these deliver live bacteria and support microbiome diversity. A 2021 Stanford study showed fermented foods outperformed high-fibre diets for increasing microbiome diversity.</li>
+          <li><strong>Fermented foods:</strong> Yoghurt, kefir, sauerkraut, kimchi, miso, these deliver live bacteria and support microbiome diversity. A 2021 Stanford study showed fermented foods outperformed high-fibre diets for increasing microbiome diversity.</li>
           <li><strong>Prebiotic fibre:</strong> Inulin, FOS (fructooligosaccharides), and resistant starch feed beneficial bacteria. Found in garlic, onion, asparagus, bananas, oats, and cooked-and-cooled potatoes.</li>
-          <li><strong>Polyphenol-rich foods:</strong> Blueberries, dark chocolate, green tea, olive oil — polyphenols are selectively metabolised by beneficial bacteria and inhibit pathogens.</li>
+          <li><strong>Polyphenol-rich foods:</strong> Blueberries, dark chocolate, green tea, olive oil, polyphenols are selectively metabolised by beneficial bacteria and inhibit pathogens.</li>
         </ul>
 
         <h2>Probiotics: what the evidence actually shows</h2>
@@ -1340,7 +1340,7 @@ const posts: Record<string, LearnPost> = {
         </p>
         <p>
           Meta-analyses show that specific probiotic strains reduce upper respiratory tract infection
-          duration and severity in athletes — a meaningful benefit given training-induced
+          duration and severity in athletes, a meaningful benefit given training-induced
           immunosuppression. The strains with the strongest evidence for immune support include
           Lactobacillus rhamnosus GG and Lactobacillus acidophilus NCFM.
         </p>
@@ -1364,10 +1364,10 @@ const posts: Record<string, LearnPost> = {
           <li>Reduce dietary fibre (shift from whole grains to white grains, reduce raw vegetables)</li>
           <li>Eliminate high-risk foods (spicy, high-fat, artificial sweeteners, new foods)</li>
           <li>Increase hydration to ensure you start the race well-hydrated</li>
-          <li>Avoid alcohol — it disrupts gut motility and sleep quality</li>
+          <li>Avoid alcohol, it disrupts gut motility and sleep quality</li>
           <li>Consume familiar, low-fibre carbohydrate sources (white rice, pasta, bread, bananas)</li>
           <li>On race morning: eat at least 2.5–3 hours before start time. Familiar food. Low fat, low fibre.</li>
-          <li>Give your body time for a bowel movement before the start — this requires waking early enough</li>
+          <li>Give your body time for a bowel movement before the start, this requires waking early enough</li>
         </ul>
 
         <h2>When to see a sports dietitian</h2>
