@@ -79,3 +79,53 @@ export interface AgentContext {
   last_activity_calories: number | null;
   last_activity_distance_m: number | null;
 }
+
+// ── Optimizer Types ───────────────────────────────────────────
+
+export interface TrainingDayFeature {
+  user_id: string;
+  day_date: string;
+  total_minutes: number;
+  run_minutes: number;
+  total_distance_km: number;
+  intensity_score: number; // 0–10
+  long_run_flag: boolean;
+  load_trend: -1 | 0 | 1;
+}
+
+export interface NutritionPreference {
+  user_id: string;
+  goal: "performance" | "cut" | "lean_bulk";
+  diet: "omnivore" | "veg" | "vegan" | "pesc";
+  allergies: string[];
+  dislikes: string[];
+  budget_level: "low" | "med" | "high";
+  cooking_time_level: "low" | "med" | "high";
+  meals_per_day: number;
+  timezone: string;
+}
+
+export interface PlanOutput {
+  id?: string;
+  user_id?: string;
+  start_date?: string;
+  end_date?: string;
+  targets: object[];   // DailyTargets[]
+  meal_plan: object;   // Record<date, MealOptimized[]>
+  grocery_list: object[]; // GroceryItem[]
+  rationale: string[];
+  created_at?: string;
+}
+
+export interface AdherenceFeedback {
+  id: string;
+  user_id: string;
+  plan_id: string | null;
+  day_date: string;
+  completion_score: number;
+  hunger_score: number;
+  energy_score: number;
+  meals_skipped: number;
+  notes: string | null;
+  created_at: string;
+}

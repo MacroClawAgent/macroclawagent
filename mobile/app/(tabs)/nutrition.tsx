@@ -1,22 +1,202 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import Colors from "@/constants/Colors";
+import { useEffect, useState, useCallback } from "react";
+import {
+  View, Text, StyleSheet, ScrollView, RefreshControl,
+  ActivityIndicator, TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/context/AuthContext";
+import { apiGet, apiPatch } from "@/lib/api";
 
-const C = Colors.light;
+interface NutritionData {
+  date: string;
+  calories_consumed: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  hydration_ml: number;
+}
 
-/** Nutrition tracking screen */
-export default function NutritionScreen() {
+interface Goals {
+  calorie_goal: number;
+  protein_goal: number;
+  carbs_goal: number;
+  fat_goal: number;
+}
+
+function MacroBar({
+  label, value, goal, color,
+}: { label: string; value: number; goal: number; color: string }) {
+  const pct = Math.min(1, goal > 0 ? value / goal : 0);
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Nutrition</Text>
-      <Text style={styles.sub}>Calorie and macro tracking coming soon.</Text>
-    </ScrollView>
+    <View style={bar.row}>
+      <View style={bar.labelRow}>
+        <Text style={bar.label}>{label}</Text>
+        <Text style={bar.value}>{value} <Text style={bar.goal}>/ {goal}</Text></Text>
+      </View>
+      <View style={bar.track}>
+        <View style={[bar.fill, { width: `${Math.round(pct * 100)}%`, backgroundColor: color }]} />
+      </View>
+    </View>
+  );
+}
+
+const bar = StyleSheet.create({
+  row: { gap: 6 },
+  labelRow: { flexDirection: "row", justifyContent: "space-between" },
+  label: { fontSize: 13, fontWeight: "600", color: "#6B7280" },
+  value: { fontSize: 13, fontWeight: "700", color: "#1C1C1E" },
+  goal: { fontWeight: "400", color: "#9CA3AF" },
+  track: { height: 8, backgroundColor: "#F3F4F6", borderRadius: 4, overflow: "hidden" },
+  fill: { height: 8, borderRadius: 4 },
+});
+
+const HYDRATION_STEPS = [250, 500, 750, 1000, 1500, 2000, 2500, 3000];
+
+export default function NutritionScreen() {
+  const { userProfile } = useAuth();
+  const [nutrition, setNutrition] = useState<NutritionData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [hydrationLoading, setHydrationLoading] = useState(false);
+
+  const goals: Goals = {
+    calorie_goal: userProfile?.calorie_goal ?? 2000,
+    protein_goal: userProfile?.protein_goal ?? 120,
+    carbs_goal: userProfile?.carbs_goal ?? 250,
+    fat_goal: userProfile?.fat_goal ?? 70,
+  };
+
+  async function fetchData() {
+    const res = await apiGet<{ log: NutritionData; goals: Goals }>("/api/nutrition/today");
+    setNutrition(res?.log ?? null);
+    setLoading(false);
+    setRefreshing(false);
+  }
+
+  useEffect(() => { fetchData(); }, []);
+
+  const onRefresh = useCallback(() => { setRefreshing(true); fetchData(); }, []);
+
+  async function addHydration(ml: number) {
+    setHydrationLoading(true);
+    const current = nutrition?.hydration_ml ?? 0;
+    await apiPatch("/api/nutrition/today", { hydration_ml: current + ml });
+    await fetchData();
+    setHydrationLoading(false);
+  }
+
+  const consumed = {
+    calories: nutrition?.calories_consumed ?? 0,
+    protein: Math.round(nutrition?.protein_g ?? 0),
+    carbs: Math.round(nutrition?.carbs_g ?? 0),
+    fat: Math.round(nutrition?.fat_g ?? 0),
+    hydration: nutrition?.hydration_ml ?? 0,
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator color="#0066EE" size="large" />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safe} edges={["top"]}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0066EE" />}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.heading}>Nutrition</Text>
+        <Text style={styles.date}>
+          {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+        </Text>
+
+        {/* Calorie summary */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Calories</Text>
+          <View style={styles.calorieRow}>
+            <View style={styles.calorieStat}>
+              <Text style={styles.calorieBig}>{consumed.calories}</Text>
+              <Text style={styles.calorieLabel}>eaten</Text>
+            </View>
+            <View style={styles.calorieDivider} />
+            <View style={styles.calorieStat}>
+              <Text style={[styles.calorieBig, { color: "#10B981" }]}>
+                {Math.max(0, goals.calorie_goal - consumed.calories)}
+              </Text>
+              <Text style={styles.calorieLabel}>remaining</Text>
+            </View>
+            <View style={styles.calorieDivider} />
+            <View style={styles.calorieStat}>
+              <Text style={styles.calorieBig}>{goals.calorie_goal}</Text>
+              <Text style={styles.calorieLabel}>goal</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Macro bars */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Macros</Text>
+          <View style={{ gap: 16 }}>
+            <MacroBar label="Protein" value={consumed.protein} goal={goals.protein_goal} color="#10B981" />
+            <MacroBar label="Carbs" value={consumed.carbs} goal={goals.carbs_goal} color="#F59E0B" />
+            <MacroBar label="Fat" value={consumed.fat} goal={goals.fat_goal} color="#6366F1" />
+          </View>
+        </View>
+
+        {/* Hydration */}
+        <View style={styles.card}>
+          <View style={styles.hydrationHeader}>
+            <Text style={styles.cardTitle}>Hydration</Text>
+            <Text style={styles.hydrationValue}>{consumed.hydration} ml</Text>
+          </View>
+          <Text style={styles.hydrationSub}>Log your water intake</Text>
+          <View style={styles.hydrationButtons}>
+            {[250, 500].map((ml) => (
+              <TouchableOpacity
+                key={ml}
+                style={styles.hydrationBtn}
+                onPress={() => addHydration(ml)}
+                disabled={hydrationLoading}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.hydrationBtnText}>+{ml}ml</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {!nutrition && (
+          <Text style={styles.emptyHint}>No nutrition data logged today. Meals will appear here once synced.</Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.background },
-  content: { padding: 24, gap: 8 },
-  heading: { fontSize: 24, fontWeight: "800", color: C.text },
-  sub: { fontSize: 15, color: C.textSecondary },
+  safe: { flex: 1, backgroundColor: "#F4F5F7" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F4F5F7" },
+  content: { padding: 20, gap: 16, paddingBottom: 40 },
+  heading: { fontSize: 26, fontWeight: "800", color: "#1C1C1E" },
+  date: { fontSize: 13, color: "#6B7280", marginTop: -8 },
+  card: { backgroundColor: "#FFFFFF", borderRadius: 20, padding: 20, borderWidth: 1, borderColor: "#E5E7EB", gap: 12 },
+  cardTitle: { fontSize: 13, fontWeight: "700", color: "#1C1C1E", textTransform: "uppercase", letterSpacing: 0.5 },
+  calorieRow: { flexDirection: "row", justifyContent: "space-around", alignItems: "center" },
+  calorieStat: { alignItems: "center", gap: 2 },
+  calorieBig: { fontSize: 28, fontWeight: "800", color: "#1C1C1E" },
+  calorieLabel: { fontSize: 11, color: "#9CA3AF", fontWeight: "500" },
+  calorieDivider: { width: 1, height: 40, backgroundColor: "#F3F4F6" },
+  hydrationHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  hydrationValue: { fontSize: 18, fontWeight: "800", color: "#0066EE" },
+  hydrationSub: { fontSize: 12, color: "#9CA3AF", marginTop: -8 },
+  hydrationButtons: { flexDirection: "row", gap: 10 },
+  hydrationBtn: {
+    flex: 1, backgroundColor: "#EFF6FF", borderRadius: 12,
+    paddingVertical: 12, alignItems: "center",
+  },
+  hydrationBtnText: { fontSize: 14, fontWeight: "700", color: "#0066EE" },
+  emptyHint: { fontSize: 13, color: "#9CA3AF", textAlign: "center", lineHeight: 20 },
 });

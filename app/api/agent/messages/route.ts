@@ -1,16 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import type { AgentMessage, AgentContext } from "@/types/database";
+import { callAgentChat } from "@/src/llm/gateway";
 
-const MOCK_REPLIES = [
-  "Based on your recent run, I recommend increasing protein by 30g today. I've found 3 options on Uber Eats that fit your macros — want me to add them to your cart?",
-  "I've generated your meal plan: Green Protein Bowl (breakfast), Quinoa Power Salad (lunch), and Salmon & Sweet Potato (dinner). Total: 1,640 kcal, 87g protein. Shall I order these?",
-  "This week you've burned 2,480 kcal across 4 activities. Your 7-day average is 620 kcal/session — 12% above last week. Great consistency!",
-  "For a $20 budget, I recommend the Grilled Chicken Bowl (42g protein, $12.50) or the Salmon Power Bowl (38g protein, $18.90). Both hit your macro targets.",
-  "Race day nutrition: 3g carbs/kg body weight pre-race, 30–60g carbs/hr during, 1.2g protein/kg post-race within 30 minutes. Want me to prep a specific plan?",
-];
+const FALLBACK_REPLY =
+  "I'm having trouble connecting right now. Try asking me again in a moment — I'm here to help with your nutrition and training!";
 
-let replyIndex = 0;
 
 /**
  * GET /api/agent/messages
@@ -96,9 +91,28 @@ export async function POST(request: NextRequest) {
       .single();
     if (userErr) throw userErr;
 
-    // Generate mock reply (rotate through 5 replies)
-    const reply = MOCK_REPLIES[replyIndex % MOCK_REPLIES.length];
-    replyIndex++;
+    // Call Claude via LLM gateway (scope-guarded, no raw Strava data)
+    const agentContext = {
+      today_calories: 0,
+      today_protein: 0,
+      calorie_goal: 2000,
+      protein_goal: 120,
+      last_activity_name: null as string | null,
+    };
+    // Fetch light context for reply
+    const today = new Date().toISOString().split("T")[0];
+    const [nutritionRes, goalsRes, lastActRes] = await Promise.all([
+      supabase.from("nutrition_logs").select("calories_consumed,protein_g").eq("user_id", user.id).eq("date", today).maybeSingle(),
+      supabase.from("users").select("calorie_goal,protein_goal").eq("id", user.id).single(),
+      supabase.from("activities").select("name").eq("user_id", user.id).order("started_at", { ascending: false }).limit(1).maybeSingle(),
+    ]);
+    agentContext.today_calories = nutritionRes.data?.calories_consumed ?? 0;
+    agentContext.today_protein = nutritionRes.data?.protein_g ?? 0;
+    agentContext.calorie_goal = goalsRes.data?.calorie_goal ?? 2000;
+    agentContext.protein_goal = goalsRes.data?.protein_goal ?? 120;
+    agentContext.last_activity_name = lastActRes.data?.name ?? null;
+
+    const reply = await callAgentChat(content, agentContext).catch(() => FALLBACK_REPLY);
 
     // Save assistant reply
     const { data: assistantMsg, error: assistantErr } = await supabase
