@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { createClient, createClientFromToken, getBearerToken } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   getValidAccessToken,
   fetchStravaActivities,
@@ -9,11 +9,15 @@ import {
 /**
  * POST /api/strava/sync
  * Syncs the authenticated user's latest Strava activities into public.activities.
+ * Supports both cookie-based (web) and Bearer token (mobile) authentication.
  * Auto-refreshes the access token if expired.
  */
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
+    const bearerToken = getBearerToken(req);
+    const supabase = bearerToken
+      ? createClientFromToken(bearerToken)
+      : await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

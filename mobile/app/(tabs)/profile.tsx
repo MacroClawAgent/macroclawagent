@@ -1,6 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Linking from "expo-linking";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { apiGet } from "@/lib/api";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -13,6 +16,19 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 export default function ProfileScreen() {
   const { userProfile, signOut, session } = useAuth();
+  const [connectingStrava, setConnectingStrava] = useState(false);
+
+  async function handleConnectStrava() {
+    try {
+      setConnectingStrava(true);
+      const { url } = await apiGet<{ url: string }>("/api/strava/mobile-init");
+      await Linking.openURL(url);
+    } catch (err) {
+      Alert.alert("Error", "Could not start Strava connection. Please try again.");
+    } finally {
+      setConnectingStrava(false);
+    }
+  }
 
   async function handleSignOut() {
     Alert.alert("Sign out", "Are you sure you want to sign out?", [
@@ -82,7 +98,18 @@ export default function ProfileScreen() {
             </View>
           </View>
           {!userProfile?.strava_athlete_id && (
-            <Text style={styles.stravaHint}>Connect Strava at jonnoai.com to sync your training data.</Text>
+            <TouchableOpacity
+              style={styles.stravaButton}
+              onPress={handleConnectStrava}
+              disabled={connectingStrava}
+              activeOpacity={0.8}
+            >
+              {connectingStrava ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.stravaButtonText}>Connect Strava</Text>
+              )}
+            </TouchableOpacity>
           )}
         </View>
 
@@ -116,7 +143,14 @@ const styles = StyleSheet.create({
   badge: { fontSize: 12, fontWeight: "700", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   badgeConnected: { backgroundColor: "rgba(16,185,129,0.12)", color: "#10B981" },
   badgeOff: { backgroundColor: "#F4F5F7", color: "#9CA3AF" },
-  stravaHint: { fontSize: 11, color: "#9CA3AF", paddingHorizontal: 4, lineHeight: 16 },
+  stravaButton: {
+    backgroundColor: "#FC4C02",
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: "center",
+    marginTop: 4,
+  },
+  stravaButtonText: { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
   signOutButton: {
     backgroundColor: "#FFFFFF", borderRadius: 14, paddingVertical: 16,
     alignItems: "center", borderWidth: 1, borderColor: "#FCA5A5", marginTop: 8,

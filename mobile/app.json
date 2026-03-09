@@ -13,9 +13,11 @@
       "backgroundColor": "#0066EE"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jonnoai.app"
     },
     "android": {
+      "package": "com.jonnoai.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

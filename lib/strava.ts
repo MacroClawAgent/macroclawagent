@@ -46,6 +46,10 @@ export interface ActivityInsert {
 // ── Auth URL ──────────────────────────────────────────────────────────────────
 
 export function getStravaAuthUrl(): string {
+  return getStravaAuthUrlWithState(undefined);
+}
+
+export function getStravaAuthUrlWithState(state: string | undefined): string {
   const clientId = process.env.STRAVA_CLIENT_ID;
   if (!clientId) {
     throw new Error("STRAVA_CLIENT_ID is not configured — add it to Vercel environment variables.");
@@ -59,6 +63,7 @@ export function getStravaAuthUrl(): string {
     approval_prompt: "auto",
     scope: "activity:read_all",
   });
+  if (state) params.set("state", state);
   return `https://www.strava.com/oauth/authorize?${params.toString()}`;
 }
 

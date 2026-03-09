@@ -41,6 +41,17 @@ export function createClientFromToken(token: string) {
 }
 
 /**
+ * Creates a Supabase admin client using the service role key.
+ * Only use server-side; never expose to client.
+ */
+export function createServiceRoleClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
+
+/**
  * Extracts the Bearer token from an Authorization header, or null if absent.
  */
 export function getBearerToken(req: NextRequest): string | null {
