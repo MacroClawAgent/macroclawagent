@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
-  ActivityIndicator, TouchableOpacity,
+  ActivityIndicator, TouchableOpacity, Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Linking from "expo-linking";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { apiGet } from "@/lib/api";
 import { MacroRing } from "@/components/MacroRing";
 import { StatCard } from "@/components/StatCard";
 import { NutritionLog, ActivityRow } from "@/types";
@@ -42,6 +44,19 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const firstName = userProfile?.full_name?.split(" ")[0] ?? "Athlete";
+  const [connectingStrava, setConnectingStrava] = useState(false);
+
+  async function handleConnectStrava() {
+    try {
+      setConnectingStrava(true);
+      const { url } = await apiGet<{ url: string }>("/api/strava/mobile-init");
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Error", "Could not start Strava connection. Try again from Profile.");
+    } finally {
+      setConnectingStrava(false);
+    }
+  }
 
   async function fetchData() {
     if (!userProfile) return;
@@ -116,6 +131,27 @@ export default function DashboardScreen() {
             <Text style={styles.avatarText}>{firstName[0]?.toUpperCase()}</Text>
           </View>
         </View>
+
+        {/* Strava connect nudge */}
+        {!userProfile?.strava_athlete_id && (
+          <TouchableOpacity
+            style={styles.stravaCard}
+            onPress={handleConnectStrava}
+            disabled={connectingStrava}
+            activeOpacity={0.85}
+          >
+            <View style={styles.stravaLeft}>
+              <Text style={styles.stravaIcon}>🏃</Text>
+              <View>
+                <Text style={styles.stravaTitle}>Sync your training</Text>
+                <Text style={styles.stravaSub}>Connect Strava to personalise your nutrition</Text>
+              </View>
+            </View>
+            {connectingStrava
+              ? <ActivityIndicator size="small" color="#FFFFFF" />
+              : <Text style={styles.stravaArrow}>→</Text>}
+          </TouchableOpacity>
+        )}
 
         {/* Macro rings */}
         <View style={styles.card}>
@@ -218,6 +254,19 @@ const styles = StyleSheet.create({
   emptyActivity: { gap: 4 },
   emptyActivityText: { fontSize: 14, fontWeight: "600", color: "rgba(245,245,247,0.55)" },
   emptyActivityHint: { fontSize: 12, color: "rgba(245,245,247,0.35)", lineHeight: 18 },
+  stravaCard: {
+    backgroundColor: "#FC4C02",
+    borderRadius: 18,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  stravaLeft: { flexDirection: "row", alignItems: "center", gap: 14, flex: 1 },
+  stravaIcon: { fontSize: 26 },
+  stravaTitle: { fontSize: 15, fontWeight: "800", color: "#FFFFFF" },
+  stravaSub: { fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 2, lineHeight: 16 },
+  stravaArrow: { fontSize: 20, color: "#FFFFFF", fontWeight: "700" },
   agentCard: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     padding: 18, borderRadius: 18, backgroundColor: "#D4FF00",
