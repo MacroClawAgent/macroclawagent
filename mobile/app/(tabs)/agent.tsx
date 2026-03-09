@@ -125,19 +125,31 @@ export default function AgentScreen() {
     };
     setMessages((prev) => [...prev, optimisticMsg]);
 
-    const res = await apiPost<{ userMessage: Message; assistantMessage: Message }>(
-      "/api/agent/messages",
-      { content: text }
-    );
-
-    setSending(false);
-
-    if (res?.userMessage && res?.assistantMessage) {
+    try {
+      const res = await apiPost<{ userMessage: Message; assistantMessage: Message }>(
+        "/api/agent/messages",
+        { content: text }
+      );
+      if (res?.userMessage && res?.assistantMessage) {
+        setMessages((prev) => [
+          ...prev.filter((m) => m.id !== tempId),
+          res.userMessage,
+          res.assistantMessage,
+        ]);
+      }
+    } catch {
       setMessages((prev) => [
         ...prev.filter((m) => m.id !== tempId),
-        res.userMessage,
-        res.assistantMessage,
+        optimisticMsg,
+        {
+          id: `err-${Date.now()}`,
+          role: "assistant",
+          content: "I'm having trouble connecting right now. Check your connection and try again.",
+          created_at: new Date().toISOString(),
+        },
       ]);
+    } finally {
+      setSending(false);
     }
   }
 
