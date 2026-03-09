@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
   ActivityIndicator, TouchableOpacity, Alert,
@@ -6,11 +6,54 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import { apiGet } from "@/lib/api";
 import { MacroRing } from "@/components/MacroRing";
 import { StatCard } from "@/components/StatCard";
 import { NutritionLog, ActivityRow } from "@/types";
+import { AppColors } from "@/theme/colors";
+
+function createStyles(c: AppColors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.bg },
+    loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: c.bg },
+    scroll: { flex: 1 },
+    content: { padding: 20, gap: 16, paddingBottom: 40 },
+    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 },
+    greetingText: { fontSize: 22, fontWeight: "800", color: c.text },
+    date: { fontSize: 13, color: c.muted, marginTop: 2 },
+    avatarBadge: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.primary, justifyContent: "center", alignItems: "center" },
+    avatarText: { fontSize: 16, fontWeight: "800", color: c.primaryText },
+    card: { backgroundColor: c.card, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: c.border, gap: 16 },
+    cardTitle: { fontSize: 14, fontWeight: "700", color: c.text },
+    ringsRow: { flexDirection: "row", justifyContent: "space-between" },
+    emptyHint: { fontSize: 12, color: c.mutedMore, textAlign: "center" },
+    statsRow: { flexDirection: "row", gap: 12 },
+    activityRow: { flexDirection: "row", alignItems: "center", gap: 14 },
+    activityIcon: { width: 48, height: 48, borderRadius: 14, backgroundColor: c.inputBg, justifyContent: "center", alignItems: "center" },
+    activityEmoji: { fontSize: 22 },
+    activityInfo: { flex: 1, gap: 4 },
+    activityName: { fontSize: 14, fontWeight: "700", color: c.text },
+    activityMeta: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+    activityStat: { fontSize: 12, color: c.muted, backgroundColor: c.inputBg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+    emptyActivity: { gap: 4 },
+    emptyActivityText: { fontSize: 14, fontWeight: "600", color: c.muted },
+    emptyActivityHint: { fontSize: 12, color: c.mutedMore, lineHeight: 18 },
+    stravaCard: { backgroundColor: "#FC4C02", borderRadius: 18, padding: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+    stravaLeft: { flexDirection: "row", alignItems: "center", gap: 14, flex: 1 },
+    stravaIcon: { fontSize: 26 },
+    stravaTitle: { fontSize: 15, fontWeight: "800", color: "#FFFFFF" },
+    stravaSub: { fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 2, lineHeight: 16 },
+    stravaArrow: { fontSize: 20, color: "#FFFFFF", fontWeight: "700" },
+    agentCard: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 18, borderRadius: 18, backgroundColor: c.primary },
+    agentLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
+    agentEmoji: { fontSize: 20, color: c.primaryText },
+    agentTitle: { fontSize: 15, fontWeight: "800", color: c.primaryText },
+    agentSub: { fontSize: 12, color: c.primaryText, opacity: 0.6, marginTop: 1 },
+    agentArrow: { fontSize: 18, color: c.primaryText, fontWeight: "700" },
+  });
+}
 
 function formatDuration(seconds: number) {
   const h = Math.floor(seconds / 3600);
@@ -38,6 +81,8 @@ function greeting() {
 
 export default function DashboardScreen() {
   const { userProfile } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [nutrition, setNutrition] = useState<NutritionLog | null>(null);
   const [activity, setActivity] = useState<ActivityRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,7 +151,7 @@ export default function DashboardScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator color="#D4FF00" size="large" />
+        <ActivityIndicator color={colors.primary} size="large" />
       </SafeAreaView>
     );
   }
@@ -229,51 +274,3 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#0B0B0B" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0B0B0B" },
-  scroll: { flex: 1 },
-  content: { padding: 20, gap: 16, paddingBottom: 40 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 },
-  greetingText: { fontSize: 22, fontWeight: "800", color: "#F5F5F7" },
-  date: { fontSize: 13, color: "rgba(245,245,247,0.55)", marginTop: 2 },
-  avatarBadge: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#D4FF00", justifyContent: "center", alignItems: "center" },
-  avatarText: { fontSize: 16, fontWeight: "800", color: "#0B0B0B" },
-  card: { backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 20, padding: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", gap: 16 },
-  cardTitle: { fontSize: 14, fontWeight: "700", color: "#F5F5F7" },
-  ringsRow: { flexDirection: "row", justifyContent: "space-between" },
-  emptyHint: { fontSize: 12, color: "rgba(245,245,247,0.35)", textAlign: "center" },
-  statsRow: { flexDirection: "row", gap: 12 },
-  activityRow: { flexDirection: "row", alignItems: "center", gap: 14 },
-  activityIcon: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#0B0B0B", justifyContent: "center", alignItems: "center" },
-  activityEmoji: { fontSize: 22 },
-  activityInfo: { flex: 1, gap: 4 },
-  activityName: { fontSize: 14, fontWeight: "700", color: "#F5F5F7" },
-  activityMeta: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
-  activityStat: { fontSize: 12, color: "rgba(245,245,247,0.55)", backgroundColor: "#0B0B0B", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  emptyActivity: { gap: 4 },
-  emptyActivityText: { fontSize: 14, fontWeight: "600", color: "rgba(245,245,247,0.55)" },
-  emptyActivityHint: { fontSize: 12, color: "rgba(245,245,247,0.35)", lineHeight: 18 },
-  stravaCard: {
-    backgroundColor: "#FC4C02",
-    borderRadius: 18,
-    padding: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  stravaLeft: { flexDirection: "row", alignItems: "center", gap: 14, flex: 1 },
-  stravaIcon: { fontSize: 26 },
-  stravaTitle: { fontSize: 15, fontWeight: "800", color: "#FFFFFF" },
-  stravaSub: { fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 2, lineHeight: 16 },
-  stravaArrow: { fontSize: 20, color: "#FFFFFF", fontWeight: "700" },
-  agentCard: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    padding: 18, borderRadius: 18, backgroundColor: "#D4FF00",
-  },
-  agentLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
-  agentEmoji: { fontSize: 20, color: "#0B0B0B" },
-  agentTitle: { fontSize: 15, fontWeight: "800", color: "#0B0B0B" },
-  agentSub: { fontSize: 12, color: "rgba(0,0,0,0.55)", marginTop: 1 },
-  agentArrow: { fontSize: 18, color: "#0B0B0B", fontWeight: "700" },
-});

@@ -2,7 +2,7 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { SymbolView } from "expo-symbols";
-import Colors from "@/constants/Colors";
+import { useTheme } from "@/context/ThemeContext";
 
 // Tab icon helper — wraps SymbolView with cross-platform SF Symbol / Material icon names
 function TabIcon({
@@ -25,19 +25,18 @@ function TabIcon({
   );
 }
 
-const C = Colors.light;
-
 export default function TabLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: C.tint,
-        tabBarInactiveTintColor: C.tabIconDefault,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.mutedMore,
         tabBarStyle: {
-          backgroundColor: C.tabBarBackground,
-          borderTopColor: C.border,
+          backgroundColor: colors.bg,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
-          // Slight elevation on Android
           elevation: 8,
         },
         tabBarLabelStyle: {
@@ -46,8 +45,8 @@ export default function TabLayout() {
           marginBottom: Platform.OS === "ios" ? 0 : 4,
         },
         headerStyle: {
-          backgroundColor: C.background,
-          borderBottomColor: C.border,
+          backgroundColor: colors.bg,
+          borderBottomColor: colors.border,
           borderBottomWidth: 1,
           elevation: 0,
           shadowOpacity: 0,
@@ -55,7 +54,7 @@ export default function TabLayout() {
         headerTitleStyle: {
           fontWeight: "800",
           fontSize: 17,
-          color: C.text,
+          color: colors.text,
         },
       }}
     >
@@ -104,13 +103,13 @@ export default function TabLayout() {
         }}
       />
 
-      {/* ── Profile ── */}
+      {/* ── Settings ── */}
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: "Settings",
           tabBarIcon: ({ color }) => (
-            <TabIcon iosName="person.fill" androidName="person" color={color} />
+            <TabIcon iosName="gearshape.fill" androidName="settings" color={color} />
           ),
         }}
       />

@@ -1,13 +1,14 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { createClient, createClientFromToken } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * DELETE /api/strava/disconnect
  * Removes the user's stored Strava tokens and athlete ID.
  */
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
   try {
-    const supabase = await createClient();
+    const bearer = req.headers.get("authorization")?.replace("Bearer ", "");
+    const supabase = bearer ? await createClientFromToken(bearer) : await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

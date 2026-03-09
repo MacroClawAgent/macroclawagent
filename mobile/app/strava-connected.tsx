@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { apiPost } from "@/lib/api";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 /**
  * jonno://strava-connected
@@ -10,21 +10,18 @@ import { supabase } from "@/lib/supabase";
  * Triggers a background activity sync, then navigates to the profile tab.
  */
 export default function StravaConnectedScreen() {
+  const { refreshProfile } = useAuth();
+
   useEffect(() => {
     (async () => {
       try {
-        // Sync latest activities in background (non-fatal if it fails)
         await apiPost("/api/strava/sync", {});
       } catch {
-        // Best-effort — token was already saved server-side
+        // Best-effort — tokens already saved server-side
       }
 
-      try {
-        // Refresh local session so strava_athlete_id is visible in profile
-        await supabase.auth.refreshSession();
-      } catch {
-        // Non-fatal
-      }
+      // Re-fetch user profile so strava_athlete_id updates in context
+      await refreshProfile();
 
       router.replace("/(tabs)/profile");
     })();
