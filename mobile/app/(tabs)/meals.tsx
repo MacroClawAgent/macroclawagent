@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
   ActivityIndicator, TouchableOpacity, Modal, FlatList,
@@ -6,6 +6,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { apiGet, apiPost } from "@/lib/api";
 import { getCache, setCache, clearCache } from "@/lib/cache";
+import { useTheme } from "@/context/ThemeContext";
+import { AppColors } from "@/theme/colors";
 
 const PLAN_CACHE_KEY = "mealplan:7d";
 const PLAN_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hours
@@ -69,7 +71,41 @@ const mcard = StyleSheet.create({
   chipText: { fontSize: 11, fontWeight: "700" },
 });
 
+function createStyles(c: AppColors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.bg },
+    loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: c.bg },
+    content: { padding: 20, gap: 16, paddingBottom: 40 },
+    headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+    heading: { fontSize: 26, fontWeight: "800", color: c.text },
+    refreshBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: c.inputBg, alignItems: "center", justifyContent: "center" },
+    refreshIcon: { fontSize: 18, color: c.muted },
+    groceryBtn: { backgroundColor: c.primaryAlpha, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
+    groceryBtnText: { fontSize: 13, fontWeight: "700", color: c.primary },
+    emptyState: { alignItems: "center", gap: 12, paddingVertical: 40 },
+    emptyTitle: { fontSize: 20, fontWeight: "800", color: c.text },
+    emptySub: { fontSize: 14, color: c.muted, textAlign: "center", lineHeight: 20 },
+    generateBtn: { backgroundColor: c.primary, paddingHorizontal: 32, paddingVertical: 16, borderRadius: 16 },
+    generateBtnText: { color: c.primaryText, fontWeight: "800", fontSize: 16 },
+    summaryCard: { backgroundColor: c.primaryAlpha, borderRadius: 16, padding: 16 },
+    summaryText: { fontSize: 14, color: c.text, lineHeight: 20 },
+    dayScroll: { marginHorizontal: -20, paddingHorizontal: 20 },
+    dayRow: { flexDirection: "row", gap: 8, paddingRight: 20 },
+    dayChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: c.card, borderWidth: 1, borderColor: c.border },
+    dayChipActive: { backgroundColor: c.primary, borderColor: c.primary },
+    dayChipText: { fontSize: 13, fontWeight: "600", color: c.muted },
+    dayChipTextActive: { color: c.primaryText },
+    mealsSection: { gap: 12 },
+    noMeals: { fontSize: 14, color: c.mutedMore, textAlign: "center" },
+    regenBtn: { backgroundColor: c.card, borderRadius: 14, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: c.border },
+    regenBtnText: { color: c.primary, fontWeight: "700", fontSize: 14 },
+  });
+}
+
 export default function MealsScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -126,7 +162,7 @@ export default function MealsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator color="#D4FF00" size="large" />
+        <ActivityIndicator color={colors.primary} size="large" />
       </SafeAreaView>
     );
   }
@@ -135,7 +171,7 @@ export default function MealsScreen() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4FF00" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
@@ -222,7 +258,7 @@ export default function MealsScreen() {
               activeOpacity={0.85}
             >
               {generating
-                ? <ActivityIndicator color="#D4FF00" size="small" />
+                ? <ActivityIndicator color={colors.primary} size="small" />
                 : <Text style={styles.regenBtnText}>Regenerate Plan</Text>}
             </TouchableOpacity>
           </>
@@ -283,35 +319,6 @@ export default function MealsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#0B0B0B" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0B0B0B" },
-  content: { padding: 20, gap: 16, paddingBottom: 40 },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
-  heading: { fontSize: 26, fontWeight: "800", color: "#F5F5F7" },
-  refreshBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#0B0B0B", alignItems: "center", justifyContent: "center" },
-  refreshIcon: { fontSize: 18, color: "rgba(245,245,247,0.55)" },
-  groceryBtn: { backgroundColor: "rgba(212,255,0,0.1)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  groceryBtnText: { fontSize: 13, fontWeight: "700", color: "#D4FF00" },
-  emptyState: { alignItems: "center", gap: 12, paddingVertical: 40 },
-  emptyTitle: { fontSize: 20, fontWeight: "800", color: "#F5F5F7" },
-  emptySub: { fontSize: 14, color: "rgba(245,245,247,0.55)", textAlign: "center", lineHeight: 20 },
-  generateBtn: { backgroundColor: "#D4FF00", paddingHorizontal: 32, paddingVertical: 16, borderRadius: 16 },
-  generateBtnText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
-  summaryCard: { backgroundColor: "rgba(212,255,0,0.1)", borderRadius: 16, padding: 16 },
-  summaryText: { fontSize: 14, color: "#F5F5F7", lineHeight: 20 },
-  dayScroll: { marginHorizontal: -20, paddingHorizontal: 20 },
-  dayRow: { flexDirection: "row", gap: 8, paddingRight: 20 },
-  dayChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
-  dayChipActive: { backgroundColor: "#D4FF00", borderColor: "#D4FF00" },
-  dayChipText: { fontSize: 13, fontWeight: "600", color: "rgba(245,245,247,0.55)" },
-  dayChipTextActive: { color: "#FFFFFF" },
-  mealsSection: { gap: 12 },
-  noMeals: { fontSize: 14, color: "rgba(245,245,247,0.35)", textAlign: "center" },
-  regenBtn: { backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 14, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
-  regenBtnText: { color: "#D4FF00", fontWeight: "700", fontSize: 14 },
-});
 
 const modal = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },

@@ -1,10 +1,12 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   FlatList, KeyboardAvoidingView, Platform, ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { apiGet, apiPost } from "@/lib/api";
+import { useTheme } from "@/context/ThemeContext";
+import { AppColors } from "@/theme/colors";
 
 interface Message {
   id: string;
@@ -48,7 +50,47 @@ const WELCOME: Message = {
   created_at: new Date().toISOString(),
 };
 
+function createStyles(c: AppColors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.bg },
+    flex: { flex: 1 },
+    loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+    header: {
+      flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+      paddingHorizontal: 20, paddingVertical: 12,
+      backgroundColor: c.card, borderBottomWidth: 1, borderBottomColor: c.border,
+    },
+    headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+    jonnoAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: c.primary, justifyContent: "center", alignItems: "center" },
+    jonnoAvatarText: { fontSize: 16, color: c.primaryText },
+    headerTitle: { fontSize: 16, fontWeight: "800", color: c.text },
+    headerSub: { fontSize: 11, color: c.mutedMore },
+    scopeBadge: { backgroundColor: "rgba(16,185,129,0.15)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+    scopeText: { fontSize: 11, fontWeight: "700", color: "#10B981" },
+    messageList: { paddingTop: 12, paddingBottom: 8 },
+    inputRow: {
+      flexDirection: "row", alignItems: "flex-end", gap: 8,
+      padding: 12, paddingBottom: 20,
+      backgroundColor: c.card, borderTopWidth: 1, borderTopColor: c.border,
+    },
+    input: {
+      flex: 1, minHeight: 40, maxHeight: 100,
+      backgroundColor: c.inputBg, borderRadius: 20,
+      paddingHorizontal: 16, paddingVertical: 10,
+      fontSize: 14, color: c.text,
+    },
+    sendBtn: {
+      width: 40, height: 40, borderRadius: 20,
+      backgroundColor: c.primary, justifyContent: "center", alignItems: "center",
+    },
+    sendBtnDisabled: { opacity: 0.4 },
+    sendBtnText: { color: c.primaryText, fontSize: 18, fontWeight: "700" },
+  });
+}
+
 export default function AgentScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -131,7 +173,7 @@ export default function AgentScreen() {
         {/* Messages */}
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator color="#D4FF00" />
+            <ActivityIndicator color={colors.primary} />
           </View>
         ) : (
           <FlatList
@@ -164,7 +206,7 @@ export default function AgentScreen() {
             value={input}
             onChangeText={setInput}
             placeholder="Ask Jonno about nutrition..."
-            placeholderTextColor="rgba(245,245,247,0.35)"
+            placeholderTextColor={colors.mutedMore}
             returnKeyType="send"
             onSubmitEditing={send}
             multiline
@@ -184,38 +226,3 @@ export default function AgentScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#0B0B0B" },
-  flex: { flex: 1 },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  header: {
-    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    paddingHorizontal: 20, paddingVertical: 12,
-    backgroundColor: "rgba(255,255,255,0.07)", borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.1)",
-  },
-  headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  jonnoAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#D4FF00", justifyContent: "center", alignItems: "center" },
-  jonnoAvatarText: { fontSize: 16, color: "#0B0B0B" },
-  headerTitle: { fontSize: 16, fontWeight: "800", color: "#F5F5F7" },
-  headerSub: { fontSize: 11, color: "rgba(245,245,247,0.35)" },
-  scopeBadge: { backgroundColor: "rgba(16,185,129,0.15)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  scopeText: { fontSize: 11, fontWeight: "700", color: "#10B981" },
-  messageList: { paddingTop: 12, paddingBottom: 8 },
-  inputRow: {
-    flexDirection: "row", alignItems: "flex-end", gap: 8,
-    padding: 12, paddingBottom: 20,
-    backgroundColor: "rgba(255,255,255,0.07)", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.1)",
-  },
-  input: {
-    flex: 1, minHeight: 40, maxHeight: 100,
-    backgroundColor: "#0B0B0B", borderRadius: 20,
-    paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 14, color: "#F5F5F7",
-  },
-  sendBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: "#D4FF00", justifyContent: "center", alignItems: "center",
-  },
-  sendBtnDisabled: { opacity: 0.4 },
-  sendBtnText: { color: "#0B0B0B", fontSize: 18, fontWeight: "700" },
-});

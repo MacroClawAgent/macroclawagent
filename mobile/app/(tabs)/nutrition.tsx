@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
   ActivityIndicator, TouchableOpacity,
@@ -6,6 +6,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { apiGet, apiPatch } from "@/lib/api";
+import { useTheme } from "@/context/ThemeContext";
+import { AppColors } from "@/theme/colors";
 
 interface NutritionData {
   date: string;
@@ -52,7 +54,36 @@ const bar = StyleSheet.create({
 
 const HYDRATION_STEPS = [250, 500, 750, 1000, 1500, 2000, 2500, 3000];
 
+function createStyles(c: AppColors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.bg },
+    loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: c.bg },
+    content: { padding: 20, gap: 16, paddingBottom: 40 },
+    heading: { fontSize: 26, fontWeight: "800", color: c.text },
+    date: { fontSize: 13, color: c.muted, marginTop: -8 },
+    card: { backgroundColor: c.card, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: c.border, gap: 12 },
+    cardTitle: { fontSize: 13, fontWeight: "700", color: c.text, textTransform: "uppercase", letterSpacing: 0.5 },
+    calorieRow: { flexDirection: "row", justifyContent: "space-around", alignItems: "center" },
+    calorieStat: { alignItems: "center", gap: 2 },
+    calorieBig: { fontSize: 28, fontWeight: "800", color: c.text },
+    calorieLabel: { fontSize: 11, color: c.mutedMore, fontWeight: "500" },
+    calorieDivider: { width: 1, height: 40, backgroundColor: c.bg },
+    hydrationHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    hydrationValue: { fontSize: 18, fontWeight: "800", color: c.primary },
+    hydrationSub: { fontSize: 12, color: c.mutedMore, marginTop: -8 },
+    hydrationButtons: { flexDirection: "row", gap: 10 },
+    hydrationBtn: {
+      flex: 1, backgroundColor: c.primaryAlpha, borderRadius: 12,
+      paddingVertical: 12, alignItems: "center",
+    },
+    hydrationBtnText: { fontSize: 14, fontWeight: "700", color: c.primary },
+    emptyHint: { fontSize: 13, color: c.mutedMore, textAlign: "center", lineHeight: 20 },
+  });
+}
+
 export default function NutritionScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { userProfile } = useAuth();
   const [nutrition, setNutrition] = useState<NutritionData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,7 +132,7 @@ export default function NutritionScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator color="#D4FF00" size="large" />
+        <ActivityIndicator color={colors.primary} size="large" />
       </SafeAreaView>
     );
   }
@@ -110,7 +141,7 @@ export default function NutritionScreen() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4FF00" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.heading}>Nutrition</Text>
@@ -181,27 +212,3 @@ export default function NutritionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#0B0B0B" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0B0B0B" },
-  content: { padding: 20, gap: 16, paddingBottom: 40 },
-  heading: { fontSize: 26, fontWeight: "800", color: "#F5F5F7" },
-  date: { fontSize: 13, color: "rgba(245,245,247,0.55)", marginTop: -8 },
-  card: { backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 20, padding: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", gap: 12 },
-  cardTitle: { fontSize: 13, fontWeight: "700", color: "#F5F5F7", textTransform: "uppercase", letterSpacing: 0.5 },
-  calorieRow: { flexDirection: "row", justifyContent: "space-around", alignItems: "center" },
-  calorieStat: { alignItems: "center", gap: 2 },
-  calorieBig: { fontSize: 28, fontWeight: "800", color: "#F5F5F7" },
-  calorieLabel: { fontSize: 11, color: "rgba(245,245,247,0.35)", fontWeight: "500" },
-  calorieDivider: { width: 1, height: 40, backgroundColor: "#0B0B0B" },
-  hydrationHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  hydrationValue: { fontSize: 18, fontWeight: "800", color: "#D4FF00" },
-  hydrationSub: { fontSize: 12, color: "rgba(245,245,247,0.35)", marginTop: -8 },
-  hydrationButtons: { flexDirection: "row", gap: 10 },
-  hydrationBtn: {
-    flex: 1, backgroundColor: "rgba(212,255,0,0.1)", borderRadius: 12,
-    paddingVertical: 12, alignItems: "center",
-  },
-  hydrationBtnText: { fontSize: 14, fontWeight: "700", color: "#D4FF00" },
-  emptyHint: { fontSize: 13, color: "rgba(245,245,247,0.35)", textAlign: "center", lineHeight: 20 },
-});
