@@ -16,16 +16,24 @@ interface Message {
 }
 
 function MessageBubble({ message }: { message: Message }) {
+  const { colors } = useTheme();
   const isUser = message.role === "user";
   return (
     <View style={[bubble.row, isUser && bubble.rowUser]}>
       {!isUser && (
-        <View style={bubble.avatar}>
-          <Text style={bubble.avatarText}>✦</Text>
+        <View style={[bubble.avatar, { backgroundColor: colors.primary }]}>
+          <Text style={[bubble.avatarText, { color: colors.primaryText }]}>✦</Text>
         </View>
       )}
-      <View style={[bubble.bubble, isUser ? bubble.userBubble : bubble.assistantBubble]}>
-        <Text style={[bubble.text, isUser && bubble.userText]}>{message.content}</Text>
+      <View style={[
+        bubble.bubble,
+        isUser
+          ? { backgroundColor: colors.primary, borderBottomRightRadius: 4 }
+          : { backgroundColor: colors.card, borderBottomLeftRadius: 4 },
+      ]}>
+        <Text style={[bubble.text, { color: isUser ? colors.primaryText : colors.text }]}>
+          {message.content}
+        </Text>
       </View>
     </View>
   );
@@ -34,13 +42,10 @@ function MessageBubble({ message }: { message: Message }) {
 const bubble = StyleSheet.create({
   row: { flexDirection: "row", gap: 8, paddingHorizontal: 16, marginVertical: 4, alignItems: "flex-end" },
   rowUser: { justifyContent: "flex-end" },
-  avatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#D4FF00", justifyContent: "center", alignItems: "center", marginBottom: 2 },
-  avatarText: { fontSize: 12, color: "#0B0B0B" },
+  avatar: { width: 28, height: 28, borderRadius: 14, justifyContent: "center", alignItems: "center", marginBottom: 2 },
+  avatarText: { fontSize: 12 },
   bubble: { maxWidth: "78%", borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10 },
-  userBubble: { backgroundColor: "#D4FF00", borderBottomRightRadius: 4 },
-  assistantBubble: { backgroundColor: "rgba(255,255,255,0.07)", borderBottomLeftRadius: 4 },
-  text: { fontSize: 14, lineHeight: 20, color: "#F5F5F7" },
-  userText: { color: "#0B0B0B" },
+  text: { fontSize: 14, lineHeight: 20 },
 });
 
 const WELCOME: Message = {
@@ -187,11 +192,11 @@ export default function AgentScreen() {
             ListFooterComponent={
               sending ? (
                 <View style={[bubble.row, { paddingHorizontal: 16, marginVertical: 4 }]}>
-                  <View style={bubble.avatar}>
-                    <Text style={bubble.avatarText}>✦</Text>
+                  <View style={[bubble.avatar, { backgroundColor: colors.primary }]}>
+                    <Text style={[bubble.avatarText, { color: colors.primaryText }]}>✦</Text>
                   </View>
-                  <View style={[bubble.bubble, bubble.assistantBubble]}>
-                    <ActivityIndicator size="small" color="rgba(245,245,247,0.35)" />
+                  <View style={[bubble.bubble, { backgroundColor: colors.card, borderBottomLeftRadius: 4 }]}>
+                    <ActivityIndicator size="small" color={colors.mutedMore} />
                   </View>
                 </View>
               ) : null

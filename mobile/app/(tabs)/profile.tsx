@@ -129,7 +129,8 @@ export default function SettingsScreen() {
                 value={isDark}
                 onValueChange={toggleTheme}
                 trackColor={{ false: "#E5E7EB", true: colors.primary }}
-                thumbColor={isDark ? colors.primaryText : "#FFFFFF"}
+                thumbColor="#FFFFFF"
+                ios_backgroundColor="#E5E7EB"
               />
             </View>
           </View>

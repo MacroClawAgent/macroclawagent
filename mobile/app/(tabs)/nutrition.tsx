@@ -28,14 +28,15 @@ interface Goals {
 function MacroBar({
   label, value, goal, color,
 }: { label: string; value: number; goal: number; color: string }) {
+  const { colors } = useTheme();
   const pct = Math.min(1, goal > 0 ? value / goal : 0);
   return (
     <View style={bar.row}>
       <View style={bar.labelRow}>
-        <Text style={bar.label}>{label}</Text>
-        <Text style={bar.value}>{value} <Text style={bar.goal}>/ {goal}</Text></Text>
+        <Text style={[bar.label, { color: colors.muted }]}>{label}</Text>
+        <Text style={[bar.value, { color: colors.text }]}>{value} <Text style={[bar.goal, { color: colors.mutedMore }]}>/ {goal}</Text></Text>
       </View>
-      <View style={bar.track}>
+      <View style={[bar.track, { backgroundColor: colors.border }]}>
         <View style={[bar.fill, { width: `${Math.round(pct * 100)}%`, backgroundColor: color }]} />
       </View>
     </View>
@@ -45,10 +46,10 @@ function MacroBar({
 const bar = StyleSheet.create({
   row: { gap: 6 },
   labelRow: { flexDirection: "row", justifyContent: "space-between" },
-  label: { fontSize: 13, fontWeight: "600", color: "rgba(245,245,247,0.55)" },
-  value: { fontSize: 13, fontWeight: "700", color: "#F5F5F7" },
-  goal: { fontWeight: "400", color: "rgba(245,245,247,0.35)" },
-  track: { height: 8, backgroundColor: "#0B0B0B", borderRadius: 4, overflow: "hidden" },
+  label: { fontSize: 13, fontWeight: "600" },
+  value: { fontSize: 13, fontWeight: "700" },
+  goal: { fontWeight: "400" },
+  track: { height: 8, borderRadius: 4, overflow: "hidden" },
   fill: { height: 8, borderRadius: 4 },
 });
 

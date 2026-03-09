@@ -218,7 +218,6 @@ export default function DashboardScreen() {
             label="Remaining"
             value={`${Math.max(0, goals.calories - consumed.calories)}`}
             sub="kcal left today"
-            accent="#D4FF00"
           />
           <StatCard
             label="Hydration"

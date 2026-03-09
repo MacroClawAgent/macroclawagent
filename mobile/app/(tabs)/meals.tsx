@@ -34,15 +34,16 @@ const TAG_COLORS: Record<string, string> = {
 };
 
 function MealCard({ meal, onPress }: { meal: Meal; onPress: () => void }) {
+  const { colors } = useTheme();
   return (
-    <TouchableOpacity style={mcard.card} onPress={onPress} activeOpacity={0.85}>
+    <TouchableOpacity style={[mcard.card, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={onPress} activeOpacity={0.85}>
       <View style={mcard.header}>
         <View style={[mcard.tagBadge, { backgroundColor: TAG_COLORS[meal.tag] + "22" }]}>
           <Text style={[mcard.tagText, { color: TAG_COLORS[meal.tag] }]}>{meal.tag}</Text>
         </View>
-        <Text style={mcard.prep}>{meal.prep_time_min} min</Text>
+        <Text style={[mcard.prep, { color: colors.mutedMore }]}>{meal.prep_time_min} min</Text>
       </View>
-      <Text style={mcard.name}>{meal.name}</Text>
+      <Text style={[mcard.name, { color: colors.text }]}>{meal.name}</Text>
       <View style={mcard.macros}>
         {[
           { label: "kcal", value: meal.macro_totals.calories, color: "#F97316" },
@@ -60,12 +61,12 @@ function MealCard({ meal, onPress }: { meal: Meal; onPress: () => void }) {
 }
 
 const mcard = StyleSheet.create({
-  card: { backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", gap: 8 },
+  card: { borderRadius: 16, padding: 16, borderWidth: 1, gap: 8 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   tagBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
   tagText: { fontSize: 11, fontWeight: "700" },
-  prep: { fontSize: 11, color: "rgba(245,245,247,0.35)" },
-  name: { fontSize: 15, fontWeight: "700", color: "#F5F5F7" },
+  prep: { fontSize: 11 },
+  name: { fontSize: 15, fontWeight: "700" },
   macros: { flexDirection: "row", gap: 6, flexWrap: "wrap" },
   chip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   chipText: { fontSize: 11, fontWeight: "700" },
@@ -307,7 +308,7 @@ export default function MealsScreen() {
                   <Text style={grocery.qty}>{item.qty}{item.unit}</Text>
                 </View>
               )}
-              ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: "#0B0B0B" }} />}
+              ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: "rgba(255,255,255,0.1)" }} />}
             />
             <TouchableOpacity style={modal.closeBtn} onPress={() => setShowGrocery(false)}>
               <Text style={modal.closeBtnText}>Close</Text>
@@ -320,15 +321,16 @@ export default function MealsScreen() {
 }
 
 
+// Modal uses a fixed dark sheet so it looks the same in both themes (standard pattern)
 const modal = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  sheet: { backgroundColor: "#FFF", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: "80%", gap: 12 },
-  handle: { width: 40, height: 4, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 2, alignSelf: "center", marginBottom: 8 },
+  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
+  sheet: { backgroundColor: "#1C1C1E", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: "80%", gap: 12 },
+  handle: { width: 40, height: 4, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 2, alignSelf: "center", marginBottom: 8 },
   title: { fontSize: 20, fontWeight: "800", color: "#F5F5F7" },
-  section: { fontSize: 12, fontWeight: "700", color: "rgba(245,245,247,0.55)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 8 },
+  section: { fontSize: 12, fontWeight: "700", color: "rgba(245,245,247,0.45)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 8 },
   ingredient: { fontSize: 14, color: "#F5F5F7", paddingVertical: 2 },
   step: { fontSize: 14, color: "#F5F5F7", lineHeight: 22, paddingVertical: 2 },
-  closeBtn: { backgroundColor: "#0B0B0B", borderRadius: 14, paddingVertical: 14, alignItems: "center", marginTop: 8 },
+  closeBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 14, paddingVertical: 14, alignItems: "center", marginTop: 8 },
   closeBtnText: { fontWeight: "700", color: "#F5F5F7", fontSize: 15 },
 });
 
