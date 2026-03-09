@@ -91,7 +91,7 @@ export default function DashboardScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator color="#20C7B7" size="large" />
+        <ActivityIndicator color="#D4FF00" size="large" />
       </SafeAreaView>
     );
   }
@@ -101,7 +101,7 @@ export default function DashboardScreen() {
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#20C7B7" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4FF00" />}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
@@ -137,7 +137,7 @@ export default function DashboardScreen() {
             label="Remaining"
             value={`${Math.max(0, goals.calories - consumed.calories)}`}
             sub="kcal left today"
-            accent="#20C7B7"
+            accent="#D4FF00"
           />
           <StatCard
             label="Hydration"
@@ -194,37 +194,37 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F4F5F7" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F4F5F7" },
+  safe: { flex: 1, backgroundColor: "#0B0B0B" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0B0B0B" },
   scroll: { flex: 1 },
   content: { padding: 20, gap: 16, paddingBottom: 40 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 },
-  greetingText: { fontSize: 22, fontWeight: "800", color: "#1C1C1E" },
-  date: { fontSize: 13, color: "#6B7280", marginTop: 2 },
-  avatarBadge: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#20C7B7", justifyContent: "center", alignItems: "center" },
-  avatarText: { fontSize: 16, fontWeight: "800", color: "#fff" },
-  card: { backgroundColor: "#FFFFFF", borderRadius: 20, padding: 20, borderWidth: 1, borderColor: "#E5E7EB", gap: 16 },
-  cardTitle: { fontSize: 14, fontWeight: "700", color: "#1C1C1E" },
+  greetingText: { fontSize: 22, fontWeight: "800", color: "#F5F5F7" },
+  date: { fontSize: 13, color: "rgba(245,245,247,0.55)", marginTop: 2 },
+  avatarBadge: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#D4FF00", justifyContent: "center", alignItems: "center" },
+  avatarText: { fontSize: 16, fontWeight: "800", color: "#0B0B0B" },
+  card: { backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 20, padding: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", gap: 16 },
+  cardTitle: { fontSize: 14, fontWeight: "700", color: "#F5F5F7" },
   ringsRow: { flexDirection: "row", justifyContent: "space-between" },
-  emptyHint: { fontSize: 12, color: "#9CA3AF", textAlign: "center" },
+  emptyHint: { fontSize: 12, color: "rgba(245,245,247,0.35)", textAlign: "center" },
   statsRow: { flexDirection: "row", gap: 12 },
   activityRow: { flexDirection: "row", alignItems: "center", gap: 14 },
-  activityIcon: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#F4F5F7", justifyContent: "center", alignItems: "center" },
+  activityIcon: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#0B0B0B", justifyContent: "center", alignItems: "center" },
   activityEmoji: { fontSize: 22 },
   activityInfo: { flex: 1, gap: 4 },
-  activityName: { fontSize: 14, fontWeight: "700", color: "#1C1C1E" },
+  activityName: { fontSize: 14, fontWeight: "700", color: "#F5F5F7" },
   activityMeta: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
-  activityStat: { fontSize: 12, color: "#6B7280", backgroundColor: "#F4F5F7", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  activityStat: { fontSize: 12, color: "rgba(245,245,247,0.55)", backgroundColor: "#0B0B0B", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   emptyActivity: { gap: 4 },
-  emptyActivityText: { fontSize: 14, fontWeight: "600", color: "#6B7280" },
-  emptyActivityHint: { fontSize: 12, color: "#9CA3AF", lineHeight: 18 },
+  emptyActivityText: { fontSize: 14, fontWeight: "600", color: "rgba(245,245,247,0.55)" },
+  emptyActivityHint: { fontSize: 12, color: "rgba(245,245,247,0.35)", lineHeight: 18 },
   agentCard: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    padding: 18, borderRadius: 18, backgroundColor: "#1C1C1E",
+    padding: 18, borderRadius: 18, backgroundColor: "#D4FF00",
   },
   agentLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
-  agentEmoji: { fontSize: 20, color: "#20C7B7" },
-  agentTitle: { fontSize: 15, fontWeight: "800", color: "#FFFFFF" },
-  agentSub: { fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 1 },
-  agentArrow: { fontSize: 18, color: "#20C7B7", fontWeight: "700" },
+  agentEmoji: { fontSize: 20, color: "#0B0B0B" },
+  agentTitle: { fontSize: 15, fontWeight: "800", color: "#0B0B0B" },
+  agentSub: { fontSize: 12, color: "rgba(0,0,0,0.55)", marginTop: 1 },
+  agentArrow: { fontSize: 18, color: "#0B0B0B", fontWeight: "700" },
 });

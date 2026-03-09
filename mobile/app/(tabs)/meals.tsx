@@ -58,12 +58,12 @@ function MealCard({ meal, onPress }: { meal: Meal; onPress: () => void }) {
 }
 
 const mcard = StyleSheet.create({
-  card: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E5E7EB", gap: 8 },
+  card: { backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", gap: 8 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   tagBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
   tagText: { fontSize: 11, fontWeight: "700" },
-  prep: { fontSize: 11, color: "#9CA3AF" },
-  name: { fontSize: 15, fontWeight: "700", color: "#1C1C1E" },
+  prep: { fontSize: 11, color: "rgba(245,245,247,0.35)" },
+  name: { fontSize: 15, fontWeight: "700", color: "#F5F5F7" },
   macros: { flexDirection: "row", gap: 6, flexWrap: "wrap" },
   chip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   chipText: { fontSize: 11, fontWeight: "700" },
@@ -126,7 +126,7 @@ export default function MealsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator color="#0066EE" size="large" />
+        <ActivityIndicator color="#D4FF00" size="large" />
       </SafeAreaView>
     );
   }
@@ -135,7 +135,7 @@ export default function MealsScreen() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0066EE" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4FF00" />}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
@@ -222,7 +222,7 @@ export default function MealsScreen() {
               activeOpacity={0.85}
             >
               {generating
-                ? <ActivityIndicator color="#0066EE" size="small" />
+                ? <ActivityIndicator color="#D4FF00" size="small" />
                 : <Text style={styles.regenBtnText}>Regenerate Plan</Text>}
             </TouchableOpacity>
           </>
@@ -271,7 +271,7 @@ export default function MealsScreen() {
                   <Text style={grocery.qty}>{item.qty}{item.unit}</Text>
                 </View>
               )}
-              ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: "#F3F4F6" }} />}
+              ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: "#0B0B0B" }} />}
             />
             <TouchableOpacity style={modal.closeBtn} onPress={() => setShowGrocery(false)}>
               <Text style={modal.closeBtnText}>Close</Text>
@@ -284,49 +284,49 @@ export default function MealsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F4F5F7" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F4F5F7" },
+  safe: { flex: 1, backgroundColor: "#0B0B0B" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0B0B0B" },
   content: { padding: 20, gap: 16, paddingBottom: 40 },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
-  heading: { fontSize: 26, fontWeight: "800", color: "#1C1C1E" },
-  refreshBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center" },
-  refreshIcon: { fontSize: 18, color: "#6B7280" },
-  groceryBtn: { backgroundColor: "#EFF6FF", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  groceryBtnText: { fontSize: 13, fontWeight: "700", color: "#0066EE" },
+  heading: { fontSize: 26, fontWeight: "800", color: "#F5F5F7" },
+  refreshBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#0B0B0B", alignItems: "center", justifyContent: "center" },
+  refreshIcon: { fontSize: 18, color: "rgba(245,245,247,0.55)" },
+  groceryBtn: { backgroundColor: "rgba(212,255,0,0.1)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
+  groceryBtnText: { fontSize: 13, fontWeight: "700", color: "#D4FF00" },
   emptyState: { alignItems: "center", gap: 12, paddingVertical: 40 },
-  emptyTitle: { fontSize: 20, fontWeight: "800", color: "#1C1C1E" },
-  emptySub: { fontSize: 14, color: "#6B7280", textAlign: "center", lineHeight: 20 },
-  generateBtn: { backgroundColor: "#0066EE", paddingHorizontal: 32, paddingVertical: 16, borderRadius: 16 },
-  generateBtnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
-  summaryCard: { backgroundColor: "#EFF6FF", borderRadius: 16, padding: 16 },
-  summaryText: { fontSize: 14, color: "#1C1C1E", lineHeight: 20 },
+  emptyTitle: { fontSize: 20, fontWeight: "800", color: "#F5F5F7" },
+  emptySub: { fontSize: 14, color: "rgba(245,245,247,0.55)", textAlign: "center", lineHeight: 20 },
+  generateBtn: { backgroundColor: "#D4FF00", paddingHorizontal: 32, paddingVertical: 16, borderRadius: 16 },
+  generateBtnText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
+  summaryCard: { backgroundColor: "rgba(212,255,0,0.1)", borderRadius: 16, padding: 16 },
+  summaryText: { fontSize: 14, color: "#F5F5F7", lineHeight: 20 },
   dayScroll: { marginHorizontal: -20, paddingHorizontal: 20 },
   dayRow: { flexDirection: "row", gap: 8, paddingRight: 20 },
-  dayChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB" },
-  dayChipActive: { backgroundColor: "#0066EE", borderColor: "#0066EE" },
-  dayChipText: { fontSize: 13, fontWeight: "600", color: "#6B7280" },
+  dayChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
+  dayChipActive: { backgroundColor: "#D4FF00", borderColor: "#D4FF00" },
+  dayChipText: { fontSize: 13, fontWeight: "600", color: "rgba(245,245,247,0.55)" },
   dayChipTextActive: { color: "#FFFFFF" },
   mealsSection: { gap: 12 },
-  noMeals: { fontSize: 14, color: "#9CA3AF", textAlign: "center" },
-  regenBtn: { backgroundColor: "#FFFFFF", borderRadius: 14, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "#E5E7EB" },
-  regenBtnText: { color: "#0066EE", fontWeight: "700", fontSize: 14 },
+  noMeals: { fontSize: 14, color: "rgba(245,245,247,0.35)", textAlign: "center" },
+  regenBtn: { backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 14, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
+  regenBtnText: { color: "#D4FF00", fontWeight: "700", fontSize: 14 },
 });
 
 const modal = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   sheet: { backgroundColor: "#FFF", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: "80%", gap: 12 },
-  handle: { width: 40, height: 4, backgroundColor: "#E5E7EB", borderRadius: 2, alignSelf: "center", marginBottom: 8 },
-  title: { fontSize: 20, fontWeight: "800", color: "#1C1C1E" },
-  section: { fontSize: 12, fontWeight: "700", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 8 },
-  ingredient: { fontSize: 14, color: "#1C1C1E", paddingVertical: 2 },
-  step: { fontSize: 14, color: "#1C1C1E", lineHeight: 22, paddingVertical: 2 },
-  closeBtn: { backgroundColor: "#F3F4F6", borderRadius: 14, paddingVertical: 14, alignItems: "center", marginTop: 8 },
-  closeBtnText: { fontWeight: "700", color: "#1C1C1E", fontSize: 15 },
+  handle: { width: 40, height: 4, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 2, alignSelf: "center", marginBottom: 8 },
+  title: { fontSize: 20, fontWeight: "800", color: "#F5F5F7" },
+  section: { fontSize: 12, fontWeight: "700", color: "rgba(245,245,247,0.55)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 8 },
+  ingredient: { fontSize: 14, color: "#F5F5F7", paddingVertical: 2 },
+  step: { fontSize: 14, color: "#F5F5F7", lineHeight: 22, paddingVertical: 2 },
+  closeBtn: { backgroundColor: "#0B0B0B", borderRadius: 14, paddingVertical: 14, alignItems: "center", marginTop: 8 },
+  closeBtnText: { fontWeight: "700", color: "#F5F5F7", fontSize: 15 },
 });
 
 const grocery = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 12 },
-  name: { fontSize: 14, color: "#1C1C1E", fontWeight: "500" },
-  qty: { fontSize: 14, color: "#6B7280", fontWeight: "600" },
+  name: { fontSize: 14, color: "#F5F5F7", fontWeight: "500" },
+  qty: { fontSize: 14, color: "rgba(245,245,247,0.55)", fontWeight: "600" },
 });

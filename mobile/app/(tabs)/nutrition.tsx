@@ -43,10 +43,10 @@ function MacroBar({
 const bar = StyleSheet.create({
   row: { gap: 6 },
   labelRow: { flexDirection: "row", justifyContent: "space-between" },
-  label: { fontSize: 13, fontWeight: "600", color: "#6B7280" },
-  value: { fontSize: 13, fontWeight: "700", color: "#1C1C1E" },
-  goal: { fontWeight: "400", color: "#9CA3AF" },
-  track: { height: 8, backgroundColor: "#F3F4F6", borderRadius: 4, overflow: "hidden" },
+  label: { fontSize: 13, fontWeight: "600", color: "rgba(245,245,247,0.55)" },
+  value: { fontSize: 13, fontWeight: "700", color: "#F5F5F7" },
+  goal: { fontWeight: "400", color: "rgba(245,245,247,0.35)" },
+  track: { height: 8, backgroundColor: "#0B0B0B", borderRadius: 4, overflow: "hidden" },
   fill: { height: 8, borderRadius: 4 },
 });
 
@@ -101,7 +101,7 @@ export default function NutritionScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator color="#0066EE" size="large" />
+        <ActivityIndicator color="#D4FF00" size="large" />
       </SafeAreaView>
     );
   }
@@ -110,7 +110,7 @@ export default function NutritionScreen() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0066EE" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4FF00" />}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.heading}>Nutrition</Text>
@@ -182,26 +182,26 @@ export default function NutritionScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F4F5F7" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F4F5F7" },
+  safe: { flex: 1, backgroundColor: "#0B0B0B" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0B0B0B" },
   content: { padding: 20, gap: 16, paddingBottom: 40 },
-  heading: { fontSize: 26, fontWeight: "800", color: "#1C1C1E" },
-  date: { fontSize: 13, color: "#6B7280", marginTop: -8 },
-  card: { backgroundColor: "#FFFFFF", borderRadius: 20, padding: 20, borderWidth: 1, borderColor: "#E5E7EB", gap: 12 },
-  cardTitle: { fontSize: 13, fontWeight: "700", color: "#1C1C1E", textTransform: "uppercase", letterSpacing: 0.5 },
+  heading: { fontSize: 26, fontWeight: "800", color: "#F5F5F7" },
+  date: { fontSize: 13, color: "rgba(245,245,247,0.55)", marginTop: -8 },
+  card: { backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 20, padding: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", gap: 12 },
+  cardTitle: { fontSize: 13, fontWeight: "700", color: "#F5F5F7", textTransform: "uppercase", letterSpacing: 0.5 },
   calorieRow: { flexDirection: "row", justifyContent: "space-around", alignItems: "center" },
   calorieStat: { alignItems: "center", gap: 2 },
-  calorieBig: { fontSize: 28, fontWeight: "800", color: "#1C1C1E" },
-  calorieLabel: { fontSize: 11, color: "#9CA3AF", fontWeight: "500" },
-  calorieDivider: { width: 1, height: 40, backgroundColor: "#F3F4F6" },
+  calorieBig: { fontSize: 28, fontWeight: "800", color: "#F5F5F7" },
+  calorieLabel: { fontSize: 11, color: "rgba(245,245,247,0.35)", fontWeight: "500" },
+  calorieDivider: { width: 1, height: 40, backgroundColor: "#0B0B0B" },
   hydrationHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  hydrationValue: { fontSize: 18, fontWeight: "800", color: "#0066EE" },
-  hydrationSub: { fontSize: 12, color: "#9CA3AF", marginTop: -8 },
+  hydrationValue: { fontSize: 18, fontWeight: "800", color: "#D4FF00" },
+  hydrationSub: { fontSize: 12, color: "rgba(245,245,247,0.35)", marginTop: -8 },
   hydrationButtons: { flexDirection: "row", gap: 10 },
   hydrationBtn: {
-    flex: 1, backgroundColor: "#EFF6FF", borderRadius: 12,
+    flex: 1, backgroundColor: "rgba(212,255,0,0.1)", borderRadius: 12,
     paddingVertical: 12, alignItems: "center",
   },
-  hydrationBtnText: { fontSize: 14, fontWeight: "700", color: "#0066EE" },
-  emptyHint: { fontSize: 13, color: "#9CA3AF", textAlign: "center", lineHeight: 20 },
+  hydrationBtnText: { fontSize: 14, fontWeight: "700", color: "#D4FF00" },
+  emptyHint: { fontSize: 13, color: "rgba(245,245,247,0.35)", textAlign: "center", lineHeight: 20 },
 });

@@ -41,14 +41,14 @@ export default function StravaConnectedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4F5F7",
+    backgroundColor: "#0B0B0B",
     alignItems: "center",
     justifyContent: "center",
     gap: 16,
   },
   label: {
     fontSize: 15,
-    color: "#6B7280",
+    color: "rgba(245,245,247,0.55)",
     fontWeight: "600",
   },
 });

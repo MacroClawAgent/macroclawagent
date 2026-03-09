@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
+import { colors } from "@/theme/colors";
 
 interface MacroRingProps {
   label: string;
@@ -26,7 +27,7 @@ export function MacroRing({ label, value, goal, unit, color, size = 80 }: MacroR
           cx={center}
           cy={center}
           r={radius}
-          stroke="#E5E7EB"
+          stroke={colors.border}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
   container: { alignItems: "center", gap: 4 },
   center: { position: "absolute", justifyContent: "center", alignItems: "center" },
   value: { fontSize: 16, fontWeight: "800" },
-  unit: { fontSize: 9, color: "#9CA3AF", fontWeight: "600" },
-  label: { fontSize: 11, fontWeight: "700", color: "#1C1C1E" },
-  goal: { fontSize: 10, color: "#9CA3AF" },
+  unit: { fontSize: 9, color: colors.mutedMore, fontWeight: "600" },
+  label: { fontSize: 11, fontWeight: "700", color: colors.text },
+  goal: { fontSize: 10, color: colors.mutedMore },
 });

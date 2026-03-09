@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
+import { colors } from "@/theme/colors";
 
 interface StatCardProps {
   label: string;
@@ -7,7 +8,7 @@ interface StatCardProps {
   accent?: string;
 }
 
-export function StatCard({ label, value, sub, accent = "#20C7B7" }: StatCardProps) {
+export function StatCard({ label, value, sub, accent = colors.primary }: StatCardProps) {
   return (
     <View style={styles.card}>
       <Text style={[styles.value, { color: accent }]}>{value}</Text>
@@ -19,11 +20,11 @@ export function StatCard({ label, value, sub, accent = "#20C7B7" }: StatCardProp
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1, backgroundColor: "#FFFFFF", borderRadius: 16,
+    flex: 1, backgroundColor: colors.card, borderRadius: 16,
     padding: 16, gap: 2,
-    borderWidth: 1, borderColor: "#E5E7EB",
+    borderWidth: 1, borderColor: colors.border,
   },
   value: { fontSize: 22, fontWeight: "800" },
-  label: { fontSize: 12, fontWeight: "600", color: "#6B7280" },
-  sub: { fontSize: 11, color: "#9CA3AF", marginTop: 2 },
+  label: { fontSize: 12, fontWeight: "600", color: colors.muted },
+  sub: { fontSize: 11, color: colors.mutedMore, marginTop: 2 },
 });

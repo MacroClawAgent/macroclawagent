@@ -32,13 +32,13 @@ function MessageBubble({ message }: { message: Message }) {
 const bubble = StyleSheet.create({
   row: { flexDirection: "row", gap: 8, paddingHorizontal: 16, marginVertical: 4, alignItems: "flex-end" },
   rowUser: { justifyContent: "flex-end" },
-  avatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#0066EE", justifyContent: "center", alignItems: "center", marginBottom: 2 },
-  avatarText: { fontSize: 12, color: "#fff" },
+  avatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#D4FF00", justifyContent: "center", alignItems: "center", marginBottom: 2 },
+  avatarText: { fontSize: 12, color: "#0B0B0B" },
   bubble: { maxWidth: "78%", borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10 },
-  userBubble: { backgroundColor: "#0066EE", borderBottomRightRadius: 4 },
-  assistantBubble: { backgroundColor: "#F3F4F6", borderBottomLeftRadius: 4 },
-  text: { fontSize: 14, lineHeight: 20, color: "#1C1C1E" },
-  userText: { color: "#FFFFFF" },
+  userBubble: { backgroundColor: "#D4FF00", borderBottomRightRadius: 4 },
+  assistantBubble: { backgroundColor: "rgba(255,255,255,0.07)", borderBottomLeftRadius: 4 },
+  text: { fontSize: 14, lineHeight: 20, color: "#F5F5F7" },
+  userText: { color: "#0B0B0B" },
 });
 
 const WELCOME: Message = {
@@ -131,7 +131,7 @@ export default function AgentScreen() {
         {/* Messages */}
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator color="#0066EE" />
+            <ActivityIndicator color="#D4FF00" />
           </View>
         ) : (
           <FlatList
@@ -149,7 +149,7 @@ export default function AgentScreen() {
                     <Text style={bubble.avatarText}>✦</Text>
                   </View>
                   <View style={[bubble.bubble, bubble.assistantBubble]}>
-                    <ActivityIndicator size="small" color="#9CA3AF" />
+                    <ActivityIndicator size="small" color="rgba(245,245,247,0.35)" />
                   </View>
                 </View>
               ) : null
@@ -164,7 +164,7 @@ export default function AgentScreen() {
             value={input}
             onChangeText={setInput}
             placeholder="Ask Jonno about nutrition..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="rgba(245,245,247,0.35)"
             returnKeyType="send"
             onSubmitEditing={send}
             multiline
@@ -185,37 +185,37 @@ export default function AgentScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F4F5F7" },
+  safe: { flex: 1, backgroundColor: "#0B0B0B" },
   flex: { flex: 1 },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",
     paddingHorizontal: 20, paddingVertical: 12,
-    backgroundColor: "#FFFFFF", borderBottomWidth: 1, borderBottomColor: "#E5E7EB",
+    backgroundColor: "rgba(255,255,255,0.07)", borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.1)",
   },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  jonnoAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#0066EE", justifyContent: "center", alignItems: "center" },
-  jonnoAvatarText: { fontSize: 16, color: "#fff" },
-  headerTitle: { fontSize: 16, fontWeight: "800", color: "#1C1C1E" },
-  headerSub: { fontSize: 11, color: "#9CA3AF" },
-  scopeBadge: { backgroundColor: "#ECFDF5", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  jonnoAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#D4FF00", justifyContent: "center", alignItems: "center" },
+  jonnoAvatarText: { fontSize: 16, color: "#0B0B0B" },
+  headerTitle: { fontSize: 16, fontWeight: "800", color: "#F5F5F7" },
+  headerSub: { fontSize: 11, color: "rgba(245,245,247,0.35)" },
+  scopeBadge: { backgroundColor: "rgba(16,185,129,0.15)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   scopeText: { fontSize: 11, fontWeight: "700", color: "#10B981" },
   messageList: { paddingTop: 12, paddingBottom: 8 },
   inputRow: {
     flexDirection: "row", alignItems: "flex-end", gap: 8,
     padding: 12, paddingBottom: 20,
-    backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: "#E5E7EB",
+    backgroundColor: "rgba(255,255,255,0.07)", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.1)",
   },
   input: {
     flex: 1, minHeight: 40, maxHeight: 100,
-    backgroundColor: "#F4F5F7", borderRadius: 20,
+    backgroundColor: "#0B0B0B", borderRadius: 20,
     paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 14, color: "#1C1C1E",
+    fontSize: 14, color: "#F5F5F7",
   },
   sendBtn: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: "#0066EE", justifyContent: "center", alignItems: "center",
+    backgroundColor: "#D4FF00", justifyContent: "center", alignItems: "center",
   },
   sendBtnDisabled: { opacity: 0.4 },
-  sendBtnText: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  sendBtnText: { color: "#0B0B0B", fontSize: 18, fontWeight: "700" },
 });

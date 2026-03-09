@@ -63,7 +63,7 @@ export default function OnboardingStep2() {
               <TextInput
                 style={styles.input}
                 placeholder="70"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="rgba(245,245,247,0.35)"
                 value={weightKg}
                 onChangeText={setWeightKg}
                 keyboardType="decimal-pad"
@@ -74,7 +74,7 @@ export default function OnboardingStep2() {
               <TextInput
                 style={styles.input}
                 placeholder="175"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="rgba(245,245,247,0.35)"
                 value={heightCm}
                 onChangeText={setHeightCm}
                 keyboardType="decimal-pad"
@@ -126,30 +126,30 @@ export default function OnboardingStep2() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F4F5F7" },
+  container: { flex: 1, backgroundColor: "#0B0B0B" },
   inner: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingVertical: 48 },
   progressRow: { flexDirection: "row", alignItems: "center", marginBottom: 32 },
-  progressDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#E5E7EB" },
-  progressDone: { backgroundColor: "#20C7B7" },
-  progressActive: { backgroundColor: "#20C7B7" },
-  progressLine: { flex: 1, height: 2, backgroundColor: "#E5E7EB", marginHorizontal: 6 },
-  progressLineDone: { backgroundColor: "#20C7B7" },
-  step: { fontSize: 12, fontWeight: "600", color: "#20C7B7", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
-  title: { fontSize: 28, fontWeight: "800", color: "#1C1C1E", marginBottom: 8 },
-  subtitle: { fontSize: 15, color: "#6B7280", marginBottom: 32, lineHeight: 22 },
+  progressDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(255,255,255,0.1)" },
+  progressDone: { backgroundColor: "#D4FF00" },
+  progressActive: { backgroundColor: "#D4FF00" },
+  progressLine: { flex: 1, height: 2, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 6 },
+  progressLineDone: { backgroundColor: "#D4FF00" },
+  step: { fontSize: 12, fontWeight: "600", color: "#D4FF00", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: "800", color: "#F5F5F7", marginBottom: 8 },
+  subtitle: { fontSize: 15, color: "rgba(245,245,247,0.55)", marginBottom: 32, lineHeight: 22 },
   form: { gap: 16 },
   row: { flexDirection: "row", gap: 12 },
   field: { gap: 6 },
-  label: { fontSize: 12, fontWeight: "600", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5 },
+  label: { fontSize: 12, fontWeight: "600", color: "rgba(245,245,247,0.55)", textTransform: "uppercase", letterSpacing: 0.5 },
   input: {
-    backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB",
+    backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, color: "#1C1C1E",
+    fontSize: 15, color: "#F5F5F7",
   },
   sectionHeader: { gap: 2, marginTop: 4 },
-  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#1C1C1E" },
-  sectionHint: { fontSize: 12, color: "#9CA3AF" },
-  button: { backgroundColor: "#20C7B7", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
+  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#F5F5F7" },
+  sectionHint: { fontSize: 12, color: "rgba(245,245,247,0.35)" },
+  button: { backgroundColor: "#D4FF00", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  buttonText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
 });
