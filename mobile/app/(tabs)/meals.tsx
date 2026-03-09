@@ -5,6 +5,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { apiGet, apiPost } from "@/lib/api";
+import { getCache, setCache, clearCache } from "@/lib/cache";
+
+const PLAN_CACHE_KEY = "mealplan:7d";
+const PLAN_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 interface Ingredient { id: string; name: string; grams: number }
 interface MacroTotals { calories: number; protein_g: number; carbs_g: number; fat_g: number }
@@ -74,9 +78,19 @@ export default function MealsScreen() {
   const [showGrocery, setShowGrocery] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
 
-  async function fetchPlan() {
+  async function fetchPlan(bust = false) {
+    if (bust) clearCache(PLAN_CACHE_KEY);
+    const cached = getCache<Plan>(PLAN_CACHE_KEY, PLAN_MAX_AGE_MS);
+    if (cached) {
+      setPlan(cached);
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
     const res = await apiGet<{ plan: Plan | null }>("/api/optimizer/create");
-    setPlan(res?.plan ?? null);
+    const fetched = res?.plan ?? null;
+    if (fetched) setCache(PLAN_CACHE_KEY, fetched);
+    setPlan(fetched);
     setLoading(false);
     setRefreshing(false);
   }
@@ -84,12 +98,15 @@ export default function MealsScreen() {
   async function generatePlan() {
     setGenerating(true);
     const res = await apiPost<{ plan: Plan }>("/api/optimizer/create", {});
-    if (res?.plan) setPlan(res.plan);
+    if (res?.plan) {
+      setCache(PLAN_CACHE_KEY, res.plan);
+      setPlan(res.plan);
+    }
     setGenerating(false);
   }
 
   useEffect(() => { fetchPlan(); }, []);
-  const onRefresh = useCallback(() => { setRefreshing(true); fetchPlan(); }, []);
+  const onRefresh = useCallback(() => { setRefreshing(true); fetchPlan(true); }, []);
 
   const days = plan
     ? Object.keys(plan.meal_plan).sort()
@@ -124,13 +141,22 @@ export default function MealsScreen() {
         {/* Header */}
         <View style={styles.headerRow}>
           <Text style={styles.heading}>Meal Plan</Text>
-          <TouchableOpacity
-            style={styles.groceryBtn}
-            onPress={() => setShowGrocery(true)}
-            disabled={!plan}
-          >
-            <Text style={styles.groceryBtnText}>Grocery List</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.refreshBtn}
+              onPress={() => { setRefreshing(true); fetchPlan(true); }}
+              disabled={refreshing || loading}
+            >
+              <Text style={styles.refreshIcon}>{refreshing ? "⏳" : "↻"}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.groceryBtn}
+              onPress={() => setShowGrocery(true)}
+              disabled={!plan}
+            >
+              <Text style={styles.groceryBtnText}>Grocery List</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Generate button */}
@@ -262,7 +288,10 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F4F5F7" },
   content: { padding: 20, gap: 16, paddingBottom: 40 },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
   heading: { fontSize: 26, fontWeight: "800", color: "#1C1C1E" },
+  refreshBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center" },
+  refreshIcon: { fontSize: 18, color: "#6B7280" },
   groceryBtn: { backgroundColor: "#EFF6FF", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
   groceryBtnText: { fontSize: 13, fontWeight: "700", color: "#0066EE" },
   emptyState: { alignItems: "center", gap: 12, paddingVertical: 40 },
