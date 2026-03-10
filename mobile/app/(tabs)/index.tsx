@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { supabase } from "@/lib/supabase";
@@ -82,6 +83,7 @@ function greeting() {
 export default function DashboardScreen() {
   const { userProfile } = useAuth();
   const { colors } = useTheme();
+  const router = useRouter();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [nutrition, setNutrition] = useState<NutritionLog | null>(null);
   const [activity, setActivity] = useState<ActivityRow | null>(null);
@@ -172,9 +174,9 @@ export default function DashboardScreen() {
               {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </Text>
           </View>
-          <View style={styles.avatarBadge}>
+          <TouchableOpacity style={styles.avatarBadge} onPress={() => router.push("/(tabs)/profile")} activeOpacity={0.8}>
             <Text style={styles.avatarText}>{firstName[0]?.toUpperCase()}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Strava connect nudge */}
@@ -257,7 +259,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Agent nudge */}
-        <TouchableOpacity style={styles.agentCard} activeOpacity={0.85}>
+        <TouchableOpacity style={styles.agentCard} activeOpacity={0.85} onPress={() => router.push("/(tabs)/agent")}>
           <View style={styles.agentLeft}>
             <Text style={styles.agentEmoji}>✦</Text>
             <View>

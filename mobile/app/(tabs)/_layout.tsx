@@ -81,6 +81,17 @@ export default function TabLayout() {
         }}
       />
 
+      {/* ── Activity ── */}
+      <Tabs.Screen
+        name="activity"
+        options={{
+          title: "Activity",
+          tabBarIcon: ({ color }) => (
+            <TabIcon iosName="figure.run" androidName="directions_run" color={color} />
+          ),
+        }}
+      />
+
       {/* ── Meal Plans ── */}
       <Tabs.Screen
         name="meals"
@@ -96,21 +107,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="agent"
         options={{
-          title: "Agent",
+          title: "Jonno",
           tabBarIcon: ({ color }) => (
             <TabIcon iosName="sparkles" androidName="auto_awesome" color={color} />
           ),
         }}
       />
 
-      {/* ── Settings ── */}
+      {/* ── Profile / Settings — hidden from tab bar, accessed via Home avatar ── */}
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Settings",
-          tabBarIcon: ({ color }) => (
-            <TabIcon iosName="gearshape.fill" androidName="settings" color={color} />
-          ),
+          href: null,
         }}
       />
     </Tabs>
