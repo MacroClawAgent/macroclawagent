@@ -6,17 +6,17 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
-import Svg, { Circle } from "react-native-svg";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { apiGet, apiPost } from "@/lib/api";
 import { getCache, setCache } from "@/lib/cache";
-import { DashCard } from "@/components/DashCard";
+import { TargetTile } from "@/components/TargetTile";
 import { ProgressBar } from "@/components/ProgressBar";
+import { WeeklyChips } from "@/components/WeeklyChips";
 import { NutritionLog, ActivityRow, MealItem } from "@/types";
 import { AppColors } from "@/theme/colors";
 
-// ─── Cache key + TTL ────────────────────────────────────────────
+// ─── Cache ──────────────────────────────────────────────────────
 const OPTIMIZER_KEY = "home_optimizer";
 const SIX_HOURS = 6 * 60 * 60 * 1000;
 
@@ -50,12 +50,12 @@ interface GroceryItem {
 }
 
 interface OptimizerResponse {
-  plan?: { grocery_list?: GroceryItem[]; meal_plan?: Record<string, MealItem[]> };
+  plan?: { grocery_list?: GroceryItem[] };
   grocery_list?: GroceryItem[];
 }
 
 // ─── Helpers ────────────────────────────────────────────────────
-function greeting() {
+function greetingWord() {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
@@ -66,120 +66,56 @@ function isToday(isoString: string) {
   return isoString.startsWith(new Date().toISOString().split("T")[0]);
 }
 
-function getSubheadline(
-  activity: ActivityRow | null,
-  goals: NutritionGoals,
-  consumedCal: number,
-): string {
-  if (activity && isToday(activity.started_at)) {
-    return `You crushed your ${activity.type.toLowerCase()} today 💪`;
-  }
-  const pct = goals.calorie_goal > 0 ? consumedCal / goals.calorie_goal : 0;
-  if (pct >= 0.8) return "You're on track for your goal 🎯";
-  if (pct >= 0.4) return "Keep fuelling — you're making progress 🥗";
-  return "Let's start fuelling today 🍽️";
+function getDayType(activity: ActivityRow | null): string {
+  if (!activity) return "Performance";
+  const map: Record<string, string> = { Run: "Run", Ride: "Ride", Swim: "Swim" };
+  return map[activity.type] ?? "Training";
 }
 
-function loadLabel(a: ActivityRow): "High" | "Med" | "Low" {
+function loadLabel(a: ActivityRow): "Low" | "Moderate" | "High" {
   const hr = a.avg_heart_rate;
   const min = a.duration_seconds / 60;
   if ((hr && hr > 155) || min > 90) return "High";
-  if ((hr && hr > 130) || min > 40) return "Med";
+  if ((hr && hr > 130) || min > 40) return "Moderate";
   return "Low";
 }
 
-function loadColor(label: string): string {
-  if (label === "High") return "#F97316";
-  if (label === "Med") return "#F59E0B";
-  return "#10B981";
-}
-
-function formatDuration(sec: number): string {
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function formatDistance(meters: number | null): string | null {
-  if (!meters) return null;
+function formatDist(meters: number | null): string {
+  if (!meters) return "—";
   return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${Math.round(meters)} m`;
 }
 
-const ACTIVITY_EMOJI: Record<string, string> = { Run: "🏃", Ride: "🚴", Swim: "🏊", Other: "⚡" };
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
-// ─── Sub-components ─────────────────────────────────────────────
+function fmtNum(n: number): string {
+  return n >= 1000 ? n.toLocaleString() : String(n);
+}
 
-/** Mini weekly ring shown in the Weekly Progress row. */
-function DayRing({
-  day, kcal, target, primary, border,
-}: { day: string; kcal: number; target: number; primary: string; border: string }) {
-  const size = 44;
-  const sw = 4;
-  const r = (size - sw) / 2;
-  const circ = 2 * Math.PI * r;
-  const pct = target > 0 ? Math.min(kcal / target, 1) : 0;
-  const hit = kcal >= target * 0.85;
+// ─── Inline sub-components ──────────────────────────────────────
+
+/** Simple mini sparkline using proportional bars */
+function MiniSparkline({ points, color }: { points: number[]; color: string }) {
   return (
-    <View style={{ alignItems: "center", gap: 5 }}>
-      <View style={{ width: size, height: size }}>
-        <Svg width={size} height={size}>
-          <Circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={sw} fill="none" />
-          {kcal > 0 && (
-            <Circle
-              cx={size / 2} cy={size / 2} r={r}
-              stroke={hit ? primary : border}
-              strokeWidth={sw}
-              fill="none"
-              strokeDasharray={circ}
-              strokeDashoffset={circ * (1 - pct)}
-              strokeLinecap="round"
-              rotation="-90"
-              origin={`${size / 2}, ${size / 2}`}
-            />
-          )}
-        </Svg>
-        <View style={{ position: "absolute", top: 0, left: 0, width: size, height: size, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ fontSize: 9, fontWeight: "700", color: hit ? primary : "rgba(245,245,247,0.4)" }}>
-            {kcal > 0 ? `${Math.round(kcal / 100) / 10}k` : "—"}
-          </Text>
-        </View>
-      </View>
-      <Text style={{ fontSize: 10, fontWeight: "600", color: "rgba(245,245,247,0.45)" }}>
-        {day.slice(0, 3)}
-      </Text>
+    <View style={{ flexDirection: "row", alignItems: "flex-end", height: 26, gap: 2 }}>
+      {points.map((h, i) => (
+        <View
+          key={i}
+          style={{
+            flex: 1,
+            height: Math.max(4, 26 * h),
+            backgroundColor: color,
+            borderRadius: 2,
+            opacity: i === points.length - 1 ? 1 : 0.3 + i * 0.08,
+          }}
+        />
+      ))}
     </View>
   );
 }
 
-/** 2-column stat box used inside Today's Targets card. */
-function StatPill({
-  label, value, goal, unit, color, inputBg, muted, mutedMore,
-}: {
-  label: string; value: number; goal: number; unit: string; color: string;
-  inputBg: string; muted: string; mutedMore: string;
-}) {
-  const pct = goal > 0 ? Math.min(value / goal, 1) : 0;
-  const over = value > goal * 1.05;
-  const barColor = over ? "#F97316" : color;
-  return (
-    <View style={{ flex: 1, backgroundColor: inputBg, borderRadius: 14, padding: 14, gap: 6 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-        <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color }} />
-        <Text style={{ fontSize: 11, fontWeight: "600", color: muted }}>{label}</Text>
-      </View>
-      <Text style={{ fontSize: 21, fontWeight: "800", color: barColor }} numberOfLines={1}>
-        {Math.round(value)}
-        <Text style={{ fontSize: 11, fontWeight: "600" }}> {unit}</Text>
-      </Text>
-      <Text style={{ fontSize: 10, color: mutedMore }}>of {goal} {unit}</Text>
-      <View style={{ height: 3, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
-        <View style={{ height: 3, width: `${pct * 100}%`, backgroundColor: barColor, borderRadius: 2 }} />
-      </View>
-    </View>
-  );
-}
-
-/** Skeleton placeholder for loading state. */
+/** Loading skeleton block */
 function Skel({ h, style }: { h: number; style?: object }) {
   return (
     <View style={[{ height: h, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.07)" }, style]} />
@@ -192,16 +128,28 @@ function createStyles(c: AppColors) {
     safe: { flex: 1, backgroundColor: c.bg },
     loader: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: c.bg },
     scroll: { flex: 1 },
-    content: { padding: 16, gap: 14, paddingBottom: 48 },
+    content: { padding: 16, gap: 14, paddingBottom: 52 },
 
-    // Top bar
-    topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-    logo: { fontSize: 18, fontWeight: "900", letterSpacing: 3, color: c.primary },
+    // ── Header ──
+    topBar: {
+      flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    },
+    brand: { flexDirection: "row", alignItems: "center", gap: 8 },
+    brandDot: {
+      width: 8, height: 8, borderRadius: 4, backgroundColor: c.primary,
+    },
+    brandText: { fontSize: 14, fontWeight: "800", letterSpacing: 1.5, color: c.text },
     topRight: { flexDirection: "row", alignItems: "center", gap: 10 },
+    bellWrap: { position: "relative" },
     bellBtn: {
       width: 38, height: 38, borderRadius: 19,
       backgroundColor: c.card, borderWidth: 1, borderColor: c.border,
       justifyContent: "center", alignItems: "center",
+    },
+    bellDot: {
+      position: "absolute", top: 4, right: 4,
+      width: 8, height: 8, borderRadius: 4, backgroundColor: c.danger,
+      borderWidth: 1.5, borderColor: c.bg,
     },
     avatarBadge: {
       width: 38, height: 38, borderRadius: 19,
@@ -209,34 +157,55 @@ function createStyles(c: AppColors) {
     },
     avatarText: { fontSize: 15, fontWeight: "800", color: c.primaryText },
 
-    // Greeting
-    greetText: { fontSize: 28, fontWeight: "800", color: c.text, lineHeight: 34 },
-    subText: { fontSize: 14, color: c.muted, marginTop: 4 },
+    // ── Greeting ──
+    greetText: { fontSize: 27, fontWeight: "800", color: c.text, lineHeight: 33 },
+    subRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 5 },
+    subIcon: { fontSize: 14 },
+    subText: { fontSize: 13, color: c.muted },
+    subHighlight: { color: c.primary, fontWeight: "700" },
 
-    // Stats grid
-    statsRow: { flexDirection: "row", gap: 10, marginBottom: 10 },
-
-    // Progress bar wrapper
-    progressWrap: { marginTop: 2 },
-
-    // Activity card
-    activityRow: { flexDirection: "row", alignItems: "center", gap: 14 },
-    activityIcon: {
-      width: 52, height: 52, borderRadius: 16,
-      backgroundColor: c.inputBg, justifyContent: "center", alignItems: "center",
+    // ── Card shell ──
+    card: {
+      backgroundColor: c.card,
+      borderRadius: 20,
+      padding: 18,
+      borderWidth: 1,
+      borderColor: c.border,
+      gap: 12,
     },
-    activityEmoji: { fontSize: 24 },
-    activityInfo: { flex: 1, gap: 5 },
-    activityName: { fontSize: 14, fontWeight: "700", color: c.text },
-    activityMeta: { flexDirection: "row", gap: 8, flexWrap: "wrap", alignItems: "center" },
-    chip: {
-      fontSize: 12, color: c.muted,
-      backgroundColor: c.inputBg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
+    cardHeader: {
+      flexDirection: "row", justifyContent: "space-between", alignItems: "center",
     },
+    cardTitle: { fontSize: 15, fontWeight: "700", color: c.text },
+    editLink: { fontSize: 13, fontWeight: "600", color: c.primary },
 
-    // Strava CTA
+    // ── Target tiles row ──
+    tilesRow: { flexDirection: "row", gap: 8 },
+
+    // ── On-track row ──
+    trackRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    trackText: { fontSize: 12, color: c.muted },
+    trackPct: { fontSize: 13, fontWeight: "700", color: c.primary },
+
+    // ── Training card ──
+    trainingBody: { flexDirection: "row", alignItems: "center", gap: 12 },
+    trainingLeft: { flex: 3, gap: 5 },
+    trainingTitleRow: { flexDirection: "row", alignItems: "center", gap: 7 },
+    greenDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#22C55E" },
+    trainingTitle: { fontSize: 14, fontWeight: "700", color: c.text, flex: 1 },
+    trainingTime: { fontSize: 12, color: c.muted, marginLeft: 15 },
+    trainingRight: { flex: 2, alignItems: "flex-end", gap: 6 },
+    loadRow: { flexDirection: "row", alignItems: "center", gap: 3 },
+    loadLabel: { fontSize: 11, fontWeight: "600", color: c.muted },
+    closeBtn: {
+      width: 26, height: 26, borderRadius: 13,
+      backgroundColor: c.danger, justifyContent: "center", alignItems: "center",
+    },
+    closeBtnText: { fontSize: 11, fontWeight: "800", color: "#FFF" },
+
+    // ── Strava CTA ──
     stravaCard: {
-      backgroundColor: "#FC4C02", borderRadius: 18, padding: 18,
+      backgroundColor: "#FC4C02", borderRadius: 20, padding: 18,
       flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     },
     stravaLeft: { flexDirection: "row", alignItems: "center", gap: 14, flex: 1 },
@@ -244,39 +213,61 @@ function createStyles(c: AppColors) {
     stravaSub: { fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 2 },
     stravaArrow: { fontSize: 20, color: "#FFF", fontWeight: "700" },
 
-    // Half row
+    // ── Half row ──
     halfRow: { flexDirection: "row", gap: 12 },
 
-    // Meal card
-    mealTag: {
-      alignSelf: "flex-start",
-      fontSize: 10, fontWeight: "700", color: c.primary,
-      backgroundColor: c.primaryAlpha, borderRadius: 6,
-      paddingHorizontal: 7, paddingVertical: 3, marginBottom: 8,
+    // ── Next Meal card ──
+    mealThumb: {
+      width: 48, height: 48, borderRadius: 12,
+      backgroundColor: c.card2, justifyContent: "center", alignItems: "center",
     },
-    mealName: { fontSize: 15, fontWeight: "700", color: c.text, lineHeight: 20 },
-    mealMacro: { fontSize: 11, color: c.muted, marginTop: 4 },
+    mealThumbEmoji: { fontSize: 24 },
+    mealInfo: { flex: 1, gap: 2 },
+    mealName: { fontSize: 14, fontWeight: "700", color: c.text },
+    mealEta: { fontSize: 12, color: c.muted },
+    mealRow: { flexDirection: "row", alignItems: "center", gap: 10 },
 
-    // Grocery card
-    groceryCount: { fontSize: 38, fontWeight: "900", color: c.primary },
-    groceryLabel: { fontSize: 12, color: c.muted, marginTop: 2, marginBottom: 4 },
-
-    // Primary button
-    primaryBtn: {
-      backgroundColor: c.primary, borderRadius: 12,
-      paddingVertical: 10, alignItems: "center", marginTop: 10,
+    // ── Groceries card ──
+    groceryCount: { fontSize: 32, fontWeight: "900", color: c.primary },
+    groceryLabel: { fontSize: 12, color: c.muted },
+    appIconRow: { flexDirection: "row", gap: 6, marginTop: 4 },
+    appIconBox: {
+      width: 28, height: 28, borderRadius: 8,
+      justifyContent: "center", alignItems: "center",
     },
-    primaryBtnText: { fontSize: 13, fontWeight: "800", color: c.primaryText },
-    disabledBtn: { opacity: 0.4 },
+    appIconText: { fontSize: 16 },
 
-    // Weekly row
-    weekRow: { flexDirection: "row", justifyContent: "space-between", paddingTop: 2 },
+    // ── Primary pill button ──
+    pillBtn: {
+      backgroundColor: c.primary, borderRadius: 50,
+      paddingVertical: 9, paddingHorizontal: 14,
+      alignItems: "center", marginTop: 4,
+    },
+    pillBtnText: { fontSize: 13, fontWeight: "800", color: c.primaryText },
+    pillBtnDisabled: { opacity: 0.4 },
 
-    // Grocery export modal
+    // ── Weekly progress ──
+    sectionHeader: {
+      flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+      marginBottom: 4,
+    },
+    sectionTitle: { fontSize: 15, fontWeight: "700", color: c.text },
+    seeAll: { fontSize: 13, fontWeight: "600", color: c.primary },
+
+    // ── Ask Jonno nudge ──
+    jonnoCard: {
+      flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      padding: 18, borderRadius: 20, backgroundColor: c.primary,
+    },
+    jonnoLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
+    jonnoTitle: { fontSize: 15, fontWeight: "800", color: c.primaryText },
+    jonnoSub: { fontSize: 12, color: c.primaryText, opacity: 0.65, marginTop: 1 },
+
+    // ── Grocery sheet ──
     overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.65)", justifyContent: "flex-end" },
     sheet: {
       backgroundColor: "#161616", borderTopLeftRadius: 26, borderTopRightRadius: 26,
-      padding: 24, paddingBottom: 40, gap: 10,
+      padding: 24, paddingBottom: 44, gap: 10,
     },
     sheetTitle: { fontSize: 17, fontWeight: "800", color: "#F5F5F7", marginBottom: 6 },
     sheetBtn: {
@@ -285,8 +276,8 @@ function createStyles(c: AppColors) {
     },
     sheetBtnIcon: { fontSize: 20 },
     sheetBtnText: { fontSize: 15, fontWeight: "600", color: "#F5F5F7" },
-    sheetCancel: { padding: 14, alignItems: "center", marginTop: 2 },
-    sheetCancelText: { fontSize: 15, fontWeight: "600", color: "rgba(245,245,247,0.45)" },
+    sheetCancel: { padding: 14, alignItems: "center" },
+    sheetCancelText: { fontSize: 15, fontWeight: "600", color: "rgba(245,245,247,0.4)" },
   });
 }
 
@@ -302,6 +293,7 @@ export default function DashboardScreen() {
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [trainingVisible, setTrainingVisible] = useState(true);
   const [groceryModal, setGroceryModal] = useState(false);
 
   const firstName = userProfile?.full_name?.split(" ")[0] ?? "Athlete";
@@ -316,15 +308,14 @@ export default function DashboardScreen() {
       if (nd.status === "fulfilled") setTodayData(nd.value);
       if (ad.status === "fulfilled") setLastActivity(ad.value.activities?.[0] ?? null);
 
-      // Optimizer with 6h in-memory cache
+      // Optimizer — 6h client-side cache
       if (!force) {
-        const cached = getCache<OptimizerResponse>(OPTIMIZER_KEY, SIX_HOURS);
-        if (cached) {
-          setGroceryItems(cached.plan?.grocery_list ?? cached.grocery_list ?? []);
+        const hit = getCache<OptimizerResponse>(OPTIMIZER_KEY, SIX_HOURS);
+        if (hit) {
+          setGroceryItems(hit.plan?.grocery_list ?? hit.grocery_list ?? []);
           return;
         }
       }
-
       const od = await apiPost<OptimizerResponse>("/api/optimizer/create", {}).catch(() => null);
       if (od) {
         setCache(OPTIMIZER_KEY, od);
@@ -345,7 +336,7 @@ export default function DashboardScreen() {
     fetchAll(true);
   }, [fetchAll]);
 
-  // Resolved goals — prefer server response, fall back to profile
+  // ── Derived data ──
   const goals: NutritionGoals = todayData?.goals ?? {
     calorie_goal: userProfile?.calorie_goal ?? 2000,
     protein_goal: userProfile?.protein_goal ?? 120,
@@ -360,45 +351,58 @@ export default function DashboardScreen() {
     fat:      todayData?.today?.fat_g              ?? 0,
   };
 
+  const onTrackPct = goals.calorie_goal > 0
+    ? Math.min(Math.round((consumed.calories / goals.calorie_goal) * 100), 100)
+    : 0;
+
   const nextMeal = todayData?.mealLog?.[0] ?? null;
   const weekly   = todayData?.weeklyCalories ?? [];
+  const dayType  = getDayType(lastActivity);
+
+  // Sparkline: use last 7 weekly kcal values normalised 0–1
+  const sparkPoints: number[] = weekly.length >= 2
+    ? (() => {
+        const max = Math.max(...weekly.map((d) => d.kcal), 1);
+        return weekly.slice(-7).map((d) => Math.max(0.08, d.kcal / max));
+      })()
+    : [0.3, 0.55, 0.45, 0.72, 0.6, 0.85, 0.7];
 
   async function handleShare() {
     const lines = groceryItems.map((g) => `• ${g.name} × ${g.qty}${g.unit}`).join("\n");
-    const text = lines.length > 0 ? `Jonno Grocery List:\n\n${lines}` : "Your grocery list is empty.";
+    const text = lines ? `Jonno Grocery List:\n\n${lines}` : "Your grocery list is empty.";
     try { await Share.share({ message: text, title: "Jonno Grocery List" }); } catch { /* cancelled */ }
   }
 
-  // ── Loading state ──
+  // ── Skeleton ──
   if (loading) {
     return (
       <SafeAreaView style={s.safe} edges={["top"]}>
         <View style={s.content}>
-          {/* top bar skeleton */}
           <View style={s.topBar}>
-            <Skel h={20} style={{ width: 80 }} />
+            <Skel h={16} style={{ width: 90 }} />
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Skel h={38} style={{ width: 38, borderRadius: 19 }} />
               <Skel h={38} style={{ width: 38, borderRadius: 19 }} />
             </View>
           </View>
-          <Skel h={34} style={{ width: "60%" }} />
-          <Skel h={18} style={{ width: "45%", marginTop: -6 }} />
-          <Skel h={180} style={{ borderRadius: 20 }} />
-          <Skel h={100} style={{ borderRadius: 20 }} />
+          <Skel h={32} style={{ width: "60%", marginTop: 6 }} />
+          <Skel h={16} style={{ width: "50%" }} />
+          <Skel h={190} style={{ borderRadius: 20 }} />
+          <Skel h={90} style={{ borderRadius: 20 }} />
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <Skel h={150} style={{ flex: 1, borderRadius: 20 }} />
-            <Skel h={150} style={{ flex: 1, borderRadius: 20 }} />
+            <Skel h={160} style={{ flex: 1.2, borderRadius: 20 }} />
+            <Skel h={160} style={{ flex: 1, borderRadius: 20 }} />
           </View>
+          <Skel h={80} style={{ borderRadius: 20 }} />
         </View>
-        <View style={s.loader}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator color={colors.primary} />
         </View>
       </SafeAreaView>
     );
   }
 
-  // ── Main render ──
+  // ── Main ──
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
       <ScrollView
@@ -409,11 +413,18 @@ export default function DashboardScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Top Bar ── */}
+        {/* ── Header ── */}
         <View style={s.topBar}>
+          <View style={s.brand}>
+            <View style={s.brandDot} />
+            <Text style={s.brandText}>JONNO AI</Text>
+          </View>
           <View style={s.topRight}>
-            <View style={s.bellBtn}>
-              <Text style={{ fontSize: 16 }}>🔔</Text>
+            <View style={s.bellWrap}>
+              <View style={s.bellBtn}>
+                <Text style={{ fontSize: 16 }}>🔔</Text>
+              </View>
+              <View style={s.bellDot} />
             </View>
             <TouchableOpacity
               style={s.avatarBadge}
@@ -427,52 +438,64 @@ export default function DashboardScreen() {
 
         {/* ── Greeting ── */}
         <View>
-          <Text style={s.greetText}>{greeting()}, {firstName} 👋</Text>
-          <Text style={s.subText}>
-            {getSubheadline(lastActivity, goals, consumed.calories)}
-          </Text>
+          <Text style={s.greetText}>{greetingWord()}, {firstName} 👋</Text>
+          <View style={s.subRow}>
+            <Text style={s.subIcon}>⚡</Text>
+            <Text style={s.subText}>
+              Today is a{" "}
+              <Text style={s.subHighlight}>{dayType}</Text>
+              {" "}day
+            </Text>
+          </View>
         </View>
 
-        {/* ── Today's Targets ── */}
-        <DashCard
-          title="Today's Targets"
-          rightLabel="Add food →"
-          onRightPress={() => router.push("/(tabs)/nutrition")}
-        >
-          <View style={s.statsRow}>
-            <StatPill
-              label="Calories" value={consumed.calories} goal={goals.calorie_goal} unit="kcal"
-              color="#F97316" inputBg={colors.inputBg} muted={colors.muted} mutedMore={colors.mutedMore}
-            />
-            <StatPill
-              label="Protein" value={consumed.protein} goal={goals.protein_goal} unit="g"
-              color="#10B981" inputBg={colors.inputBg} muted={colors.muted} mutedMore={colors.mutedMore}
-            />
+        {/* ── Card 1: Today's Targets ── */}
+        <View style={s.card}>
+          <View style={s.cardHeader}>
+            <Text style={s.cardTitle}>Today's Targets</Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/nutrition")}
+              activeOpacity={0.7}
+            >
+              <Text style={s.editLink}>Edit</Text>
+            </TouchableOpacity>
           </View>
-          <View style={s.statsRow}>
-            <StatPill
-              label="Carbs" value={consumed.carbs} goal={goals.carbs_goal} unit="g"
-              color="#F59E0B" inputBg={colors.inputBg} muted={colors.muted} mutedMore={colors.mutedMore}
-            />
-            <StatPill
-              label="Fat" value={consumed.fat} goal={goals.fat_goal} unit="g"
-              color="#6366F1" inputBg={colors.inputBg} muted={colors.muted} mutedMore={colors.mutedMore}
-            />
-          </View>
-          <View style={s.progressWrap}>
-            <ProgressBar
-              progress={goals.calorie_goal > 0 ? consumed.calories / goals.calorie_goal : 0}
-              label={
-                consumed.calories >= goals.calorie_goal
-                  ? "Calorie target reached 🎉"
-                  : "You're on track"
-              }
-              color={consumed.calories > goals.calorie_goal * 1.05 ? "#F97316" : colors.primary}
-            />
-          </View>
-        </DashCard>
 
-        {/* ── Training / Strava connect ── */}
+          {/* 4 tiles — SAME ROW, never wraps */}
+          <View style={s.tilesRow}>
+            <TargetTile
+              label="Calories" value={fmtNum(goals.calorie_goal)}
+              unit="kcal" icon="🔥" color="#F97316"
+            />
+            <TargetTile
+              label="Protein" value={`${goals.protein_goal}`}
+              unit="g" icon="🥩" color="#10B981"
+            />
+            <TargetTile
+              label="Carbs" value={`${goals.carbs_goal}`}
+              unit="g" icon="🌾" color="#F59E0B"
+            />
+            <TargetTile
+              label="Fat" value={`${goals.fat_goal}`}
+              unit="g" icon="💧" color="#6366F1"
+            />
+          </View>
+
+          {/* On-track row */}
+          <View style={s.trackRow}>
+            <Text style={s.trackText}>
+              {onTrackPct >= 80 ? "You're on track 🔥" : onTrackPct >= 40 ? "Keep going 💪" : "Let's fuel up 🍽️"}
+            </Text>
+            <Text style={s.trackPct}>{onTrackPct}%</Text>
+          </View>
+
+          <ProgressBar
+            progress={onTrackPct / 100}
+            color={onTrackPct >= 105 ? colors.danger : colors.primary}
+          />
+        </View>
+
+        {/* ── Card 2: Today's Training ── */}
         {!userProfile?.strava_athlete_id ? (
           <TouchableOpacity
             style={s.stravaCard}
@@ -488,140 +511,169 @@ export default function DashboardScreen() {
             </View>
             <Text style={s.stravaArrow}>→</Text>
           </TouchableOpacity>
-        ) : (
-          <DashCard
-            title="Today's Training"
-            rightLabel="See all →"
-            onRightPress={() => router.push("/(tabs)/activity")}
-          >
+        ) : trainingVisible ? (
+          <View style={s.card}>
+            <View style={s.cardHeader}>
+              <Text style={s.cardTitle}>Today's Training (Strava)</Text>
+              <TouchableOpacity
+                style={s.closeBtn}
+                onPress={() => setTrainingVisible(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={s.closeBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
             {lastActivity ? (() => {
               const load = loadLabel(lastActivity);
+              const loadColor = load === "High" ? colors.danger : load === "Moderate" ? "#F59E0B" : "#22C55E";
               return (
-                <View style={s.activityRow}>
-                  <View style={s.activityIcon}>
-                    <Text style={s.activityEmoji}>
-                      {ACTIVITY_EMOJI[lastActivity.type] ?? "⚡"}
+                <View style={s.trainingBody}>
+                  {/* Left: activity info */}
+                  <View style={s.trainingLeft}>
+                    <View style={s.trainingTitleRow}>
+                      <View style={s.greenDot} />
+                      <Text style={s.trainingTitle} numberOfLines={1}>
+                        {lastActivity.type} — {formatDist(lastActivity.distance_meters)}
+                      </Text>
+                    </View>
+                    <Text style={s.trainingTime}>
+                      {isToday(lastActivity.started_at) ? "Today" : "Recent"},{" "}
+                      {formatTime(lastActivity.started_at)}
                     </Text>
                   </View>
-                  <View style={s.activityInfo}>
-                    <Text style={s.activityName}>{lastActivity.name}</Text>
-                    <View style={s.activityMeta}>
-                      {formatDistance(lastActivity.distance_meters) && (
-                        <Text style={s.chip}>{formatDistance(lastActivity.distance_meters)}</Text>
-                      )}
-                      <Text style={s.chip}>{formatDuration(lastActivity.duration_seconds)}</Text>
-                      {!!lastActivity.calories && (
-                        <Text style={s.chip}>{Math.round(lastActivity.calories)} kcal</Text>
-                      )}
-                      <View style={{ backgroundColor: `${loadColor(load)}22`, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                        <Text style={{ fontSize: 11, fontWeight: "700", color: loadColor(load) }}>
-                          Load: {load}
-                        </Text>
-                      </View>
+
+                  {/* Right: sparkline + load badge */}
+                  <View style={s.trainingRight}>
+                    <MiniSparkline points={sparkPoints} color={colors.primary} />
+                    <View style={s.loadRow}>
+                      <Text style={s.loadLabel}>Load: </Text>
+                      <Text style={{ fontSize: 11, fontWeight: "700", color: loadColor }}>
+                        {load}
+                      </Text>
                     </View>
                   </View>
                 </View>
               );
             })() : (
               <Text style={{ fontSize: 13, color: colors.muted }}>
-                No recent activities. Pull to refresh or sync in the Activity tab.
+                No activities yet. Sync in the Activity tab.
               </Text>
             )}
-          </DashCard>
-        )}
+          </View>
+        ) : null}
 
-        {/* ── Next Meal + Groceries ── */}
+        {/* ── Cards 3 + 4: Next Meal | Groceries ── */}
         <View style={s.halfRow}>
-          {/* Next Meal */}
-          <DashCard title="Next Meal" style={{ flex: 1 }}>
+          {/* Next Meal — slightly wider */}
+          <View style={[s.card, { flex: 1.2, gap: 10 }]}>
+            <Text style={s.cardTitle}>Next Meal</Text>
+
             {nextMeal ? (
               <>
-                <Text style={s.mealTag}>{nextMeal.tag}</Text>
-                <Text style={s.mealName} numberOfLines={2}>{nextMeal.name}</Text>
-                <Text style={s.mealMacro}>
-                  {nextMeal.calories} kcal · {nextMeal.protein}g P · {nextMeal.carbs}g C
-                </Text>
+                <View style={s.mealRow}>
+                  <View style={s.mealThumb}>
+                    <Text style={s.mealThumbEmoji}>
+                      {nextMeal.tag === "Breakfast" ? "🥣" :
+                       nextMeal.tag === "Lunch" ? "🥗" :
+                       nextMeal.tag === "Dinner" ? "🍗" : "🥨"}
+                    </Text>
+                  </View>
+                  <View style={s.mealInfo}>
+                    <Text style={s.mealName} numberOfLines={2}>{nextMeal.name}</Text>
+                    <Text style={s.mealEta}>{nextMeal.tag}</Text>
+                  </View>
+                </View>
                 <TouchableOpacity
-                  style={s.primaryBtn}
+                  style={s.pillBtn}
                   onPress={() => router.push("/(tabs)/meals")}
                   activeOpacity={0.85}
                 >
-                  <Text style={s.primaryBtnText}>View Recipe →</Text>
+                  <Text style={s.pillBtnText}>View Recipe →</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
-                <Text style={{ fontSize: 13, color: colors.muted, marginBottom: 4 }}>
-                  No meal plan yet.
-                </Text>
+                <Text style={{ fontSize: 12, color: colors.muted }}>No meal plan yet.</Text>
                 <TouchableOpacity
-                  style={s.primaryBtn}
+                  style={s.pillBtn}
                   onPress={() => router.push("/(tabs)/meals")}
                   activeOpacity={0.85}
                 >
-                  <Text style={s.primaryBtnText}>Build Plan →</Text>
+                  <Text style={s.pillBtnText}>Build Plan →</Text>
                 </TouchableOpacity>
               </>
             )}
-          </DashCard>
+          </View>
 
           {/* Groceries */}
-          <DashCard title="Groceries" style={{ flex: 1 }}>
+          <View style={[s.card, { flex: 1, gap: 6 }]}>
+            <Text style={s.cardTitle}>Groceries</Text>
             <Text style={s.groceryCount}>{groceryItems.length}</Text>
             <Text style={s.groceryLabel}>
-              {groceryItems.length === 1 ? "item" : "items"} in list
+              {groceryItems.length === 1 ? "item" : "items"}
             </Text>
             <TouchableOpacity
-              style={[s.primaryBtn, groceryItems.length === 0 && s.disabledBtn]}
+              style={[s.pillBtn, groceryItems.length === 0 && s.pillBtnDisabled]}
               onPress={() => setGroceryModal(true)}
               activeOpacity={0.85}
               disabled={groceryItems.length === 0}
             >
-              <Text style={s.primaryBtnText}>Export →</Text>
+              <Text style={s.pillBtnText}>Export →</Text>
             </TouchableOpacity>
-          </DashCard>
+            {/* App icons */}
+            <View style={s.appIconRow}>
+              {[
+                { emoji: "🛵", bg: "#06B6D4" },
+                { emoji: "🛒", bg: "#16A34A" },
+                { emoji: "🏪", bg: "#7C3AED" },
+              ].map((app) => (
+                <View key={app.emoji} style={[s.appIconBox, { backgroundColor: app.bg }]}>
+                  <Text style={s.appIconText}>{app.emoji}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
         </View>
 
         {/* ── Weekly Progress ── */}
-        {weekly.length > 0 && (
-          <DashCard
-            title="Weekly Progress"
-            rightLabel="Nutrition →"
-            onRightPress={() => router.push("/(tabs)/nutrition")}
-          >
-            <View style={s.weekRow}>
-              {weekly.map((d) => (
-                <DayRing
-                  key={d.date}
-                  day={d.day}
-                  kcal={d.kcal}
-                  target={d.target}
-                  primary={colors.primary}
-                  border={colors.border}
-                />
-              ))}
-            </View>
-          </DashCard>
-        )}
+        <View style={s.card}>
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionTitle}>Weekly Progress</Text>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/nutrition")} activeOpacity={0.7}>
+              <Text style={s.seeAll}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          <WeeklyChips
+            days={
+              weekly.length > 0
+                ? weekly
+                : Array.from({ length: 7 }, (_, i) => {
+                    const d = new Date(Date.now() - (6 - i) * 86400000);
+                    return {
+                      date: d.toISOString().split("T")[0],
+                      day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()],
+                      kcal: 0,
+                      target: goals.calorie_goal,
+                    };
+                  })
+            }
+            primary={colors.primary}
+            primaryText={colors.primaryText}
+          />
+        </View>
 
-        {/* ── Ask Jonno nudge ── */}
+        {/* ── Ask Jonno CTA ── */}
         <TouchableOpacity
+          style={s.jonnoCard}
           onPress={() => router.push("/(tabs)/agent")}
           activeOpacity={0.85}
-          style={{
-            flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-            padding: 18, borderRadius: 18, backgroundColor: colors.primary,
-          }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <View style={s.jonnoLeft}>
             <Text style={{ fontSize: 20 }}>✦</Text>
             <View>
-              <Text style={{ fontSize: 15, fontWeight: "800", color: colors.primaryText }}>
-                Ask Jonno
-              </Text>
-              <Text style={{ fontSize: 12, color: colors.primaryText, opacity: 0.65, marginTop: 1 }}>
-                Get personalised nutrition advice
-              </Text>
+              <Text style={s.jonnoTitle}>Ask Jonno</Text>
+              <Text style={s.jonnoSub}>Get personalised nutrition advice</Text>
             </View>
           </View>
           <Text style={{ fontSize: 18, color: colors.primaryText, fontWeight: "700" }}>→</Text>
@@ -636,7 +688,6 @@ export default function DashboardScreen() {
         onRequestClose={() => setGroceryModal(false)}
       >
         <View style={s.overlay}>
-          {/* Tap outside to dismiss */}
           <TouchableOpacity
             style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
             onPress={() => setGroceryModal(false)}
@@ -652,10 +703,7 @@ export default function DashboardScreen() {
 
             <TouchableOpacity
               style={s.sheetBtn}
-              onPress={() => {
-                setGroceryModal(false);
-                Linking.openURL("https://www.ubereats.com/au");
-              }}
+              onPress={() => { setGroceryModal(false); Linking.openURL("https://www.ubereats.com/au"); }}
             >
               <Text style={s.sheetBtnIcon}>🛵</Text>
               <Text style={s.sheetBtnText}>Open Uber Eats</Text>
@@ -663,10 +711,7 @@ export default function DashboardScreen() {
 
             <TouchableOpacity
               style={s.sheetBtn}
-              onPress={() => {
-                setGroceryModal(false);
-                Linking.openURL("https://www.woolworths.com.au/shop");
-              }}
+              onPress={() => { setGroceryModal(false); Linking.openURL("https://www.woolworths.com.au/shop"); }}
             >
               <Text style={s.sheetBtnIcon}>🛒</Text>
               <Text style={s.sheetBtnText}>Open Woolworths</Text>

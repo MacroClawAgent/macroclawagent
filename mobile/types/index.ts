@@ -50,6 +50,36 @@ export interface MealItem {
   fat: number;
 }
 
+export interface HomeToday {
+  greetingName: string;
+  dayType: string; // e.g. "Run + Strength"
+  targets: {
+    caloriesGoal: number;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+    onTrackPct: number;
+    caloriesConsumed?: number;
+  };
+  training?: {
+    title: string;
+    subtitle: string;
+    distanceKm: number;
+    loadLabel: "Low" | "Moderate" | "High";
+    sparkPoints?: number[];
+  };
+  nextMeal?: {
+    name: string;
+    etaMinutes: number;
+    tag?: string;
+    imageUrl?: string;
+  };
+  groceries?: {
+    itemCount: number;
+    exportApps: string[];
+  };
+}
+
 export interface MealPlanRow {
   id: string;
   date: string;

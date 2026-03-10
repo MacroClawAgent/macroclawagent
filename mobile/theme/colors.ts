@@ -7,10 +7,12 @@ export const darkColors = {
   primaryText: "#0B0B0B",
   muted: "rgba(245,245,247,0.55)",
   mutedMore: "rgba(245,245,247,0.35)",
-  card: "rgba(255,255,255,0.07)",
-  border: "rgba(255,255,255,0.1)",
+  card: "rgba(255,255,255,0.06)",
+  card2: "rgba(255,255,255,0.10)",
+  border: "rgba(255,255,255,0.08)",
   inputBg: "rgba(255,255,255,0.08)",
   primaryAlpha: "rgba(212,255,0,0.12)",
+  danger: "#FF4D4D",
 };
 
 // Light palette mirrors the website (Coastal Sunrise / teal brand)
@@ -22,9 +24,11 @@ export const lightColors = {
   muted: "#6B7280",
   mutedMore: "#9CA3AF",
   card: "#FFFFFF",
+  card2: "#F3F4F6",
   border: "#E5E7EB",
   inputBg: "#FFFFFF",
   primaryAlpha: "rgba(32,199,183,0.12)",
+  danger: "#EF4444",
 };
 
 export type AppColors = typeof darkColors;
