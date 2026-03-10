@@ -411,7 +411,6 @@ export default function DashboardScreen() {
       >
         {/* ── Top Bar ── */}
         <View style={s.topBar}>
-          <Text style={s.logo}>JONNO</Text>
           <View style={s.topRight}>
             <View style={s.bellBtn}>
               <Text style={{ fontSize: 16 }}>🔔</Text>
