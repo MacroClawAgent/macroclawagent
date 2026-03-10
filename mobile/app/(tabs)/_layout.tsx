@@ -31,6 +31,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedMore,
         tabBarStyle: {
@@ -43,18 +44,6 @@ export default function TabLayout() {
           fontSize: 11,
           fontWeight: "600",
           marginBottom: Platform.OS === "ios" ? 0 : 4,
-        },
-        headerStyle: {
-          backgroundColor: colors.bg,
-          borderBottomColor: colors.border,
-          borderBottomWidth: 1,
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-        headerTitleStyle: {
-          fontWeight: "800",
-          fontSize: 17,
-          color: colors.text,
         },
       }}
     >
