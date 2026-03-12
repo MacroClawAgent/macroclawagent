@@ -180,7 +180,7 @@ export default function OnboardingPage() {
       : form.weight.trim() && form.height_ft.trim();
 
   return (
-    <div className="min-h-screen bg-[#08090D] flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-[#08090D] flex flex-col items-center justify-start sm:justify-center px-6 py-10 overflow-y-auto">
       {/* Decorative orbs */}
       <div className="fixed top-1/4 left-1/4 w-96 h-96 rounded-full bg-indigo-900/10 blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-violet-900/08 blur-3xl pointer-events-none" />
@@ -215,7 +215,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Card */}
-        <div className="glass-card p-8">
+        <div className="glass-card p-6 sm:p-8">
           <AnimatePresence mode="wait">
             {/* STEP 1 — Identity */}
             {step === 1 && (
