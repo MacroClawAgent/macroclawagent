@@ -189,14 +189,14 @@ export function Hero() {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-6 pb-0">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-4 items-end">
+        <div className="flex flex-col lg:flex-row items-end justify-center gap-6 lg:gap-8">
 
           {/* ── LEFT: Content ── */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-7 items-center lg:items-start text-center lg:text-left pb-6 lg:pb-10"
+            className="flex flex-col gap-7 items-center lg:items-start text-center lg:text-left pb-6 lg:pb-10 lg:max-w-md flex-shrink-0"
           >
             {/* Beta badge */}
             <motion.div variants={itemVariants}>
@@ -274,7 +274,7 @@ export function Hero() {
           </motion.div>
 
           {/* ── MIDDLE: Mascot ── */}
-          <div className="hidden lg:flex relative z-10 justify-center items-end self-end">
+          <div className="hidden lg:flex relative z-10 justify-center items-end flex-shrink-0">
             <div
               className="select-none"
               style={{ filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.15))", marginBottom: -2 }}
@@ -283,13 +283,13 @@ export function Hero() {
               <img
                 src="/mascot.png"
                 alt="Jonno mascot"
-                style={{ height: 660, width: "auto", objectFit: "contain", display: "block" }}
+                style={{ height: 420, width: "auto", objectFit: "contain", display: "block" }}
               />
             </div>
           </div>
 
-          {/* ── RIGHT: Phone mockup floating above the scene ── */}
-          <div className="relative z-10 flex justify-center lg:justify-center items-end pb-0">
+          {/* ── RIGHT: Phone mockup ── */}
+          <div className="relative z-10 flex justify-center items-end flex-shrink-0">
             <PhoneMockup />
           </div>
         </div>
