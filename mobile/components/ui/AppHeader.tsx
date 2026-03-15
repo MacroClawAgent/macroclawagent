@@ -12,6 +12,8 @@ interface AppHeaderProps {
   showBack?: boolean;
   rightElement?: React.ReactNode;
   onAvatarPress?: () => void;
+  textColor?: string;
+  avatarColor?: string;
 }
 
 export function AppHeader({
@@ -21,8 +23,13 @@ export function AppHeader({
   showBack = false,
   rightElement,
   onAvatarPress,
+  textColor,
+  avatarColor,
 }: AppHeaderProps) {
   const { colors } = useTheme();
+  const resolvedText = textColor ?? colors.textPrimary;
+  const resolvedDot = textColor ?? colors.teal;
+  const resolvedAvatar = avatarColor ?? colors.teal;
   const { userProfile } = useAuth();
   const router = useRouter();
 
@@ -35,16 +42,16 @@ export function AppHeader({
       <View style={styles.left}>
         {showBack ? (
           <TouchableOpacity onPress={handleBack} activeOpacity={0.7} style={styles.backBtn}>
-            <Text style={[styles.backArrow, { color: colors.textPrimary }]}>←</Text>
+            <Text style={[styles.backArrow, { color: resolvedText }]}>←</Text>
           </TouchableOpacity>
         ) : null}
         {wordmark ? (
           <View style={styles.wordmark}>
-            <View style={[styles.wordmarkDot, { backgroundColor: colors.teal }]} />
-            <Text style={[styles.wordmarkText, { color: colors.textPrimary }]}>JONNO</Text>
+            <View style={[styles.wordmarkDot, { backgroundColor: resolvedDot }]} />
+            <Text style={[styles.wordmarkText, { color: resolvedText }]}>JONNO</Text>
           </View>
         ) : title ? (
-          <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+          <Text style={[styles.title, { color: resolvedText }]}>{title}</Text>
         ) : null}
       </View>
 
@@ -56,7 +63,7 @@ export function AppHeader({
             name={userProfile?.full_name ?? ""}
             onPress={handleAvatarPress}
             size={36}
-            color={colors.teal}
+            color={resolvedAvatar}
           />
         ) : null}
       </View>

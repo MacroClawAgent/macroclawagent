@@ -15,7 +15,7 @@ function SkeletonCard() {
     <View
       style={[
         styles.skeleton,
-        { backgroundColor: colors.surface, borderColor: colors.border },
+        { backgroundColor: "rgba(255,255,255,0.2)", borderColor: "transparent" },
       ]}
     />
   );
@@ -26,8 +26,8 @@ export default function HomeScreen() {
   const vm = useHomeViewModel();
 
   return (
-    <Screen>
-      <AppHeader wordmark showAvatar />
+    <Screen style={{ backgroundColor: "#20C7B7" }}>
+      <AppHeader wordmark showAvatar textColor="#FFF" avatarColor="rgba(255,255,255,0.25)" />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -35,13 +35,13 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={vm.refreshing}
             onRefresh={vm.refresh}
-            tintColor={colors.teal}
+            tintColor="#FFF"
           />
         }
       >
         {/* Greeting */}
         <View style={styles.greeting}>
-          <Text style={[styles.greetingText, { color: colors.textPrimary }]}>
+          <Text style={[styles.greetingText, { color: "#FFF" }]}>
             {vm.greeting}, {vm.userName} 👋
           </Text>
         </View>
