@@ -327,61 +327,66 @@ export default function FeaturesPage() {
         {/* Hero */}
         <section className="relative py-16 md:py-24 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(32,199,183,0.08) 0%, transparent 70%)" }} />
-          <div className="max-w-4xl mx-auto px-6 relative text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex flex-col items-center gap-7"
-            >
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border" style={{ backgroundColor: "rgba(76,125,255,0.08)", borderColor: "rgba(76,125,255,0.25)", color: "#4C7DFF" }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#4C7DFF" }} />
-                Currently in beta
-              </span>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.92]" style={{ color: "#1C1C1E" }}>
-                How Jonno works,{" "}
-                <span style={{ color: "#20C7B7" }}>feature by feature.</span>
-              </h1>
-              <p className="text-lg leading-relaxed max-w-2xl" style={{ color: "#6B7280" }}>
-                Strava sync is live. AI coaching is live. Uber Eats cart integration is rolling out. Here is exactly what the app does and how each piece connects.
-              </p>
-              <Link
-                href="/join"
-                className="inline-flex items-center justify-center gap-2 font-bold px-8 py-3.5 rounded-full text-sm transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#4C7DFF", color: "#FFFFFF" }}
-              >
-                Join the Beta
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <div className="flex flex-wrap gap-3 justify-center">
-                {[
-                  { label: "Strava sync live", dot: "#20C7B7" },
-                  { label: "AI coaching live", dot: "#4C7DFF" },
-                  { label: "Uber Eats rolling out", dot: "#F59E0B" },
-                ].map((p) => (
-                  <div key={p.label} className="flex items-center gap-2 px-4 py-2 rounded-full border" style={{ backgroundColor: "#FFFFFF", borderColor: "#E5E7EB" }}>
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: p.dot }} />
-                    <span className="text-xs font-medium" style={{ color: "#6B7280" }}>{p.label}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="max-w-7xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 lg:grid-cols-2 items-end gap-10 lg:gap-8">
 
-              {/* Mascot */}
+              {/* Left: copy */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="select-none"
-                style={{ filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.12))" }}
+                transition={{ duration: 0.6 }}
+                className="flex flex-col items-center lg:items-start gap-7 text-center lg:text-left pb-6"
+              >
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border" style={{ backgroundColor: "rgba(76,125,255,0.08)", borderColor: "rgba(76,125,255,0.25)", color: "#4C7DFF" }}>
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#4C7DFF" }} />
+                  Currently in beta
+                </span>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.92]" style={{ color: "#1C1C1E" }}>
+                  How Jonno works,{" "}
+                  <span style={{ color: "#20C7B7" }}>feature by feature.</span>
+                </h1>
+                <p className="text-lg leading-relaxed max-w-xl" style={{ color: "#6B7280" }}>
+                  Strava sync is live. AI coaching is live. Uber Eats cart integration is rolling out. Here is exactly what the app does and how each piece connects.
+                </p>
+                <Link
+                  href="/join"
+                  className="inline-flex items-center justify-center gap-2 font-bold px-8 py-3.5 rounded-full text-sm transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: "#4C7DFF", color: "#FFFFFF" }}
+                >
+                  Join the Beta
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+                  {[
+                    { label: "Strava sync live", dot: "#20C7B7" },
+                    { label: "AI coaching live", dot: "#4C7DFF" },
+                    { label: "Uber Eats rolling out", dot: "#F59E0B" },
+                  ].map((p) => (
+                    <div key={p.label} className="flex items-center gap-2 px-4 py-2 rounded-full border" style={{ backgroundColor: "#FFFFFF", borderColor: "#E5E7EB" }}>
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: p.dot }} />
+                      <span className="text-xs font-medium" style={{ color: "#6B7280" }}>{p.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Right: mascot */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="flex justify-center lg:justify-end items-end select-none"
+                style={{ filter: "drop-shadow(0 24px 48px rgba(0,0,0,0.13))" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/mascot.png"
                   alt="Jonno mascot"
-                  style={{ height: 300, width: "auto", objectFit: "contain", display: "block" }}
+                  style={{ height: 460, width: "auto", objectFit: "contain", display: "block" }}
                 />
               </motion.div>
-            </motion.div>
+
+            </div>
           </div>
         </section>
 
