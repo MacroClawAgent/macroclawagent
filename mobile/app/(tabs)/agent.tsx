@@ -8,6 +8,7 @@ import { AgentStatusHeader } from "@/components/features/agent/AgentStatusHeader
 import { MacroMiniCard } from "@/components/features/agent/MacroMiniCard";
 import { ChatBubble } from "@/components/features/agent/ChatBubble";
 import { PromptChip } from "@/components/features/agent/PromptChip";
+import { SmartCartCTACard } from "@/components/features/agent/SmartCartCTACard";
 import { useTheme } from "@/context/ThemeContext";
 import { useAgentViewModel } from "@/lib/viewModels/useAgentViewModel";
 
@@ -22,7 +23,11 @@ export default function AgentScreen() {
     }
   }, [vm.messages.length]);
 
+  // Show prompts when conversation is fresh (only welcome message) and not currently sending
   const showPrompts = vm.messages.length <= 1 && !vm.sending && !vm.loading;
+
+  // Show 3rd macro card for activity if available
+  const showActivityCard = vm.activityContext !== null;
 
   return (
     <Screen edges={["top"]}>
@@ -33,11 +38,34 @@ export default function AgentScreen() {
       >
         <AgentStatusHeader />
 
-        <View style={styles.macroRow}>
-          <MacroMiniCard label="Calories" consumed={vm.macroContext.calories} target={vm.macroContext.caloriesTarget} unit="kcal" color={colors.macroCalories} />
-          <MacroMiniCard label="Protein" consumed={vm.macroContext.protein} target={vm.macroContext.proteinTarget} unit="g" color={colors.macroProtein} />
+        {/* Macro context strip */}
+        <View style={[styles.macroRow, showActivityCard && styles.macroRowThree]}>
+          <MacroMiniCard
+            label="Calories"
+            consumed={vm.macroContext.calories}
+            target={vm.macroContext.caloriesTarget}
+            unit="kcal"
+            color={colors.macroCalories}
+          />
+          <MacroMiniCard
+            label="Protein"
+            consumed={vm.macroContext.protein}
+            target={vm.macroContext.proteinTarget}
+            unit="g"
+            color={colors.macroProtein}
+          />
+          {showActivityCard && (
+            <MacroMiniCard
+              label={vm.activityContext!.type}
+              consumed={vm.activityContext!.kcal}
+              target={vm.activityContext!.kcal}
+              unit="kcal"
+              color={colors.orange}
+            />
+          )}
         </View>
 
+        {/* Chat messages */}
         <FlatList
           ref={listRef}
           data={vm.messages}
@@ -48,14 +76,28 @@ export default function AgentScreen() {
           ListFooterComponent={vm.sending ? <ChatBubble role="assistant" content="…" /> : null}
         />
 
+        {/* Suggested prompts (fresh session only) */}
         {showPrompts ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.prompts}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.prompts}
+          >
             {vm.suggestedPrompts.map((p) => (
               <PromptChip key={p} label={p} onPress={() => vm.setInput(p)} />
             ))}
           </ScrollView>
         ) : null}
 
+        {/* Smart Cart CTA — shown when agent proposes a plan */}
+        {vm.pendingSmartCartAction ? (
+          <SmartCartCTACard
+            onConfirm={vm.confirmSmartCart}
+            onDismiss={vm.dismissSmartCart}
+          />
+        ) : null}
+
+        {/* Input row */}
         <View style={[styles.inputRow, { backgroundColor: colors.bg, borderTopColor: colors.border }]}>
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
@@ -85,6 +127,7 @@ export default function AgentScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   macroRow: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingBottom: 12 },
+  macroRowThree: { gap: 8 },
   messages: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
   prompts: { paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
   inputRow: {

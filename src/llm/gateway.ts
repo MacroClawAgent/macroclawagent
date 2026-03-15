@@ -214,7 +214,7 @@ export async function callLLM(rawRequest: unknown): Promise<LLMResponse | null> 
   return null;
 }
 
-// ── Agent Chat Gateway ────────────────────────────────────────
+// ── Agent Chat Gateway (legacy — used by web /api/agent/messages) ─────────
 // Simplified gateway for free-form agent chat (not plan generation).
 // Scope guard still enforced via system prompt.
 
@@ -248,6 +248,38 @@ export async function callAgentChat(
       : "I couldn't generate a response. Please try again.";
   } catch (err) {
     console.error("[LLM Gateway] Agent chat error:", err);
+    return "I'm having trouble right now. Please try again in a moment.";
+  }
+}
+
+// ── Context-Aware Agent Gateway ───────────────────────────────────────────
+// Used by the new /api/agent/chat route (mobile app).
+// Takes a fully-built system prompt with injected user context rather than
+// assembling a shallow context blob inline. Shorter max_tokens for app-native
+// concise responses.
+
+export async function callAgentWithContext(
+  userMessage: string,
+  systemPrompt: string
+): Promise<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return "I'm not available right now — please try again later.";
+
+  const client = new Anthropic({ apiKey });
+
+  try {
+    const response = await client.messages.create({
+      model: MODEL,
+      max_tokens: 600,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+    });
+    const textBlock = response.content.find((b) => b.type === "text");
+    return textBlock && textBlock.type === "text"
+      ? textBlock.text
+      : "I couldn't generate a response. Please try again.";
+  } catch (err) {
+    console.error("[LLM Gateway] callAgentWithContext error:", err);
     return "I'm having trouble right now. Please try again in a moment.";
   }
 }
