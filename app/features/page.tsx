@@ -365,6 +365,22 @@ export default function FeaturesPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Mascot */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="select-none"
+                style={{ filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.12))" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/mascot.png"
+                  alt="Jonno mascot"
+                  style={{ height: 300, width: "auto", objectFit: "contain", display: "block" }}
+                />
+              </motion.div>
             </motion.div>
           </div>
         </section>

@@ -273,21 +273,6 @@ export function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* ── MIDDLE: Mascot ── */}
-          <div className="hidden lg:flex relative z-10 justify-center items-end flex-shrink-0">
-            <div
-              className="select-none"
-              style={{ filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.15))", marginBottom: -2 }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/mascot.png"
-                alt="Jonno mascot"
-                style={{ height: 420, width: "auto", objectFit: "contain", display: "block" }}
-              />
-            </div>
-          </div>
-
           {/* ── RIGHT: Phone mockup ── */}
           <div className="relative z-10 flex justify-center items-end flex-shrink-0">
             <PhoneMockup />
