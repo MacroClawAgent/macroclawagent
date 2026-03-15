@@ -19,7 +19,7 @@ async function getDashboardData() {
 
     const { data: profile } = await supabase
       .from("users")
-      .select("full_name, avatar_url, profile_complete, calorie_goal, protein_goal, carbs_goal, fat_goal")
+      .select("full_name, avatar_url, profile_complete, calorie_goal, protein_goal, carbs_goal, fat_goal, strava_athlete_id")
       .eq("id", user.id)
       .single();
     if (!profile?.profile_complete) redirect("/onboarding");
@@ -60,6 +60,7 @@ async function getDashboardData() {
     return {
       full_name: profile.full_name ?? null,
       avatar_url: profile.avatar_url ?? null,
+      stravaConnected: !!profile.strava_athlete_id,
       nutrition,
       mealPlan,
       activities,
@@ -144,10 +145,19 @@ export default async function DashboardPage() {
               Here&apos;s your performance overview for today
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-semibold text-emerald-400">Strava synced</span>
-          </div>
+          {data?.stravaConnected ? (
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs font-semibold text-emerald-400">Strava synced</span>
+            </div>
+          ) : (
+            <a
+              href="/api/strava/connect"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-colors"
+            >
+              <span className="text-xs font-semibold text-orange-400">Connect Strava</span>
+            </a>
+          )}
         </div>
 
         {/* Quick Stats Row */}
@@ -191,7 +201,7 @@ export default async function DashboardPage() {
 
           {/* Strava Activity — full width bottom */}
           <div className="lg:col-span-4">
-            <StravaActivity activities={data?.activities} />
+            <StravaActivity activities={data?.activities} stravaConnected={data?.stravaConnected ?? false} />
           </div>
         </div>
       </div>

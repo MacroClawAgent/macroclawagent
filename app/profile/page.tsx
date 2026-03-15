@@ -46,6 +46,8 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [stravaConnected, setStravaConnected] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   const [form, setForm] = useState<ProfileData>({
     full_name: "",
@@ -73,11 +75,12 @@ export default function ProfilePage() {
 
         const { data } = await supabase
           .from("users")
-          .select("full_name, date_of_birth, gender, weight_kg, height_cm, unit_preference, avatar_url")
+          .select("full_name, date_of_birth, gender, weight_kg, height_cm, unit_preference, avatar_url, strava_athlete_id")
           .eq("id", user.id)
           .single();
 
         if (data) {
+          setStravaConnected(!!data.strava_athlete_id);
           const isImperial = data.unit_preference === "imperial";
           setForm({
             full_name: data.full_name ?? "",
@@ -171,6 +174,16 @@ export default function ProfilePage() {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleStravaDisconnect = async () => {
+    setDisconnecting(true);
+    try {
+      await fetch("/api/strava/disconnect", { method: "DELETE" });
+      setStravaConnected(false);
+    } catch { /* ignore */ } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -375,6 +388,43 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+
+          <div className="h-px bg-white/[0.07]" />
+
+          {/* Strava Integration */}
+          <div className="flex flex-col gap-3">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Integrations</label>
+            <div className="flex items-center justify-between px-4 py-3 bg-white/[0.04] border border-white/10 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                  <span className="text-sm">🏃</span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-200">Strava</p>
+                  <p className="text-xs text-slate-500">
+                    {stravaConnected ? "Connected — activities sync automatically" : "Not connected"}
+                  </p>
+                </div>
+              </div>
+              {stravaConnected ? (
+                <button
+                  type="button"
+                  onClick={handleStravaDisconnect}
+                  disabled={disconnecting}
+                  className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                >
+                  {disconnecting ? "Disconnecting…" : "Disconnect"}
+                </button>
+              ) : (
+                <a
+                  href="/api/strava/connect"
+                  className="px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-400 hover:bg-orange-500/20 transition-colors"
+                >
+                  Connect
+                </a>
+              )}
+            </div>
+          </div>
 
           {/* Feedback */}
           {error && (

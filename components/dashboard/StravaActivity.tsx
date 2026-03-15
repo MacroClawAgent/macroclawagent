@@ -12,6 +12,7 @@ import type { ActivityRow as ActivityRowType } from "@/types/database";
 
 interface StravaActivityProps {
   activities?: ActivityRowType[];
+  stravaConnected?: boolean;
 }
 
 function formatDistance(meters: number): string {
@@ -102,7 +103,7 @@ function ActivitySkeleton() {
   );
 }
 
-export function StravaActivity({ activities: activitiesProp }: StravaActivityProps) {
+export function StravaActivity({ activities: activitiesProp, stravaConnected = false }: StravaActivityProps) {
   const loading = activitiesProp === undefined;
   const activities = activitiesProp ?? [];
   const totalCalories = activities.reduce((acc, a) => acc + a.calories, 0);
@@ -130,11 +131,25 @@ export function StravaActivity({ activities: activitiesProp }: StravaActivityPro
         </div>
       </CardHeader>
       <CardContent className="px-4">
-        {loading
-          ? [0, 1, 2, 3].map((i) => <ActivitySkeleton key={i} />)
-          : activities.map((activity, index) => (
-              <ActivityRow key={activity.id} activity={activity} delay={index * 0.08} />
-            ))}
+        {loading ? (
+          [0, 1, 2, 3].map((i) => <ActivitySkeleton key={i} />)
+        ) : !stravaConnected ? (
+          <div className="flex flex-col items-center justify-center py-8 gap-3 text-center">
+            <p className="text-sm text-slate-500">Connect Strava to see your activities here.</p>
+            <a
+              href="/api/strava/connect"
+              className="px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-400 hover:bg-orange-500/20 transition-colors"
+            >
+              Connect Strava
+            </a>
+          </div>
+        ) : activities.length === 0 ? (
+          <p className="py-8 text-center text-sm text-slate-500">No activities synced yet.</p>
+        ) : (
+          activities.map((activity, index) => (
+            <ActivityRow key={activity.id} activity={activity} delay={index * 0.08} />
+          ))
+        )}
       </CardContent>
     </Card>
   );
