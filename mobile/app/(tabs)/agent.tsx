@@ -1,12 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import {
-  FlatList, KeyboardAvoidingView, Platform, StyleSheet,
-  Text, TextInput, TouchableOpacity, View,
+  FlatList, Platform, StyleSheet,
+  Text, TouchableOpacity, View,
 } from "react-native";
 import { Screen } from "@/components/ui/Screen";
 import { AgentStatusHeader } from "@/components/features/agent/AgentStatusHeader";
 import { ChatBubble } from "@/components/features/agent/ChatBubble";
-import { PromptChip } from "@/components/features/agent/PromptChip";
 import { SmartCartCTACard } from "@/components/features/agent/SmartCartCTACard";
 import { useTheme } from "@/context/ThemeContext";
 import { useAgentViewModel } from "@/lib/viewModels/useAgentViewModel";
@@ -14,20 +13,62 @@ import type { AgentMessage } from "@/lib/viewModels/useAgentViewModel";
 
 const TEAL = "#20C7B7";
 
+// ── Inline ActionButton ───────────────────────────────────────────────────────
+
+interface ActionButtonProps {
+  emoji: string;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+  disabled?: boolean;
+  accent?: boolean;
+}
+
+function ActionButton({ emoji, title, subtitle, onPress, disabled, accent }: ActionButtonProps) {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.75}
+      style={[
+        btnStyles.btn,
+        {
+          backgroundColor: accent ? colors.tealAlpha : colors.surface,
+          borderColor: accent ? colors.teal : colors.border,
+          opacity: disabled ? 0.45 : 1,
+        },
+      ]}
+    >
+      <Text style={btnStyles.emoji}>{emoji}</Text>
+      <Text style={[btnStyles.title, { color: accent ? colors.teal : colors.textPrimary }]}>{title}</Text>
+      <Text style={[btnStyles.sub, { color: colors.textMuted }]}>{subtitle}</Text>
+    </TouchableOpacity>
+  );
+}
+
+const btnStyles = StyleSheet.create({
+  btn: {
+    flex: 1,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 14,
+    gap: 4,
+  },
+  emoji: { fontSize: 22 },
+  title: { fontSize: 14, fontWeight: "700", lineHeight: 18 },
+  sub: { fontSize: 11, fontWeight: "500", lineHeight: 15 },
+});
+
+// ── Screen ────────────────────────────────────────────────────────────────────
+
 export default function AgentScreen() {
   const { colors } = useTheme();
   const vm = useAgentViewModel();
   const listRef = useRef<FlatList<AgentMessage>>(null);
 
-  useEffect(() => {
-    if (vm.messages.length > 0) {
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 120);
-    }
-  }, [vm.messages.length]);
+  const isFresh = vm.messages.length <= 1 && !vm.sending;
 
-  const isFresh = vm.messages.length <= 1 && !vm.sending && !vm.loading;
-
-  // Compact stat chips shown in the teal header zone
   const proteinPct = vm.macroContext.proteinTarget > 0
     ? Math.round((vm.macroContext.protein / vm.macroContext.proteinTarget) * 100)
     : 0;
@@ -35,103 +76,112 @@ export default function AgentScreen() {
     ? Math.round((vm.macroContext.calories / vm.macroContext.caloriesTarget) * 100)
     : 0;
 
+  // Initial action buttons — contextual
+  const initialActions: ActionButtonProps[] = vm.activityContext
+    ? [
+        { emoji: "🥗", title: "Recovery fuel", subtitle: "Post-workout nutrition", onPress: () => vm.quickSend("What should I eat after training to recover?") },
+        { emoji: "📅", title: "This week's plan", subtitle: "7-day meal structure", onPress: () => vm.quickSend("Create a meal plan for this week") },
+        { emoji: "🥩", title: "High-protein day", subtitle: "Hit your targets", onPress: () => vm.quickSend("Build a high-protein meal plan for today") },
+        { emoji: "🛒", title: "Make a Smart Cart", subtitle: "Build & shop now", onPress: () => vm.quickSend("Build today's meals and save to Smart Cart"), accent: true },
+      ]
+    : [
+        { emoji: "🍽", title: "Build today's meals", subtitle: "Full day plan", onPress: () => vm.quickSend("Build a full meal plan for today") },
+        { emoji: "📅", title: "This week's plan", subtitle: "7-day meal structure", onPress: () => vm.quickSend("Create a meal plan for this week") },
+        { emoji: "🥩", title: "High-protein day", subtitle: "Hit your targets", onPress: () => vm.quickSend("Build a high-protein meal plan for today") },
+        { emoji: "🛒", title: "Make a Smart Cart", subtitle: "Build & shop now", onPress: () => vm.quickSend("Build today's meals and save to Smart Cart"), accent: true },
+      ];
+
+  // Follow-up buttons after a reply
+  const followUpActions: ActionButtonProps[] = [
+    { emoji: "🔄", title: "Adjust it", subtitle: "Tweak the plan", onPress: () => vm.quickSend("Can you adjust that plan?") },
+    { emoji: "🔀", title: "Different option", subtitle: "Try something else", onPress: () => vm.quickSend("Give me a completely different option") },
+    { emoji: "🛒", title: "Build Smart Cart", subtitle: "Convert to a cart", onPress: () => vm.quickSend("Save this as a Smart Cart"), accent: true },
+  ];
+
   return (
     <Screen style={{ backgroundColor: TEAL }} edges={["top"]}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={0}
-      >
-        {/* ── TEAL HEADER ZONE ── */}
-        <AgentStatusHeader textColor="#FFF" dotColor="rgba(255,255,255,0.7)" />
+      {/* ── TEAL HEADER ZONE ── */}
+      <AgentStatusHeader textColor="#FFF" dotColor="rgba(255,255,255,0.7)" />
 
-        {/* Compact stats strip */}
-        <View style={styles.statsStrip}>
-          <View style={styles.statPill}>
-            <Text style={styles.statLabel}>Protein</Text>
-            <Text style={styles.statValue}>{vm.macroContext.protein}/{vm.macroContext.proteinTarget}g</Text>
-            <View style={styles.statBarTrack}>
-              <View style={[styles.statBarFill, { width: `${Math.min(proteinPct, 100)}%`, backgroundColor: "#FFF" }]} />
-            </View>
+      {/* Compact stats strip */}
+      <View style={styles.statsStrip}>
+        <View style={styles.statPill}>
+          <Text style={styles.statLabel}>Protein</Text>
+          <Text style={styles.statValue}>{vm.macroContext.protein}/{vm.macroContext.proteinTarget}g</Text>
+          <View style={styles.statBarTrack}>
+            <View style={[styles.statBarFill, { width: `${Math.min(proteinPct, 100)}%`, backgroundColor: "#FFF" }]} />
           </View>
-          <View style={styles.statPill}>
-            <Text style={styles.statLabel}>Calories</Text>
-            <Text style={styles.statValue}>{vm.macroContext.calories}/{vm.macroContext.caloriesTarget}</Text>
-            <View style={styles.statBarTrack}>
-              <View style={[styles.statBarFill, { width: `${Math.min(calPct, 100)}%`, backgroundColor: "#FFF" }]} />
-            </View>
-          </View>
-          {vm.activityContext && (
-            <View style={styles.statPill}>
-              <Text style={styles.statLabel}>{vm.activityContext.type}</Text>
-              <Text style={styles.statValue}>{vm.activityContext.kcal} kcal</Text>
-              <Text style={styles.statSub}>{vm.activityContext.durationMin}min</Text>
-            </View>
-          )}
         </View>
+        <View style={styles.statPill}>
+          <Text style={styles.statLabel}>Calories</Text>
+          <Text style={styles.statValue}>{vm.macroContext.calories}/{vm.macroContext.caloriesTarget}</Text>
+          <View style={styles.statBarTrack}>
+            <View style={[styles.statBarFill, { width: `${Math.min(calPct, 100)}%`, backgroundColor: "#FFF" }]} />
+          </View>
+        </View>
+        {vm.activityContext && (
+          <View style={styles.statPill}>
+            <Text style={styles.statLabel}>{vm.activityContext.type}</Text>
+            <Text style={styles.statValue}>{vm.activityContext.kcal} kcal</Text>
+            <Text style={styles.statSub}>{vm.activityContext.durationMin}min</Text>
+          </View>
+        )}
+      </View>
 
-        {/* ── WHITE CHAT ZONE ── */}
-        <View style={[styles.chatZone, { backgroundColor: colors.bg }]}>
-          <FlatList<AgentMessage>
-            ref={listRef}
-            data={vm.messages}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.messages}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => <ChatBubble role={item.role} content={item.content} />}
-            ListFooterComponent={
-              <>
-                {vm.sending && <ChatBubble role="assistant" content="…" />}
-                {/* Prompt chips — shown only when conversation is fresh, inside the list */}
-                {isFresh && (
-                  <View style={styles.chipGrid}>
-                    {vm.suggestedPrompts.map((p) => (
-                      <PromptChip key={p} label={p} onPress={() => vm.setInput(p)} />
+      {/* ── WHITE CHAT ZONE ── */}
+      <View style={[styles.chatZone, { backgroundColor: colors.bg }]}>
+        <FlatList<AgentMessage>
+          ref={listRef}
+          data={vm.messages}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.messages}
+          showsVerticalScrollIndicator={false}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+          renderItem={({ item }) => <ChatBubble role={item.role} content={item.content} />}
+          ListFooterComponent={
+            <>
+              {vm.sending && <ChatBubble role="assistant" content="…" />}
+
+              {/* Smart Cart CTA */}
+              {vm.pendingSmartCartAction && (
+                <SmartCartCTACard
+                  onConfirm={vm.confirmSmartCart}
+                  onDismiss={vm.dismissSmartCart}
+                />
+              )}
+
+              {/* Initial action buttons — shown when fresh */}
+              {isFresh && !vm.sending && (
+                <View style={styles.actionSection}>
+                  <Text style={[styles.actionLabel, { color: colors.textMuted }]}>What do you need?</Text>
+                  <View style={styles.actionGrid}>
+                    {initialActions.map((a) => (
+                      <ActionButton key={a.title} {...a} disabled={vm.sending} />
                     ))}
                   </View>
-                )}
-                {/* Smart Cart CTA */}
-                {vm.pendingSmartCartAction && (
-                  <SmartCartCTACard
-                    onConfirm={vm.confirmSmartCart}
-                    onDismiss={vm.dismissSmartCart}
-                  />
-                )}
-              </>
-            }
-          />
+                </View>
+              )}
 
-          {/* Input row */}
-          <View style={[styles.inputRow, { backgroundColor: colors.bg, borderTopColor: colors.border }]}>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
-              placeholder="Ask Jonno…"
-              placeholderTextColor={colors.textMuted}
-              value={vm.input}
-              onChangeText={vm.setInput}
-              multiline
-              maxLength={500}
-              returnKeyType="send"
-              onSubmitEditing={vm.send}
-            />
-            <TouchableOpacity
-              onPress={vm.send}
-              disabled={!vm.input.trim() || vm.sending}
-              activeOpacity={0.8}
-              style={[styles.sendBtn, { backgroundColor: vm.input.trim() && !vm.sending ? TEAL : colors.border }]}
-            >
-              <Text style={styles.sendIcon}>↑</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
+              {/* Follow-up buttons — shown after AI replies */}
+              {vm.showFollowUps && !vm.pendingSmartCartAction && (
+                <View style={styles.actionSection}>
+                  <Text style={[styles.actionLabel, { color: colors.textMuted }]}>What's next?</Text>
+                  <View style={styles.actionGrid}>
+                    {followUpActions.map((a) => (
+                      <ActionButton key={a.title} {...a} disabled={vm.sending} />
+                    ))}
+                  </View>
+                </View>
+              )}
+            </>
+          }
+        />
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-
   // Stats strip (in teal zone)
   statsStrip: {
     flexDirection: "row",
@@ -155,29 +205,24 @@ const styles = StyleSheet.create({
 
   // Chat zone
   chatZone: { flex: 1, borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: "hidden" },
-  messages: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+  messages: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: Platform.OS === "ios" ? 36 : 20 },
 
-  // Chip grid (below welcome message, inside FlatList footer)
-  chipGrid: {
+  // Action buttons
+  actionSection: {
+    paddingHorizontal: 0,
+    paddingTop: 16,
+    gap: 10,
+  },
+  actionLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    paddingHorizontal: 2,
+  },
+  actionGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    paddingHorizontal: 0,
-    paddingTop: 8,
-    paddingBottom: 4,
+    gap: 10,
   },
-
-  // Input row
-  inputRow: {
-    flexDirection: "row", alignItems: "flex-end", gap: 10,
-    paddingHorizontal: 16, paddingVertical: 12,
-    paddingBottom: Platform.OS === "ios" ? 28 : 16,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  input: {
-    flex: 1, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, maxHeight: 120,
-  },
-  sendBtn: { width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center" },
-  sendIcon: { color: "#FFF", fontSize: 18, fontWeight: "700" },
 });

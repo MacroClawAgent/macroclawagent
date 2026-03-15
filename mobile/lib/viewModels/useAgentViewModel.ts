@@ -22,8 +22,10 @@ export interface AgentViewModel {
   input: string;
   setInput: (s: string) => void;
   send: () => Promise<void>;
+  quickSend: (text: string) => Promise<void>;
   sending: boolean;
   loading: boolean;
+  showFollowUps: boolean;
   macroContext: {
     protein: number;
     proteinTarget: number;
@@ -193,10 +195,8 @@ export function useAgentViewModel(): AgentViewModel {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const send = useCallback(async () => {
-    const text = input.trim();
+  const sendMessage = useCallback(async (text: string) => {
     if (!text || sending) return;
-    setInput("");
     setSending(true);
     setPendingSmartCartAction(false);
 
@@ -237,7 +237,18 @@ export function useAgentViewModel(): AgentViewModel {
     } finally {
       setSending(false);
     }
-  }, [input, sending]);
+  }, [sending]);
+
+  const send = useCallback(async () => {
+    const text = input.trim();
+    if (!text) return;
+    setInput("");
+    await sendMessage(text);
+  }, [input, sendMessage]);
+
+  const quickSend = useCallback(async (text: string) => {
+    await sendMessage(text.trim());
+  }, [sendMessage]);
 
   const confirmSmartCart = useCallback(() => {
     setPendingSmartCartAction(false);
@@ -248,13 +259,17 @@ export function useAgentViewModel(): AgentViewModel {
     setPendingSmartCartAction(false);
   }, []);
 
+  const showFollowUps = messages.length > 1 && !sending && !pendingSmartCartAction;
+
   return {
     messages,
     input,
     setInput,
     send,
+    quickSend,
     sending,
     loading,
+    showFollowUps,
     macroContext,
     activityContext,
     suggestedPrompts,
