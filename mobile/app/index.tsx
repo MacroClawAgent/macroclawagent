@@ -14,17 +14,17 @@ export default function AuthGate() {
     } else if (!userProfile?.profile_complete) {
       router.replace("/(onboarding)/step1");
     } else {
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/home");
     }
   }, [loading, session, userProfile]);
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator color="#D4FF00" size="large" />
+      <ActivityIndicator color="#20C7B7" size="large" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0B0B0B" },
+  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F4F5F7" },
 });

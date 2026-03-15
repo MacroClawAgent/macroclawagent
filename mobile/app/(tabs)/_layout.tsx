@@ -1,15 +1,14 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import { Platform } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
 
-// Tab icon helper — wraps SymbolView with cross-platform SF Symbol / Material icon names
 function TabIcon({
   iosName,
   androidName,
   color,
-  size = 26,
+  size = 24,
 }: {
   iosName: string;
   androidName: string;
@@ -32,40 +31,37 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.mutedMore,
+        tabBarActiveTintColor: colors.teal,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: colors.bg,
+          backgroundColor: colors.surface,
           borderTopColor: colors.border,
-          borderTopWidth: 1,
-          elevation: 8,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          elevation: 0,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          height: Platform.OS === "ios" ? 82 : 64,
+          paddingTop: 10,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
-          marginBottom: Platform.OS === "ios" ? 0 : 4,
+          marginTop: 2,
+        },
+        tabBarItemStyle: {
+          paddingBottom: Platform.OS === "ios" ? 0 : 6,
         },
       }}
     >
-      {/* ── Home / Dashboard ── */}
+      {/* ── Home ── */}
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: "Home",
-          headerTitle: "Jonno",
           tabBarIcon: ({ color }) => (
             <TabIcon iosName="house.fill" androidName="home" color={color} />
-          ),
-        }}
-      />
-
-      {/* ── Nutrition ── */}
-      <Tabs.Screen
-        name="nutrition"
-        options={{
-          title: "Nutrition",
-          tabBarIcon: ({ color }) => (
-            <TabIcon iosName="chart.bar.fill" androidName="bar_chart" color={color} />
           ),
         }}
       />
@@ -81,33 +77,25 @@ export default function TabLayout() {
         }}
       />
 
-      {/* ── Meal Plans ── */}
-      <Tabs.Screen
-        name="meals"
-        options={{
-          title: "Meals",
-          tabBarIcon: ({ color }) => (
-            <TabIcon iosName="fork.knife" androidName="restaurant" color={color} />
-          ),
-        }}
-      />
-
-      {/* ── AI Agent ── */}
+      {/* ── Agent ── */}
       <Tabs.Screen
         name="agent"
         options={{
-          title: "Jonno",
+          title: "Agent",
           tabBarIcon: ({ color }) => (
             <TabIcon iosName="sparkles" androidName="auto_awesome" color={color} />
           ),
         }}
       />
 
-      {/* ── Profile / Settings — hidden from tab bar, accessed via Home avatar ── */}
+      {/* ── Smart Cart ── */}
       <Tabs.Screen
-        name="profile"
+        name="cart"
         options={{
-          href: null,
+          title: "Smart Cart",
+          tabBarIcon: ({ color }) => (
+            <TabIcon iosName="cart.fill" androidName="shopping_cart" color={color} />
+          ),
         }}
       />
     </Tabs>

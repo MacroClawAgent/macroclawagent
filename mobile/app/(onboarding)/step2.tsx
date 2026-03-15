@@ -29,7 +29,7 @@ export default function OnboardingStep2() {
         profile_complete: true,
       });
       await refreshProfile();
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/home");
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Something went wrong.";
       Alert.alert("Error", message);
