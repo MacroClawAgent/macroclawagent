@@ -274,16 +274,16 @@ export function Hero() {
           </motion.div>
 
           {/* ── MIDDLE: Mascot ── */}
-          <div className="hidden lg:flex relative z-10 justify-center items-end pb-0">
+          <div className="hidden lg:flex relative z-10 justify-center items-end self-end">
             <div
               className="select-none"
-              style={{ filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.15))" }}
+              style={{ filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.15))", marginBottom: -2 }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/mascot.png"
                 alt="Jonno mascot"
-                style={{ height: 440, width: "auto", objectFit: "contain" }}
+                style={{ height: 660, width: "auto", objectFit: "contain", display: "block" }}
               />
             </div>
           </div>
