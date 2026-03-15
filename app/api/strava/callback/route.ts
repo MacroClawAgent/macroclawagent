@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const isMobile = mobileUserId !== null;
 
   if (error || !code) {
-    if (isMobile) return NextResponse.redirect(`${baseUrl}/strava/connected?error=denied`);
+    if (isMobile) return NextResponse.redirect(`jonno://strava-connected?error=denied`);
     return NextResponse.redirect(`${settingsUrl}&error=strava_denied`);
   }
 
@@ -81,11 +81,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (isMobile) {
-      return NextResponse.redirect(`${baseUrl}/strava/connected`);
+      return NextResponse.redirect(`jonno://strava-connected`);
     }
     return NextResponse.redirect(`${settingsUrl}&connected=true`);
   } catch {
-    if (isMobile) return NextResponse.redirect(`${baseUrl}/strava/connected?error=server_error`);
+    if (isMobile) return NextResponse.redirect(`jonno://strava-connected?error=server_error`);
     return NextResponse.redirect(`${settingsUrl}&error=strava_error`);
   }
 }

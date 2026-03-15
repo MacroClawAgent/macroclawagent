@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 /**
  * jonno://strava-connected
  * Opened when the Strava OAuth callback redirects back to the app.
- * Triggers a background activity sync, then navigates to the profile tab.
+ * Triggers a background activity sync, then navigates to home.
  */
 export default function StravaConnectedScreen() {
   const { refreshProfile } = useAuth();
@@ -23,7 +23,7 @@ export default function StravaConnectedScreen() {
       // Re-fetch user profile so strava_athlete_id updates in context
       await refreshProfile();
 
-      router.replace("/(tabs)/profile");
+      router.replace("/(tabs)/home");
     })();
   }, []);
 
@@ -38,14 +38,14 @@ export default function StravaConnectedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B0B0B",
+    backgroundColor: "#F4F5F7",
     alignItems: "center",
     justifyContent: "center",
     gap: 16,
   },
   label: {
     fontSize: 15,
-    color: "rgba(245,245,247,0.55)",
+    color: "#6B7280",
     fontWeight: "600",
   },
 });

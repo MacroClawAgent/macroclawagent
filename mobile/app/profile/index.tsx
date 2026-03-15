@@ -3,7 +3,7 @@ import {
   Alert, KeyboardAvoidingView, Modal, Platform, ScrollView,
   StyleSheet, Switch, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
-import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
 import { useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
@@ -147,7 +147,12 @@ export default function ProfileScreen() {
   const handleConnectStrava = async () => {
     try {
       const res = await apiGet<{ url: string }>("/api/strava/mobile-init");
-      if (res.url) await Linking.openURL(res.url);
+      if (!res.url) return;
+      const result = await WebBrowser.openAuthSessionAsync(res.url, "jonno://strava-connected");
+      if (result.type === "success") {
+        // Deep link was intercepted — strava-connected screen handles the rest
+        // via Expo Router's URL handling. Nothing more needed here.
+      }
     } catch {
       Alert.alert("Error", "Could not start Strava connection.");
     }
