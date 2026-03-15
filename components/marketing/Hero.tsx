@@ -282,14 +282,11 @@ export function Hero() {
               className="cursor-pointer select-none"
               style={{ filter: "drop-shadow(0 24px 48px rgba(0,0,0,0.18))" }}
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/mascot.png"
                 alt="Jonno mascot"
-                width={260}
-                height={480}
-                className="object-contain"
-                style={{ maxHeight: 480 }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                style={{ height: 480, width: "auto", objectFit: "contain" }}
               />
             </motion.div>
           </div>
