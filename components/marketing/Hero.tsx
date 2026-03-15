@@ -189,7 +189,7 @@ export function Hero() {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-6 pb-0">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-8 items-end">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-4 items-end">
 
           {/* ── LEFT: Content ── */}
           <motion.div
@@ -275,20 +275,17 @@ export function Hero() {
 
           {/* ── MIDDLE: Mascot ── */}
           <div className="hidden lg:flex relative z-10 justify-center items-end pb-0">
-            <motion.div
-              animate={{ y: [0, -14, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-              whileHover={{ scale: 1.08, rotate: [-1, 1, -1, 0], transition: { duration: 0.4 } }}
-              className="cursor-pointer select-none"
-              style={{ filter: "drop-shadow(0 24px 48px rgba(0,0,0,0.18))" }}
+            <div
+              className="select-none"
+              style={{ filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.15))" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/mascot.png"
                 alt="Jonno mascot"
-                style={{ height: 480, width: "auto", objectFit: "contain" }}
+                style={{ height: 440, width: "auto", objectFit: "contain" }}
               />
-            </motion.div>
+            </div>
           </div>
 
           {/* ── RIGHT: Phone mockup floating above the scene ── */}
