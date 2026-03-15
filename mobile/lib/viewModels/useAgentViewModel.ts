@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { router } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { apiGet, apiPost } from "../api";

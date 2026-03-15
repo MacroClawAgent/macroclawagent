@@ -5,16 +5,23 @@ import { StatusDot } from "../../ui/StatusDot";
 
 const AVATAR = require("../../../assets/images/avatar.png");
 
-export function AgentStatusHeader() {
+interface AgentStatusHeaderProps {
+  textColor?: string;
+  dotColor?: string;
+}
+
+export function AgentStatusHeader({ textColor, dotColor }: AgentStatusHeaderProps = {}) {
   const { colors } = useTheme();
+  const resolvedText = textColor ?? colors.textPrimary;
+  const resolvedDot = dotColor ?? colors.green;
   return (
     <View style={styles.header}>
       <Image source={AVATAR} style={styles.avatar} />
       <View style={styles.info}>
-        <Text style={[styles.name, { color: colors.textPrimary }]}>Jonno</Text>
+        <Text style={[styles.name, { color: resolvedText }]}>Jonno</Text>
         <View style={styles.statusRow}>
-          <StatusDot color={colors.green} size={7} />
-          <Text style={[styles.status, { color: colors.textMuted }]}>Online · Nutrition & Fitness only</Text>
+          <StatusDot color={resolvedDot} size={7} />
+          <Text style={[styles.status, { color: textColor ? "rgba(255,255,255,0.7)" : colors.textMuted }]}>Online · Nutrition & Fitness only</Text>
         </View>
       </View>
     </View>
