@@ -1,15 +1,15 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "../../../context/ThemeContext";
 import { StatusDot } from "../../ui/StatusDot";
+
+const AVATAR = require("../../../assets/images/avatar.png");
 
 export function AgentStatusHeader() {
   const { colors } = useTheme();
   return (
     <View style={styles.header}>
-      <View style={[styles.avatar, { backgroundColor: colors.teal }]}>
-        <Text style={styles.avatarText}>✦</Text>
-      </View>
+      <Image source={AVATAR} style={styles.avatar} />
       <View style={styles.info}>
         <Text style={[styles.name, { color: colors.textPrimary }]}>Jonno</Text>
         <View style={styles.statusRow}>
@@ -33,10 +33,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
   },
-  avatarText: { fontSize: 16, color: "#FFF", fontWeight: "900" },
   info: { flex: 1 },
   name: { fontSize: 17, fontWeight: "800" },
   statusRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 3 },

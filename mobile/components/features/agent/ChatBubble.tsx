@@ -1,6 +1,8 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "../../../context/ThemeContext";
+
+const AVATAR = require("../../../assets/images/avatar.png");
 
 interface ChatBubbleProps {
   role: "user" | "assistant";
@@ -14,9 +16,7 @@ export function ChatBubble({ role, content }: ChatBubbleProps) {
   return (
     <View style={[styles.row, isUser ? styles.rowUser : styles.rowAssistant]}>
       {!isUser && (
-        <View style={[styles.avatar, { backgroundColor: colors.teal }]}>
-          <Text style={styles.avatarText}>✦</Text>
-        </View>
+        <Image source={AVATAR} style={styles.avatar} />
       )}
       <View
         style={[
@@ -47,12 +47,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
     flexShrink: 0,
     marginBottom: 2,
   },
-  avatarText: { fontSize: 11, color: "#FFF", fontWeight: "900" },
   bubble: {
     maxWidth: "78%",
     paddingHorizontal: 14,
