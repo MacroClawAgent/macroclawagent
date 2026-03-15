@@ -189,14 +189,14 @@ export function Hero() {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-6 pb-0">
-        <div className="flex flex-col lg:flex-row items-end justify-between gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-end gap-6 lg:gap-8">
 
           {/* ── LEFT: Content ── */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-7 items-center lg:items-start text-center lg:text-left pb-6 lg:pb-10 lg:max-w-md flex-shrink-0"
+            className="flex flex-col gap-7 items-center lg:items-start text-center lg:text-left pb-6 lg:pb-10"
           >
             {/* Beta badge */}
             <motion.div variants={itemVariants}>
@@ -274,7 +274,7 @@ export function Hero() {
           </motion.div>
 
           {/* ── RIGHT: Phone mockup ── */}
-          <div className="relative z-10 flex justify-center items-end flex-shrink-0 lg:mr-8">
+          <div className="relative z-10 flex justify-end items-end pr-4">
             <PhoneMockup />
           </div>
         </div>
