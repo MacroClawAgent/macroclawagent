@@ -27,7 +27,7 @@ export default function HomeScreen() {
 
   return (
     <Screen style={{ backgroundColor: "#20C7B7" }}>
-      <AppHeader wordmark showAvatar textColor="#FFF" avatarColor="rgba(255,255,255,0.25)" />
+      <AppHeader wordmark showAvatar textColor="#FFF" avatarColor="#4C7DFF" />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -44,6 +44,9 @@ export default function HomeScreen() {
           <Text style={[styles.greetingText, { color: "#FFF" }]}>
             {vm.greeting}, {vm.userName} 👋
           </Text>
+          <View style={styles.goalPill}>
+            <Text style={styles.goalPillText}>{vm.goalEmoji} {vm.goalLabel}</Text>
+          </View>
         </View>
 
         {/* Hero calorie card */}
@@ -91,12 +94,26 @@ const styles = StyleSheet.create({
   greeting: {
     paddingHorizontal: 20,
     paddingBottom: 4,
+    gap: 8,
   },
   greetingText: {
     fontSize: 26,
     fontWeight: "800",
     letterSpacing: -0.5,
     lineHeight: 32,
+  },
+  goalPill: {
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  goalPillText: {
+    color: "#FFF",
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.2,
   },
   skeleton: {
     height: 140,
