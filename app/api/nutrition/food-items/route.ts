@@ -23,12 +23,15 @@ export async function GET(request: NextRequest) {
 
     // If columns don't exist yet (migration pending), fall back to base columns
     if (error?.code === "42703") {
-      ({ data, error } = await supabase
+      const fallback = await supabase
         .from("food_log_items")
         .select("id,meal_tag,name,calories,protein_g,carbs_g,fat_g,created_at")
         .eq("user_id", user.id)
         .eq("log_date", date)
-        .order("created_at", { ascending: true }));
+        .order("created_at", { ascending: true });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data = fallback.data as any;
+      error = fallback.error;
     }
 
     if (error) throw error;
