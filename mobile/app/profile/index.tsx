@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import {
-  Alert, KeyboardAvoidingView, Modal, Platform, ScrollView,
-  StyleSheet, Switch, Text, TextInput, TouchableOpacity, View,
+  Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView,
+  StyleSheet, Switch, Text, TextInput, TouchableOpacity, View, ActivityIndicator,
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
@@ -11,7 +12,10 @@ import { Card } from "@/components/ui/Card";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { getInitials } from "@/lib/formatters";
+
+// ── Sub-components ────────────────────────────────────────────────────────────
 
 function SectionLabel({ label, colors }: { label: string; colors: any }) {
   return (
@@ -75,16 +79,86 @@ function EditSheet({ visible, title, fields, onSave, onClose, saving }: {
   );
 }
 
+// ── Goal selector modal ───────────────────────────────────────────────────────
+
+const GOALS = [
+  { id: "lose_weight", emoji: "🔥", label: "Lose Weight", desc: "Burn fat while preserving muscle" },
+  { id: "build_muscle", emoji: "💪", label: "Build Muscle", desc: "Fuel growth with targeted surplus" },
+  { id: "performance", emoji: "🏃", label: "Performance", desc: "Optimise fuelling for your training" },
+  { id: "maintain", emoji: "✅", label: "Stay Healthy", desc: "Balanced nutrition, sustainable habits" },
+];
+
+const GOAL_LABELS: Record<string, string> = {
+  lose_weight: "Lose Weight 🔥",
+  build_muscle: "Build Muscle 💪",
+  performance: "Performance 🏃",
+  maintain: "Stay Healthy ✅",
+};
+
+function GoalSheet({ visible, current, onSave, onClose, saving }: {
+  visible: boolean; current: string;
+  onSave: (goal: string) => void; onClose: () => void; saving: boolean;
+}) {
+  const [selected, setSelected] = useState(current);
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <View style={[styles.sheet, { gap: 12 }]}>
+          <View style={styles.handle} />
+          <Text style={styles.sheetTitle}>My Fitness Goal</Text>
+          <Text style={{ fontSize: 13, color: "rgba(245,245,247,0.45)", marginBottom: 4 }}>
+            Jonno uses this to personalise every recommendation for you.
+          </Text>
+          {GOALS.map((g) => {
+            const active = selected === g.id;
+            return (
+              <TouchableOpacity
+                key={g.id}
+                onPress={() => setSelected(g.id)}
+                activeOpacity={0.8}
+                style={[styles.goalCard, active && styles.goalCardActive]}
+              >
+                <View style={styles.goalLeft}>
+                  <Text style={{ fontSize: 22 }}>{g.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.goalLabel, active && styles.goalLabelActive]}>{g.label}</Text>
+                    <Text style={[styles.goalDesc, active && { color: "rgba(245,245,247,0.6)" }]}>{g.desc}</Text>
+                  </View>
+                </View>
+                <View style={[styles.radio, active && styles.radioActive]}>
+                  {active && <View style={styles.radioDot} />}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+          <TouchableOpacity onPress={() => onSave(selected)} disabled={saving} style={styles.saveBtn}>
+            <Text style={styles.saveBtnText}>{saving ? "Saving…" : "Save Goal"}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
+            <Text style={styles.cancelBtnText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// ── Main screen ───────────────────────────────────────────────────────────────
+
 export default function ProfileScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
-  const { userProfile, signOut, refreshProfile } = useAuth();
+  const { userProfile, signOut, refreshProfile, session } = useAuth();
   const router = useRouter();
 
   const [showPersonal, setShowPersonal] = useState(false);
   const [showGoals, setShowGoals] = useState(false);
+  const [showGoalSheet, setShowGoalSheet] = useState(false);
   const [savingPersonal, setSavingPersonal] = useState(false);
   const [savingGoals, setSavingGoals] = useState(false);
+  const [savingGoalSheet, setSavingGoalSheet] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const [editName, setEditName] = useState(userProfile?.full_name ?? "");
   const [editWeight, setEditWeight] = useState(String(userProfile?.weight_kg ?? ""));
@@ -144,6 +218,63 @@ export default function ProfileScreen() {
     }
   };
 
+  const saveGoalSheet = async (goal: string) => {
+    setSavingGoalSheet(true);
+    try {
+      await apiPost("/api/profile/update", { fitness_goal: goal });
+      await refreshProfile();
+      setShowGoalSheet(false);
+    } catch {
+      Alert.alert("Error", "Failed to save goal.");
+    } finally {
+      setSavingGoalSheet(false);
+    }
+  };
+
+  const handlePickAvatar = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow photo access to set a profile picture.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0]) return;
+
+    setUploadingAvatar(true);
+    try {
+      const asset = result.assets[0];
+      const userId = session?.user?.id;
+      if (!userId) throw new Error("Not authenticated");
+
+      // Fetch and upload to Supabase storage
+      const response = await fetch(asset.uri);
+      const blob = await response.blob();
+      const filePath = `${userId}/avatar.jpg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, blob, { contentType: "image/jpeg", upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      await apiPost("/api/profile/update", { avatar_url: publicUrl });
+      await refreshProfile();
+    } catch {
+      Alert.alert("Upload failed", "Could not save photo. Try again.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const handleConnectStrava = async () => {
     try {
       const res = await apiGet<{ url: string }>("/api/strava/mobile-init");
@@ -154,8 +285,6 @@ export default function ProfileScreen() {
           Alert.alert("Connection failed", "Strava authorization was denied.");
           return;
         }
-        // openAuthSessionAsync intercepts the deep link but does NOT trigger
-        // Expo Router — navigate manually so strava-connected.tsx runs sync + refresh
         router.push("/strava-connected");
       }
     } catch {
@@ -194,42 +323,78 @@ export default function ProfileScreen() {
   const name = userProfile?.full_name ?? "Profile";
   const email = userProfile?.email ?? "";
   const isStravaConnected = !!userProfile?.strava_athlete_id;
+  const avatarUrl = userProfile?.avatar_url;
+  const currentGoal = userProfile?.fitness_goal ?? "performance";
 
   return (
     <Screen>
       <AppHeader title="Profile" showBack />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Avatar + identity */}
+
+        {/* ── Avatar + identity ── */}
         <View style={styles.avatarSection}>
-          <View style={[styles.avatar, { backgroundColor: colors.teal }]}>
-            <Text style={styles.avatarText}>{getInitials(name)}</Text>
-          </View>
+          <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.85} style={styles.avatarWrap}>
+            {uploadingAvatar ? (
+              <View style={styles.avatar}>
+                <ActivityIndicator color="#FFF" />
+              </View>
+            ) : avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{getInitials(name)}</Text>
+              </View>
+            )}
+            {/* Camera badge */}
+            <View style={[styles.cameraBadge, { backgroundColor: colors.blue ?? "#4C7DFF" }]}>
+              <Text style={styles.cameraIcon}>📷</Text>
+            </View>
+          </TouchableOpacity>
           <Text style={[styles.nameText, { color: colors.textPrimary }]}>{name}</Text>
           <Text style={[styles.emailText, { color: colors.textMuted }]}>{email}</Text>
+          <Text style={[styles.goalBadge, { backgroundColor: colors.surface, color: colors.textSecondary, borderColor: colors.border }]}>
+            {GOAL_LABELS[currentGoal] ?? "Performance 🏃"}
+          </Text>
         </View>
 
-        {/* Personal info */}
+        {/* ── Fitness Goal ── */}
+        <View style={styles.section}>
+          <SectionLabel label="My Goal" colors={colors} />
+          <Card padding={0} style={styles.cardOverride}>
+            <TouchableOpacity style={styles.row} onPress={() => setShowGoalSheet(true)}>
+              <Text style={[styles.rowLabel, { color: colors.textMuted }]}>Fitness Goal</Text>
+              <View style={styles.rowRight}>
+                <Text style={[styles.rowValue, { color: colors.textPrimary }]}>
+                  {GOAL_LABELS[currentGoal] ?? "Performance 🏃"}
+                </Text>
+                <Text style={[styles.editLink, { color: colors.teal }]}>Change</Text>
+              </View>
+            </TouchableOpacity>
+          </Card>
+        </View>
+
+        {/* ── Personal info ── */}
         <View style={styles.section}>
           <SectionLabel label="Personal Info" colors={colors} />
           <Card padding={0} style={styles.cardOverride}>
             <InfoRow label="Name" value={userProfile?.full_name ?? "—"} onEdit={openPersonal} colors={colors} />
             <InfoRow label="Weight" value={userProfile?.weight_kg ? `${userProfile.weight_kg} kg` : "—"} onEdit={openPersonal} colors={colors} />
-            <InfoRow label="Height" value={userProfile?.height_cm ? `${userProfile.height_cm} cm` : "—"} colors={colors} />
+            <InfoRow label="Height" value={userProfile?.height_cm ? `${userProfile.height_cm} cm` : "—"} onEdit={openPersonal} colors={colors} />
           </Card>
         </View>
 
-        {/* Nutrition goals */}
+        {/* ── Daily goals ── */}
         <View style={styles.section}>
-          <SectionLabel label="Daily Goals" colors={colors} />
+          <SectionLabel label="Daily Targets" colors={colors} />
           <Card padding={0} style={styles.cardOverride}>
             <InfoRow label="Calories" value={`${userProfile?.calorie_goal ?? 0} kcal`} onEdit={openGoals} colors={colors} />
             <InfoRow label="Protein" value={`${userProfile?.protein_goal ?? 0} g`} onEdit={openGoals} colors={colors} />
-            <InfoRow label="Carbs" value={`${userProfile?.carbs_goal ?? 0} g`} colors={colors} />
-            <InfoRow label="Fat" value={`${userProfile?.fat_goal ?? 0} g`} colors={colors} />
+            <InfoRow label="Carbs" value={`${userProfile?.carbs_goal ?? 0} g`} onEdit={openGoals} colors={colors} />
+            <InfoRow label="Fat" value={`${userProfile?.fat_goal ?? 0} g`} onEdit={openGoals} colors={colors} />
           </Card>
         </View>
 
-        {/* Strava */}
+        {/* ── Integrations ── */}
         <View style={styles.section}>
           <SectionLabel label="Integrations" colors={colors} />
           {isStravaConnected ? (
@@ -267,23 +432,23 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Appearance */}
+        {/* ── Appearance ── */}
         <View style={styles.section}>
           <SectionLabel label="Appearance" colors={colors} />
           <Card padding={0} style={styles.cardOverride}>
-            <View style={styles.row}>
+            <View style={[styles.row, { borderBottomColor: colors.surfaceAlt }]}>
               <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>Dark Mode</Text>
               <Switch
                 value={isDark}
                 onValueChange={toggleTheme}
                 trackColor={{ false: colors.border, true: colors.teal }}
-                thumbColor={isDark ? "#FFF" : "#FFF"}
+                thumbColor="#FFF"
               />
             </View>
           </Card>
         </View>
 
-        {/* Sign out */}
+        {/* ── Sign out ── */}
         <TouchableOpacity onPress={handleSignOut} style={[styles.signOutBtn, { borderColor: colors.danger + "44" }]}>
           <Text style={[styles.signOutText, { color: colors.danger }]}>Sign Out</Text>
         </TouchableOpacity>
@@ -291,7 +456,7 @@ export default function ProfileScreen() {
         <View style={{ height: 48 }} />
       </ScrollView>
 
-      {/* Edit modals */}
+      {/* ── Modals ── */}
       <EditSheet
         visible={showPersonal}
         title="Personal Info"
@@ -306,7 +471,7 @@ export default function ProfileScreen() {
       />
       <EditSheet
         visible={showGoals}
-        title="Daily Goals"
+        title="Daily Targets"
         fields={[
           { label: "Calories (kcal)", value: editCalories, setter: setEditCalories, keyboardType: "numeric" },
           { label: "Protein (g)", value: editProtein, setter: setEditProtein, keyboardType: "numeric" },
@@ -317,17 +482,47 @@ export default function ProfileScreen() {
         onClose={() => setShowGoals(false)}
         saving={savingGoals}
       />
+      <GoalSheet
+        visible={showGoalSheet}
+        current={currentGoal}
+        onSave={saveGoalSheet}
+        onClose={() => setShowGoalSheet(false)}
+        saving={savingGoalSheet}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   scroll: { gap: 16, paddingBottom: 40, paddingTop: 8 },
-  avatarSection: { alignItems: "center", gap: 6, paddingVertical: 16 },
-  avatar: { width: 72, height: 72, borderRadius: 36, alignItems: "center", justifyContent: "center" },
-  avatarText: { fontSize: 28, fontWeight: "800", color: "#FFF" },
-  nameText: { fontSize: 20, fontWeight: "800", letterSpacing: -0.3 },
+
+  // Avatar
+  avatarSection: { alignItems: "center", gap: 8, paddingVertical: 20 },
+  avatarWrap: { position: "relative", marginBottom: 2 },
+  avatar: {
+    width: 96, height: 96, borderRadius: 48,
+    backgroundColor: "#4C7DFF",
+    alignItems: "center", justifyContent: "center",
+  },
+  avatarImg: { width: 96, height: 96, borderRadius: 48 },
+  avatarText: { fontSize: 34, fontWeight: "800", color: "#FFF" },
+  cameraBadge: {
+    position: "absolute", bottom: 0, right: 0,
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 2, borderColor: "#FFF",
+  },
+  cameraIcon: { fontSize: 13 },
+  nameText: { fontSize: 22, fontWeight: "800", letterSpacing: -0.3 },
   emailText: { fontSize: 13, fontWeight: "500" },
+  goalBadge: {
+    fontSize: 12, fontWeight: "700",
+    paddingHorizontal: 12, paddingVertical: 5,
+    borderRadius: 20, borderWidth: 1,
+    overflow: "hidden",
+  },
+
+  // Section / rows
   section: { paddingHorizontal: 20, gap: 8 },
   sectionLabel: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4 },
   cardOverride: { padding: 0, overflow: "hidden" },
@@ -340,6 +535,8 @@ const styles = StyleSheet.create({
   rowRight: { flexDirection: "row", alignItems: "center", gap: 10 },
   rowValue: { fontSize: 14, fontWeight: "600" },
   editLink: { fontSize: 13, fontWeight: "600" },
+
+  // Strava
   stravaConnected: { marginHorizontal: 0 },
   stravaConnect: { marginHorizontal: 0 },
   stravaRow: { flexDirection: "row", alignItems: "center", gap: 12 },
@@ -349,11 +546,26 @@ const styles = StyleSheet.create({
   stravaStatus: { fontSize: 12, fontWeight: "600", marginTop: 2 },
   disconnectBtn: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10 },
   disconnectText: { fontSize: 13, fontWeight: "700" },
-  signOutBtn: {
-    marginHorizontal: 20, borderRadius: 16, paddingVertical: 16,
-    alignItems: "center", borderWidth: 1,
-  },
+
+  // Sign out
+  signOutBtn: { marginHorizontal: 20, borderRadius: 16, paddingVertical: 16, alignItems: "center", borderWidth: 1 },
   signOutText: { fontSize: 15, fontWeight: "700" },
+
+  // Goal cards
+  goalCard: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, gap: 10,
+  },
+  goalCardActive: { backgroundColor: "rgba(32,199,183,0.08)", borderColor: "#20C7B7" },
+  goalLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
+  goalLabel: { fontSize: 15, fontWeight: "700", color: "rgba(245,245,247,0.65)" },
+  goalLabelActive: { color: "#20C7B7" },
+  goalDesc: { fontSize: 12, color: "rgba(245,245,247,0.35)", marginTop: 2 },
+  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
+  radioActive: { borderColor: "#20C7B7" },
+  radioDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: "#20C7B7" },
+
   // Edit sheet
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" },
   sheet: { backgroundColor: "#1C1C1E", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14 },
