@@ -258,6 +258,88 @@ export async function callAgentChat(
 // assembling a shallow context blob inline. Shorter max_tokens for app-native
 // concise responses.
 
+// ── Food Vision Gateway ────────────────────────────────────────────────────
+// Sends a meal photo to Claude Vision and returns detected foods with macros.
+
+export interface DetectedFood {
+  name: string;
+  grams: number;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  per100g: { calories: number; protein_g: number; carbs_g: number; fat_g: number };
+}
+
+export interface FoodAnalysisResult {
+  foods: DetectedFood[];
+  totals: { calories: number; protein_g: number; carbs_g: number; fat_g: number };
+  error?: string;
+}
+
+export async function analyzeFoodImage(
+  imageBase64: string,
+  mimeType: "image/jpeg" | "image/png" | "image/webp" | "image/gif" = "image/jpeg"
+): Promise<FoodAnalysisResult> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return { foods: [], totals: { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }, error: "AI not configured" };
+  }
+
+  const client = new Anthropic({ apiKey });
+
+  const prompt = `Analyze this meal photo. Identify every visible food item and ingredient.
+For each food, estimate the portion size in grams and calculate nutrition macros.
+Return ONLY valid JSON, no markdown, no extra text:
+{
+  "foods": [
+    {
+      "name": "food name",
+      "grams": 150,
+      "calories": 248,
+      "protein_g": 46.5,
+      "carbs_g": 0.0,
+      "fat_g": 5.4,
+      "per100g": { "calories": 165, "protein_g": 31.0, "carbs_g": 0.0, "fat_g": 3.6 }
+    }
+  ],
+  "totals": { "calories": 248, "protein_g": 46.5, "carbs_g": 0.0, "fat_g": 5.4 }
+}
+Be realistic with portions. Use standard nutritional data. Round values to 1 decimal place.`;
+
+  try {
+    const response = await client.messages.create({
+      model: MODEL,
+      max_tokens: 1024,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
+            { type: "text", text: prompt },
+          ],
+        },
+      ],
+    });
+
+    const textBlock = response.content.find((b) => b.type === "text");
+    if (!textBlock || textBlock.type !== "text") throw new Error("No text response");
+
+    const raw = textBlock.text.trim();
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No JSON found in response");
+
+    return JSON.parse(jsonMatch[0]) as FoodAnalysisResult;
+  } catch (err) {
+    console.error("[LLM Gateway] analyzeFoodImage error:", err);
+    return {
+      foods: [],
+      totals: { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
+      error: "Couldn't detect foods in this photo. Please add items manually.",
+    };
+  }
+}
+
 export async function callAgentWithContext(
   userMessage: string,
   systemPrompt: string

@@ -3,6 +3,7 @@ import {
   Alert, FlatList, KeyboardAvoidingView, Modal, Platform,
   RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Card } from "@/components/ui/Card";
@@ -26,6 +27,7 @@ interface NutritionData { log: { calories_consumed: number; protein_g: number; c
 export default function LogFoodScreen() {
   const { colors } = useTheme();
   const { userProfile } = useAuth();
+  const router = useRouter();
   const [data, setData] = useState<NutritionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -101,8 +103,34 @@ export default function LogFoodScreen() {
                 <ProgressBar ratio={goals.calorie_goal > 0 ? log.calories_consumed / goals.calorie_goal : 0} color={colors.macroCalories} style={styles.bar} />
               </Card>
             )}
+            {/* AI Photo Scan */}
+            <View style={styles.aiRow}>
+              <TouchableOpacity
+                onPress={() => router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "camera" } } as any)}
+                style={[styles.aiBtn, { backgroundColor: "rgba(32,199,183,0.1)", borderColor: colors.teal }]}
+              >
+                <Text style={styles.aiEmoji}>📷</Text>
+                <Text style={[styles.aiLabel, { color: colors.teal }]}>Take Photo</Text>
+                <Text style={[styles.aiSub, { color: colors.textMuted }]}>AI detects food</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "library" } } as any)}
+                style={[styles.aiBtn, { backgroundColor: "rgba(32,199,183,0.06)", borderColor: "rgba(32,199,183,0.3)" }]}
+              >
+                <Text style={styles.aiEmoji}>📤</Text>
+                <Text style={[styles.aiLabel, { color: colors.teal }]}>Upload Photo</Text>
+                <Text style={[styles.aiSub, { color: colors.textMuted }]}>From your library</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.dividerRow}>
+              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+              <Text style={[styles.dividerText, { color: colors.textMuted }]}>or add manually</Text>
+              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+            </View>
+
             <TouchableOpacity onPress={() => setShowAdd(true)} style={[styles.addBtn, { backgroundColor: colors.teal }]}>
-              <Text style={styles.addBtnLabel}>+ Log Food</Text>
+              <Text style={styles.addBtnLabel}>+ Log Food Manually</Text>
             </TouchableOpacity>
           </View>
         }
@@ -170,6 +198,17 @@ const styles = StyleSheet.create({
   calDivider: { alignItems: "center" },
   calSub: { fontSize: 11, fontWeight: "500", textAlign: "center", marginTop: 2 },
   bar: { marginTop: 4 },
+  aiRow: { flexDirection: "row", gap: 10, marginHorizontal: 20 },
+  aiBtn: {
+    flex: 1, borderRadius: 16, borderWidth: 1,
+    paddingVertical: 16, alignItems: "center", gap: 4,
+  },
+  aiEmoji: { fontSize: 24 },
+  aiLabel: { fontSize: 13, fontWeight: "700" },
+  aiSub: { fontSize: 11, fontWeight: "500" },
+  dividerRow: { flexDirection: "row", alignItems: "center", gap: 10, marginHorizontal: 20 },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 },
   addBtn: { marginHorizontal: 20, borderRadius: 14, paddingVertical: 14, alignItems: "center" },
   addBtnLabel: { color: "#FFF", fontWeight: "700", fontSize: 15 },
   group: { gap: 8, paddingHorizontal: 20 },
