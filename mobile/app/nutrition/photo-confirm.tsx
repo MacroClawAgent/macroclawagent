@@ -175,9 +175,11 @@ export default function PhotoConfirmScreen() {
           })
         )
       );
-      router.back();
-    } catch {
-      Alert.alert("Error", "Failed to save meal. Please try again.");
+      // Navigate to home tab so the Nutrition widget refreshes immediately
+      router.replace("/(tabs)/home" as any);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to save meal.";
+      Alert.alert("Save failed", msg + "\n\nMake sure the food_log_items table exists in Supabase.");
       setStage("review");
     }
   };

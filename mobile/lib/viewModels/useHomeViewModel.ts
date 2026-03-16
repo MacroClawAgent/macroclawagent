@@ -145,6 +145,8 @@ export function useHomeViewModel(): HomeViewModel {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const refresh = useCallback(() => { fetchData(true); }, [fetchData]);
+
   const profile = userProfile!;
   const cal = nutrition?.calories_consumed ?? 0;
   const calTarget = profile?.calorie_goal ?? 2000;
@@ -191,6 +193,6 @@ export function useHomeViewModel(): HomeViewModel {
     isStravaConnected: !!profile?.strava_athlete_id,
     loading,
     refreshing,
-    refresh: () => fetchData(true),
+    refresh,
   };
 }

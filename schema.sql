@@ -192,6 +192,26 @@ CREATE TRIGGER nutrition_logs_updated_at
   BEFORE UPDATE ON public.nutrition_logs
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+-- Food log items — individual food entries per meal (source of truth; nutrition_logs is derived)
+CREATE TABLE IF NOT EXISTS public.food_log_items (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id     UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  log_date    DATE NOT NULL DEFAULT CURRENT_DATE,
+  meal_tag    TEXT NOT NULL DEFAULT 'Meal',
+  name        TEXT NOT NULL,
+  calories    INTEGER NOT NULL DEFAULT 0,
+  protein_g   NUMERIC(6,1) NOT NULL DEFAULT 0,
+  carbs_g     NUMERIC(6,1) NOT NULL DEFAULT 0,
+  fat_g       NUMERIC(6,1) NOT NULL DEFAULT 0,
+  source      TEXT NOT NULL DEFAULT 'manual', -- 'manual' | 'photo_ai' | 'barcode'
+  created_at  TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_food_log_items_user_date ON public.food_log_items (user_id, log_date DESC);
+
+ALTER TABLE public.food_log_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "food_log_items_all_own" ON public.food_log_items FOR ALL USING (auth.uid() = user_id);
+
 -- Chat messages — persists agent conversation history
 CREATE TABLE IF NOT EXISTS public.chat_messages (
   id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,

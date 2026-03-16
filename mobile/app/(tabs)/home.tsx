@@ -31,7 +31,7 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       vm.refresh();
-    }, [])
+    }, [vm.refresh])
   );
 
   return (
