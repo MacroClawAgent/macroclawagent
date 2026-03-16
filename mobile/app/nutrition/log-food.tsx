@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
-  Alert, FlatList, KeyboardAvoidingView, Modal, Platform,
-  RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View,
+  Alert, KeyboardAvoidingView, Modal, Platform,
+  RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
@@ -20,7 +20,8 @@ const TAG_COLORS: Record<string, { color: string; bg: string }> = {
 };
 const TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
-interface FoodItem { id: string; meal_tag: string; name: string; calories: number; protein_g: number; carbs_g: number; fat_g: number; }
+interface FoodItem { id: string; meal_tag: string; name: string; calories: number; protein_g: number; carbs_g: number; fat_g: number; batch_id?: string | null; dish_name?: string | null; }
+type Dish = { key: string; dishName: string; items: FoodItem[]; totalCals: number; };
 interface NutritionData { log: { calories_consumed: number; protein_g: number; carbs_g: number; fat_g: number; }; goals: { calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number; }; foodItems: FoodItem[]; }
 
 export default function LogFoodScreen() {
@@ -38,7 +39,7 @@ export default function LogFoodScreen() {
   const [addCarbs, setAddCarbs] = useState("");
   const [addFat, setAddFat] = useState("");
   const [saving, setSaving] = useState(false);
-  const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set(["Breakfast", "Lunch", "Dinner", "Snack"]));
+  const [expandedDishes, setExpandedDishes] = useState<Set<string>>(new Set());
 
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -78,10 +79,10 @@ export default function LogFoodScreen() {
     } catch (e: unknown) { Alert.alert("Error", e instanceof Error ? e.message : "Failed to add item."); } finally { setSaving(false); }
   };
 
-  const toggleTag = (tag: string) => {
-    setExpandedTags(prev => {
+  const toggleDish = (key: string) => {
+    setExpandedDishes(prev => {
       const next = new Set(prev);
-      next.has(tag) ? next.delete(tag) : next.add(tag);
+      next.has(key) ? next.delete(key) : next.add(key);
       return next;
     });
   };
@@ -94,103 +95,139 @@ export default function LogFoodScreen() {
   const log = data?.log;
   const goals = data?.goals;
   const foodItems = data?.foodItems ?? [];
-  const grouped = TAGS.map(tag => ({ tag, items: foodItems.filter(i => i.meal_tag === tag) })).filter(g => g.items.length > 0);
+
+  // Build sections: meal type → dishes (grouped by batch_id; solo items each get their own dish)
+  const sections = TAGS.map(tag => {
+    const tagItems = foodItems.filter(i => i.meal_tag === tag);
+    const batchMap = new Map<string, FoodItem[]>();
+    for (const item of tagItems) {
+      const k = item.batch_id ?? `solo_${item.id}`;
+      const arr = batchMap.get(k) ?? [];
+      arr.push(item);
+      batchMap.set(k, arr);
+    }
+    const dishes: Dish[] = Array.from(batchMap.entries()).map(([key, items]) => ({
+      key,
+      dishName: items[0].dish_name ?? (items.length > 1
+        ? [...items].sort((a, b) => b.calories - a.calories).slice(0, 2).map(i => i.name).join(" & ")
+        : items[0].name),
+      items,
+      totalCals: items.reduce((s, i) => s + i.calories, 0),
+    }));
+    return { tag, dishes };
+  }).filter(s => s.dishes.length > 0);
+
+  const MEAL_EMOJIS: Record<string, string> = { Breakfast: "🌅", Lunch: "☀️", Dinner: "🌙", Snack: "🍎" };
 
   return (
     <Screen>
       <AppHeader title="Log Food" showBack />
-      <FlatList
-        data={grouped}
-        keyExtractor={g => g.tag}
+      <ScrollView
         contentContainerStyle={styles.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={colors.teal} />}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            {log && goals && (
-              <Card style={styles.summaryCard}>
-                <View style={styles.calRow}>
-                  <View><Text style={[styles.calNum, { color: colors.textPrimary }]}>{log.calories_consumed}</Text><Text style={[styles.calSub, { color: colors.textMuted }]}>consumed</Text></View>
-                  <View style={styles.calDivider}><Text style={[styles.calNum, { color: colors.teal }]}>{Math.max(0, goals.calorie_goal - log.calories_consumed)}</Text><Text style={[styles.calSub, { color: colors.textMuted }]}>remaining</Text></View>
-                  <View><Text style={[styles.calNum, { color: colors.textPrimary }]}>{goals.calorie_goal}</Text><Text style={[styles.calSub, { color: colors.textMuted }]}>goal</Text></View>
-                </View>
-                <ProgressBar ratio={goals.calorie_goal > 0 ? log.calories_consumed / goals.calorie_goal : 0} color={colors.macroCalories} style={styles.bar} />
-              </Card>
-            )}
-            {/* AI Photo Scan */}
-            <View style={styles.aiRow}>
-              <TouchableOpacity
-                onPress={() => router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "camera" } } as any)}
-                style={[styles.aiBtn, { backgroundColor: "rgba(32,199,183,0.1)", borderColor: colors.teal }]}
-              >
-                <Text style={styles.aiEmoji}>📷</Text>
-                <Text style={[styles.aiLabel, { color: colors.teal }]}>Take Photo</Text>
-                <Text style={[styles.aiSub, { color: colors.textMuted }]}>AI detects food</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "library" } } as any)}
-                style={[styles.aiBtn, { backgroundColor: "rgba(32,199,183,0.06)", borderColor: "rgba(32,199,183,0.3)" }]}
-              >
-                <Text style={styles.aiEmoji}>📤</Text>
-                <Text style={[styles.aiLabel, { color: colors.teal }]}>Upload Photo</Text>
-                <Text style={[styles.aiSub, { color: colors.textMuted }]}>From your library</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.dividerRow}>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-              <Text style={[styles.dividerText, { color: colors.textMuted }]}>or add manually</Text>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            </View>
-
-            <TouchableOpacity onPress={() => setShowAdd(true)} style={[styles.addBtn, { backgroundColor: colors.teal }]}>
-              <Text style={styles.addBtnLabel}>+ Log Food Manually</Text>
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Summary card + AI buttons */}
+        <View style={styles.header}>
+          {log && goals && (
+            <Card style={styles.summaryCard}>
+              <View style={styles.calRow}>
+                <View><Text style={[styles.calNum, { color: colors.textPrimary }]}>{log.calories_consumed}</Text><Text style={[styles.calSub, { color: colors.textMuted }]}>consumed</Text></View>
+                <View style={styles.calDivider}><Text style={[styles.calNum, { color: colors.teal }]}>{Math.max(0, goals.calorie_goal - log.calories_consumed)}</Text><Text style={[styles.calSub, { color: colors.textMuted }]}>remaining</Text></View>
+                <View><Text style={[styles.calNum, { color: colors.textPrimary }]}>{goals.calorie_goal}</Text><Text style={[styles.calSub, { color: colors.textMuted }]}>goal</Text></View>
+              </View>
+              <ProgressBar ratio={goals.calorie_goal > 0 ? log.calories_consumed / goals.calorie_goal : 0} color={colors.macroCalories} style={styles.bar} />
+            </Card>
+          )}
+          <View style={styles.aiRow}>
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "camera" } } as any)}
+              style={[styles.aiBtn, { backgroundColor: "rgba(32,199,183,0.1)", borderColor: colors.teal }]}
+            >
+              <Text style={styles.aiEmoji}>📷</Text>
+              <Text style={[styles.aiLabel, { color: colors.teal }]}>Take Photo</Text>
+              <Text style={[styles.aiSub, { color: colors.textMuted }]}>AI detects food</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "library" } } as any)}
+              style={[styles.aiBtn, { backgroundColor: "rgba(32,199,183,0.06)", borderColor: "rgba(32,199,183,0.3)" }]}
+            >
+              <Text style={styles.aiEmoji}>📤</Text>
+              <Text style={[styles.aiLabel, { color: colors.teal }]}>Upload Photo</Text>
+              <Text style={[styles.aiSub, { color: colors.textMuted }]}>From your library</Text>
             </TouchableOpacity>
           </View>
-        }
-        renderItem={({ item: group }) => {
-          const tc = TAG_COLORS[group.tag] ?? { color: colors.teal, bg: colors.tealAlpha };
-          const isExpanded = expandedTags.has(group.tag);
-          const mealCals = group.items.reduce((s, i) => s + i.calories, 0);
-          const mealEmojis: Record<string, string> = { Breakfast: "🌅", Lunch: "☀️", Dinner: "🌙", Snack: "🍎" };
-          return (
-            <View style={[styles.mealCard, { borderColor: tc.color + "30" }]}>
-              {/* Meal header — tap to expand/collapse */}
-              <TouchableOpacity onPress={() => toggleTag(group.tag)} activeOpacity={0.7} style={styles.mealHeader}>
-                <View style={[styles.mealIconBadge, { backgroundColor: tc.bg }]}>
-                  <Text style={styles.mealEmoji}>{mealEmojis[group.tag] ?? "🍽"}</Text>
-                </View>
-                <View style={styles.mealHeaderMid}>
-                  <Text style={[styles.mealName, { color: colors.textPrimary }]}>{group.tag}</Text>
-                  <Text style={[styles.mealMeta, { color: colors.textMuted }]}>{todayLabel} · {group.items.length} item{group.items.length !== 1 ? "s" : ""}</Text>
-                </View>
-                <View style={styles.mealHeaderRight}>
-                  <Text style={[styles.mealCals, { color: tc.color }]}>{mealCals} kcal</Text>
-                  <Text style={[styles.mealChevron, { color: colors.textMuted }]}>{isExpanded ? "▲" : "▼"}</Text>
-                </View>
-              </TouchableOpacity>
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+            <Text style={[styles.dividerText, { color: colors.textMuted }]}>or add manually</Text>
+            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+          </View>
+          <TouchableOpacity onPress={() => setShowAdd(true)} style={[styles.addBtn, { backgroundColor: colors.teal }]}>
+            <Text style={styles.addBtnLabel}>+ Log Food Manually</Text>
+          </TouchableOpacity>
+        </View>
 
-              {/* Ingredient list */}
-              {isExpanded && (
-                <View style={[styles.ingredientList, { borderTopColor: colors.border }]}>
-                  {group.items.map(item => (
-                    <View key={item.id} style={styles.ingredientRow}>
-                      <View style={styles.ingredientLeft}>
-                        <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{item.name}</Text>
-                        <Text style={[styles.ingredientMacros, { color: colors.textMuted }]}>
-                          {item.calories} kcal · P {item.protein_g}g · C {item.carbs_g}g · F {item.fat_g}g
+        {/* Meal sections: Breakfast / Lunch / Dinner / Snack */}
+        {sections.map(section => {
+          const tc = TAG_COLORS[section.tag] ?? { color: colors.teal, bg: colors.tealAlpha };
+          return (
+            <View key={section.tag} style={styles.section}>
+              {/* Section header */}
+              <View style={[styles.sectionHeader, { borderLeftColor: tc.color }]}>
+                <Text style={styles.sectionEmoji}>{MEAL_EMOJIS[section.tag] ?? "🍽"}</Text>
+                <Text style={[styles.sectionTitle, { color: tc.color }]}>{section.tag.toUpperCase()}</Text>
+                <Text style={[styles.sectionDate, { color: colors.textMuted }]}>{todayLabel}</Text>
+              </View>
+
+              {/* Dish cards */}
+              {section.dishes.map(dish => {
+                const isExpanded = expandedDishes.has(dish.key);
+                const multi = dish.items.length > 1;
+                return (
+                  <View key={dish.key} style={[styles.dishCard, { borderColor: tc.color + "25" }]}>
+                    <View style={styles.dishRow}>
+                      <View style={[styles.dishDot, { backgroundColor: tc.color }]} />
+                      <View style={styles.dishMid}>
+                        <Text style={[styles.dishName, { color: colors.textPrimary }]}>{dish.dishName}</Text>
+                        <Text style={[styles.dishMeta, { color: colors.textMuted }]}>
+                          {dish.totalCals} kcal{multi ? ` · ${dish.items.length} ingredients` : ""}
                         </Text>
                       </View>
-                      <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>
-                        <Text style={[styles.deleteText, { color: colors.danger }]}>×</Text>
-                      </TouchableOpacity>
+                      {multi ? (
+                        <TouchableOpacity onPress={() => toggleDish(dish.key)} style={styles.expandBtn}>
+                          <Text style={[styles.expandText, { color: colors.textMuted }]}>{isExpanded ? "▲" : "▼"}</Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity onPress={() => handleDelete(dish.items[0].id)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>
+                          <Text style={[styles.deleteText, { color: colors.danger }]}>×</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
-                  ))}
-                </View>
-              )}
+                    {multi && isExpanded && (
+                      <View style={[styles.ingredientList, { borderTopColor: colors.border }]}>
+                        {dish.items.map(item => (
+                          <View key={item.id} style={styles.ingredientRow}>
+                            <View style={styles.ingredientLeft}>
+                              <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{item.name}</Text>
+                              <Text style={[styles.ingredientMacros, { color: colors.textMuted }]}>
+                                {item.calories} kcal · P {item.protein_g}g · C {item.carbs_g}g · F {item.fat_g}g
+                              </Text>
+                            </View>
+                            <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>
+                              <Text style={[styles.deleteText, { color: colors.danger }]}>×</Text>
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
             </View>
           );
-        }}
-      />
+        })}
+        <View style={{ height: 40 }} />
+      </ScrollView>
       <Modal visible={showAdd} transparent animationType="slide" onRequestClose={() => setShowAdd(false)}>
         <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <View style={styles.sheet}>
@@ -247,20 +284,23 @@ const styles = StyleSheet.create({
   dividerText: { fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 },
   addBtn: { marginHorizontal: 20, borderRadius: 14, paddingVertical: 14, alignItems: "center" },
   addBtnLabel: { color: "#FFF", fontWeight: "700", fontSize: 15 },
-  mealCard: { marginHorizontal: 20, borderRadius: 18, borderWidth: 1, overflow: "hidden", backgroundColor: "rgba(255,255,255,0.03)" },
-  mealHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
-  mealIconBadge: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  mealEmoji: { fontSize: 18 },
-  mealHeaderMid: { flex: 1 },
-  mealName: { fontSize: 15, fontWeight: "700" },
-  mealMeta: { fontSize: 11, fontWeight: "500", marginTop: 1 },
-  mealHeaderRight: { alignItems: "flex-end", gap: 2 },
-  mealCals: { fontSize: 14, fontWeight: "800" },
-  mealChevron: { fontSize: 10, fontWeight: "600" },
-  ingredientList: { borderTopWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, paddingBottom: 8 },
-  ingredientRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.06)" },
+  section: { gap: 8 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginHorizontal: 20, borderLeftWidth: 3, paddingLeft: 10 },
+  sectionEmoji: { fontSize: 14 },
+  sectionTitle: { fontSize: 11, fontWeight: "800", letterSpacing: 1.2, flex: 1 },
+  sectionDate: { fontSize: 11, fontWeight: "500" },
+  dishCard: { marginHorizontal: 20, borderRadius: 14, borderWidth: 1, backgroundColor: "rgba(255,255,255,0.03)", overflow: "hidden" },
+  dishRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14 },
+  dishDot: { width: 8, height: 8, borderRadius: 4 },
+  dishMid: { flex: 1 },
+  dishName: { fontSize: 14, fontWeight: "700", marginBottom: 2 },
+  dishMeta: { fontSize: 11, fontWeight: "500" },
+  expandBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
+  expandText: { fontSize: 10, fontWeight: "700" },
+  ingredientList: { borderTopWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, paddingBottom: 6 },
+  ingredientRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.05)" },
   ingredientLeft: { flex: 1 },
-  ingredientName: { fontSize: 13, fontWeight: "600", marginBottom: 2 },
+  ingredientName: { fontSize: 12, fontWeight: "600", marginBottom: 1 },
   ingredientMacros: { fontSize: 11, fontWeight: "500" },
   deleteBtn: { width: 30, height: 30, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   deleteText: { fontSize: 18, fontWeight: "700" },

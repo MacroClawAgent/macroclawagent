@@ -69,6 +69,8 @@ export default function PhotoConfirmScreen() {
   const [selectedTag, setSelectedTag] = useState<MealTag>(getMealTagForTime());
   const [errorMsg, setErrorMsg] = useState("");
   const launched = useRef(false);
+  // Stable batch ID for this photo session — groups all detected foods as one dish
+  const batchId = useRef(`${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   const launch = useCallback(async () => {
     // Request permissions
@@ -169,6 +171,11 @@ export default function PhotoConfirmScreen() {
       return;
     }
     setStage("saving");
+    // Derive dish name from top 2 calorie items
+    const sorted = [...foods].sort((a, b) => b.calories - a.calories);
+    const dishName = foods.length === 1
+      ? foods[0].name
+      : sorted.slice(0, 2).map(f => f.name).join(" & ");
     try {
       // Save each food item — the API auto-updates daily nutrition_logs
       await Promise.all(
@@ -180,6 +187,8 @@ export default function PhotoConfirmScreen() {
             protein_g: f.protein_g,
             carbs_g: f.carbs_g,
             fat_g: f.fat_g,
+            batch_id: batchId.current,
+            dish_name: dishName,
           })
         )
       );

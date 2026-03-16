@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("food_log_items")
-      .select("id,meal_tag,name,calories,protein_g,carbs_g,fat_g,created_at")
+      .select("id,meal_tag,name,calories,protein_g,carbs_g,fat_g,batch_id,dish_name,created_at")
       .eq("user_id", user.id)
       .eq("log_date", date)
       .order("created_at", { ascending: true });
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { meal_tag, name, calories, protein_g, carbs_g, fat_g } = body;
+    const { meal_tag, name, calories, protein_g, carbs_g, fat_g, batch_id, dish_name } = body;
     const log_date: string = body.date ?? new Date().toISOString().split("T")[0];
 
     if (!meal_tag || !name || calories == null) {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     // Insert the food item
     const { data: item, error: insertErr } = await supabase
       .from("food_log_items")
-      .insert({ user_id: user.id, log_date, meal_tag, name, calories, protein_g: protein_g ?? 0, carbs_g: carbs_g ?? 0, fat_g: fat_g ?? 0 })
+      .insert({ user_id: user.id, log_date, meal_tag, name, calories, protein_g: protein_g ?? 0, carbs_g: carbs_g ?? 0, fat_g: fat_g ?? 0, ...(batch_id ? { batch_id } : {}), ...(dish_name ? { dish_name } : {}) })
       .select()
       .single();
     if (insertErr) throw insertErr;

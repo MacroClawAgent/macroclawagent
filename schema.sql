@@ -204,8 +204,14 @@ CREATE TABLE IF NOT EXISTS public.food_log_items (
   carbs_g     NUMERIC(6,1) NOT NULL DEFAULT 0,
   fat_g       NUMERIC(6,1) NOT NULL DEFAULT 0,
   source      TEXT NOT NULL DEFAULT 'manual', -- 'manual' | 'photo_ai' | 'barcode'
+  batch_id    UUID,       -- shared UUID for all items from the same photo upload
+  dish_name   TEXT,       -- human-readable dish name (e.g. "Chicken & Rice")
   created_at  TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
+
+-- Run this if table already exists (adds new columns safely):
+-- ALTER TABLE public.food_log_items ADD COLUMN IF NOT EXISTS batch_id UUID;
+-- ALTER TABLE public.food_log_items ADD COLUMN IF NOT EXISTS dish_name TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_food_log_items_user_date ON public.food_log_items (user_id, log_date DESC);
 
