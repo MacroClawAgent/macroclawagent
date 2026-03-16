@@ -150,8 +150,13 @@ export default function ProfileScreen() {
       if (!res.url) return;
       const result = await WebBrowser.openAuthSessionAsync(res.url, "jonno://strava-connected");
       if (result.type === "success") {
-        // Deep link was intercepted — strava-connected screen handles the rest
-        // via Expo Router's URL handling. Nothing more needed here.
+        if (result.url.includes("error=")) {
+          Alert.alert("Connection failed", "Strava authorization was denied.");
+          return;
+        }
+        // openAuthSessionAsync intercepts the deep link but does NOT trigger
+        // Expo Router — navigate manually so strava-connected.tsx runs sync + refresh
+        router.push("/strava-connected");
       }
     } catch {
       Alert.alert("Error", "Could not start Strava connection.");
