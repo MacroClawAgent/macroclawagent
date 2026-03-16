@@ -35,7 +35,7 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="relative py-28 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
+    <section className="relative py-16 lg:py-24 xl:py-28 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -43,7 +43,7 @@ export function Testimonials() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10 lg:mb-14"
         >
           <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
             Athletes

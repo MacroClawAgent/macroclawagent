@@ -246,7 +246,7 @@ function StreakCard() {
 
 export function BentoShowcase() {
   return (
-    <section className="relative py-28 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
+    <section className="relative py-16 lg:py-24 xl:py-28 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -254,7 +254,7 @@ export function BentoShowcase() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10 lg:mb-16"
         >
           <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
             Product Preview
@@ -269,7 +269,7 @@ export function BentoShowcase() {
         </motion.div>
 
         {/* Bento — unified 6-col grid, rows 1-2 are 200px each */}
-        <div className="grid grid-cols-1 lg:grid-cols-6 lg:grid-rows-[200px_200px_220px] gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-6 lg:grid-rows-[180px_180px_200px] xl:grid-rows-[200px_200px_220px] gap-4">
           {/* Dashboard — 4 cols × 2 rows = 416px tall */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}

@@ -41,11 +41,11 @@ const featurePillars = [
 
 export function TrustSignals() {
   return (
-    <section className="relative py-32 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
+    <section className="relative py-16 lg:py-24 xl:py-32 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
 
       <div className="max-w-5xl mx-auto">
         {/* Feature pillars */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-24">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 lg:mb-20 xl:mb-24">
           {featurePillars.map((p, i) => (
             <motion.div
               key={p.headline}

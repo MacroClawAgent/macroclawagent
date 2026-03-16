@@ -25,7 +25,7 @@ function PhoneMockup() {
       initial={{ opacity: 0, y: 40, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="relative mx-auto select-none"
+      className="relative mx-auto select-none scale-[0.78] md:scale-[0.88] lg:scale-100 origin-bottom"
       style={{ width: 264, height: 556 }}
     >
       {/* Phone shell */}
@@ -173,7 +173,7 @@ function HeroBackgroundScene() {
 export function Hero() {
   return (
     <section
-      className="relative overflow-hidden pt-16 min-h-[92vh] flex flex-col justify-center"
+      className="relative overflow-hidden pt-16 min-h-[80vh] lg:min-h-[92vh] flex flex-col justify-center"
       style={{ backgroundColor: "#F4F5F7" }}
     >
       {/* Layer 2: Photographic fitness scene — right 62% */}

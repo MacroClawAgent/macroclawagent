@@ -23,14 +23,14 @@ const comparisons = [
 
 export function WhyDifferent() {
   return (
-    <section className="py-24 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
+    <section className="py-16 lg:py-20 xl:py-24 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10 lg:mb-14"
         >
           <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
             Why Jonno

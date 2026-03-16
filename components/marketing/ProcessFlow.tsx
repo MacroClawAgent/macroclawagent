@@ -8,7 +8,7 @@ import { Sparkles, ShoppingCart, Check } from "lucide-react";
 function MiniPhone({ children, bg = "bg-[#F5F7FA]" }: { children: React.ReactNode; bg?: string }) {
   return (
     <div
-      className="relative mx-auto select-none"
+      className="relative mx-auto select-none scale-[0.82] md:scale-90 lg:scale-100 origin-center"
       style={{ width: 228, height: 468 }}
     >
       <div
@@ -240,7 +240,7 @@ const steps = [
 
 export function ProcessFlow() {
   return (
-    <section id="how-it-works" className="py-24 px-6 overflow-hidden" style={{ backgroundColor: "#FFFFFF" }}>
+    <section id="how-it-works" className="py-16 lg:py-24 px-6 overflow-hidden" style={{ backgroundColor: "#FFFFFF" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -248,7 +248,7 @@ export function ProcessFlow() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="text-center mb-12 lg:mb-20"
         >
           <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
             How It Works
@@ -263,7 +263,7 @@ export function ProcessFlow() {
         </motion.div>
 
         {/* Alternating steps */}
-        <div className="flex flex-col gap-28">
+        <div className="flex flex-col gap-16 lg:gap-24 xl:gap-28">
           {steps.map((step, i) => (
             <motion.div
               key={step.number}
@@ -271,11 +271,11 @@ export function ProcessFlow() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-              className={`flex flex-col ${step.reverse ? "lg:flex-row-reverse" : "lg:flex-row"} gap-12 lg:gap-20 items-center`}
+              className={`flex flex-col ${step.reverse ? "lg:flex-row-reverse" : "lg:flex-row"} gap-10 lg:gap-16 xl:gap-20 items-center`}
             >
               {/* Text column */}
               <div className="flex-1 flex flex-col gap-5">
-                <span className="text-[88px] font-black leading-none font-mono select-none -mb-4" style={{ color: "#E5E7EB" }}>
+                <span className="text-6xl lg:text-[88px] font-black leading-none font-mono select-none -mb-4" style={{ color: "#E5E7EB" }}>
                   {step.number}
                 </span>
                 <div>
