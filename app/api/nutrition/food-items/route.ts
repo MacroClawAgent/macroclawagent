@@ -14,12 +14,22 @@ export async function GET(request: NextRequest) {
 
     const date = request.nextUrl.searchParams.get("date") ?? new Date().toISOString().split("T")[0];
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("food_log_items")
       .select("id,meal_tag,name,calories,protein_g,carbs_g,fat_g,batch_id,dish_name,created_at")
       .eq("user_id", user.id)
       .eq("log_date", date)
       .order("created_at", { ascending: true });
+
+    // If columns don't exist yet (migration pending), fall back to base columns
+    if (error?.code === "42703") {
+      ({ data, error } = await supabase
+        .from("food_log_items")
+        .select("id,meal_tag,name,calories,protein_g,carbs_g,fat_g,created_at")
+        .eq("user_id", user.id)
+        .eq("log_date", date)
+        .order("created_at", { ascending: true }));
+    }
 
     if (error) throw error;
     return NextResponse.json({ items: data ?? [] });
@@ -48,12 +58,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "meal_tag, name, and calories are required" }, { status: 400 });
     }
 
-    // Insert the food item
-    const { data: item, error: insertErr } = await supabase
+    // Insert the food item (with batch/dish fields; fallback if columns missing)
+    const baseRow = { user_id: user.id, log_date, meal_tag, name, calories, protein_g: protein_g ?? 0, carbs_g: carbs_g ?? 0, fat_g: fat_g ?? 0 };
+    let { data: item, error: insertErr } = await supabase
       .from("food_log_items")
-      .insert({ user_id: user.id, log_date, meal_tag, name, calories, protein_g: protein_g ?? 0, carbs_g: carbs_g ?? 0, fat_g: fat_g ?? 0, ...(batch_id ? { batch_id } : {}), ...(dish_name ? { dish_name } : {}) })
+      .insert({ ...baseRow, ...(batch_id ? { batch_id } : {}), ...(dish_name ? { dish_name } : {}) })
       .select()
       .single();
+    if (insertErr?.code === "42703") {
+      // batch_id/dish_name columns not migrated yet — insert without them
+      ({ data: item, error: insertErr } = await supabase
+        .from("food_log_items")
+        .insert(baseRow)
+        .select()
+        .single());
+    }
     if (insertErr) throw insertErr;
 
     // Recompute totals from all items for that day
