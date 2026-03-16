@@ -5,6 +5,8 @@ import { getCache, setCache } from "../cache";
 import { greetingWord } from "../formatters";
 import type { ActivityRow, NutritionLog, UserProfile } from "../../types";
 
+export interface WeeklyDay { date: string; kcal: number; }
+
 const PLAN_CACHE_KEY = "home_optimizer";
 const PLAN_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
@@ -28,6 +30,7 @@ export interface HomeViewModel {
   };
   jonnoInsight?: { title: string; body: string };
   isStravaConnected: boolean;
+  weeklyCalories: WeeklyDay[];
   loading: boolean;
   refreshing: boolean;
   refresh: () => void;
@@ -118,6 +121,7 @@ export function useHomeViewModel(): HomeViewModel {
   const [refreshing, setRefreshing] = useState(false);
   const [nutrition, setNutrition] = useState<NutritionLog | null>(null);
   const [latestActivity, setLatestActivity] = useState<ActivityRow | null>(null);
+  const [weeklyCalories, setWeeklyCalories] = useState<WeeklyDay[]>([]);
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (!userProfile) return;
@@ -125,12 +129,14 @@ export function useHomeViewModel(): HomeViewModel {
 
     try {
       const [nutritionRes, activityRes] = await Promise.allSettled([
-        apiGet<{ today: NutritionLog; goals: UserProfile }>("/api/nutrition/today"),
+        apiGet<{ today: NutritionLog; goals: UserProfile; weeklyCalories: WeeklyDay[] }>("/api/nutrition/today"),
         apiGet<{ activities: ActivityRow[] }>("/api/activities?limit=1"),
       ]);
 
       if (nutritionRes.status === "fulfilled") {
         setNutrition(nutritionRes.value.today ?? null);
+        const wc = nutritionRes.value.weeklyCalories ?? [];
+        setWeeklyCalories(wc.map((d) => ({ date: d.date, kcal: d.kcal })));
       }
       if (activityRes.status === "fulfilled") {
         setLatestActivity(activityRes.value.activities?.[0] ?? null);
@@ -191,6 +197,7 @@ export function useHomeViewModel(): HomeViewModel {
     latestActivity: act,
     jonnoInsight: profile ? deriveInsight(profile, nutrition) : undefined,
     isStravaConnected: !!profile?.strava_athlete_id,
+    weeklyCalories,
     loading,
     refreshing,
     refresh,

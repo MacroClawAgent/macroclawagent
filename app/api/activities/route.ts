@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
+    const date = searchParams.get("date"); // YYYY-MM-DD — filter to a specific day
     const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
     const offset = parseInt(searchParams.get("offset") ?? "0", 10);
 
@@ -36,6 +37,12 @@ export async function GET(request: NextRequest) {
 
     if (type) {
       query = query.eq("type", type);
+    }
+    if (date) {
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const nextDayStr = nextDay.toISOString().split("T")[0];
+      query = query.gte("started_at", `${date}T00:00:00`).lt("started_at", `${nextDayStr}T00:00:00`);
     }
 
     const { data, error, count } = await query;
