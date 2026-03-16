@@ -12,6 +12,7 @@ export interface UserProfile {
   protein_goal: number;
   carbs_goal: number;
   fat_goal: number;
+  fitness_goal: string | null;
   profile_complete: boolean;
   strava_athlete_id: string | null;
   created_at: string;

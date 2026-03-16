@@ -27,9 +27,13 @@ CREATE TABLE IF NOT EXISTS public.users (
   protein_goal   INTEGER DEFAULT 120,  -- grams
   carbs_goal     INTEGER DEFAULT 250,  -- grams
   fat_goal       INTEGER DEFAULT 70,   -- grams
+  fitness_goal   TEXT DEFAULT 'performance', -- lose_weight | build_muscle | performance | maintain
   created_at     TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at     TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
+
+-- Add fitness_goal to existing databases (safe to run if column already exists)
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS fitness_goal TEXT DEFAULT 'performance';
 
 -- ============================================================
 -- MEAL PLANS TABLE

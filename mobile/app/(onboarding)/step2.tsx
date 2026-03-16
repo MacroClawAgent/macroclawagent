@@ -1,155 +1,155 @@
 import { useState } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert,
+  View, Text, TouchableOpacity, StyleSheet, ScrollView,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { apiPost } from "@/lib/api";
-import { useAuth } from "@/context/AuthContext";
+
+const GOALS = [
+  {
+    id: "lose_weight",
+    emoji: "🔥",
+    label: "Lose Weight",
+    desc: "Burn fat while preserving muscle through smart nutrition",
+  },
+  {
+    id: "build_muscle",
+    emoji: "💪",
+    label: "Build Muscle",
+    desc: "Fuel growth with the right surplus and protein targets",
+  },
+  {
+    id: "performance",
+    emoji: "🏃",
+    label: "Performance",
+    desc: "Optimise fuelling and recovery around your training",
+  },
+  {
+    id: "maintain",
+    emoji: "✅",
+    label: "Stay Healthy",
+    desc: "Balanced nutrition and sustainable energy every day",
+  },
+];
 
 export default function OnboardingStep2() {
   const params = useLocalSearchParams<{ full_name: string; sport?: string }>();
-  const { refreshProfile } = useAuth();
+  const [goal, setGoal] = useState("");
 
-  const [weightKg, setWeightKg] = useState("");
-  const [heightCm, setHeightCm] = useState("");
-  const [calorieGoal, setCalorieGoal] = useState("2000");
-  const [proteinGoal, setProteinGoal] = useState("120");
-  const [loading, setLoading] = useState(false);
-
-  async function handleFinish() {
-    setLoading(true);
-    try {
-      await apiPost("/api/profile/update", {
-        full_name: params.full_name,
-        weight_kg: weightKg ? parseFloat(weightKg) : undefined,
-        height_cm: heightCm ? parseFloat(heightCm) : undefined,
-        calorie_goal: parseInt(calorieGoal) || 2000,
-        protein_goal: parseInt(proteinGoal) || 120,
-        profile_complete: true,
-      });
-      await refreshProfile();
-      router.replace("/(tabs)/home");
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Something went wrong.";
-      Alert.alert("Error", message);
-      setLoading(false);
-    }
+  function handleNext() {
+    if (!goal) return;
+    router.push({
+      pathname: "/(onboarding)/step3",
+      params: { full_name: params.full_name, sport: params.sport ?? "", goal },
+    });
   }
 
+  const firstName = (params.full_name ?? "").split(" ")[0] || "there";
+
   return (
-    <KeyboardAvoidingView
+    <ScrollView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      contentContainerStyle={styles.inner}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
-        {/* Progress */}
-        <View style={styles.progressRow}>
-          <View style={[styles.progressDot, styles.progressDone]} />
-          <View style={[styles.progressLine, styles.progressLineDone]} />
-          <View style={[styles.progressDot, styles.progressActive]} />
-        </View>
+      {/* Progress */}
+      <View style={styles.progressRow}>
+        <View style={[styles.progressDot, styles.progressDone]} />
+        <View style={[styles.progressLine, styles.progressLineDone]} />
+        <View style={[styles.progressDot, styles.progressActive]} />
+        <View style={styles.progressLine} />
+        <View style={styles.progressDot} />
+      </View>
 
-        <Text style={styles.step}>Step 2 of 2</Text>
-        <Text style={styles.title}>Your body & goals</Text>
-        <Text style={styles.subtitle}>
-          This lets Jonno calculate accurate macro targets for you. All optional — you can update later.
-        </Text>
+      <Text style={styles.step}>Step 2 of 3</Text>
+      <Text style={styles.title}>What's your goal, {firstName}?</Text>
+      <Text style={styles.subtitle}>
+        Jonno uses this to personalise every meal plan and nutrition recommendation for you.
+      </Text>
 
-        <View style={styles.form}>
-          <View style={styles.row}>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>Weight (kg)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="70"
-                placeholderTextColor="rgba(245,245,247,0.35)"
-                value={weightKg}
-                onChangeText={setWeightKg}
-                keyboardType="decimal-pad"
-              />
-            </View>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>Height (cm)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="175"
-                placeholderTextColor="rgba(245,245,247,0.35)"
-                value={heightCm}
-                onChangeText={setHeightCm}
-                keyboardType="decimal-pad"
-              />
-            </View>
-          </View>
+      <View style={styles.goalList}>
+        {GOALS.map((g) => {
+          const active = goal === g.id;
+          return (
+            <TouchableOpacity
+              key={g.id}
+              onPress={() => setGoal(g.id)}
+              activeOpacity={0.8}
+              style={[styles.goalCard, active && styles.goalCardActive]}
+            >
+              <View style={styles.goalLeft}>
+                <Text style={styles.goalEmoji}>{g.emoji}</Text>
+                <View style={styles.goalText}>
+                  <Text style={[styles.goalLabel, active && styles.goalLabelActive]}>{g.label}</Text>
+                  <Text style={[styles.goalDesc, active && styles.goalDescActive]}>{g.desc}</Text>
+                </View>
+              </View>
+              <View style={[styles.radio, active && styles.radioActive]}>
+                {active && <View style={styles.radioDot} />}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Daily targets</Text>
-            <Text style={styles.sectionHint}>Jonno will adjust these based on your training</Text>
-          </View>
-
-          <View style={styles.row}>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>Calories (kcal)</Text>
-              <TextInput
-                style={styles.input}
-                value={calorieGoal}
-                onChangeText={setCalorieGoal}
-                keyboardType="number-pad"
-              />
-            </View>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>Protein (g)</Text>
-              <TextInput
-                style={styles.input}
-                value={proteinGoal}
-                onChangeText={setProteinGoal}
-                keyboardType="number-pad"
-              />
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleFinish}
-            disabled={loading}
-            activeOpacity={0.85}
-          >
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.buttonText}>Start using Jonno 🎉</Text>
-            }
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <TouchableOpacity
+        style={[styles.button, !goal && styles.buttonDisabled]}
+        onPress={handleNext}
+        disabled={!goal}
+        activeOpacity={0.85}
+      >
+        <Text style={styles.buttonText}>Continue →</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#0B0B0B" },
-  inner: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingVertical: 48 },
+  inner: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 56, paddingBottom: 40 },
+
   progressRow: { flexDirection: "row", alignItems: "center", marginBottom: 32 },
   progressDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(255,255,255,0.1)" },
-  progressDone: { backgroundColor: "#D4FF00" },
   progressActive: { backgroundColor: "#D4FF00" },
+  progressDone: { backgroundColor: "#D4FF00" },
   progressLine: { flex: 1, height: 2, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 6 },
   progressLineDone: { backgroundColor: "#D4FF00" },
+
   step: { fontSize: 12, fontWeight: "600", color: "#D4FF00", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
   title: { fontSize: 28, fontWeight: "800", color: "#F5F5F7", marginBottom: 8 },
-  subtitle: { fontSize: 15, color: "rgba(245,245,247,0.55)", marginBottom: 32, lineHeight: 22 },
-  form: { gap: 16 },
-  row: { flexDirection: "row", gap: 12 },
-  field: { gap: 6 },
-  label: { fontSize: 12, fontWeight: "600", color: "rgba(245,245,247,0.55)", textTransform: "uppercase", letterSpacing: 0.5 },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
-    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, color: "#F5F5F7",
+  subtitle: { fontSize: 15, color: "rgba(245,245,247,0.55)", marginBottom: 28, lineHeight: 22 },
+
+  goalList: { gap: 12, marginBottom: 28 },
+  goalCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    borderRadius: 18,
+    padding: 18,
+    gap: 12,
   },
-  sectionHeader: { gap: 2, marginTop: 4 },
-  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#F5F5F7" },
-  sectionHint: { fontSize: 12, color: "rgba(245,245,247,0.35)" },
-  button: { backgroundColor: "#D4FF00", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
-  buttonDisabled: { opacity: 0.6 },
+  goalCardActive: {
+    backgroundColor: "rgba(212,255,0,0.08)",
+    borderColor: "#D4FF00",
+  },
+  goalLeft: { flexDirection: "row", alignItems: "center", gap: 14, flex: 1 },
+  goalEmoji: { fontSize: 28 },
+  goalText: { flex: 1, gap: 2 },
+  goalLabel: { fontSize: 16, fontWeight: "700", color: "rgba(245,245,247,0.7)" },
+  goalLabelActive: { color: "#D4FF00" },
+  goalDesc: { fontSize: 12, color: "rgba(245,245,247,0.35)", lineHeight: 17 },
+  goalDescActive: { color: "rgba(245,245,247,0.6)" },
+  radio: {
+    width: 22, height: 22, borderRadius: 11,
+    borderWidth: 2, borderColor: "rgba(255,255,255,0.2)",
+    alignItems: "center", justifyContent: "center",
+  },
+  radioActive: { borderColor: "#D4FF00" },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#D4FF00" },
+
+  button: { backgroundColor: "#D4FF00", borderRadius: 14, paddingVertical: 16, alignItems: "center" },
+  buttonDisabled: { opacity: 0.4 },
   buttonText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
 });

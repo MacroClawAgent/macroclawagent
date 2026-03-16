@@ -18,6 +18,7 @@ export interface FullAgentContext {
     proteinGoal: number;
     carbsGoal: number;
     fatGoal: number;
+    fitnessGoal: string;
   };
   today: {
     caloriesConsumed: number;
@@ -78,7 +79,7 @@ export async function buildAgentContext(
   ] = await Promise.allSettled([
     supabase
       .from("users")
-      .select("full_name,weight_kg,height_cm,calorie_goal,protein_goal,carbs_goal,fat_goal")
+      .select("full_name,weight_kg,height_cm,calorie_goal,protein_goal,carbs_goal,fat_goal,fitness_goal")
       .eq("id", userId)
       .single(),
     supabase
@@ -170,6 +171,7 @@ export async function buildAgentContext(
       proteinGoal,
       carbsGoal,
       fatGoal,
+      fitnessGoal: userRow?.fitness_goal ?? "performance",
     },
     today: {
       caloriesConsumed,

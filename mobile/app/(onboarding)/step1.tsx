@@ -30,9 +30,11 @@ export default function OnboardingStep1() {
           <View style={[styles.progressDot, styles.progressActive]} />
           <View style={styles.progressLine} />
           <View style={styles.progressDot} />
+          <View style={styles.progressLine} />
+          <View style={styles.progressDot} />
         </View>
 
-        <Text style={styles.step}>Step 1 of 2</Text>
+        <Text style={styles.step}>Step 1 of 3</Text>
         <Text style={styles.title}>Let's get to know you</Text>
         <Text style={styles.subtitle}>Tell us your name and what you train for.</Text>
 

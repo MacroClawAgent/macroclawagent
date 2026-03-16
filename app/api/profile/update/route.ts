@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       protein_goal,
       carbs_goal,
       fat_goal,
+      fitness_goal,
     } = body;
 
     const updatePayload: Record<string, unknown> = {};
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
     if (protein_goal !== undefined) updatePayload.protein_goal = protein_goal;
     if (carbs_goal !== undefined) updatePayload.carbs_goal = carbs_goal;
     if (fat_goal !== undefined) updatePayload.fat_goal = fat_goal;
+    if (fitness_goal !== undefined) updatePayload.fitness_goal = fitness_goal;
 
     const { data, error } = await supabase
       .from("users")

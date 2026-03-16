@@ -62,7 +62,11 @@ function buildContextBlock(ctx: FullAgentContext): string {
       : "none";
 
   const goalLabels: Record<string, string> = {
-    performance: "performance / maintenance",
+    lose_weight: "lose weight / fat loss",
+    build_muscle: "build muscle / lean bulk",
+    performance: "athletic performance",
+    maintain: "maintain weight / general health",
+    // legacy keys
     cut: "fat loss",
     lean_bulk: "lean muscle gain",
   };
@@ -79,11 +83,14 @@ function buildContextBlock(ctx: FullAgentContext): string {
     high: "happy to cook (60+ min)",
   };
 
+  const fitnessGoalLabel = goalLabels[user.fitnessGoal] ?? user.fitnessGoal;
+
   return `
 ## YOUR USER CONTEXT — use this data in every response, do not ask the user for it
 
 Name: ${user.firstName}
-Goal: ${goalLabels[preferences.goal] ?? preferences.goal}
+FITNESS GOAL: ${fitnessGoalLabel} ← THIS IS THE USER'S PRIMARY OBJECTIVE. Every meal suggestion, calorie target, and piece of advice must actively support this goal.
+Nutrition approach goal: ${goalLabels[preferences.goal] ?? preferences.goal}
 Diet: ${preferences.diet}
 Allergies: ${allergiesLine}
 Meals per day: ${preferences.mealsPerDay}
