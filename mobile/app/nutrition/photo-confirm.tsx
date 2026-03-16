@@ -69,8 +69,13 @@ export default function PhotoConfirmScreen() {
   const [selectedTag, setSelectedTag] = useState<MealTag>(getMealTagForTime());
   const [errorMsg, setErrorMsg] = useState("");
   const launched = useRef(false);
-  // Stable batch ID for this photo session — groups all detected foods as one dish
-  const batchId = useRef(`${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  // Stable UUID v4 for this photo session — groups all detected foods as one dish
+  const batchId = useRef(
+    "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0;
+      return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+    })
+  );
 
   const launch = useCallback(async () => {
     // Request permissions
