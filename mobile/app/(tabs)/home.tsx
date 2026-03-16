@@ -7,6 +7,7 @@ import { NutritionWidget } from "@/components/features/home/NutritionWidget";
 import { LatestActivityCard } from "@/components/features/home/LatestActivityCard";
 import { JonnoInsightCard } from "@/components/features/home/JonnoInsightCard";
 import { QuickActionRow } from "@/components/features/home/QuickActionRow";
+import { WeekCalendarStrip } from "@/components/features/home/WeekCalendarStrip";
 import { useTheme } from "@/context/ThemeContext";
 import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
 
@@ -57,6 +58,9 @@ export default function HomeScreen() {
             <Text style={styles.goalPillText}>{vm.goalEmoji} {vm.goalLabel}</Text>
           </View>
         </View>
+
+        {/* 7-day week streak strip */}
+        <WeekCalendarStrip weeklyCalories={vm.weeklyCalories} />
 
         {/* Nutrition widget */}
         {vm.loading ? (
