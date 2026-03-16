@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
-import { HomeHeroCard } from "@/components/features/home/HomeHeroCard";
+import { NutritionWidget } from "@/components/features/home/NutritionWidget";
 import { LatestActivityCard } from "@/components/features/home/LatestActivityCard";
 import { JonnoInsightCard } from "@/components/features/home/JonnoInsightCard";
 import { QuickActionRow } from "@/components/features/home/QuickActionRow";
@@ -24,6 +25,14 @@ function SkeletonCard() {
 export default function HomeScreen() {
   const { colors } = useTheme();
   const vm = useHomeViewModel();
+
+  // Refresh nutrition data every time the home tab comes into focus
+  // (e.g. after returning from food log or photo confirm screens)
+  useFocusEffect(
+    useCallback(() => {
+      vm.refresh();
+    }, [])
+  );
 
   return (
     <Screen style={{ backgroundColor: "#20C7B7" }}>
@@ -49,13 +58,15 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Hero calorie card */}
+        {/* Nutrition widget */}
         {vm.loading ? (
           <SkeletonCard />
         ) : (
-          <HomeHeroCard
+          <NutritionWidget
             calorieProgress={vm.calorieProgress}
             macros={vm.macros}
+            goalEmoji={vm.goalEmoji}
+            goalLabel={vm.goalLabel}
           />
         )}
 
