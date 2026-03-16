@@ -21,7 +21,7 @@ const TAG_COLORS: Record<string, { color: string; bg: string }> = {
 };
 const TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
-interface FoodItem { id: string; tag: string; name: string; calories: number; protein: number; carbs: number; fat: number; }
+interface FoodItem { id: string; meal_tag: string; name: string; calories: number; protein_g: number; carbs_g: number; fat_g: number; }
 interface NutritionData { log: { calories_consumed: number; protein_g: number; carbs_g: number; fat_g: number; }; goals: { calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number; }; foodItems: FoodItem[]; }
 
 export default function LogFoodScreen() {
@@ -39,6 +39,13 @@ export default function LogFoodScreen() {
   const [addCarbs, setAddCarbs] = useState("");
   const [addFat, setAddFat] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editItem, setEditItem] = useState<FoodItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCals, setEditCals] = useState("");
+  const [editProtein, setEditProtein] = useState("");
+  const [editCarbs, setEditCarbs] = useState("");
+  const [editFat, setEditFat] = useState("");
+  const [editing, setEditing] = useState(false);
 
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -49,7 +56,7 @@ export default function LogFoodScreen() {
       ]);
       const log = logRes.status === "fulfilled" ? logRes.value : null;
       const items = itemsRes.status === "fulfilled" ? itemsRes.value?.items ?? [] : [];
-      setData({ log: log?.log ?? { calories_consumed: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }, goals: log?.goals ?? userProfile, foodItems: items });
+      setData({ log: log?.today ?? { calories_consumed: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }, goals: log?.goals ?? userProfile, foodItems: items });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -78,10 +85,36 @@ export default function LogFoodScreen() {
     } catch (e: unknown) { Alert.alert("Error", e instanceof Error ? e.message : "Failed to add item."); } finally { setSaving(false); }
   };
 
+  const openEdit = (item: FoodItem) => {
+    setEditItem(item);
+    setEditName(item.name);
+    setEditCals(String(item.calories));
+    setEditProtein(String(item.protein_g));
+    setEditCarbs(String(item.carbs_g));
+    setEditFat(String(item.fat_g));
+  };
+
+  const handleEditSave = async () => {
+    if (!editItem || !editName || !editCals) return;
+    setEditing(true);
+    try {
+      await apiPatch(`/api/nutrition/food-items/${editItem.id}`, {
+        name: editName,
+        calories: parseInt(editCals),
+        protein_g: parseFloat(editProtein || "0"),
+        carbs_g: parseFloat(editCarbs || "0"),
+        fat_g: parseFloat(editFat || "0"),
+      });
+      setEditItem(null);
+      await fetchData();
+    } catch (e: unknown) { Alert.alert("Error", e instanceof Error ? e.message : "Failed to update."); }
+    finally { setEditing(false); }
+  };
+
   const log = data?.log;
   const goals = data?.goals;
   const foodItems = data?.foodItems ?? [];
-  const grouped = TAGS.map(tag => ({ tag, items: foodItems.filter(i => i.tag === tag) })).filter(g => g.items.length > 0);
+  const grouped = TAGS.map(tag => ({ tag, items: foodItems.filter(i => i.meal_tag === tag) })).filter(g => g.items.length > 0);
 
   return (
     <Screen>
@@ -144,8 +177,11 @@ export default function LogFoodScreen() {
                   <View style={styles.itemRow}>
                     <View style={styles.itemLeft}>
                       <Text style={[styles.itemName, { color: colors.textPrimary }]}>{item.name}</Text>
-                      <Text style={[styles.itemMacros, { color: colors.textMuted }]}>{item.calories} kcal · P{item.protein}g · C{item.carbs}g · F{item.fat}g</Text>
+                      <Text style={[styles.itemMacros, { color: colors.textMuted }]}>{item.calories} kcal · P{item.protein_g}g · C{item.carbs_g}g · F{item.fat_g}g</Text>
                     </View>
+                    <TouchableOpacity onPress={() => openEdit(item)} style={[styles.editBtn, { backgroundColor: colors.teal + "18" }]}>
+                      <Text style={[styles.editText, { color: colors.teal }]}>✎</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>
                       <Text style={[styles.deleteText, { color: colors.danger }]}>×</Text>
                     </TouchableOpacity>
@@ -185,6 +221,27 @@ export default function LogFoodScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Edit Modal */}
+      <Modal visible={!!editItem} transparent animationType="slide" onRequestClose={() => setEditItem(null)}>
+        <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <View style={styles.sheet}>
+            <View style={styles.handle} />
+            <Text style={styles.sheetTitle}>Edit Item</Text>
+            <TextInput style={styles.input} placeholder="Food name" placeholderTextColor="rgba(245,245,247,0.3)" value={editName} onChangeText={setEditName} autoFocus />
+            <TextInput style={styles.input} placeholder="Calories" placeholderTextColor="rgba(245,245,247,0.3)" value={editCals} onChangeText={setEditCals} keyboardType="numeric" />
+            <View style={styles.twoCol}>
+              <TextInput style={[styles.input, { flex: 1 }]} placeholder="Protein g" placeholderTextColor="rgba(245,245,247,0.3)" value={editProtein} onChangeText={setEditProtein} keyboardType="decimal-pad" />
+              <TextInput style={[styles.input, { flex: 1 }]} placeholder="Carbs g" placeholderTextColor="rgba(245,245,247,0.3)" value={editCarbs} onChangeText={setEditCarbs} keyboardType="decimal-pad" />
+              <TextInput style={[styles.input, { flex: 1 }]} placeholder="Fat g" placeholderTextColor="rgba(245,245,247,0.3)" value={editFat} onChangeText={setEditFat} keyboardType="decimal-pad" />
+            </View>
+            <TouchableOpacity onPress={handleEditSave} disabled={!editName || !editCals || editing} style={[styles.saveBtn, { opacity: !editName || !editCals ? 0.5 : 1 }]}>
+              <Text style={styles.saveBtnText}>{editing ? "Saving…" : "Save Changes"}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setEditItem(null)} style={styles.cancelBtn}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </Screen>
   );
 }
@@ -218,6 +275,8 @@ const styles = StyleSheet.create({
   itemLeft: { flex: 1 },
   itemName: { fontSize: 14, fontWeight: "600", marginBottom: 2 },
   itemMacros: { fontSize: 12, fontWeight: "500" },
+  editBtn: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  editText: { fontSize: 16, fontWeight: "700" },
   deleteBtn: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   deleteText: { fontSize: 18, fontWeight: "700" },
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" },

@@ -2,6 +2,72 @@ import { createClient, createClientFromToken, getBearerToken } from "@/lib/supab
 import { NextRequest, NextResponse } from "next/server";
 
 /**
+ * PATCH /api/nutrition/food-items/[id]
+ * Updates a food log item and recomputes nutrition_logs totals.
+ * Body: { name?, calories?, protein_g?, carbs_g?, fat_g?, meal_tag? }
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const token = getBearerToken(request);
+    const supabase = token ? createClientFromToken(token) : await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await params;
+    const body = await request.json();
+    const { name, calories, protein_g, carbs_g, fat_g, meal_tag } = body;
+
+    const updates: Record<string, unknown> = {};
+    if (name !== undefined) updates.name = name;
+    if (calories !== undefined) updates.calories = calories;
+    if (protein_g !== undefined) updates.protein_g = protein_g;
+    if (carbs_g !== undefined) updates.carbs_g = carbs_g;
+    if (fat_g !== undefined) updates.fat_g = fat_g;
+    if (meal_tag !== undefined) updates.meal_tag = meal_tag;
+
+    const { data: item, error: updateErr } = await supabase
+      .from("food_log_items")
+      .update(updates)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select("log_date")
+      .single();
+    if (updateErr || !item) return NextResponse.json({ error: updateErr?.message ?? "Not found" }, { status: 404 });
+
+    const log_date = item.log_date;
+
+    // Recompute totals
+    const { data: allItems } = await supabase
+      .from("food_log_items")
+      .select("calories,protein_g,carbs_g,fat_g")
+      .eq("user_id", user.id)
+      .eq("log_date", log_date);
+
+    const totals = (allItems ?? []).reduce(
+      (acc, r) => ({
+        calories_consumed: acc.calories_consumed + (r.calories ?? 0),
+        protein_g: acc.protein_g + Number(r.protein_g ?? 0),
+        carbs_g: acc.carbs_g + Number(r.carbs_g ?? 0),
+        fat_g: acc.fat_g + Number(r.fat_g ?? 0),
+      }),
+      { calories_consumed: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
+    );
+
+    await supabase
+      .from("nutrition_logs")
+      .upsert({ user_id: user.id, date: log_date, ...totals }, { onConflict: "user_id,date" });
+
+    return NextResponse.json({ success: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+/**
  * DELETE /api/nutrition/food-items/[id]
  * Removes a food log item and recomputes nutrition_logs totals for that day.
  */

@@ -125,12 +125,12 @@ export function useHomeViewModel(): HomeViewModel {
 
     try {
       const [nutritionRes, activityRes] = await Promise.allSettled([
-        apiGet<{ log: NutritionLog; goals: UserProfile }>("/api/nutrition/today"),
+        apiGet<{ today: NutritionLog; goals: UserProfile }>("/api/nutrition/today"),
         apiGet<{ activities: ActivityRow[] }>("/api/activities?limit=1"),
       ]);
 
       if (nutritionRes.status === "fulfilled") {
-        setNutrition(nutritionRes.value.log ?? null);
+        setNutrition(nutritionRes.value.today ?? null);
       }
       if (activityRes.status === "fulfilled") {
         setLatestActivity(activityRes.value.activities?.[0] ?? null);
