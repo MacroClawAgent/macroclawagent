@@ -79,7 +79,9 @@ export async function POST(request: NextRequest) {
       .upsert({ user_id: user.id, date: log_date, ...totals }, { onConflict: "user_id,date" });
 
     return NextResponse.json({ item });
-  } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : (err as { message?: string })?.message ?? "Internal server error";
+    console.error("[food-items POST]", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

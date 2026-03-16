@@ -71,11 +71,11 @@ export default function LogFoodScreen() {
     if (!addName || !addCals) return;
     setSaving(true);
     try {
-      await apiPost("/api/nutrition/food-items", { tag: addTag, name: addName, calories: parseInt(addCals), protein: parseFloat(addProtein || "0"), carbs: parseFloat(addCarbs || "0"), fat: parseFloat(addFat || "0") });
+      await apiPost("/api/nutrition/food-items", { meal_tag: addTag, name: addName, calories: parseInt(addCals), protein_g: parseFloat(addProtein || "0"), carbs_g: parseFloat(addCarbs || "0"), fat_g: parseFloat(addFat || "0") });
       setShowAdd(false);
       setAddName(""); setAddCals(""); setAddProtein(""); setAddCarbs(""); setAddFat("");
       await fetchData();
-    } catch { Alert.alert("Error", "Failed to add item."); } finally { setSaving(false); }
+    } catch (e: unknown) { Alert.alert("Error", e instanceof Error ? e.message : "Failed to add item."); } finally { setSaving(false); }
   };
 
   const log = data?.log;
