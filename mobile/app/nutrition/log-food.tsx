@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert, FlatList, KeyboardAvoidingView, Modal, Platform,
   RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View,
@@ -7,11 +7,10 @@ import { useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Card } from "@/components/ui/Card";
-import { Pill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
-import { apiGet, apiPost, apiDelete, apiPatch } from "@/lib/api";
+import { apiGet, apiPost, apiDelete } from "@/lib/api";
 
 const TAG_COLORS: Record<string, { color: string; bg: string }> = {
   Breakfast: { color: "#F59E0B", bg: "rgba(245,158,11,0.10)" },
@@ -39,13 +38,7 @@ export default function LogFoodScreen() {
   const [addCarbs, setAddCarbs] = useState("");
   const [addFat, setAddFat] = useState("");
   const [saving, setSaving] = useState(false);
-  const [editItem, setEditItem] = useState<FoodItem | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editCals, setEditCals] = useState("");
-  const [editProtein, setEditProtein] = useState("");
-  const [editCarbs, setEditCarbs] = useState("");
-  const [editFat, setEditFat] = useState("");
-  const [editing, setEditing] = useState(false);
+  const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set(["Breakfast", "Lunch", "Dinner", "Snack"]));
 
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -85,31 +78,18 @@ export default function LogFoodScreen() {
     } catch (e: unknown) { Alert.alert("Error", e instanceof Error ? e.message : "Failed to add item."); } finally { setSaving(false); }
   };
 
-  const openEdit = (item: FoodItem) => {
-    setEditItem(item);
-    setEditName(item.name);
-    setEditCals(String(item.calories));
-    setEditProtein(String(item.protein_g));
-    setEditCarbs(String(item.carbs_g));
-    setEditFat(String(item.fat_g));
+  const toggleTag = (tag: string) => {
+    setExpandedTags(prev => {
+      const next = new Set(prev);
+      next.has(tag) ? next.delete(tag) : next.add(tag);
+      return next;
+    });
   };
 
-  const handleEditSave = async () => {
-    if (!editItem || !editName || !editCals) return;
-    setEditing(true);
-    try {
-      await apiPatch(`/api/nutrition/food-items/${editItem.id}`, {
-        name: editName,
-        calories: parseInt(editCals),
-        protein_g: parseFloat(editProtein || "0"),
-        carbs_g: parseFloat(editCarbs || "0"),
-        fat_g: parseFloat(editFat || "0"),
-      });
-      setEditItem(null);
-      await fetchData();
-    } catch (e: unknown) { Alert.alert("Error", e instanceof Error ? e.message : "Failed to update."); }
-    finally { setEditing(false); }
-  };
+  const todayLabel = (() => {
+    const d = new Date();
+    return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  })();
 
   const log = data?.log;
   const goals = data?.goals;
@@ -169,25 +149,44 @@ export default function LogFoodScreen() {
         }
         renderItem={({ item: group }) => {
           const tc = TAG_COLORS[group.tag] ?? { color: colors.teal, bg: colors.tealAlpha };
+          const isExpanded = expandedTags.has(group.tag);
+          const mealCals = group.items.reduce((s, i) => s + i.calories, 0);
+          const mealEmojis: Record<string, string> = { Breakfast: "🌅", Lunch: "☀️", Dinner: "🌙", Snack: "🍎" };
           return (
-            <View style={styles.group}>
-              <Pill label={group.tag} color={tc.color} bg={tc.bg} style={styles.groupLabel} />
-              {group.items.map(item => (
-                <Card key={item.id} style={styles.itemCard}>
-                  <View style={styles.itemRow}>
-                    <View style={styles.itemLeft}>
-                      <Text style={[styles.itemName, { color: colors.textPrimary }]}>{item.name}</Text>
-                      <Text style={[styles.itemMacros, { color: colors.textMuted }]}>{item.calories} kcal · P{item.protein_g}g · C{item.carbs_g}g · F{item.fat_g}g</Text>
+            <View style={[styles.mealCard, { borderColor: tc.color + "30" }]}>
+              {/* Meal header — tap to expand/collapse */}
+              <TouchableOpacity onPress={() => toggleTag(group.tag)} activeOpacity={0.7} style={styles.mealHeader}>
+                <View style={[styles.mealIconBadge, { backgroundColor: tc.bg }]}>
+                  <Text style={styles.mealEmoji}>{mealEmojis[group.tag] ?? "🍽"}</Text>
+                </View>
+                <View style={styles.mealHeaderMid}>
+                  <Text style={[styles.mealName, { color: colors.textPrimary }]}>{group.tag}</Text>
+                  <Text style={[styles.mealMeta, { color: colors.textMuted }]}>{todayLabel} · {group.items.length} item{group.items.length !== 1 ? "s" : ""}</Text>
+                </View>
+                <View style={styles.mealHeaderRight}>
+                  <Text style={[styles.mealCals, { color: tc.color }]}>{mealCals} kcal</Text>
+                  <Text style={[styles.mealChevron, { color: colors.textMuted }]}>{isExpanded ? "▲" : "▼"}</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Ingredient list */}
+              {isExpanded && (
+                <View style={[styles.ingredientList, { borderTopColor: colors.border }]}>
+                  {group.items.map(item => (
+                    <View key={item.id} style={styles.ingredientRow}>
+                      <View style={styles.ingredientLeft}>
+                        <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{item.name}</Text>
+                        <Text style={[styles.ingredientMacros, { color: colors.textMuted }]}>
+                          {item.calories} kcal · P {item.protein_g}g · C {item.carbs_g}g · F {item.fat_g}g
+                        </Text>
+                      </View>
+                      <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>
+                        <Text style={[styles.deleteText, { color: colors.danger }]}>×</Text>
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity onPress={() => openEdit(item)} style={[styles.editBtn, { backgroundColor: colors.teal + "18" }]}>
-                      <Text style={[styles.editText, { color: colors.teal }]}>✎</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>
-                      <Text style={[styles.deleteText, { color: colors.danger }]}>×</Text>
-                    </TouchableOpacity>
-                  </View>
-                </Card>
-              ))}
+                  ))}
+                </View>
+              )}
             </View>
           );
         }}
@@ -222,26 +221,6 @@ export default function LogFoodScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Edit Modal */}
-      <Modal visible={!!editItem} transparent animationType="slide" onRequestClose={() => setEditItem(null)}>
-        <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={styles.sheet}>
-            <View style={styles.handle} />
-            <Text style={styles.sheetTitle}>Edit Item</Text>
-            <TextInput style={styles.input} placeholder="Food name" placeholderTextColor="rgba(245,245,247,0.3)" value={editName} onChangeText={setEditName} autoFocus />
-            <TextInput style={styles.input} placeholder="Calories" placeholderTextColor="rgba(245,245,247,0.3)" value={editCals} onChangeText={setEditCals} keyboardType="numeric" />
-            <View style={styles.twoCol}>
-              <TextInput style={[styles.input, { flex: 1 }]} placeholder="Protein g" placeholderTextColor="rgba(245,245,247,0.3)" value={editProtein} onChangeText={setEditProtein} keyboardType="decimal-pad" />
-              <TextInput style={[styles.input, { flex: 1 }]} placeholder="Carbs g" placeholderTextColor="rgba(245,245,247,0.3)" value={editCarbs} onChangeText={setEditCarbs} keyboardType="decimal-pad" />
-              <TextInput style={[styles.input, { flex: 1 }]} placeholder="Fat g" placeholderTextColor="rgba(245,245,247,0.3)" value={editFat} onChangeText={setEditFat} keyboardType="decimal-pad" />
-            </View>
-            <TouchableOpacity onPress={handleEditSave} disabled={!editName || !editCals || editing} style={[styles.saveBtn, { opacity: !editName || !editCals ? 0.5 : 1 }]}>
-              <Text style={styles.saveBtnText}>{editing ? "Saving…" : "Save Changes"}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setEditItem(null)} style={styles.cancelBtn}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
     </Screen>
   );
 }
@@ -268,16 +247,22 @@ const styles = StyleSheet.create({
   dividerText: { fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 },
   addBtn: { marginHorizontal: 20, borderRadius: 14, paddingVertical: 14, alignItems: "center" },
   addBtnLabel: { color: "#FFF", fontWeight: "700", fontSize: 15 },
-  group: { gap: 8, paddingHorizontal: 20 },
-  groupLabel: { marginBottom: 4 },
-  itemCard: { marginHorizontal: 0, padding: 14 },
-  itemRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  itemLeft: { flex: 1 },
-  itemName: { fontSize: 14, fontWeight: "600", marginBottom: 2 },
-  itemMacros: { fontSize: 12, fontWeight: "500" },
-  editBtn: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  editText: { fontSize: 16, fontWeight: "700" },
-  deleteBtn: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  mealCard: { marginHorizontal: 20, borderRadius: 18, borderWidth: 1, overflow: "hidden", backgroundColor: "rgba(255,255,255,0.03)" },
+  mealHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
+  mealIconBadge: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  mealEmoji: { fontSize: 18 },
+  mealHeaderMid: { flex: 1 },
+  mealName: { fontSize: 15, fontWeight: "700" },
+  mealMeta: { fontSize: 11, fontWeight: "500", marginTop: 1 },
+  mealHeaderRight: { alignItems: "flex-end", gap: 2 },
+  mealCals: { fontSize: 14, fontWeight: "800" },
+  mealChevron: { fontSize: 10, fontWeight: "600" },
+  ingredientList: { borderTopWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, paddingBottom: 8 },
+  ingredientRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.06)" },
+  ingredientLeft: { flex: 1 },
+  ingredientName: { fontSize: 13, fontWeight: "600", marginBottom: 2 },
+  ingredientMacros: { fontSize: 11, fontWeight: "500" },
+  deleteBtn: { width: 30, height: 30, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   deleteText: { fontSize: 18, fontWeight: "700" },
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" },
   sheet: { backgroundColor: "#1C1C1E", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 12 },

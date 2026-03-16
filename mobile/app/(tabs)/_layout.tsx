@@ -98,6 +98,12 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* ── Hidden screens (not in tab bar) ── */}
+      <Tabs.Screen name="index" options={{ href: null }} />
+      <Tabs.Screen name="meals" options={{ href: null }} />
+      <Tabs.Screen name="nutrition" options={{ href: null }} />
+      <Tabs.Screen name="profile" options={{ href: null }} />
     </Tabs>
   );
 }

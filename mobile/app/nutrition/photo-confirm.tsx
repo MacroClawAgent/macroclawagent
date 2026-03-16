@@ -15,6 +15,14 @@ type Stage = "picking" | "analyzing" | "review" | "saving" | "error";
 const MEAL_TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 type MealTag = (typeof MEAL_TAGS)[number];
 
+function getMealTagForTime(): MealTag {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 11) return "Breakfast";
+  if (h >= 11 && h < 15) return "Lunch";
+  if (h >= 15 && h < 21) return "Dinner";
+  return "Snack";
+}
+
 interface DetectedFood {
   name: string;
   grams: number;
@@ -58,7 +66,7 @@ export default function PhotoConfirmScreen() {
   const [stage, setStage] = useState<Stage>("picking");
   const [foods, setFoods] = useState<DetectedFood[]>([]);
   const [gramInputs, setGramInputs] = useState<string[]>([]);
-  const [selectedTag, setSelectedTag] = useState<MealTag>("Lunch");
+  const [selectedTag, setSelectedTag] = useState<MealTag>(getMealTagForTime());
   const [errorMsg, setErrorMsg] = useState("");
   const launched = useRef(false);
 
