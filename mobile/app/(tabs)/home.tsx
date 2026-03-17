@@ -5,7 +5,6 @@ import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { NutritionWidget } from "@/components/features/home/NutritionWidget";
 import { TodayActivitiesCard } from "@/components/features/home/TodayActivitiesCard";
-import { JonnoInsightCard } from "@/components/features/home/JonnoInsightCard";
 import { WeekCalendarStrip } from "@/components/features/home/WeekCalendarStrip";
 import { useTheme } from "@/context/ThemeContext";
 import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
@@ -51,8 +50,11 @@ export default function HomeScreen() {
       >
         {/* Greeting */}
         <View style={styles.greeting}>
-          <Text style={[styles.greetingText, { color: "#FFF" }]}>
-            {vm.greeting}, {vm.userName}
+          <Text style={[styles.greetingWord, { color: "rgba(255,255,255,0.75)" }]}>
+            {vm.greeting}
+          </Text>
+          <Text style={[styles.greetingName, { color: "#FFF" }]}>
+            {vm.userName}
           </Text>
           <View style={styles.goalPill}>
             <SymbolView
@@ -93,14 +95,6 @@ export default function HomeScreen() {
           <TodayActivitiesCard activities={vm.todayActivities} />
         )}
 
-        {/* Jonno AI insight */}
-        {!vm.loading && vm.jonnoInsight ? (
-          <JonnoInsightCard
-            title={vm.jonnoInsight.title}
-            body={vm.jonnoInsight.body}
-          />
-        ) : null}
-
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </Screen>
@@ -115,13 +109,19 @@ const styles = StyleSheet.create({
   greeting: {
     paddingHorizontal: 20,
     paddingBottom: 4,
-    gap: 8,
+    gap: 4,
   },
-  greetingText: {
-    fontSize: 26,
-    fontWeight: "800",
-    letterSpacing: -0.5,
-    lineHeight: 32,
+  greetingWord: {
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: 0.1,
+  },
+  greetingName: {
+    fontSize: 34,
+    fontWeight: "900",
+    letterSpacing: -1,
+    lineHeight: 38,
+    marginBottom: 4,
   },
   goalPill: {
     alignSelf: "flex-start",
