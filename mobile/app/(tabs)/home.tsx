@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AvatarButton } from "@/components/ui/AvatarButton";
@@ -129,6 +129,29 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Discover */}
+        <View style={styles.discoverSection}>
+          <Text style={[styles.discoverHeading, { color: "#FFF" }]}>Discover</Text>
+          <View style={styles.discoverGrid}>
+            {[
+              { label: "Workouts", emoji: "💪", route: "/discover/workouts", bg: "#1A2B6B" },
+              { label: "Recipes",  emoji: "🥗", route: "/discover/recipes",  bg: "#0E4A3E" },
+              { label: "Meal Prep",emoji: "🥡", route: "/discover/meal-prep",bg: "#3A1A5C" },
+              { label: "Trends",   emoji: "📈", route: "/discover/trends",   bg: "#1A3A3A" },
+            ].map((item) => (
+              <TouchableOpacity
+                key={item.label}
+                activeOpacity={0.82}
+                onPress={() => router.push(item.route as any)}
+                style={[styles.discoverCard, { backgroundColor: item.bg }]}
+              >
+                <Text style={styles.discoverEmoji}>{item.emoji}</Text>
+                <Text style={styles.discoverLabel}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </Screen>
@@ -189,4 +212,20 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   bottomSpacer: { height: 24 },
+
+  discoverSection: { paddingHorizontal: 20, gap: 12 },
+  discoverHeading: { fontSize: 18, fontWeight: "800", letterSpacing: -0.4 },
+  discoverGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  discoverCard: {
+    width: (SCREEN_W - 40 - 12) / 2,
+    aspectRatio: 1,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  discoverEmoji: { fontSize: 36 },
+  discoverLabel: { fontSize: 14, fontWeight: "700", color: "#FFF", letterSpacing: -0.2 },
 });
