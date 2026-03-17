@@ -50,7 +50,6 @@ export interface DayGoals {
   fat: number;
 }
 
-const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const FULL_DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const MEAL_TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"];
@@ -303,7 +302,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
 
         {/* Day pills row */}
         <View style={styles.daysRow}>
-          {weekDays.map((date, i) => {
+          {weekDays.map((date) => {
             const dateStr = toLocalDateStr(date);
             const kcal = calMap.get(dateStr) ?? 0;
             const isToday = dateStr === todayStr;
@@ -318,16 +317,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                 activeOpacity={0.7}
               >
                 <View style={[styles.dayPill, isToday && styles.dayPillToday]}>
-                  {/* Day letter */}
-                  <Text style={[
-                    styles.dayLetter,
-                    isFuture ? styles.textDim : styles.textBright,
-                    isToday && styles.textWhite,
-                  ]}>
-                    {DAY_LETTERS[i]}
-                  </Text>
-
-                  {/* Date number */}
+                  {/* Date number only */}
                   <Text style={[
                     styles.dayNum,
                     isFuture ? styles.textDim : styles.textBright,
@@ -554,12 +544,12 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: "rgba(0,10,50,0.28)",
+    backgroundColor: "rgba(76,125,255,0.22)",
     paddingTop: 14,
     paddingBottom: 10,
     paddingHorizontal: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(76,125,255,0.35)",
+    borderColor: "rgba(76,125,255,0.55)",
   },
   cardHeader: {
     flexDirection: "row",
@@ -575,7 +565,7 @@ const styles = StyleSheet.create({
   },
   cardSub: {
     fontSize: 11,
-    color: "rgba(255,255,255,0.45)",
+    color: "rgba(255,255,255,0.65)",
     marginTop: 1,
   },
   // ── Streak badge ──────────────────────────────────────────────────
@@ -634,7 +624,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  dayLetter: { fontSize: 10, fontWeight: "700", letterSpacing: 0.5 },
   dayNum: { fontSize: 15, fontWeight: "700" },
   textBright: { color: "rgba(255,255,255,0.85)" },
   textWhite: { color: "#fff" },
@@ -688,7 +677,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 10,
-    color: "rgba(255,255,255,0.4)",
+    color: "rgba(255,255,255,0.65)",
     fontWeight: "500",
   },
   // ── Modal ─────────────────────────────────────────────────────────
