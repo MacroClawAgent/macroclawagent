@@ -1,15 +1,19 @@
-import React, { useCallback } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useRef, useState } from "react";
+import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AvatarButton } from "@/components/ui/AvatarButton";
 import { InsightCard } from "@/components/features/home/InsightCard";
+import { MealsEatenCard } from "@/components/features/home/MealsEatenCard";
 import { NutritionWidget } from "@/components/features/home/NutritionWidget";
 import { TodayActivitiesCard } from "@/components/features/home/TodayActivitiesCard";
 import { WeekCalendarStrip } from "@/components/features/home/WeekCalendarStrip";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
+
+const SCREEN_W = Dimensions.get("window").width;
+const CARD_COUNT = 3;
 
 function SkeletonCard() {
   const { colors } = useTheme();
@@ -28,6 +32,8 @@ export default function HomeScreen() {
   const { userProfile } = useAuth();
   const router = useRouter();
   const vm = useHomeViewModel();
+  const [carouselIdx, setCarouselIdx] = useState(0);
+  const carouselRef = useRef<ScrollView>(null);
 
   // Refresh nutrition data every time the home tab comes into focus
   // (e.g. after returning from food log or photo confirm screens)
@@ -83,23 +89,45 @@ export default function HomeScreen() {
         {/* AI Insight card */}
         <InsightCard insight={vm.jonnoInsight} />
 
-        {/* Nutrition widget */}
-        {vm.loading ? (
-          <SkeletonCard />
-        ) : (
-          <NutritionWidget
-            calorieProgress={vm.calorieProgress}
-            macros={vm.macros}
-            goalLabel={vm.goalLabel}
-          />
-        )}
+        {/* Cards carousel: Nutrition → Activities → Meals */}
+        <View>
+          <ScrollView
+            ref={carouselRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            onScroll={(e) => {
+              const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
+              setCarouselIdx(idx);
+            }}
+          >
+            <View style={{ width: SCREEN_W }}>
+              {vm.loading ? <SkeletonCard /> : (
+                <NutritionWidget
+                  calorieProgress={vm.calorieProgress}
+                  macros={vm.macros}
+                  goalLabel={vm.goalLabel}
+                />
+              )}
+            </View>
+            <View style={{ width: SCREEN_W }}>
+              {vm.loading ? <SkeletonCard /> : (
+                <TodayActivitiesCard activities={vm.todayActivities} />
+              )}
+            </View>
+            <View style={{ width: SCREEN_W }}>
+              <MealsEatenCard />
+            </View>
+          </ScrollView>
 
-        {/* Today's activities */}
-        {vm.loading ? (
-          <SkeletonCard />
-        ) : (
-          <TodayActivitiesCard activities={vm.todayActivities} />
-        )}
+          {/* Dot indicators */}
+          <View style={styles.dots}>
+            {Array.from({ length: CARD_COUNT }).map((_, i) => (
+              <View key={i} style={[styles.dot, carouselIdx === i && styles.dotActive]} />
+            ))}
+          </View>
+        </View>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -141,6 +169,24 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  dots: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    paddingTop: 10,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.3)",
+  },
+  dotActive: {
+    width: 18,
+    backgroundColor: "#FFF",
+    borderRadius: 3,
   },
   bottomSpacer: { height: 24 },
 });
