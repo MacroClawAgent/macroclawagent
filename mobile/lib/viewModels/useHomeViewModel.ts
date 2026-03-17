@@ -17,6 +17,7 @@ export interface HomeViewModel {
   userName: string;
   goalLabel: string;
   goalIcon: GoalIcon;
+  goalRingColor: string;
   calorieProgress: { consumed: number; target: number; remaining: number; ratio: number };
   macros: {
     protein: { consumed: number; target: number; ratio: number };
@@ -39,11 +40,11 @@ export interface HomeViewModel {
   refresh: () => void;
 }
 
-const GOAL_META: Record<string, { label: string; icon: GoalIcon }> = {
-  lose_weight:  { label: "Lose Weight",  icon: { ios: "flame.fill",    android: "local_fire_department" } },
-  build_muscle: { label: "Build Muscle", icon: { ios: "dumbbell.fill", android: "fitness_center" } },
-  performance:  { label: "Performance",  icon: { ios: "figure.run",    android: "directions_run" } },
-  maintain:     { label: "Stay Healthy", icon: { ios: "heart.fill",    android: "favorite" } },
+const GOAL_META: Record<string, { label: string; icon: GoalIcon; ringColor: string }> = {
+  lose_weight:  { label: "Lose Weight",  icon: { ios: "flame.fill",    android: "local_fire_department" }, ringColor: "#FF7043" },
+  build_muscle: { label: "Build Muscle", icon: { ios: "dumbbell.fill", android: "fitness_center" },        ringColor: "#A78BFA" },
+  performance:  { label: "Performance",  icon: { ios: "figure.run",    android: "directions_run" },         ringColor: "#34D399" },
+  maintain:     { label: "Stay Healthy", icon: { ios: "heart.fill",    android: "favorite" },               ringColor: "#F472B6" },
 };
 
 function deriveInsight(
@@ -189,6 +190,7 @@ export function useHomeViewModel(): HomeViewModel {
     userName: profile?.full_name?.split(" ")[0] ?? "there",
     goalLabel: goalMeta.label,
     goalIcon: goalMeta.icon,
+    goalRingColor: goalMeta.ringColor,
     calorieProgress: {
       consumed: cal,
       target: calTarget,

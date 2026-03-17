@@ -9,7 +9,6 @@ import { WeekCalendarStrip } from "@/components/features/home/WeekCalendarStrip"
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
-import { SymbolView } from "expo-symbols";
 
 function SkeletonCard() {
   const { colors } = useTheme();
@@ -49,22 +48,13 @@ export default function HomeScreen() {
             {vm.userName}
           </Text>
         </View>
-        <View style={styles.avatarBlock}>
-          <AvatarButton
-            name={userProfile?.full_name ?? ""}
-            onPress={() => router.push("/profile")}
-            size={44}
-            color="#4C7DFF"
-          />
-          <View style={styles.goalPill}>
-            <SymbolView
-              name={{ ios: vm.goalIcon.ios, android: vm.goalIcon.android, web: vm.goalIcon.android }}
-              tintColor="rgba(255,255,255,0.85)"
-              size={11}
-            />
-            <Text style={styles.goalPillText}>{vm.goalLabel}</Text>
-          </View>
-        </View>
+        <AvatarButton
+          name={userProfile?.full_name ?? ""}
+          onPress={() => router.push("/profile")}
+          size={44}
+          color="#4C7DFF"
+          style={{ borderWidth: 3, borderColor: vm.goalRingColor }}
+        />
       </View>
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -130,11 +120,6 @@ const styles = StyleSheet.create({
     gap: 3,
     flex: 1,
   },
-  avatarBlock: {
-    alignItems: "center",
-    gap: 8,
-    paddingTop: 2,
-  },
   greetingWord: {
     fontSize: 15,
     fontWeight: "500",
@@ -146,22 +131,7 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
     lineHeight: 36,
   },
-  goalPill: {
-    alignSelf: "flex-start",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-  },
-  goalPillText: {
-    color: "#FFF",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.2,
-  },
+
   skeleton: {
     height: 140,
     marginHorizontal: 20,
