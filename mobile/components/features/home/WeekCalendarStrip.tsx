@@ -53,7 +53,11 @@ const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct"
 const FULL_DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const MEAL_TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"];
 
-// ── Use local date parts to avoid UTC timezone shift ──────────────────────────
+const BLUE       = "#4C7DFF";
+const GREEN      = "#22C55E";
+const AMBER      = "#F59E0B";
+
+/** Use local date parts — avoids UTC timezone shift from toISOString() */
 function toLocalDateStr(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -64,7 +68,7 @@ function toLocalDateStr(d: Date): string {
 function getWeekDays(): Date[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const dow = today.getDay(); // 0 = Sunday
+  const dow = today.getDay();
   const mondayOffset = dow === 0 ? -6 : 1 - dow;
   const monday = new Date(today);
   monday.setDate(today.getDate() + mondayOffset);
@@ -73,6 +77,44 @@ function getWeekDays(): Date[] {
     d.setDate(monday.getDate() + i);
     return d;
   });
+}
+
+/** Count consecutive logged days backwards from today (capped to data available) */
+function calcStreak(
+  calMap: Map<string, number>,
+  calorieGoal: number,
+): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let streak = 0;
+  for (let i = 0; i < 60; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = toLocalDateStr(d);
+    const kcal = calMap.get(dateStr) ?? 0;
+    if (kcal > 0) {
+      streak++;
+    } else if (i === 0) {
+      // Today hasn't been logged yet — don't break the streak, just skip
+      continue;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+type DayStatus = "goal_met" | "logged" | "missed" | "future";
+
+function getDayStatus(
+  kcal: number,
+  isFuture: boolean,
+  calorieGoal: number,
+): DayStatus {
+  if (isFuture) return "future";
+  if (kcal <= 0) return "missed";
+  if (kcal >= calorieGoal * 0.75) return "goal_met";
+  return "logged";
 }
 
 interface Props {
@@ -94,7 +136,6 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   }, []);
 
   const todayStr = toLocalDateStr(todayDate);
-
   const weekDays = useMemo(() => getWeekDays(), []);
 
   const calMap = useMemo(
@@ -102,13 +143,28 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
     [weeklyCalories]
   );
 
+  const streak = useMemo(
+    () => calcStreak(calMap, goals.calories),
+    [calMap, goals.calories]
+  );
+
+  // Week range label e.g. "17–23 Mar"
+  const weekLabel = useMemo(() => {
+    if (weekDays.length < 7) return "";
+    const start = weekDays[0];
+    const end = weekDays[6];
+    if (start.getMonth() === end.getMonth()) {
+      return `${start.getDate()}–${end.getDate()} ${MONTH_NAMES[end.getMonth()]}`;
+    }
+    return `${start.getDate()} ${MONTH_NAMES[start.getMonth()]} – ${end.getDate()} ${MONTH_NAMES[end.getMonth()]}`;
+  }, [weekDays]);
+
   const handleDayPress = async (dateStr: string, date: Date) => {
     const future = date > todayDate;
     setSelectedDate(dateStr);
     setIsFutureSelected(future);
     setDetail(null);
-
-    if (future) return; // goals view, no fetch needed
+    if (future) return;
 
     setLoading(true);
     try {
@@ -135,62 +191,101 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
     setIsFutureSelected(false);
   };
 
-  // Build label from dateStr using local parts to avoid timezone shift
   const selectedLabel = useMemo(() => {
     if (!selectedDate) return "";
-    // Parse as local noon to get correct day-of-week
     const d = new Date(selectedDate + "T12:00:00");
     return `${FULL_DAY_NAMES[d.getDay()]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
   }, [selectedDate]);
 
   return (
     <>
-      {/* ── Week strip ── */}
-      <View style={styles.strip}>
-        {weekDays.map((date, i) => {
-          const dateStr = toLocalDateStr(date);
-          const kcal = calMap.get(dateStr) ?? 0;
-          const isToday = dateStr === todayStr;
-          const isFuture = date > todayDate;
-          const hasLog = kcal > 0;
+      {/* ══ Week strip card ══ */}
+      <View style={styles.card}>
 
-          return (
-            <TouchableOpacity
-              key={dateStr}
-              onPress={() => handleDayPress(dateStr, date)}
-              style={styles.dayWrapper}
-              activeOpacity={0.75}
-            >
-              <View style={[styles.dayPill, isToday && styles.dayPillToday]}>
-                <Text style={[
-                  styles.dayLetter,
-                  isFuture ? styles.textFuture : styles.textNormal,
-                  isToday && styles.textToday,
-                ]}>
-                  {DAY_LETTERS[i]}
-                </Text>
-                <Text style={[
-                  styles.dayNum,
-                  isFuture ? styles.textFuture : styles.textNormal,
-                  isToday && styles.textToday,
-                ]}>
-                  {date.getDate()}
-                </Text>
-                <View style={[
-                  styles.dot,
-                  hasLog
-                    ? styles.dotFilled
-                    : isFuture
-                    ? styles.dotFuture
-                    : styles.dotEmpty,
-                ]} />
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+        {/* Header row */}
+        <View style={styles.cardHeader}>
+          <View>
+            <Text style={styles.cardTitle}>This Week</Text>
+            <Text style={styles.cardSub}>{weekLabel}</Text>
+          </View>
+          {streak > 0 && (
+            <View style={styles.streakBadge}>
+              <Text style={styles.streakFire}>🔥</Text>
+              <Text style={styles.streakCount}>{streak}</Text>
+              <Text style={styles.streakWord}>day{streak !== 1 ? "s" : ""}</Text>
+            </View>
+          )}
+          {streak === 0 && (
+            <View style={[styles.streakBadge, styles.streakBadgeEmpty]}>
+              <Text style={styles.streakEmptyText}>Start streak</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Day pills row */}
+        <View style={styles.daysRow}>
+          {weekDays.map((date, i) => {
+            const dateStr = toLocalDateStr(date);
+            const kcal = calMap.get(dateStr) ?? 0;
+            const isToday = dateStr === todayStr;
+            const isFuture = date > todayDate;
+            const status = getDayStatus(kcal, isFuture, goals.calories);
+
+            return (
+              <TouchableOpacity
+                key={dateStr}
+                onPress={() => handleDayPress(dateStr, date)}
+                style={styles.dayWrapper}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.dayPill, isToday && styles.dayPillToday]}>
+                  {/* Day letter */}
+                  <Text style={[
+                    styles.dayLetter,
+                    isFuture ? styles.textDim : styles.textBright,
+                    isToday && styles.textWhite,
+                  ]}>
+                    {DAY_LETTERS[i]}
+                  </Text>
+
+                  {/* Date number */}
+                  <Text style={[
+                    styles.dayNum,
+                    isFuture ? styles.textDim : styles.textBright,
+                    isToday && styles.textWhite,
+                  ]}>
+                    {date.getDate()}
+                  </Text>
+
+                  {/* Status indicator */}
+                  {status === "goal_met"  && <View style={[styles.statusDot, styles.dotGreen]} />}
+                  {status === "logged"    && <View style={[styles.statusDot, styles.dotAmber]} />}
+                  {status === "missed"    && <View style={[styles.statusDot, styles.dotEmpty]} />}
+                  {status === "future"    && <View style={[styles.statusDot, styles.dotFuture]} />}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Legend */}
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
+            <Text style={styles.legendText}>Goal met</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: AMBER }]} />
+            <Text style={styles.legendText}>Logged</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
+            <Text style={styles.legendText}>Missed</Text>
+          </View>
+        </View>
       </View>
 
-      {/* ── Bottom sheet modal ── */}
+      {/* ══ Bottom sheet modal ══ */}
       <Modal
         visible={!!selectedDate}
         animationType="slide"
@@ -202,91 +297,68 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
           <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
           <View style={styles.sheetHeader}>
-            <Text style={[styles.sheetTitle, { color: colors.text }]}>
-              {selectedLabel}
-            </Text>
+            <Text style={[styles.sheetTitle, { color: colors.text }]}>{selectedLabel}</Text>
             <TouchableOpacity onPress={closeModal} hitSlop={12}>
               <Text style={[styles.closeBtn, { color: colors.textMuted }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          {/* ── FUTURE DAY: show goals ── */}
+          {/* ── Future: goals view ── */}
           {isFutureSelected ? (
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
-              <Text style={[styles.goalsHeading, { color: colors.textMuted }]}>
-                YOUR DAILY TARGETS
-              </Text>
+              <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>YOUR DAILY TARGETS</Text>
               <View style={[styles.goalGrid, { backgroundColor: colors.card }]}>
-                <View style={styles.goalItem}>
-                  <Text style={[styles.goalValue, { color: colors.macroCalories }]}>
-                    {goals.calories}
-                  </Text>
-                  <Text style={[styles.goalLabel, { color: colors.textMuted }]}>kcal</Text>
-                </View>
-                <View style={[styles.goalDivider, { backgroundColor: colors.border }]} />
-                <View style={styles.goalItem}>
-                  <Text style={[styles.goalValue, { color: colors.macroProtein }]}>
-                    {goals.protein}g
-                  </Text>
-                  <Text style={[styles.goalLabel, { color: colors.textMuted }]}>protein</Text>
-                </View>
-                <View style={[styles.goalDivider, { backgroundColor: colors.border }]} />
-                <View style={styles.goalItem}>
-                  <Text style={[styles.goalValue, { color: colors.macroCarbs }]}>
-                    {goals.carbs}g
-                  </Text>
-                  <Text style={[styles.goalLabel, { color: colors.textMuted }]}>carbs</Text>
-                </View>
-                <View style={[styles.goalDivider, { backgroundColor: colors.border }]} />
-                <View style={styles.goalItem}>
-                  <Text style={[styles.goalValue, { color: colors.macroFat }]}>
-                    {goals.fat}g
-                  </Text>
-                  <Text style={[styles.goalLabel, { color: colors.textMuted }]}>fat</Text>
-                </View>
+                {[
+                  { label: "kcal",    value: `${goals.calories}`,    color: colors.macroCalories },
+                  { label: "protein", value: `${goals.protein}g`,    color: colors.macroProtein },
+                  { label: "carbs",   value: `${goals.carbs}g`,      color: colors.macroCarbs },
+                  { label: "fat",     value: `${goals.fat}g`,        color: colors.macroFat },
+                ].map((item, idx, arr) => (
+                  <React.Fragment key={item.label}>
+                    <View style={styles.goalItem}>
+                      <Text style={[styles.goalValue, { color: item.color }]}>{item.value}</Text>
+                      <Text style={[styles.goalLabel, { color: colors.textMuted }]}>{item.label}</Text>
+                    </View>
+                    {idx < arr.length - 1 && (
+                      <View style={[styles.goalDivider, { backgroundColor: colors.border }]} />
+                    )}
+                  </React.Fragment>
+                ))}
               </View>
               <Text style={[styles.futureHint, { color: colors.textMuted }]}>
-                Log your meals on this day to track progress against these targets.
+                Log your meals on this day to track progress against your goals.
               </Text>
               <View style={{ height: 40 }} />
             </ScrollView>
           ) : loading ? (
             <View style={styles.loadingWrap}>
-              <ActivityIndicator color={colors.blue} size="large" />
+              <ActivityIndicator color={BLUE} size="large" />
             </View>
           ) : detail ? (
-            /* ── PAST / TODAY: show logged data ── */
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.sheetContent}
-            >
-              {/* Summary row */}
+            /* ── Past / today: logged data ── */
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
+              {/* Summary chips */}
               {detail.totalCals > 0 && (
                 <View style={[styles.summaryRow, { backgroundColor: colors.card }]}>
-                  <View style={styles.summaryItem}>
-                    <Text style={[styles.summaryValue, { color: colors.text }]}>
-                      {Math.round(detail.totalCals)}
-                    </Text>
-                    <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>kcal</Text>
-                  </View>
-                  <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
-                  <View style={styles.summaryItem}>
-                    <Text style={[styles.summaryValue, { color: colors.text }]}>
-                      {Math.round(detail.totalProtein)}g
-                    </Text>
-                    <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>protein</Text>
-                  </View>
-                  <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
-                  <View style={styles.summaryItem}>
-                    <Text style={[styles.summaryValue, { color: colors.text }]}>
-                      {detail.activities.length}
-                    </Text>
-                    <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>workouts</Text>
-                  </View>
+                  {[
+                    { value: Math.round(detail.totalCals).toString(), label: "kcal" },
+                    { value: `${Math.round(detail.totalProtein)}g`, label: "protein" },
+                    { value: detail.activities.length.toString(), label: "workouts" },
+                  ].map((s, idx, arr) => (
+                    <React.Fragment key={s.label}>
+                      <View style={styles.summaryItem}>
+                        <Text style={[styles.summaryValue, { color: colors.text }]}>{s.value}</Text>
+                        <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>{s.label}</Text>
+                      </View>
+                      {idx < arr.length - 1 && (
+                        <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
+                      )}
+                    </React.Fragment>
+                  ))}
                 </View>
               )}
 
-              {/* Food */}
+              {/* Food logged */}
               {detail.foodItems.length > 0 ? (
                 <>
                   <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>FOOD LOGGED</Text>
@@ -295,7 +367,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                     if (items.length === 0) return null;
                     return (
                       <View key={tag} style={styles.mealGroup}>
-                        <Text style={[styles.mealTagLabel, { color: colors.blue }]}>{tag}</Text>
+                        <Text style={[styles.mealTagLabel, { color: BLUE }]}>{tag}</Text>
                         {items.map((item) => (
                           <View key={item.id} style={[styles.foodRow, { borderBottomColor: colors.border }]}>
                             <Text style={[styles.foodName, { color: colors.text }]} numberOfLines={1}>
@@ -333,14 +405,11 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                   ))}
                 </>
               )}
-
               <View style={{ height: 40 }} />
             </ScrollView>
           ) : (
             <View style={styles.loadingWrap}>
-              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                Nothing logged this day.
-              </Text>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>Nothing logged this day.</Text>
             </View>
           )}
         </View>
@@ -349,16 +418,71 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   );
 }
 
-const BLUE = "#4C7DFF";
-
 const styles = StyleSheet.create({
-  strip: {
-    flexDirection: "row",
+  // ── Card ──────────────────────────────────────────────────────────
+  card: {
     marginHorizontal: 16,
-    backgroundColor: "rgba(76,125,255,0.25)",
-    borderRadius: 18,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,10,50,0.28)",
+    paddingTop: 14,
+    paddingBottom: 10,
+    paddingHorizontal: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(76,125,255,0.35)",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#fff",
+    letterSpacing: 0.2,
+  },
+  cardSub: {
+    fontSize: 11,
+    color: "rgba(255,255,255,0.45)",
+    marginTop: 1,
+  },
+  // ── Streak badge ──────────────────────────────────────────────────
+  streakBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(249,115,22,0.22)",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    gap: 3,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(249,115,22,0.5)",
+  },
+  streakBadgeEmpty: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderColor: "rgba(255,255,255,0.15)",
+  },
+  streakFire: { fontSize: 14 },
+  streakCount: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#FB923C",
+  },
+  streakWord: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#FB923C",
+    marginTop: 1,
+  },
+  streakEmptyText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.4)",
+  },
+  // ── Days row ──────────────────────────────────────────────────────
+  daysRow: {
+    flexDirection: "row",
   },
   dayWrapper: {
     flex: 1,
@@ -366,53 +490,85 @@ const styles = StyleSheet.create({
   },
   dayPill: {
     alignItems: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 6,
-    borderRadius: 12,
+    paddingVertical: 7,
+    paddingHorizontal: 5,
+    borderRadius: 14,
     gap: 2,
+    minWidth: 36,
   },
   dayPillToday: {
     backgroundColor: BLUE,
+    shadowColor: BLUE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.55,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  dayLetter: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 0.3,
-  },
-  dayNum: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  dot: {
-    width: 5,
-    height: 5,
+  dayLetter: { fontSize: 10, fontWeight: "700", letterSpacing: 0.5 },
+  dayNum: { fontSize: 15, fontWeight: "700" },
+  textBright: { color: "rgba(255,255,255,0.85)" },
+  textWhite: { color: "#fff" },
+  textDim: { color: "rgba(255,255,255,0.28)" },
+  // ── Status dots ───────────────────────────────────────────────────
+  statusDot: {
+    width: 6,
+    height: 6,
     borderRadius: 3,
-    marginTop: 3,
+    marginTop: 4,
   },
-  dotFilled: {
-    backgroundColor: "#fff",
+  dotGreen: {
+    backgroundColor: GREEN,
+    shadowColor: GREEN,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 4,
+  },
+  dotAmber: {
+    backgroundColor: AMBER,
   },
   dotEmpty: {
     backgroundColor: "transparent",
     borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.5)",
+    borderColor: "rgba(255,255,255,0.35)",
   },
   dotFuture: {
     backgroundColor: "transparent",
     borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.2)",
+    borderColor: "rgba(255,255,255,0.12)",
   },
-  textNormal: { color: "rgba(255,255,255,0.85)" },
-  textToday: { color: "#fff", fontWeight: "800" },
-  textFuture: { color: "rgba(255,255,255,0.35)" },
-  // Sheet
+  // ── Legend ────────────────────────────────────────────────────────
+  legend: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 16,
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(255,255,255,0.08)",
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  legendDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  legendText: {
+    fontSize: 10,
+    color: "rgba(255,255,255,0.4)",
+    fontWeight: "500",
+  },
+  // ── Modal ─────────────────────────────────────────────────────────
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   sheet: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
     paddingTop: 10,
     paddingHorizontal: 20,
     maxHeight: "82%",
@@ -422,7 +578,7 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     alignSelf: "center",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   sheetHeader: {
     flexDirection: "row",
@@ -433,13 +589,14 @@ const styles = StyleSheet.create({
   sheetTitle: { fontSize: 18, fontWeight: "700" },
   closeBtn: { fontSize: 18 },
   loadingWrap: { paddingVertical: 48, alignItems: "center" },
-  sheetContent: { gap: 4 },
-  // Goals view
-  goalsHeading: {
-    fontSize: 11,
+  sheetContent: { paddingBottom: 8 },
+  // Goals grid
+  sectionLabel: {
+    fontSize: 10,
     fontWeight: "700",
-    letterSpacing: 1,
-    marginBottom: 10,
+    letterSpacing: 1.2,
+    marginTop: 12,
+    marginBottom: 8,
   },
   goalGrid: {
     flexDirection: "row",
@@ -447,33 +604,27 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   goalItem: { flex: 1, alignItems: "center", gap: 3 },
-  goalValue: { fontSize: 19, fontWeight: "700" },
+  goalValue: { fontSize: 18, fontWeight: "700" },
   goalLabel: { fontSize: 11, fontWeight: "500" },
-  goalDivider: { width: 1, marginVertical: 4 },
+  goalDivider: { width: 1, marginVertical: 6 },
   futureHint: {
     fontSize: 13,
     textAlign: "center",
     marginTop: 14,
-    lineHeight: 19,
+    lineHeight: 20,
   },
-  // Past/today summary
+  // Summary row
   summaryRow: {
     flexDirection: "row",
     borderRadius: 14,
     paddingVertical: 14,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   summaryItem: { flex: 1, alignItems: "center", gap: 2 },
-  summaryValue: { fontSize: 20, fontWeight: "700" },
+  summaryValue: { fontSize: 19, fontWeight: "700" },
   summaryLabel: { fontSize: 11, fontWeight: "500" },
   summaryDivider: { width: 1, marginVertical: 4 },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginTop: 12,
-    marginBottom: 6,
-  },
+  // Food
   mealGroup: { marginBottom: 8 },
   mealTagLabel: { fontSize: 13, fontWeight: "700", marginBottom: 4 },
   foodRow: {
@@ -485,6 +636,7 @@ const styles = StyleSheet.create({
   },
   foodName: { flex: 1, fontSize: 14, fontWeight: "500", marginRight: 8 },
   foodCal: { fontSize: 13, fontWeight: "500" },
+  // Activity
   actRow: { borderRadius: 12, padding: 12, marginBottom: 8, gap: 3 },
   actName: { fontSize: 14, fontWeight: "600" },
   actDetail: { fontSize: 12 },
