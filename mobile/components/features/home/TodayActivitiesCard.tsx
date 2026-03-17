@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Card } from "../../ui/Card";
 import { useTheme } from "../../../context/ThemeContext";
+import { apiGet } from "../../../lib/api";
 import type { ActivityRow } from "../../../types";
 
 const TYPE_META: Record<string, { ios: string; android: string; color: string }> = {
@@ -30,9 +31,77 @@ interface Props {
   activities: ActivityRow[];
 }
 
+function ActivityList({
+  activities,
+  colors,
+  router,
+  dimmed = false,
+}: {
+  activities: ActivityRow[];
+  colors: any;
+  router: any;
+  dimmed?: boolean;
+}) {
+  return (
+    <View style={[styles.list, { borderTopColor: colors.border }]}>
+      {activities.map((act, idx) => {
+        const meta = getTypeMeta(act.type);
+        return (
+          <TouchableOpacity
+            key={act.id}
+            onPress={() => router.push("/(tabs)/activity" as any)}
+            activeOpacity={0.7}
+            style={[
+              styles.row,
+              { borderBottomColor: colors.border },
+              idx === activities.length - 1 && styles.rowLast,
+            ]}
+          >
+            <View style={[styles.typeIconWrap, { backgroundColor: meta.color + (dimmed ? "14" : "22") }]}>
+              <SymbolView
+                name={{ ios: meta.ios, android: meta.android, web: meta.android }}
+                tintColor={dimmed ? colors.textMuted : meta.color}
+                size={15}
+              />
+            </View>
+            <View style={styles.rowMid}>
+              <Text style={[styles.actName, { color: dimmed ? colors.textMuted : colors.textPrimary }]} numberOfLines={1}>
+                {act.name}
+              </Text>
+              <Text style={[styles.actMeta, { color: colors.textMuted }]}>
+                {act.type.charAt(0).toUpperCase() + act.type.slice(1).toLowerCase()}
+                {act.duration_seconds ? ` · ${fmt(act.duration_seconds)}` : ""}
+                {act.distance_meters ? ` · ${(act.distance_meters / 1000).toFixed(1)} km` : ""}
+              </Text>
+            </View>
+            {act.calories && !dimmed ? (
+              <View style={[styles.kcalBadge, { backgroundColor: meta.color + "18" }]}>
+                <Text style={[styles.kcalText, { color: meta.color }]}>{act.calories} kcal</Text>
+              </View>
+            ) : act.calories ? (
+              <Text style={[styles.kcalText, { color: colors.textMuted }]}>{act.calories} kcal</Text>
+            ) : null}
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
 export function TodayActivitiesCard({ activities }: Props) {
   const { colors } = useTheme();
   const router = useRouter();
+  const [recentActivities, setRecentActivities] = useState<ActivityRow[]>([]);
+
+  useEffect(() => {
+    apiGet<{ activities: ActivityRow[] }>("/api/activities?limit=5")
+      .then((res) => {
+        const todayIds = new Set(activities.map((a) => a.id));
+        const past = (res.activities ?? []).filter((a) => !todayIds.has(a.id));
+        setRecentActivities(past.slice(0, 4));
+      })
+      .catch(() => {});
+  }, [activities]);
 
   return (
     <Card style={styles.card}>
@@ -65,65 +134,30 @@ export function TodayActivitiesCard({ activities }: Props) {
         </TouchableOpacity>
       </View>
 
-      {/* Activity list */}
+      {/* Today's activities */}
       {activities.length === 0 ? (
         <View style={styles.emptyWrap}>
-          <Text style={[styles.emptyText, { color: colors.textMuted }]}>No activities logged today.</Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(tabs)/activity" as any)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.emptyLink, { color: colors.teal }]}>View past activities →</Text>
-          </TouchableOpacity>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>No activities today</Text>
         </View>
       ) : (
-        <View style={[styles.list, { borderTopColor: colors.border }]}>
-          {activities.map((act, idx) => {
-            const meta = getTypeMeta(act.type);
-            return (
-              <TouchableOpacity
-                key={act.id}
-                onPress={() => router.push("/(tabs)/activity" as any)}
-                activeOpacity={0.7}
-                style={[
-                  styles.row,
-                  { borderBottomColor: colors.border },
-                  idx === activities.length - 1 && styles.rowLast,
-                ]}
-              >
-                <View style={[styles.typeIconWrap, { backgroundColor: meta.color + "22" }]}>
-                  <SymbolView
-                    name={{ ios: meta.ios, android: meta.android, web: meta.android }}
-                    tintColor={meta.color}
-                    size={15}
-                  />
-                </View>
-                <View style={styles.rowMid}>
-                  <Text style={[styles.actName, { color: colors.textPrimary }]} numberOfLines={1}>
-                    {act.name}
-                  </Text>
-                  <Text style={[styles.actMeta, { color: colors.textMuted }]}>
-                    {act.type.charAt(0).toUpperCase() + act.type.slice(1).toLowerCase()}
-                    {act.duration_seconds ? ` · ${fmt(act.duration_seconds)}` : ""}
-                    {act.distance_meters ? ` · ${(act.distance_meters / 1000).toFixed(1)} km` : ""}
-                  </Text>
-                </View>
-                {act.calories ? (
-                  <View style={[styles.kcalBadge, { backgroundColor: meta.color + "18" }]}>
-                    <Text style={[styles.kcalText, { color: meta.color }]}>{act.calories} kcal</Text>
-                  </View>
-                ) : null}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <ActivityList activities={activities} colors={colors} router={router} />
+      )}
+
+      {/* Recent history — fills card height */}
+      {recentActivities.length > 0 && (
+        <>
+          <Text style={[styles.sectionLabel, { color: colors.textMuted, borderTopColor: colors.border }]}>
+            Recent
+          </Text>
+          <ActivityList activities={recentActivities} colors={colors} router={router} dimmed />
+        </>
       )}
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 20 },
+  card: { marginHorizontal: 20, minHeight: 240 },
 
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -133,22 +167,31 @@ const styles = StyleSheet.create({
   viewAllBtn: { flexDirection: "row", alignItems: "center", gap: 3 },
   viewAllText: { fontSize: 12, fontWeight: "600" },
 
-  emptyWrap: { paddingTop: 12, gap: 6, alignItems: "center" },
+  emptyWrap: { paddingVertical: 8 },
   emptyText: { fontSize: 13, fontWeight: "500" },
-  emptyLink: { fontSize: 13, fontWeight: "700" },
 
-  list: { borderTopWidth: StyleSheet.hairlineWidth, marginTop: 12, paddingTop: 4 },
+  sectionLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    marginTop: 8,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+
+  list: { borderTopWidth: StyleSheet.hairlineWidth, marginTop: 8, paddingTop: 2 },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   rowLast: { borderBottomWidth: 0 },
   typeIconWrap: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   rowMid: { flex: 1 },
-  actName: { fontSize: 14, fontWeight: "600", marginBottom: 2 },
+  actName: { fontSize: 13, fontWeight: "600", marginBottom: 2 },
   actMeta: { fontSize: 11, fontWeight: "500" },
   kcalBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   kcalText: { fontSize: 11, fontWeight: "700" },
