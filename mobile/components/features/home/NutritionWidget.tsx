@@ -43,7 +43,7 @@ function VerticalBar({
         {Number.isInteger(consumed) ? consumed : +consumed.toFixed(1)}
         <Text style={[vb.unit, { color: colors.textMuted }]}>g</Text>
       </Text>
-      <View style={[vb.track, { backgroundColor: color + "20" }]}>
+      <View style={[vb.track, { backgroundColor: color + "30" }]}>
         <View
           style={[vb.fill, { backgroundColor: color, height: `${pct}%` as `${number}%` }]}
         />
@@ -57,17 +57,17 @@ function VerticalBar({
 }
 
 const vb = StyleSheet.create({
-  col:      { flex: 1, alignItems: "center", gap: 6 },
-  consumed: { fontSize: 15, fontWeight: "700" },
+  col:      { flex: 1, alignItems: "center", gap: 5 },
+  consumed: { fontSize: 14, fontWeight: "700" },
   unit:     { fontSize: 10, fontWeight: "500" },
   track: {
-    width: 42,
-    height: 96,
-    borderRadius: 14,
+    width: 48,
+    height: 88,
+    borderRadius: 16,
     overflow: "hidden",
     justifyContent: "flex-end",
   },
-  fill:  { width: "100%", borderRadius: 14 },
+  fill:  { width: "100%", borderRadius: 16 },
   label: { fontSize: 11, fontWeight: "700", letterSpacing: 0.2 },
   rem:   { fontSize: 10, fontWeight: "600" },
 });
@@ -131,9 +131,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
       {/* Vertical macro bars */}
       <View style={[styles.barsRow, { borderTopColor: colors.border }]}>
         <VerticalBar label="Protein" consumed={macros.protein.consumed} target={macros.protein.target} color={colors.macroProtein} />
-        <View style={[styles.barDivider, { backgroundColor: colors.border }]} />
         <VerticalBar label="Carbs"   consumed={macros.carbs.consumed}   target={macros.carbs.target}   color={colors.macroCarbs} />
-        <View style={[styles.barDivider, { backgroundColor: colors.border }]} />
         <VerticalBar label="Fat"     consumed={macros.fat.consumed}     target={macros.fat.target}     color={colors.macroFat} />
       </View>
     </Card>
@@ -166,6 +164,5 @@ const styles = StyleSheet.create({
   calBarFill: { height: 8, borderRadius: 100 },
 
   // Vertical macro bars
-  barsRow:    { flexDirection: "row", alignItems: "flex-end", borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16 },
-  barDivider: { width: StyleSheet.hairlineWidth, height: 80, alignSelf: "center" },
+  barsRow: { flexDirection: "row", alignItems: "flex-start", borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, gap: 4 },
 });

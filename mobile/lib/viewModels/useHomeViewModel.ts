@@ -30,6 +30,7 @@ export interface HomeViewModel {
     kcal: number;
     durationMin: number;
   };
+  todayActivities: ActivityRow[];
   jonnoInsight?: { title: string; body: string };
   isStravaConnected: boolean;
   weeklyCalories: WeeklyDay[];
@@ -120,16 +121,20 @@ export function useHomeViewModel(): HomeViewModel {
   const [refreshing, setRefreshing] = useState(false);
   const [nutrition, setNutrition] = useState<NutritionLog | null>(null);
   const [latestActivity, setLatestActivity] = useState<ActivityRow | null>(null);
+  const [todayActivities, setTodayActivities] = useState<ActivityRow[]>([]);
   const [weeklyCalories, setWeeklyCalories] = useState<WeeklyDay[]>([]);
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (!userProfile) return;
     if (isRefresh) setRefreshing(true);
 
+    const todayDate = new Date();
+    const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, "0")}-${String(todayDate.getDate()).padStart(2, "0")}`;
+
     try {
       const [nutritionRes, activityRes] = await Promise.allSettled([
         apiGet<{ today: NutritionLog; goals: UserProfile; weeklyCalories: WeeklyDay[] }>("/api/nutrition/today"),
-        apiGet<{ activities: ActivityRow[] }>("/api/activities?limit=1"),
+        apiGet<{ activities: ActivityRow[] }>(`/api/activities?date=${todayStr}&limit=10`),
       ]);
 
       if (nutritionRes.status === "fulfilled") {
@@ -138,7 +143,9 @@ export function useHomeViewModel(): HomeViewModel {
         setWeeklyCalories(wc.map((d) => ({ date: d.date, kcal: d.kcal })));
       }
       if (activityRes.status === "fulfilled") {
-        setLatestActivity(activityRes.value.activities?.[0] ?? null);
+        const acts = activityRes.value.activities ?? [];
+        setTodayActivities(acts);
+        setLatestActivity(acts[0] ?? null);
       }
     } catch {
       // keep previous state
@@ -194,6 +201,7 @@ export function useHomeViewModel(): HomeViewModel {
       fat: { consumed: fat, target: fatTarget, ratio: fatTarget > 0 ? Math.min(1, fat / fatTarget) : 0 },
     },
     latestActivity: act,
+    todayActivities,
     jonnoInsight: profile ? deriveInsight(profile, nutrition) : undefined,
     isStravaConnected: !!profile?.strava_athlete_id,
     weeklyCalories,

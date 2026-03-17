@@ -4,9 +4,8 @@ import { useFocusEffect } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { NutritionWidget } from "@/components/features/home/NutritionWidget";
-import { LatestActivityCard } from "@/components/features/home/LatestActivityCard";
+import { TodayActivitiesCard } from "@/components/features/home/TodayActivitiesCard";
 import { JonnoInsightCard } from "@/components/features/home/JonnoInsightCard";
-import { QuickActionRow } from "@/components/features/home/QuickActionRow";
 import { WeekCalendarStrip } from "@/components/features/home/WeekCalendarStrip";
 import { useTheme } from "@/context/ThemeContext";
 import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
@@ -87,14 +86,11 @@ export default function HomeScreen() {
           />
         )}
 
-        {/* Latest activity */}
+        {/* Today's activities */}
         {vm.loading ? (
           <SkeletonCard />
         ) : (
-          <LatestActivityCard
-            activity={vm.latestActivity}
-            isStravaConnected={vm.isStravaConnected}
-          />
+          <TodayActivitiesCard activities={vm.todayActivities} />
         )}
 
         {/* Jonno AI insight */}
@@ -104,9 +100,6 @@ export default function HomeScreen() {
             body={vm.jonnoInsight.body}
           />
         ) : null}
-
-        {/* Quick actions */}
-        <QuickActionRow />
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
