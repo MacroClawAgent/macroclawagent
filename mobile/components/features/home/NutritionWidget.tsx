@@ -21,7 +21,7 @@ interface NutritionWidgetProps {
   goalLabel: string;
 }
 
-function MacroRow({
+function VerticalBar({
   label,
   consumed,
   target,
@@ -35,38 +35,42 @@ function MacroRow({
   const { colors } = useTheme();
   const ratio = target > 0 ? Math.min(1, consumed / target) : 0;
   const remaining = Math.max(0, target - consumed);
+  const pct = Math.round(ratio * 100);
 
   return (
-    <View style={styles.macroRow}>
-      <View style={styles.macroLeft}>
-        <View style={[styles.macroDot, { backgroundColor: color }]} />
-        <View>
-          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>{label}</Text>
-          <View style={styles.macroBarWrap}>
-            <View style={[styles.macroBarBg, { backgroundColor: color + "22" }]}>
-              <View
-                style={[
-                  styles.macroBarFill,
-                  { backgroundColor: color, width: `${Math.round(ratio * 100)}%` as `${number}%` },
-                ]}
-              />
-            </View>
-          </View>
-        </View>
+    <View style={vb.col}>
+      <Text style={[vb.consumed, { color: colors.textPrimary }]}>
+        {Number.isInteger(consumed) ? consumed : +consumed.toFixed(1)}
+        <Text style={[vb.unit, { color: colors.textMuted }]}>g</Text>
+      </Text>
+      <View style={[vb.track, { backgroundColor: color + "20" }]}>
+        <View
+          style={[vb.fill, { backgroundColor: color, height: `${pct}%` as `${number}%` }]}
+        />
       </View>
-      <View style={styles.macroRight}>
-        <Text style={[styles.macroConsumed, { color: colors.textPrimary }]}>
-          {Number.isInteger(consumed) ? consumed : consumed.toFixed(1)}
-          <Text style={[styles.macroUnit, { color: colors.textMuted }]}>g</Text>
-        </Text>
-        <Text style={[styles.macroTarget, { color: colors.textMuted }]}>/ {target}g</Text>
-      </View>
-      <View style={[styles.remainingBadge, { backgroundColor: color + "18" }]}>
-        <Text style={[styles.remainingText, { color }]}>↑{remaining}g</Text>
-      </View>
+      <Text style={[vb.label, { color: colors.textSecondary }]}>{label}</Text>
+      <Text style={[vb.rem, { color }]}>
+        {Number.isInteger(remaining) ? remaining : +remaining.toFixed(1)}g left
+      </Text>
     </View>
   );
 }
+
+const vb = StyleSheet.create({
+  col:      { flex: 1, alignItems: "center", gap: 6 },
+  consumed: { fontSize: 15, fontWeight: "700" },
+  unit:     { fontSize: 10, fontWeight: "500" },
+  track: {
+    width: 42,
+    height: 96,
+    borderRadius: 14,
+    overflow: "hidden",
+    justifyContent: "flex-end",
+  },
+  fill:  { width: "100%", borderRadius: 14 },
+  label: { fontSize: 11, fontWeight: "700", letterSpacing: 0.2 },
+  rem:   { fontSize: 10, fontWeight: "600" },
+});
 
 export function NutritionWidget({ calorieProgress, macros, goalLabel }: NutritionWidgetProps) {
   const { colors } = useTheme();
@@ -92,49 +96,45 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
         </View>
         <TouchableOpacity
           onPress={() => router.push("/nutrition/log-food" as any)}
-          style={[styles.logBtn, { backgroundColor: colors.teal }]}
+          style={styles.logBtn}
           activeOpacity={0.8}
         >
           <Text style={styles.logBtnText}>+ Log</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Calorie block */}
-      <View style={styles.calorieBlock}>
-        <View style={styles.calorieNumbers}>
-          <Text style={[styles.calorieConsumed, { color: colors.textPrimary }]}>
+      {/* Calorie summary row */}
+      <View style={styles.calRow}>
+        <View style={styles.calLeft}>
+          <Text style={[styles.calBig, { color: colors.textPrimary }]}>
             {calorieProgress.consumed.toLocaleString()}
           </Text>
-          <Text style={[styles.calorieTarget, { color: colors.textMuted }]}>
+          <Text style={[styles.calOf, { color: colors.textMuted }]}>
             {" / "}{calorieProgress.target.toLocaleString()} kcal
           </Text>
         </View>
-        <View style={styles.calorieRight}>
-          <Text style={[styles.calPct, { color: colors.teal }]}>{calPct}%</Text>
-          <Text style={[styles.calRemaining, { color: colors.textMuted }]}>
+        <View style={[styles.calBadge, { backgroundColor: colors.tealAlpha }]}>
+          <Text style={[styles.calBadgePct, { color: colors.teal }]}>{calPct}%</Text>
+          <Text style={[styles.calBadgeRem, { color: colors.textMuted }]}>
             {calorieProgress.remaining.toLocaleString()} left
           </Text>
         </View>
       </View>
 
-      {/* Calorie progress bar */}
-      <View style={[styles.calBarBg, { backgroundColor: colors.teal + "22" }]}>
+      {/* Thick calorie bar */}
+      <View style={[styles.calBar, { backgroundColor: colors.teal + "22" }]}>
         <View
-          style={[
-            styles.calBarFill,
-            {
-              backgroundColor: colors.teal,
-              width: `${calPct}%` as `${number}%`,
-            },
-          ]}
+          style={[styles.calBarFill, { backgroundColor: colors.teal, width: `${calPct}%` as `${number}%` }]}
         />
       </View>
 
-      {/* Macro rows */}
-      <View style={[styles.macroSection, { borderTopColor: colors.border }]}>
-        <MacroRow label="Protein" consumed={macros.protein.consumed} target={macros.protein.target} color={colors.macroProtein} />
-        <MacroRow label="Carbs"   consumed={macros.carbs.consumed}   target={macros.carbs.target}   color={colors.macroCarbs} />
-        <MacroRow label="Fat"     consumed={macros.fat.consumed}     target={macros.fat.target}     color={colors.macroFat} />
+      {/* Vertical macro bars */}
+      <View style={[styles.barsRow, { borderTopColor: colors.border }]}>
+        <VerticalBar label="Protein" consumed={macros.protein.consumed} target={macros.protein.target} color={colors.macroProtein} />
+        <View style={[styles.barDivider, { backgroundColor: colors.border }]} />
+        <VerticalBar label="Carbs"   consumed={macros.carbs.consumed}   target={macros.carbs.target}   color={colors.macroCarbs} />
+        <View style={[styles.barDivider, { backgroundColor: colors.border }]} />
+        <VerticalBar label="Fat"     consumed={macros.fat.consumed}     target={macros.fat.target}     color={colors.macroFat} />
       </View>
     </Card>
   );
@@ -143,38 +143,29 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
 const styles = StyleSheet.create({
   card: { marginHorizontal: 20, gap: 14 },
 
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  // Header
+  header:     { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  iconBadge: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  iconBadge:  { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   widgetTitle: { fontSize: 16, fontWeight: "800", letterSpacing: -0.3 },
-  widgetSub: { fontSize: 11, fontWeight: "500", marginTop: 1 },
-  logBtn: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
+  widgetSub:   { fontSize: 11, fontWeight: "500", marginTop: 1 },
+  logBtn:     { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, backgroundColor: "#4C7DFF" },
   logBtnText: { color: "#FFFFFF", fontSize: 13, fontWeight: "800" },
 
-  calorieBlock: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
-  calorieNumbers: { flexDirection: "row", alignItems: "baseline", gap: 2 },
-  calorieConsumed: { fontSize: 34, fontWeight: "900", letterSpacing: -1 },
-  calorieTarget: { fontSize: 14, fontWeight: "500" },
-  calorieRight: { alignItems: "flex-end" },
-  calPct: { fontSize: 18, fontWeight: "800" },
-  calRemaining: { fontSize: 11, fontWeight: "500" },
+  // Calorie summary
+  calRow:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  calLeft: { flexDirection: "row", alignItems: "baseline", gap: 3 },
+  calBig:  { fontSize: 32, fontWeight: "900", letterSpacing: -1 },
+  calOf:   { fontSize: 13, fontWeight: "500" },
+  calBadge:    { alignItems: "center", backgroundColor: "transparent", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6 },
+  calBadgePct: { fontSize: 18, fontWeight: "800" },
+  calBadgeRem: { fontSize: 10, fontWeight: "500", marginTop: 1 },
 
-  calBarBg: { height: 5, borderRadius: 100, overflow: "hidden" },
-  calBarFill: { height: 5, borderRadius: 100 },
+  // Calorie bar
+  calBar:    { height: 8, borderRadius: 100, overflow: "hidden" },
+  calBarFill: { height: 8, borderRadius: 100 },
 
-  macroSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 14, gap: 12 },
-
-  macroRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  macroLeft: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
-  macroDot: { width: 8, height: 8, borderRadius: 4 },
-  macroLabel: { fontSize: 12, fontWeight: "600", marginBottom: 4 },
-  macroBarWrap: { width: 90 },
-  macroBarBg: { height: 4, borderRadius: 100, overflow: "hidden" },
-  macroBarFill: { height: 4, borderRadius: 100 },
-  macroRight: { flexDirection: "row", alignItems: "baseline", gap: 1 },
-  macroConsumed: { fontSize: 14, fontWeight: "700" },
-  macroUnit: { fontSize: 10, fontWeight: "500" },
-  macroTarget: { fontSize: 11, fontWeight: "500" },
-  remainingBadge: { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
-  remainingText: { fontSize: 11, fontWeight: "700" },
+  // Vertical macro bars
+  barsRow:    { flexDirection: "row", alignItems: "flex-end", borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16 },
+  barDivider: { width: StyleSheet.hairlineWidth, height: 80, alignSelf: "center" },
 });
