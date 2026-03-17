@@ -3,6 +3,7 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native
 import { useFocusEffect, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AvatarButton } from "@/components/ui/AvatarButton";
+import { InsightCard } from "@/components/features/home/InsightCard";
 import { NutritionWidget } from "@/components/features/home/NutritionWidget";
 import { TodayActivitiesCard } from "@/components/features/home/TodayActivitiesCard";
 import { WeekCalendarStrip } from "@/components/features/home/WeekCalendarStrip";
@@ -78,6 +79,9 @@ export default function HomeScreen() {
             fat: vm.macros.fat.target,
           }}
         />
+
+        {/* AI Insight card */}
+        <InsightCard insight={vm.jonnoInsight} />
 
         {/* Nutrition widget */}
         {vm.loading ? (
