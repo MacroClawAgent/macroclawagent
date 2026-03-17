@@ -56,7 +56,8 @@ function MacroRow({
       </View>
       <View style={styles.macroRight}>
         <Text style={[styles.macroConsumed, { color: colors.textPrimary }]}>
-          {consumed}<Text style={[styles.macroUnit, { color: colors.textMuted }]}>g</Text>
+          {Number.isInteger(consumed) ? consumed : consumed.toFixed(1)}
+          <Text style={[styles.macroUnit, { color: colors.textMuted }]}>g</Text>
         </Text>
         <Text style={[styles.macroTarget, { color: colors.textMuted }]}>/ {target}g</Text>
       </View>

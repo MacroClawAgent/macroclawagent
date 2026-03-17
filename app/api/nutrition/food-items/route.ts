@@ -62,7 +62,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert the food item (with batch/dish fields; fallback if columns missing)
-    const baseRow = { user_id: user.id, log_date, meal_tag, name, calories, protein_g: protein_g ?? 0, carbs_g: carbs_g ?? 0, fat_g: fat_g ?? 0 };
+    // Round all macro values to integers — DB columns are INTEGER type
+    const baseRow = {
+      user_id: user.id,
+      log_date,
+      meal_tag,
+      name,
+      calories:   Math.round(Number(calories)),
+      protein_g:  Math.round(Number(protein_g ?? 0)),
+      carbs_g:    Math.round(Number(carbs_g  ?? 0)),
+      fat_g:      Math.round(Number(fat_g    ?? 0)),
+    };
     let { data: item, error: insertErr } = await supabase
       .from("food_log_items")
       .insert({ ...baseRow, ...(batch_id ? { batch_id } : {}), ...(dish_name ? { dish_name } : {}) })
