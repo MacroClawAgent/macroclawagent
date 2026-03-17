@@ -117,3 +117,59 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
+
+/**
+ * DELETE /api/nutrition/food-items?batch_id=UUID&date=YYYY-MM-DD
+ * Deletes all food_log_items for the given batch_id (or a single item by id),
+ * then recomputes nutrition_logs totals for that day.
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const token = getBearerToken(request);
+    const supabase = token ? createClientFromToken(token) : await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const batch_id = request.nextUrl.searchParams.get("batch_id");
+    const log_date: string = request.nextUrl.searchParams.get("date") ?? new Date().toISOString().split("T")[0];
+
+    if (!batch_id) {
+      return NextResponse.json({ error: "batch_id is required" }, { status: 400 });
+    }
+
+    const { error: delErr } = await supabase
+      .from("food_log_items")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("batch_id", batch_id);
+    if (delErr) throw delErr;
+
+    // Recompute totals
+    const { data: remaining, error: sumErr } = await supabase
+      .from("food_log_items")
+      .select("calories,protein_g,carbs_g,fat_g")
+      .eq("user_id", user.id)
+      .eq("log_date", log_date);
+    if (sumErr) throw sumErr;
+
+    const totals = (remaining ?? []).reduce(
+      (acc, r) => ({
+        calories_consumed: acc.calories_consumed + (r.calories ?? 0),
+        protein_g: acc.protein_g + Number(r.protein_g ?? 0),
+        carbs_g: acc.carbs_g + Number(r.carbs_g ?? 0),
+        fat_g: acc.fat_g + Number(r.fat_g ?? 0),
+      }),
+      { calories_consumed: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
+    );
+
+    await supabase
+      .from("nutrition_logs")
+      .upsert({ user_id: user.id, date: log_date, ...totals }, { onConflict: "user_id,date" });
+
+    return NextResponse.json({ ok: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : (err as { message?: string })?.message ?? "Internal server error";
+    console.error("[food-items DELETE]", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
