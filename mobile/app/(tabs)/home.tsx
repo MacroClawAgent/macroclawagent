@@ -60,7 +60,15 @@ export default function HomeScreen() {
         </View>
 
         {/* 7-day week streak strip */}
-        <WeekCalendarStrip weeklyCalories={vm.weeklyCalories} />
+        <WeekCalendarStrip
+          weeklyCalories={vm.weeklyCalories}
+          goals={{
+            calories: vm.calorieProgress.target,
+            protein: vm.macros.protein.target,
+            carbs: vm.macros.carbs.target,
+            fat: vm.macros.fat.target,
+          }}
+        />
 
         {/* Nutrition widget */}
         {vm.loading ? (
