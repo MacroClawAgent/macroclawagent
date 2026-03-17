@@ -36,7 +36,7 @@ export default function HomeScreen() {
 
   return (
     <Screen style={{ backgroundColor: "#20C7B7" }}>
-      <AppHeader wordmark showAvatar textColor="#FFF" avatarColor="#4C7DFF" />
+      <AppHeader showAvatar textColor="#FFF" avatarColor="#4C7DFF" />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -103,7 +103,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   scroll: {
-    paddingTop: 4,
+    paddingTop: 0,
     gap: 14,
   },
   greeting: {
