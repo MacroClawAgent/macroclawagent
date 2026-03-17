@@ -1,12 +1,13 @@
 import React, { useCallback } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
-import { AppHeader } from "@/components/ui/AppHeader";
+import { AvatarButton } from "@/components/ui/AvatarButton";
 import { NutritionWidget } from "@/components/features/home/NutritionWidget";
 import { TodayActivitiesCard } from "@/components/features/home/TodayActivitiesCard";
 import { WeekCalendarStrip } from "@/components/features/home/WeekCalendarStrip";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
 import { SymbolView } from "expo-symbols";
 
@@ -24,6 +25,8 @@ function SkeletonCard() {
 
 export default function HomeScreen() {
   const { colors } = useTheme();
+  const { userProfile } = useAuth();
+  const router = useRouter();
   const vm = useHomeViewModel();
 
   // Refresh nutrition data every time the home tab comes into focus
@@ -36,21 +39,10 @@ export default function HomeScreen() {
 
   return (
     <Screen style={{ backgroundColor: "#20C7B7" }}>
-      <AppHeader showAvatar textColor="#FFF" avatarColor="#4C7DFF" />
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={vm.refreshing}
-            onRefresh={vm.refresh}
-            tintColor="#FFF"
-          />
-        }
-      >
-        {/* Greeting */}
-        <View style={styles.greeting}>
-          <Text style={[styles.greetingWord, { color: "rgba(255,255,255,0.75)" }]}>
+      {/* Top header: greeting left, avatar right */}
+      <View style={styles.topHeader}>
+        <View style={styles.greetingBlock}>
+          <Text style={[styles.greetingWord, { color: "rgba(255,255,255,0.72)" }]}>
             {vm.greeting}
           </Text>
           <Text style={[styles.greetingName, { color: "#FFF" }]}>
@@ -65,6 +57,24 @@ export default function HomeScreen() {
             <Text style={styles.goalPillText}>{vm.goalLabel}</Text>
           </View>
         </View>
+        <AvatarButton
+          name={userProfile?.full_name ?? ""}
+          onPress={() => router.push("/profile")}
+          size={44}
+          color="#4C7DFF"
+        />
+      </View>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={vm.refreshing}
+            onRefresh={vm.refresh}
+            tintColor="#FFF"
+          />
+        }
+      >
 
         {/* 7-day week streak strip */}
         <WeekCalendarStrip
@@ -106,22 +116,28 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     gap: 14,
   },
-  greeting: {
+  topHeader: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingBottom: 4,
-    gap: 4,
+    paddingTop: 10,
+    paddingBottom: 16,
+  },
+  greetingBlock: {
+    gap: 3,
   },
   greetingWord: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "500",
     letterSpacing: 0.1,
   },
   greetingName: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: "900",
     letterSpacing: -1,
-    lineHeight: 38,
-    marginBottom: 4,
+    lineHeight: 36,
+    marginBottom: 6,
   },
   goalPill: {
     alignSelf: "flex-start",
