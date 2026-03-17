@@ -10,6 +10,7 @@ import { QuickActionRow } from "@/components/features/home/QuickActionRow";
 import { WeekCalendarStrip } from "@/components/features/home/WeekCalendarStrip";
 import { useTheme } from "@/context/ThemeContext";
 import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
+import { SymbolView } from "expo-symbols";
 
 function SkeletonCard() {
   const { colors } = useTheme();
@@ -52,10 +53,15 @@ export default function HomeScreen() {
         {/* Greeting */}
         <View style={styles.greeting}>
           <Text style={[styles.greetingText, { color: "#FFF" }]}>
-            {vm.greeting}, {vm.userName} 👋
+            {vm.greeting}, {vm.userName}
           </Text>
           <View style={styles.goalPill}>
-            <Text style={styles.goalPillText}>{vm.goalEmoji} {vm.goalLabel}</Text>
+            <SymbolView
+              name={{ ios: vm.goalIcon.ios, android: vm.goalIcon.android, web: vm.goalIcon.android }}
+              tintColor="rgba(255,255,255,0.85)"
+              size={11}
+            />
+            <Text style={styles.goalPillText}>{vm.goalLabel}</Text>
           </View>
         </View>
 
@@ -77,7 +83,6 @@ export default function HomeScreen() {
           <NutritionWidget
             calorieProgress={vm.calorieProgress}
             macros={vm.macros}
-            goalEmoji={vm.goalEmoji}
             goalLabel={vm.goalLabel}
           />
         )}
@@ -127,14 +132,17 @@ const styles = StyleSheet.create({
   },
   goalPill: {
     alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
     backgroundColor: "rgba(255,255,255,0.18)",
     borderRadius: 20,
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 5,
   },
   goalPillText: {
     color: "#FFF",
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "700",
     letterSpacing: 0.2,
   },

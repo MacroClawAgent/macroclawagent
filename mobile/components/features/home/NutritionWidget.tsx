@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import { Card } from "../../ui/Card";
 import { useTheme } from "../../../context/ThemeContext";
 
@@ -17,19 +18,16 @@ interface NutritionWidgetProps {
     carbs: MacroStat;
     fat: MacroStat;
   };
-  goalEmoji: string;
   goalLabel: string;
 }
 
 function MacroRow({
   label,
-  emoji,
   consumed,
   target,
   color,
 }: {
   label: string;
-  emoji: string;
   consumed: number;
   target: number;
   color: string;
@@ -41,7 +39,7 @@ function MacroRow({
   return (
     <View style={styles.macroRow}>
       <View style={styles.macroLeft}>
-        <Text style={styles.macroEmoji}>{emoji}</Text>
+        <View style={[styles.macroDot, { backgroundColor: color }]} />
         <View>
           <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>{label}</Text>
           <View style={styles.macroBarWrap}>
@@ -69,7 +67,7 @@ function MacroRow({
   );
 }
 
-export function NutritionWidget({ calorieProgress, macros, goalEmoji, goalLabel }: NutritionWidgetProps) {
+export function NutritionWidget({ calorieProgress, macros, goalLabel }: NutritionWidgetProps) {
   const { colors } = useTheme();
   const router = useRouter();
   const calPct = Math.round(calorieProgress.ratio * 100);
@@ -80,13 +78,15 @@ export function NutritionWidget({ calorieProgress, macros, goalEmoji, goalLabel 
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={[styles.iconBadge, { backgroundColor: colors.tealAlpha }]}>
-            <Text style={styles.iconEmoji}>🥗</Text>
+            <SymbolView
+              name={{ ios: "fork.knife", android: "restaurant", web: "restaurant" }}
+              tintColor={colors.teal}
+              size={16}
+            />
           </View>
           <View>
             <Text style={[styles.widgetTitle, { color: colors.textPrimary }]}>Nutrition</Text>
-            <Text style={[styles.widgetSub, { color: colors.textMuted }]}>
-              {goalEmoji} {goalLabel}
-            </Text>
+            <Text style={[styles.widgetSub, { color: colors.textMuted }]}>{goalLabel}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -131,27 +131,9 @@ export function NutritionWidget({ calorieProgress, macros, goalEmoji, goalLabel 
 
       {/* Macro rows */}
       <View style={[styles.macroSection, { borderTopColor: colors.border }]}>
-        <MacroRow
-          label="Protein"
-          emoji="🥩"
-          consumed={macros.protein.consumed}
-          target={macros.protein.target}
-          color={colors.macroProtein}
-        />
-        <MacroRow
-          label="Carbs"
-          emoji="🌾"
-          consumed={macros.carbs.consumed}
-          target={macros.carbs.target}
-          color={colors.macroCarbs}
-        />
-        <MacroRow
-          label="Fat"
-          emoji="🥑"
-          consumed={macros.fat.consumed}
-          target={macros.fat.target}
-          color={colors.macroFat}
-        />
+        <MacroRow label="Protein" consumed={macros.protein.consumed} target={macros.protein.target} color={colors.macroProtein} />
+        <MacroRow label="Carbs"   consumed={macros.carbs.consumed}   target={macros.carbs.target}   color={colors.macroCarbs} />
+        <MacroRow label="Fat"     consumed={macros.fat.consumed}     target={macros.fat.target}     color={colors.macroFat} />
       </View>
     </Card>
   );
@@ -163,7 +145,6 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   iconBadge: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  iconEmoji: { fontSize: 18 },
   widgetTitle: { fontSize: 16, fontWeight: "800", letterSpacing: -0.3 },
   widgetSub: { fontSize: 11, fontWeight: "500", marginTop: 1 },
   logBtn: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
@@ -184,7 +165,7 @@ const styles = StyleSheet.create({
 
   macroRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   macroLeft: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
-  macroEmoji: { fontSize: 16, width: 22 },
+  macroDot: { width: 8, height: 8, borderRadius: 4 },
   macroLabel: { fontSize: 12, fontWeight: "600", marginBottom: 4 },
   macroBarWrap: { width: 90 },
   macroBarBg: { height: 4, borderRadius: 100, overflow: "hidden" },

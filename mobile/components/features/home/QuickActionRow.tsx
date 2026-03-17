@@ -1,13 +1,14 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import { useTheme } from "../../../context/ThemeContext";
 
-const ACTIONS = [
-  { label: "Log Food", emoji: "🍽", route: "/nutrition/log-food" },
-  { label: "Smart Cart", emoji: "🛒", route: "/(tabs)/cart" },
-  { label: "Ask Jonno", emoji: "✦", route: "/(tabs)/agent" },
-] as const;
+const ACTIONS: { label: string; ios: string; android: string; route: string }[] = [
+  { label: "Log Food",   ios: "plus.square.fill", android: "add_box",       route: "/nutrition/log-food" },
+  { label: "Smart Cart", ios: "cart.fill",         android: "shopping_cart", route: "/(tabs)/cart" },
+  { label: "Ask Jonno",  ios: "sparkles",          android: "auto_awesome",  route: "/(tabs)/agent" },
+];
 
 export function QuickActionRow() {
   const { colors } = useTheme();
@@ -22,7 +23,11 @@ export function QuickActionRow() {
           onPress={() => router.push(a.route as any)}
           style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.border }]}
         >
-          <Text style={styles.emoji}>{a.emoji}</Text>
+          <SymbolView
+            name={{ ios: a.ios, android: a.android, web: a.android }}
+            tintColor={colors.teal}
+            size={15}
+          />
           <Text style={[styles.label, { color: colors.textSecondary }]}>{a.label}</Text>
         </TouchableOpacity>
       ))}
@@ -47,6 +52,5 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  emoji: { fontSize: 14 },
   label: { fontSize: 12, fontWeight: "600" },
 });

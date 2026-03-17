@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Pressable,
 } from "react-native";
+import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
 import { apiGet } from "@/lib/api";
 import type { WeeklyDay } from "@/lib/viewModels/useHomeViewModel";
@@ -210,7 +211,11 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
           </View>
           {streak > 0 && (
             <View style={styles.streakBadge}>
-              <Text style={styles.streakFire}>🔥</Text>
+              <SymbolView
+                name={{ ios: "flame.fill", android: "local_fire_department", web: "local_fire_department" }}
+                tintColor="#FB923C"
+                size={13}
+              />
               <Text style={styles.streakCount}>{streak}</Text>
               <Text style={styles.streakWord}>day{streak !== 1 ? "s" : ""}</Text>
             </View>
@@ -463,7 +468,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
     borderColor: "rgba(255,255,255,0.15)",
   },
-  streakFire: { fontSize: 14 },
   streakCount: {
     fontSize: 15,
     fontWeight: "800",
