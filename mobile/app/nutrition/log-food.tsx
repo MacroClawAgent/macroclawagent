@@ -208,7 +208,7 @@ export default function LogFoodScreen() {
                       <View style={styles.dishMid}>
                         <Text style={[styles.dishName, { color: colors.textPrimary }]}>{dish.dishName}</Text>
                         <Text style={[styles.dishMeta, { color: colors.textMuted }]}>
-                          {dish.totalCals} kcal{multi ? ` · ${dish.items.length} ingredients` : ""}
+                          {+dish.totalCals.toFixed(1)} kcal{multi ? ` · ${dish.items.length} ingredients` : ""}
                         </Text>
                       </View>
                       {multi ? (
@@ -233,7 +233,7 @@ export default function LogFoodScreen() {
                             <View style={styles.ingredientLeft}>
                               <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{item.name}</Text>
                               <Text style={[styles.ingredientMacros, { color: colors.textMuted }]}>
-                                {item.calories} kcal · P {item.protein_g}g · C {item.carbs_g}g · F {item.fat_g}g
+                                {+item.calories.toFixed(1)} kcal · P {+item.protein_g.toFixed(1)}g · C {+item.carbs_g.toFixed(1)}g · F {+item.fat_g.toFixed(1)}g
                               </Text>
                             </View>
                             <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>

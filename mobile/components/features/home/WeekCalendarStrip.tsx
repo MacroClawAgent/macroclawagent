@@ -420,8 +420,8 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
               {detail.totalCals > 0 && (
                 <View style={[styles.summaryRow, { backgroundColor: colors.card }]}>
                   {[
-                    { value: Math.round(detail.totalCals).toString(), label: "kcal" },
-                    { value: `${Math.round(detail.totalProtein)}g`, label: "protein" },
+                    { value: (+detail.totalCals.toFixed(1)).toString(), label: "kcal" },
+                    { value: `${+detail.totalProtein.toFixed(1)}g`, label: "protein" },
                     { value: detail.activities.length.toString(), label: "workouts" },
                   ].map((s, idx, arr) => (
                     <React.Fragment key={s.label}>
@@ -471,7 +471,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                                 </View>
                                 <View style={styles.dishRight}>
                                   <Text style={[styles.dishCal, { color: colors.textMuted }]}>
-                                    {Math.round(dish.totalCals)} kcal
+                                    {+dish.totalCals.toFixed(1)} kcal
                                   </Text>
                                   <TouchableOpacity
                                     onPress={() => deleteDish(dish.key, dish.batchId, selectedDate!)}
@@ -500,7 +500,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                                         {item.name}
                                       </Text>
                                       <Text style={[styles.ingredientMacros, { color: colors.textMuted }]}>
-                                        {Math.round(item.calories)} kcal · P {item.protein_g}g
+                                        {+item.calories.toFixed(1)} kcal · P {+item.protein_g.toFixed(1)}g
                                       </Text>
                                     </View>
                                   ))}

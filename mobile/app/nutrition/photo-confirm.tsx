@@ -287,7 +287,7 @@ export default function PhotoConfirmScreen() {
                 <View style={styles.foodInfo}>
                   <Text style={styles.foodName}>{food.name}</Text>
                   <Text style={styles.foodMacros}>
-                    {food.calories} kcal · P {food.protein_g}g · C {food.carbs_g}g · F {food.fat_g}g
+                    {+food.calories.toFixed(1)} kcal · P {+food.protein_g.toFixed(1)}g · C {+food.carbs_g.toFixed(1)}g · F {+food.fat_g.toFixed(1)}g
                   </Text>
                 </View>
                 <View style={styles.foodRight}>
@@ -312,19 +312,19 @@ export default function PhotoConfirmScreen() {
             <Text style={styles.totalsTitle}>Total</Text>
             <View style={styles.totalsRow}>
               <View style={styles.totalItem}>
-                <Text style={styles.totalVal}>{totals.calories}</Text>
+                <Text style={styles.totalVal}>{+totals.calories.toFixed(1)}</Text>
                 <Text style={styles.totalLabel}>kcal</Text>
               </View>
               <View style={styles.totalItem}>
-                <Text style={[styles.totalVal, { color: "#60A5FA" }]}>{totals.protein_g}g</Text>
+                <Text style={[styles.totalVal, { color: "#60A5FA" }]}>{+totals.protein_g.toFixed(1)}g</Text>
                 <Text style={styles.totalLabel}>Protein</Text>
               </View>
               <View style={styles.totalItem}>
-                <Text style={[styles.totalVal, { color: "#FBBF24" }]}>{totals.carbs_g}g</Text>
+                <Text style={[styles.totalVal, { color: "#FBBF24" }]}>{+totals.carbs_g.toFixed(1)}g</Text>
                 <Text style={styles.totalLabel}>Carbs</Text>
               </View>
               <View style={styles.totalItem}>
-                <Text style={[styles.totalVal, { color: "#F97316" }]}>{totals.fat_g}g</Text>
+                <Text style={[styles.totalVal, { color: "#F97316" }]}>{+totals.fat_g.toFixed(1)}g</Text>
                 <Text style={styles.totalLabel}>Fat</Text>
               </View>
             </View>
