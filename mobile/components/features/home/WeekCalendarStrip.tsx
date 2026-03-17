@@ -131,6 +131,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   const [loading, setLoading] = useState(false);
   const [expandedDishes, setExpandedDishes] = useState<Set<string>>(new Set());
   const [deletingBatch, setDeletingBatch] = useState<string | null>(null);
+  const [showLegend, setShowLegend] = useState(false);
 
   const todayDate = useMemo(() => {
     const d = new Date();
@@ -278,27 +279,44 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
 
         {/* Header row */}
         <View style={styles.cardHeader}>
-          <View>
+          <View style={styles.cardHeaderLeft}>
             <Text style={styles.cardTitle}>This Week</Text>
             <Text style={styles.cardSub}>{weekLabel}</Text>
           </View>
-          {streak > 0 && (
-            <View style={styles.streakBadge}>
-              <SymbolView
-                name={{ ios: "flame.fill", android: "local_fire_department", web: "local_fire_department" }}
-                tintColor="#FB923C"
-                size={13}
-              />
-              <Text style={styles.streakCount}>{streak}</Text>
-              <Text style={styles.streakWord}>day{streak !== 1 ? "s" : ""}</Text>
-            </View>
-          )}
-          {streak === 0 && (
-            <View style={[styles.streakBadge, styles.streakBadgeEmpty]}>
-              <Text style={styles.streakEmptyText}>Start streak</Text>
-            </View>
-          )}
+          <View style={styles.cardHeaderRight}>
+            {streak > 0 && (
+              <View style={styles.streakBadge}>
+                <SymbolView
+                  name={{ ios: "flame.fill", android: "local_fire_department", web: "local_fire_department" }}
+                  tintColor="#FB923C"
+                  size={12}
+                />
+                <Text style={styles.streakCount}>{streak}</Text>
+              </View>
+            )}
+            <TouchableOpacity onPress={() => setShowLegend((v) => !v)} hitSlop={10} style={styles.legendToggle}>
+              <Text style={styles.legendToggleText}>{showLegend ? "✕" : "?"}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+
+        {/* Inline legend (toggled) */}
+        {showLegend && (
+          <View style={styles.inlineLegend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
+              <Text style={styles.legendText}>Goal met</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: AMBER }]} />
+              <Text style={styles.legendText}>Logged</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
+              <Text style={styles.legendText}>Missed</Text>
+            </View>
+          </View>
+        )}
 
         {/* Day pills row */}
         <View style={styles.daysRow}>
@@ -337,21 +355,6 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
           })}
         </View>
 
-        {/* Legend */}
-        <View style={styles.legend}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
-            <Text style={styles.legendText}>Goal met</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: AMBER }]} />
-            <Text style={styles.legendText}>Logged</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
-            <Text style={styles.legendText}>Missed</Text>
-          </View>
-        </View>
       </View>
 
       {/* ══ Bottom sheet modal ══ */}
@@ -543,62 +546,59 @@ const styles = StyleSheet.create({
   // ── Card ──────────────────────────────────────────────────────────
   card: {
     marginHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: "rgba(76,125,255,0.22)",
-    paddingTop: 14,
-    paddingBottom: 10,
+    borderRadius: 18,
+    backgroundColor: "#4C7DFF",
+    paddingTop: 10,
+    paddingBottom: 8,
     paddingHorizontal: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(76,125,255,0.55)",
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8,
   },
+  cardHeaderLeft: { gap: 1 },
+  cardHeaderRight: { flexDirection: "row", alignItems: "center", gap: 8 },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
     color: "#fff",
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   cardSub: {
-    fontSize: 11,
-    color: "rgba(255,255,255,0.65)",
-    marginTop: 1,
+    fontSize: 10,
+    color: "rgba(255,255,255,0.6)",
   },
   // ── Streak badge ──────────────────────────────────────────────────
   streakBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(249,115,22,0.22)",
+    backgroundColor: "rgba(255,255,255,0.18)",
     borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     gap: 3,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(249,115,22,0.5)",
-  },
-  streakBadgeEmpty: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderColor: "rgba(255,255,255,0.15)",
   },
   streakCount: {
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: "800",
     color: "#FB923C",
   },
-  streakWord: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#FB923C",
-    marginTop: 1,
+  // ── Legend toggle ─────────────────────────────────────────────────
+  legendToggle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  streakEmptyText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "rgba(255,255,255,0.4)",
+  legendToggleText: { fontSize: 11, fontWeight: "800", color: "#fff" },
+  inlineLegend: {
+    flexDirection: "row",
+    gap: 14,
+    paddingBottom: 8,
   },
   // ── Days row ──────────────────────────────────────────────────────
   daysRow: {
@@ -610,11 +610,11 @@ const styles = StyleSheet.create({
   },
   dayPill: {
     alignItems: "center",
-    paddingVertical: 7,
-    paddingHorizontal: 5,
-    borderRadius: 14,
-    gap: 2,
-    minWidth: 36,
+    paddingVertical: 5,
+    paddingHorizontal: 4,
+    borderRadius: 12,
+    gap: 3,
+    minWidth: 32,
   },
   dayPillToday: {
     backgroundColor: BLUE,
@@ -656,30 +656,9 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.12)",
   },
   // ── Legend ────────────────────────────────────────────────────────
-  legend: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 16,
-    marginTop: 10,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.08)",
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  legendDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  legendText: {
-    fontSize: 10,
-    color: "rgba(255,255,255,0.65)",
-    fontWeight: "500",
-  },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: 5 },
+  legendDot: { width: 6, height: 6, borderRadius: 3 },
+  legendText: { fontSize: 10, color: "rgba(255,255,255,0.75)", fontWeight: "600" },
   // ── Modal ─────────────────────────────────────────────────────────
   backdrop: {
     flex: 1,
