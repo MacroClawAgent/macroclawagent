@@ -68,6 +68,24 @@ export default function LogFoodScreen() {
     ]);
   };
 
+  const handleDeleteDish = (dish: Dish) => {
+    Alert.alert("Delete dish?", `Remove "${dish.dishName}" and all its ingredients?`, [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: async () => {
+        try {
+          const batchId = dish.items[0]?.batch_id;
+          const todayStr = new Date().toISOString().split("T")[0];
+          if (batchId) {
+            await apiDelete(`/api/nutrition/food-items?batch_id=${batchId}&date=${todayStr}`);
+          } else {
+            await Promise.all(dish.items.map(i => apiDelete(`/api/nutrition/food-items/${i.id}`)));
+          }
+          await fetchData();
+        } catch { Alert.alert("Error", "Failed to delete dish."); }
+      }},
+    ]);
+  };
+
   const handleAdd = async () => {
     if (!addName || !addCals) return;
     setSaving(true);
@@ -194,9 +212,14 @@ export default function LogFoodScreen() {
                         </Text>
                       </View>
                       {multi ? (
-                        <TouchableOpacity onPress={() => toggleDish(dish.key)} style={styles.expandBtn}>
-                          <Text style={[styles.expandText, { color: colors.textMuted }]}>{isExpanded ? "▲" : "▼"}</Text>
-                        </TouchableOpacity>
+                        <View style={styles.dishActions}>
+                          <TouchableOpacity onPress={() => toggleDish(dish.key)} style={styles.expandBtn}>
+                            <Text style={[styles.expandText, { color: colors.textMuted }]}>{isExpanded ? "▲" : "▼"}</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => handleDeleteDish(dish)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>
+                            <Text style={[styles.deleteText, { color: colors.danger }]}>×</Text>
+                          </TouchableOpacity>
+                        </View>
                       ) : (
                         <TouchableOpacity onPress={() => handleDelete(dish.items[0].id)} style={[styles.deleteBtn, { backgroundColor: colors.danger + "12" }]}>
                           <Text style={[styles.deleteText, { color: colors.danger }]}>×</Text>
@@ -295,6 +318,7 @@ const styles = StyleSheet.create({
   dishMid: { flex: 1 },
   dishName: { fontSize: 14, fontWeight: "700", marginBottom: 2 },
   dishMeta: { fontSize: 11, fontWeight: "500" },
+  dishActions: { flexDirection: "row", alignItems: "center", gap: 4 },
   expandBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
   expandText: { fontSize: 10, fontWeight: "700" },
   ingredientList: { borderTopWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, paddingBottom: 6 },
