@@ -39,7 +39,7 @@ export default function HomeScreen() {
 
   return (
     <Screen style={{ backgroundColor: "#20C7B7" }}>
-      {/* Top header: greeting left, avatar right */}
+      {/* Top header: greeting left, avatar + goal right */}
       <View style={styles.topHeader}>
         <View style={styles.greetingBlock}>
           <Text style={[styles.greetingWord, { color: "rgba(255,255,255,0.72)" }]}>
@@ -48,6 +48,14 @@ export default function HomeScreen() {
           <Text style={[styles.greetingName, { color: "#FFF" }]}>
             {vm.userName}
           </Text>
+        </View>
+        <View style={styles.avatarBlock}>
+          <AvatarButton
+            name={userProfile?.full_name ?? ""}
+            onPress={() => router.push("/profile")}
+            size={44}
+            color="#4C7DFF"
+          />
           <View style={styles.goalPill}>
             <SymbolView
               name={{ ios: vm.goalIcon.ios, android: vm.goalIcon.android, web: vm.goalIcon.android }}
@@ -57,12 +65,6 @@ export default function HomeScreen() {
             <Text style={styles.goalPillText}>{vm.goalLabel}</Text>
           </View>
         </View>
-        <AvatarButton
-          name={userProfile?.full_name ?? ""}
-          onPress={() => router.push("/profile")}
-          size={44}
-          color="#4C7DFF"
-        />
       </View>
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -118,7 +120,7 @@ const styles = StyleSheet.create({
   },
   topHeader: {
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingTop: 10,
@@ -126,6 +128,12 @@ const styles = StyleSheet.create({
   },
   greetingBlock: {
     gap: 3,
+    flex: 1,
+  },
+  avatarBlock: {
+    alignItems: "center",
+    gap: 8,
+    paddingTop: 2,
   },
   greetingWord: {
     fontSize: 15,
@@ -137,7 +145,6 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: -1,
     lineHeight: 36,
-    marginBottom: 6,
   },
   goalPill: {
     alignSelf: "flex-start",
