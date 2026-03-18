@@ -78,7 +78,7 @@ export default function HomeScreen() {
           name={userProfile?.full_name ?? ""}
           onPress={() => router.push("/profile")}
           size={44}
-          color="#4C7DFF"
+          color="#2BB6A6"
           style={{ borderWidth: 3, borderColor: vm.goalRingColor }}
         />
       </View>
