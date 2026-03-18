@@ -65,6 +65,9 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
       <View style={s.pageHeader}>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={s.backBtn}>
+          <Text style={s.backArrow}>←</Text>
+        </TouchableOpacity>
         <Text style={s.pageTitle}>Profile</Text>
       </View>
 
@@ -156,7 +159,9 @@ export default function ProfileScreen() {
 
 const s = StyleSheet.create({
   safe:    { flex: 1, backgroundColor: BG },
-  pageHeader: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 },
+  pageHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4, gap: 10 },
+  backBtn:  { padding: 4 },
+  backArrow:{ fontSize: 24, color: "#1C1C1E", fontWeight: "400" },
   pageTitle:  { fontSize: 28, fontWeight: "900", color: "#1C1C1E", letterSpacing: -0.5 },
   content: { padding: 16, gap: 10, paddingBottom: 60 },
 
