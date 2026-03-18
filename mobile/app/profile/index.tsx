@@ -92,20 +92,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Quick stats */}
-        <View style={s.statsRow}>
-          {[
-            { label: "Calories", value: String(userProfile?.calorie_goal ?? 2000), unit: "kcal" },
-            { label: "Protein",  value: String(userProfile?.protein_goal ?? 120),  unit: "g" },
-            { label: "Carbs",    value: String(userProfile?.carbs_goal ?? 250),    unit: "g" },
-            { label: "Fat",      value: String(userProfile?.fat_goal ?? 70),       unit: "g" },
-          ].map((st) => (
-            <View key={st.label} style={s.statCard}>
-              <Text style={s.statValue}>{st.value}<Text style={s.statUnit}>{st.unit}</Text></Text>
-              <Text style={s.statLabel}>{st.label}</Text>
-            </View>
-          ))}
-        </View>
 
         {/* Main menu */}
         <Text style={s.sectionLabel}>Account</Text>
@@ -185,15 +171,6 @@ const s = StyleSheet.create({
     backgroundColor: TEAL2, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4,
   },
   goalPillText: { fontSize: 12, fontWeight: "700", color: TEAL },
-
-  statsRow: { flexDirection: "row", gap: 8 },
-  statCard: {
-    flex: 1, backgroundColor: WHITE, borderRadius: 14, borderWidth: 1, borderColor: BORDER,
-    paddingVertical: 12, alignItems: "center", gap: 2,
-  },
-  statValue: { fontSize: 15, fontWeight: "800", color: "#1C1C1E", letterSpacing: -0.3 },
-  statUnit:  { fontSize: 10, fontWeight: "600", color: "#9CA3AF" },
-  statLabel: { fontSize: 10, fontWeight: "600", color: "#9CA3AF" },
 
   sectionLabel: {
     fontSize: 11, fontWeight: "700", color: "#9CA3AF",
