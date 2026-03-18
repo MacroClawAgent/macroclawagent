@@ -80,6 +80,7 @@ export async function exchangeCodeForTokens(
       client_secret: process.env.STRAVA_CLIENT_SECRET,
       code,
       grant_type: "authorization_code",
+      redirect_uri: process.env.STRAVA_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/strava/callback`,
     }),
   });
   if (!res.ok) {
