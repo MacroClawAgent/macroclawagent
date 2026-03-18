@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -13,153 +13,103 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
-import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { consumePendingCommunityPost } from "@/lib/communityStore";
-import { apiPost, apiDelete } from "@/lib/api";
+import { apiGet, apiPost, apiDelete } from "@/lib/api";
 
-const BASE_URL: string = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://jonnoai.com");
-
-interface SearchUser {
-  id: string; username: string; full_name: string;
-  bio?: string; avatar_url?: string; fitness_goal?: string; is_public?: boolean;
-}
-
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 interface Ingredient { name: string; grams: number; calories: number; }
-
 interface Post {
-  id: string;
-  userName: string;
-  userInitial: string;
-  userColor: string;
-  timeAgo: string;
-  mealName: string;
-  mealEmoji: string;
-  mealBg: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  bumps: number;
-  ingredients?: Ingredient[];
-  isOwn?: boolean;
+  id: string; userName: string; userInitial: string; userColor: string;
+  timeAgo: string; mealName: string; mealEmoji: string; mealBg: string;
+  calories: number; protein: number; carbs: number; fat: number;
+  bumps: number; ingredients?: Ingredient[]; isOwn?: boolean;
 }
-
-interface Group {
-  id: string;
-  name: string;
-  emoji: string;
-  description: string;
-  memberCount: number;
-}
-
 interface CommunityUser {
-  id: string;
-  name: string;
-  initial: string;
-  color: string;
-  goal: string;
+  id: string; username: string; full_name: string;
+  bio?: string; fitness_goal?: string; is_public?: boolean;
 }
 
-// No mock data — community is empty until real users post
+type MainTab = "feed" | "people";
+type PeopleTab = "following" | "followers";
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+const TEAL = "#20C7B7";
+const BG = "#EEF4FA";
 
-function MacroChip({ value, label, color }: { value: number; label: string; color: string }) {
+// ── Avatar chip ───────────────────────────────────────────────────────────────
+function AvatarChip({ name, color, size = 40 }: { name: string; color: string; size?: number }) {
+  const initial = (name || "?")[0].toUpperCase();
   return (
-    <View style={[styles.macroChip, { backgroundColor: color + "1A" }]}>
-      <Text style={[styles.macroChipVal, { color }]}>{value}g</Text>
-      <Text style={[styles.macroChipLabel, { color }]}>{label}</Text>
+    <View style={[s.avatarChip, { width: size, height: size, borderRadius: size / 2, backgroundColor: color + "22" }]}>
+      <Text style={[s.avatarInitial, { color, fontSize: size * 0.4 }]}>{initial}</Text>
     </View>
   );
 }
 
-function PostCard({
-  post,
-  bumped,
-  expanded,
-  onBump,
-  onToggleExpand,
-}: {
-  post: Post;
-  bumped: boolean;
-  expanded: boolean;
-  onBump: (id: string) => void;
-  onToggleExpand: (id: string) => void;
-}) {
-  const bumpCount = post.bumps + (bumped ? 1 : 0);
+// ── Macro chip ────────────────────────────────────────────────────────────────
+function MacroChip({ value, label, color }: { value: number; label: string; color: string }) {
   return (
-    <View style={[styles.postCard, post.isOwn && styles.postCardOwn]}>
-      {/* User row */}
-      <View style={styles.postUserRow}>
-        <View style={[styles.avatar, { backgroundColor: post.userColor + "22" }]}>
-          <Text style={[styles.avatarInitial, { color: post.userColor }]}>{post.userInitial}</Text>
+    <View style={[s.macroChip, { backgroundColor: color + "1A" }]}>
+      <Text style={[s.macroVal, { color }]}>{value}g</Text>
+      <Text style={[s.macroLabel, { color }]}>{label}</Text>
+    </View>
+  );
+}
+
+// ── Post card ─────────────────────────────────────────────────────────────────
+function PostCard({ post, bumped, expanded, onBump, onExpand }: {
+  post: Post; bumped: boolean; expanded: boolean;
+  onBump: (id: string) => void; onExpand: (id: string) => void;
+}) {
+  return (
+    <View style={[s.postCard, post.isOwn && s.postCardOwn]}>
+      <View style={s.postHeader}>
+        <AvatarChip name={post.userInitial} color={post.userColor} />
+        <View style={s.postMeta}>
+          <Text style={s.postName}>{post.userName}{post.isOwn ? " · You" : ""}</Text>
+          <Text style={s.postTime}>{post.timeAgo}</Text>
         </View>
-        <View style={styles.postUserInfo}>
-          <Text style={styles.postUserName}>{post.userName}{post.isOwn ? " · You" : ""}</Text>
-          <Text style={styles.postTime}>{post.timeAgo}</Text>
-        </View>
-        {post.isOwn && (
-          <View style={styles.yourPostBadge}>
-            <Text style={styles.yourPostBadgeText}>Just posted</Text>
-          </View>
-        )}
+        {post.isOwn && <View style={s.ownBadge}><Text style={s.ownBadgeText}>Just posted</Text></View>}
       </View>
 
-      {/* Meal display — tappable if has ingredients */}
-      <TouchableOpacity
-        activeOpacity={post.ingredients?.length ? 0.75 : 1}
-        onPress={() => post.ingredients?.length && onToggleExpand(post.id)}
-      >
-        <View style={[styles.mealDisplay, { backgroundColor: post.mealBg }]}>
-          <Text style={styles.mealEmoji}>{post.mealEmoji}</Text>
-          <View style={styles.mealInfo}>
-            <Text style={styles.mealName}>{post.mealName}</Text>
-            <Text style={styles.mealCal}>{post.calories} kcal</Text>
+      <TouchableOpacity activeOpacity={post.ingredients?.length ? 0.75 : 1}
+        onPress={() => post.ingredients?.length && onExpand(post.id)}>
+        <View style={[s.mealBox, { backgroundColor: post.mealBg }]}>
+          <Text style={s.mealEmoji}>{post.mealEmoji}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={s.mealName}>{post.mealName}</Text>
+            <Text style={s.mealCal}>{post.calories} kcal</Text>
           </View>
           {post.ingredients?.length ? (
-            <View style={styles.expandHint}>
-              <Text style={styles.expandHintText}>{expanded ? "▲" : "▼"}</Text>
-            </View>
+            <Text style={s.expandIcon}>{expanded ? "▲" : "▼"}</Text>
           ) : null}
         </View>
       </TouchableOpacity>
 
-      {/* Ingredients — shown when expanded */}
       {expanded && post.ingredients?.length ? (
-        <View style={styles.ingredientsList}>
-          <Text style={styles.ingredientsTitle}>Ingredients</Text>
+        <View style={s.ingredBox}>
+          <Text style={s.ingredTitle}>Ingredients</Text>
           {post.ingredients.map((ing, i) => (
-            <View key={i} style={styles.ingredientRow}>
-              <Text style={styles.ingredientName}>{ing.name}</Text>
-              <Text style={styles.ingredientMeta}>{ing.grams}g · {ing.calories} kcal</Text>
+            <View key={i} style={s.ingredRow}>
+              <Text style={s.ingredName}>{ing.name}</Text>
+              <Text style={s.ingredMeta}>{ing.grams}g · {ing.calories} kcal</Text>
             </View>
           ))}
         </View>
       ) : null}
 
-      {/* Macro row */}
-      <View style={styles.macroRow}>
+      <View style={s.macroRow}>
         <MacroChip value={post.protein} label="protein" color="#10B981" />
         <MacroChip value={post.carbs} label="carbs" color="#F59E0B" />
         <MacroChip value={post.fat} label="fat" color="#6366F1" />
       </View>
 
-      {/* Bump action */}
-      <View style={styles.postFooter}>
-        <TouchableOpacity
-          style={[styles.bumpBtn, bumped && styles.bumpBtnActive]}
-          activeOpacity={0.75}
-          onPress={() => onBump(post.id)}
-        >
-          <SymbolView
-            name={{ ios: "arrow.up.circle.fill", android: "arrow_upward", web: "arrow_upward" }}
-            tintColor={bumped ? "#20C7B7" : "#9CA3AF"}
-            size={18}
-          />
-          <Text style={[styles.bumpLabel, bumped && styles.bumpLabelActive]}>
-            Bump up · {bumpCount}
+      <View style={s.postFooter}>
+        <TouchableOpacity style={[s.bumpBtn, bumped && s.bumpBtnOn]} activeOpacity={0.75}
+          onPress={() => onBump(post.id)}>
+          <Text style={s.bumpIcon}>↑</Text>
+          <Text style={[s.bumpText, bumped && s.bumpTextOn]}>
+            Bump · {post.bumps + (bumped ? 1 : 0)}
           </Text>
         </TouchableOpacity>
       </View>
@@ -167,561 +117,362 @@ function PostCard({
   );
 }
 
-function GroupCard({
-  group,
-  joined,
-  onToggle,
-}: {
-  group: Group;
-  joined: boolean;
-  onToggle: (id: string) => void;
+// ── Person row ────────────────────────────────────────────────────────────────
+function PersonRow({ user, isFollowing, onToggle, onPress }: {
+  user: CommunityUser; isFollowing: boolean;
+  onToggle: (id: string) => void; onPress: (username: string) => void;
 }) {
+  const initial = (user.full_name || user.username || "?")[0].toUpperCase();
   return (
-    <View style={styles.groupCard}>
-      <View style={styles.groupEmoji}>
-        <Text style={{ fontSize: 24 }}>{group.emoji}</Text>
-      </View>
-      <View style={styles.groupInfo}>
-        <Text style={styles.groupName}>{group.name}</Text>
-        <Text style={styles.groupDesc}>{group.description}</Text>
-        <Text style={styles.groupMembers}>{group.memberCount.toLocaleString()} members</Text>
+    <TouchableOpacity style={s.personRow} activeOpacity={0.75}
+      onPress={() => user.username && onPress(user.username)}>
+      <AvatarChip name={initial} color={TEAL} size={46} />
+      <View style={{ flex: 1 }}>
+        <Text style={s.personName}>{user.full_name || `@${user.username}`}</Text>
+        <Text style={s.personHandle}>@{user.username}{user.bio ? `  ·  ${user.bio}` : ""}</Text>
       </View>
       <TouchableOpacity
-        style={[styles.joinBtn, joined && styles.joinBtnActive]}
+        style={[s.followBtn, isFollowing && s.followBtnOn]}
         activeOpacity={0.8}
-        onPress={() => onToggle(group.id)}
+        onPress={(e) => { e.stopPropagation?.(); onToggle(user.id); }}
       >
-        <Text style={[styles.joinBtnText, joined && styles.joinBtnTextActive]}>
-          {joined ? "Joined" : "Join"}
+        <Text style={[s.followBtnText, isFollowing && s.followBtnTextOn]}>
+          {isFollowing ? "Following" : "Follow"}
         </Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
-function UserCard({
-  user,
-  following,
-  onToggle,
-}: {
-  user: CommunityUser;
-  following: boolean;
-  onToggle: (id: string) => void;
-}) {
+// ── Empty state ───────────────────────────────────────────────────────────────
+function Empty({ emoji, title, sub }: { emoji: string; title: string; sub: string }) {
   return (
-    <View style={styles.userCard}>
-      <View style={[styles.avatar, { backgroundColor: user.color + "22" }]}>
-        <Text style={[styles.avatarInitial, { color: user.color }]}>{user.initial}</Text>
-      </View>
-      <View style={styles.userInfo}>
-        <Text style={styles.userName}>{user.name}</Text>
-        <Text style={styles.userGoal}>{user.goal}</Text>
-      </View>
-      <TouchableOpacity
-        style={[styles.followBtn, following && styles.followBtnActive]}
-        activeOpacity={0.8}
-        onPress={() => onToggle(user.id)}
-      >
-        <Text style={[styles.followBtnText, following && styles.followBtnTextActive]}>
-          {following ? "Following" : "Follow"}
-        </Text>
-      </TouchableOpacity>
+    <View style={s.empty}>
+      <Text style={s.emptyEmoji}>{emoji}</Text>
+      <Text style={s.emptyTitle}>{title}</Text>
+      <Text style={s.emptySub}>{sub}</Text>
     </View>
   );
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
-type TabKey = "feed" | "groups" | "following";
-const TABS: { key: TabKey; label: string }[] = [
-  { key: "feed", label: "Feed" },
-  { key: "groups", label: "Groups" },
-  { key: "following", label: "Following" },
-];
-
 export default function CommunityScreen() {
   const { userProfile } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabKey>("feed");
+
+  // Main state
+  const [mainTab, setMainTab] = useState<MainTab>("feed");
   const [posts, setPosts] = useState<Post[]>([]);
   const [bumpedIds, setBumpedIds] = useState<Set<string>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
-  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
 
-  // Search / follow state
+  // People tab state
+  const [peopleTab, setPeopleTab] = useState<PeopleTab>("following");
+  const [followingList, setFollowingList] = useState<CommunityUser[]>([]);
+  const [followersList, setFollowersList] = useState<CommunityUser[]>([]);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const [peopleLoading, setPeopleLoading] = useState(false);
+
+  // Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [searchResults, setSearchResults] = useState<CommunityUser[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchRef = useRef<TextInput>(null);
 
-  // Consume any pending post from photo-confirm on focus
-  useFocusEffect(
-    useCallback(() => {
-      const pending = consumePendingCommunityPost();
-      if (!pending) return;
-      const firstName = userProfile?.full_name?.split(" ")[0] ?? "You";
-      const initial = (userProfile?.full_name ?? "Y")[0].toUpperCase();
-      const newPost: Post = {
-        id: pending.id,
-        userName: firstName,
-        userInitial: initial,
-        userColor: "#20C7B7",
-        timeAgo: "Just now",
-        mealName: pending.dishName,
-        mealEmoji: pending.mealEmoji,
-        mealBg: "rgba(32,199,183,0.12)",
-        calories: pending.calories,
-        protein: Math.round(pending.protein),
-        carbs: Math.round(pending.carbs),
-        fat: Math.round(pending.fat),
-        bumps: 0,
-        ingredients: pending.ingredients,
-        isOwn: true,
-      };
-      setPosts((prev) => [newPost, ...prev.filter((p) => p.id !== pending.id)]);
-      setActiveTab("feed");
-    }, [userProfile])
-  );
+  // Load people when tab becomes active
+  useFocusEffect(useCallback(() => {
+    if (mainTab === "people") loadPeople();
+  }, [mainTab]));
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
-  };
+  // Consume pending community post
+  useFocusEffect(useCallback(() => {
+    const pending = consumePendingCommunityPost();
+    if (!pending) return;
+    const firstName = userProfile?.full_name?.split(" ")[0] ?? "You";
+    const initial = (userProfile?.full_name ?? "Y")[0].toUpperCase();
+    const newPost: Post = {
+      id: pending.id, userName: firstName, userInitial: initial,
+      userColor: TEAL, timeAgo: "Just now",
+      mealName: pending.dishName, mealEmoji: pending.mealEmoji,
+      mealBg: "rgba(32,199,183,0.12)", calories: pending.calories,
+      protein: Math.round(pending.protein), carbs: Math.round(pending.carbs),
+      fat: Math.round(pending.fat), bumps: 0,
+      ingredients: pending.ingredients, isOwn: true,
+    };
+    setPosts((prev) => [newPost, ...prev.filter((p) => p.id !== pending.id)]);
+    setMainTab("feed");
+  }, [userProfile]));
 
-  const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
-  const toggleBump = (id: string) => {
-    setBumpedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
-  const toggleJoin = (id: string) => {
-    setJoinedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
-  const toggleFollow = async (userId: string) => {
-    const isFollowing = followingIds.has(userId);
-    setFollowingIds((prev) => {
-      const next = new Set(prev);
-      isFollowing ? next.delete(userId) : next.add(userId);
-      return next;
-    });
+  async function loadPeople() {
+    setPeopleLoading(true);
     try {
-      if (isFollowing) {
-        await apiDelete(`/api/follows?following_id=${userId}`);
-      } else {
-        await apiPost("/api/follows", { following_id: userId });
-      }
-    } catch {
-      // revert on error
-      setFollowingIds((prev) => {
-        const next = new Set(prev);
-        isFollowing ? next.add(userId) : next.delete(userId);
-        return next;
-      });
-    }
-  };
+      const [fwing, fwers] = await Promise.all([
+        apiGet<{ users: CommunityUser[]; ids: string[] }>("/api/follows?type=following"),
+        apiGet<{ users: CommunityUser[] }>("/api/follows?type=followers"),
+      ]);
+      setFollowingList(fwing.users ?? []);
+      setFollowersList(fwers.users ?? []);
+      setFollowingIds(new Set(fwing.ids ?? []));
+    } catch { /* silently fail */ }
+    finally { setPeopleLoading(false); }
+  }
 
-  function handleSearchChange(q: string) {
+  async function toggleFollow(userId: string) {
+    const was = followingIds.has(userId);
+    setFollowingIds((prev) => { const n = new Set(prev); was ? n.delete(userId) : n.add(userId); return n; });
+    try {
+      if (was) await apiDelete(`/api/follows?following_id=${userId}`);
+      else await apiPost("/api/follows", { following_id: userId });
+    } catch {
+      setFollowingIds((prev) => { const n = new Set(prev); was ? n.add(userId) : n.delete(userId); return n; });
+    }
+  }
+
+  function handleSearch(q: string) {
     setSearchQuery(q);
     if (searchTimer.current) clearTimeout(searchTimer.current);
     if (q.trim().length < 2) { setSearchResults([]); return; }
     setSearchLoading(true);
     searchTimer.current = setTimeout(async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/users/search?q=${encodeURIComponent(q.trim())}`);
-        const json = await res.json();
-        setSearchResults(json.users ?? []);
+        const res = await apiGet<{ users: CommunityUser[] }>(`/api/users/search?q=${encodeURIComponent(q.trim())}`);
+        setSearchResults(res.users ?? []);
       } catch { setSearchResults([]); }
       finally { setSearchLoading(false); }
-    }, 500);
+    }, 400);
   }
 
-  return (
-    <Screen style={{ backgroundColor: "#EEF4FA" }}>
-      <LinearGradient
-        colors={["#EEF4FA", "#F5F8FC"]}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        pointerEvents="none"
-      />
+  function openSearch() {
+    setMainTab("people");
+    setTimeout(() => searchRef.current?.focus(), 200);
+  }
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Community</Text>
-        <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7}>
-          <SymbolView
-            name={{ ios: "magnifyingglass", android: "search", web: "search" }}
-            tintColor="#6B7280"
-            size={20}
-          />
-        </TouchableOpacity>
+  const showSearchResults = searchFocused || searchQuery.length > 0;
+
+  return (
+    <Screen style={{ backgroundColor: BG }}>
+      <LinearGradient colors={[BG, "#F5F8FC"]} style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} pointerEvents="none" />
+
+      {/* ── Header ── */}
+      <View style={s.header}>
+        <Text style={s.headerTitle}>Community</Text>
+        <View style={s.headerRight}>
+          <TouchableOpacity style={s.iconBtn} activeOpacity={0.7} onPress={openSearch}>
+            <SymbolView name={{ ios: "magnifyingglass", android: "search", web: "search" }}
+              tintColor="#374151" size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity style={s.iconBtn} activeOpacity={0.7}
+            onPress={() => router.push("/profile/community-profile" as any)}>
+            <SymbolView name={{ ios: "person.circle", android: "account_circle", web: "account_circle" }}
+              tintColor="#374151" size={22} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Tab chips */}
-      <View style={styles.tabRow}>
-        {TABS.map((t) => (
-          <TouchableOpacity
-            key={t.key}
-            style={[styles.tabChip, activeTab === t.key && styles.tabChipActive]}
-            activeOpacity={0.8}
-            onPress={() => setActiveTab(t.key)}
-          >
-            <Text style={[styles.tabChipText, activeTab === t.key && styles.tabChipTextActive]}>
-              {t.label}
+      {/* ── Main tabs ── */}
+      <View style={s.mainTabRow}>
+        {(["feed", "people"] as MainTab[]).map((t) => (
+          <TouchableOpacity key={t} style={[s.mainTab, mainTab === t && s.mainTabActive]}
+            activeOpacity={0.8} onPress={() => { setMainTab(t); if (t === "people") loadPeople(); }}>
+            <Text style={[s.mainTabText, mainTab === t && s.mainTabTextActive]}>
+              {t === "feed" ? "Feed" : "People"}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#35C7B8" />
-        }
-      >
-        {/* ── Feed ── */}
-        {activeTab === "feed" && (
-          <>
-            {posts.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyEmoji}>🍽️</Text>
-                <Text style={styles.emptyTitle}>No posts yet</Text>
-                <Text style={styles.emptySub}>Be the first to share a meal with the community.</Text>
-              </View>
-            ) : posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                bumped={bumpedIds.has(post.id)}
-                expanded={expandedIds.has(post.id)}
-                onToggleExpand={toggleExpand}
-                onBump={toggleBump}
+      {/* ── Feed ── */}
+      {mainTab === "feed" && (
+        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing}
+            onRefresh={() => { setRefreshing(true); setTimeout(() => setRefreshing(false), 800); }}
+            tintColor={TEAL} />}>
+          {posts.length === 0
+            ? <Empty emoji="🍽️" title="No posts yet" sub="Be the first to share a meal with the community." />
+            : posts.map((post) => (
+              <PostCard key={post.id} post={post}
+                bumped={bumpedIds.has(post.id)} expanded={expandedIds.has(post.id)}
+                onBump={(id) => setBumpedIds((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                onExpand={(id) => setExpandedIds((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; })}
               />
-            ))}
-          </>
-        )}
+            ))
+          }
+          <View style={{ height: 32 }} />
+        </ScrollView>
+      )}
 
-        {/* ── Groups ── */}
-        {activeTab === "groups" && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>👥</Text>
-            <Text style={styles.emptyTitle}>Groups coming soon</Text>
-            <Text style={styles.emptySub}>Join groups to connect with people who share your goals.</Text>
-          </View>
-        )}
-
-        {/* ── Following ── */}
-        {activeTab === "following" && (
-          <View style={{ gap: 12 }}>
-            {/* Search bar */}
-            <View style={styles.searchBar}>
-              <SymbolView
-                name={{ ios: "magnifyingglass", android: "search", web: "search" }}
-                tintColor="#9CA3AF" size={16}
-              />
+      {/* ── People ── */}
+      {mainTab === "people" && (
+        <View style={{ flex: 1 }}>
+          {/* Search bar */}
+          <View style={s.searchWrap}>
+            <View style={[s.searchBar, searchFocused && s.searchBarFocused]}>
+              <SymbolView name={{ ios: "magnifyingglass", android: "search", web: "search" }}
+                tintColor={searchFocused ? TEAL : "#9CA3AF"} size={16} />
               <TextInput
-                style={styles.searchInput}
+                ref={searchRef}
+                style={s.searchInput}
                 placeholder="Search by username..."
                 placeholderTextColor="#9CA3AF"
                 value={searchQuery}
-                onChangeText={handleSearchChange}
+                onChangeText={handleSearch}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
                 autoCapitalize="none"
                 autoCorrect={false}
               />
-              {searchLoading && <ActivityIndicator size="small" color="#9CA3AF" />}
+              {searchLoading
+                ? <ActivityIndicator size="small" color={TEAL} />
+                : searchQuery.length > 0
+                  ? <TouchableOpacity onPress={() => { setSearchQuery(""); setSearchResults([]); }}>
+                      <Text style={s.clearBtn}>✕</Text>
+                    </TouchableOpacity>
+                  : null
+              }
             </View>
-
-            {/* Results */}
-            {searchResults.length > 0 ? searchResults.map((user) => (
-              <View key={user.id} style={styles.userCard}>
-                <View style={[styles.avatar, { backgroundColor: "#2BB6A622" }]}>
-                  <Text style={[styles.avatarInitial, { color: "#2BB6A6" }]}>
-                    {(user.full_name || user.username || "?")[0].toUpperCase()}
-                  </Text>
-                </View>
-                <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.7}
-                  onPress={() => router.push(`/community/${user.username}` as any)}>
-                  <Text style={styles.userName}>@{user.username}</Text>
-                  <Text style={styles.userGoal}>{user.full_name}{user.bio ? ` · ${user.bio}` : ""}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.followBtn, followingIds.has(user.id) && styles.followBtnActive]}
-                  activeOpacity={0.8}
-                  onPress={() => toggleFollow(user.id)}
-                >
-                  <Text style={[styles.followBtnText, followingIds.has(user.id) && styles.followBtnTextActive]}>
-                    {followingIds.has(user.id) ? "Following" : "Follow"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )) : searchQuery.length >= 2 && !searchLoading ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyEmoji}>🔍</Text>
-                <Text style={styles.emptyTitle}>No users found</Text>
-                <Text style={styles.emptySub}>Try a different username.</Text>
-              </View>
-            ) : searchQuery.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyEmoji}>👥</Text>
-                <Text style={styles.emptyTitle}>Find people to follow</Text>
-                <Text style={styles.emptySub}>Search by username to find and follow other members.</Text>
-              </View>
-            ) : null}
           </View>
-        )}
 
-        <View style={{ height: 32 }} />
-      </ScrollView>
+          {showSearchResults ? (
+            /* ── Search results ── */
+            <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled">
+              {searchResults.length > 0
+                ? searchResults.map((u) => (
+                  <PersonRow key={u.id} user={u} isFollowing={followingIds.has(u.id)}
+                    onToggle={toggleFollow}
+                    onPress={(username) => router.push(`/community/${username}` as any)} />
+                ))
+                : searchQuery.length >= 2 && !searchLoading
+                  ? <Empty emoji="🔍" title="No users found" sub="Try a different username." />
+                  : null
+              }
+              <View style={{ height: 32 }} />
+            </ScrollView>
+          ) : (
+            /* ── Following / Followers sub-tabs ── */
+            <View style={{ flex: 1 }}>
+              <View style={s.subTabRow}>
+                {(["following", "followers"] as PeopleTab[]).map((t) => (
+                  <TouchableOpacity key={t} style={[s.subTab, peopleTab === t && s.subTabActive]}
+                    activeOpacity={0.8} onPress={() => setPeopleTab(t)}>
+                    <Text style={[s.subTabText, peopleTab === t && s.subTabTextActive]}>
+                      {t === "following" ? `Following${followingList.length ? ` · ${followingList.length}` : ""}` : `Followers${followersList.length ? ` · ${followersList.length}` : ""}`}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {peopleLoading ? (
+                <ActivityIndicator color={TEAL} size="large" style={{ marginTop: 60 }} />
+              ) : (
+                <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+                  {peopleTab === "following" && (
+                    followingList.length === 0
+                      ? <Empty emoji="👥" title="Not following anyone yet" sub="Search for users above to find people to follow." />
+                      : followingList.map((u) => (
+                        <PersonRow key={u.id} user={u} isFollowing={true}
+                          onToggle={toggleFollow}
+                          onPress={(username) => router.push(`/community/${username}` as any)} />
+                      ))
+                  )}
+                  {peopleTab === "followers" && (
+                    followersList.length === 0
+                      ? <Empty emoji="🌱" title="No followers yet" sub="Share your meals and build your community presence." />
+                      : followersList.map((u) => (
+                        <PersonRow key={u.id} user={u} isFollowing={followingIds.has(u.id)}
+                          onToggle={toggleFollow}
+                          onPress={(username) => router.push(`/community/${username}` as any)} />
+                      ))
+                  )}
+                  <View style={{ height: 80 }} />
+                </ScrollView>
+              )}
+            </View>
+          )}
+        </View>
+      )}
     </Screen>
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 4,
-  },
+// ── Styles ─────────────────────────────────────────────────────────────────────
+const s = StyleSheet.create({
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 10, paddingBottom: 4 },
   headerTitle: { fontSize: 28, fontWeight: "800", letterSpacing: -0.6, color: "#111827" },
-  searchBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.7)",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-  },
+  headerRight: { flexDirection: "row", gap: 8 },
+  iconBtn: { width: 40, height: 40, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.75)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
 
-  tabRow: { flexDirection: "row", gap: 8, paddingHorizontal: 20, paddingVertical: 12 },
-  tabChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.65)",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-  },
-  tabChipActive: { backgroundColor: "#20C7B7", borderColor: "#20C7B7" },
-  tabChipText: { fontSize: 14, fontWeight: "600", color: "#6B7280" },
-  tabChipTextActive: { color: "#FFFFFF" },
+  mainTabRow: { flexDirection: "row", paddingHorizontal: 20, paddingVertical: 10, gap: 6 },
+  mainTab: { paddingHorizontal: 20, paddingVertical: 9, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.65)", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
+  mainTabActive: { backgroundColor: TEAL, borderColor: TEAL },
+  mainTabText: { fontSize: 14, fontWeight: "700", color: "#6B7280" },
+  mainTabTextActive: { color: "#fff" },
 
-  scroll: { paddingHorizontal: 20, paddingTop: 4, gap: 12 },
+  scroll: { paddingHorizontal: 20, paddingTop: 8, gap: 12 },
 
-  // Share card
-  shareCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(255,255,255,0.75)",
-    borderRadius: 16,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.8)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-  },
-  shareAvatar: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  shareInput: {
-    flex: 1,
-    backgroundColor: "#F4F5F7",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  shareInputText: { color: "#9CA3AF", fontSize: 14, fontWeight: "500" },
-  shareIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "rgba(32,199,183,0.12)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  searchWrap: { paddingHorizontal: 16, paddingBottom: 8 },
+  searchBar: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(255,255,255,0.85)", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1.5, borderColor: "rgba(0,0,0,0.06)" },
+  searchBarFocused: { borderColor: TEAL, backgroundColor: "#fff" },
+  searchInput: { flex: 1, fontSize: 15, color: "#111827", fontWeight: "500" },
+  clearBtn: { fontSize: 14, color: "#9CA3AF", paddingHorizontal: 4 },
 
-  // Post card
-  postCard: {
-    backgroundColor: "rgba(255,255,255,0.75)",
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
+  subTabRow: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.07)", marginHorizontal: 20, marginBottom: 4 },
+  subTab: { flex: 1, paddingVertical: 12, alignItems: "center", borderBottomWidth: 2, borderBottomColor: "transparent" },
+  subTabActive: { borderBottomColor: TEAL },
+  subTabText: { fontSize: 14, fontWeight: "600", color: "#9CA3AF" },
+  subTabTextActive: { color: TEAL, fontWeight: "700" },
 
-    borderColor: "rgba(255,255,255,0.8)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    gap: 12,
-  },
+  postCard: { backgroundColor: "rgba(255,255,255,0.8)", borderRadius: 20, padding: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.8)", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 10, gap: 12 },
   postCardOwn: { borderColor: "rgba(32,199,183,0.35)", borderWidth: 1.5 },
-  yourPostBadge: { backgroundColor: "rgba(32,199,183,0.12)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  yourPostBadgeText: { fontSize: 11, fontWeight: "700", color: "#20C7B7" },
+  postHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
+  postMeta: { flex: 1 },
+  postName: { fontSize: 14, fontWeight: "700", color: "#111827" },
+  postTime: { fontSize: 12, color: "#9CA3AF", marginTop: 1 },
+  ownBadge: { backgroundColor: "rgba(32,199,183,0.12)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  ownBadgeText: { fontSize: 11, fontWeight: "700", color: TEAL },
 
-  postUserRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  avatar: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
-  avatarInitial: { fontSize: 16, fontWeight: "700" },
-  postUserInfo: { flex: 1, gap: 1 },
-  postUserName: { fontSize: 14, fontWeight: "700", color: "#111827" },
-  postTime: { fontSize: 12, fontWeight: "500", color: "#9CA3AF" },
-
-  mealDisplay: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderRadius: 14,
-    padding: 12,
-  },
+  mealBox: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 14, padding: 12 },
   mealEmoji: { fontSize: 28 },
-  mealInfo: { flex: 1, gap: 2 },
   mealName: { fontSize: 15, fontWeight: "700", color: "#111827" },
-  mealCal: { fontSize: 13, fontWeight: "500", color: "#6B7280" },
-  expandHint: { width: 24, height: 24, alignItems: "center", justifyContent: "center" },
-  expandHintText: { fontSize: 11, color: "#9CA3AF", fontWeight: "700" },
+  mealCal: { fontSize: 13, color: "#6B7280", marginTop: 2 },
+  expandIcon: { fontSize: 11, color: "#9CA3AF", fontWeight: "700" },
 
-  ingredientsList: {
-    backgroundColor: "rgba(0,0,0,0.03)", borderRadius: 12, padding: 12, gap: 6,
-    borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.06)",
-  },
-  ingredientsTitle: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 },
-  ingredientRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  ingredientName: { fontSize: 13, fontWeight: "600", color: "#374151", flex: 1 },
-  ingredientMeta: { fontSize: 12, fontWeight: "500", color: "#9CA3AF" },
+  ingredBox: { backgroundColor: "rgba(0,0,0,0.03)", borderRadius: 12, padding: 12, gap: 6, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.06)" },
+  ingredTitle: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 },
+  ingredRow: { flexDirection: "row", justifyContent: "space-between" },
+  ingredName: { fontSize: 13, fontWeight: "600", color: "#374151", flex: 1 },
+  ingredMeta: { fontSize: 12, color: "#9CA3AF" },
 
   macroRow: { flexDirection: "row", gap: 6 },
   macroChip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
-  macroChipVal: { fontSize: 13, fontWeight: "700" },
-  macroChipLabel: { fontSize: 10, fontWeight: "600" },
+  macroVal: { fontSize: 13, fontWeight: "700" },
+  macroLabel: { fontSize: 10, fontWeight: "600" },
 
   postFooter: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(0,0,0,0.06)", paddingTop: 10 },
-  bumpBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: "#F4F5F7",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-  },
-  bumpBtnActive: { backgroundColor: "rgba(32,199,183,0.1)", borderColor: "#20C7B7" },
-  bumpLabel: { fontSize: 13, fontWeight: "600", color: "#9CA3AF" },
-  bumpLabelActive: { color: "#20C7B7" },
+  bumpBtn: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: "#F4F5F7", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
+  bumpBtnOn: { backgroundColor: "rgba(32,199,183,0.1)", borderColor: TEAL },
+  bumpIcon: { fontSize: 14, fontWeight: "700", color: "#9CA3AF" },
+  bumpText: { fontSize: 13, fontWeight: "600", color: "#9CA3AF" },
+  bumpTextOn: { color: TEAL },
 
-  // Section label
-  sectionLabel: { fontSize: 13, fontWeight: "700", color: "#9CA3AF", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 4 },
+  personRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "rgba(255,255,255,0.8)", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.8)", shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 6 },
+  personName: { fontSize: 15, fontWeight: "700", color: "#111827" },
+  personHandle: { fontSize: 12, color: "#9CA3AF", marginTop: 2 },
 
-  // Group card
-  groupCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "rgba(255,255,255,0.75)",
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.8)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-  },
-  groupEmoji: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: "#F4F5F7",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  groupInfo: { flex: 1, gap: 2 },
-  groupName: { fontSize: 15, fontWeight: "700", color: "#111827" },
-  groupDesc: { fontSize: 12, fontWeight: "500", color: "#6B7280" },
-  groupMembers: { fontSize: 11, fontWeight: "600", color: "#9CA3AF", marginTop: 2 },
-  joinBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: "#20C7B7",
-  },
-  joinBtnActive: { backgroundColor: "#20C7B7", borderColor: "#20C7B7" },
-  joinBtnText: { fontSize: 13, fontWeight: "700", color: "#20C7B7" },
-  joinBtnTextActive: { color: "#FFFFFF" },
+  followBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: TEAL },
+  followBtnOn: { backgroundColor: TEAL, borderColor: TEAL },
+  followBtnText: { fontSize: 13, fontWeight: "700", color: TEAL },
+  followBtnTextOn: { color: "#fff" },
 
-  // User card
-  userCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "rgba(255,255,255,0.75)",
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.8)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-  },
-  userInfo: { flex: 1, gap: 2 },
-  userName: { fontSize: 15, fontWeight: "700", color: "#111827" },
-  userGoal: { fontSize: 12, fontWeight: "500", color: "#6B7280" },
-  followBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: "#4C7DFF",
-  },
-  followBtnActive: { backgroundColor: "#4C7DFF", borderColor: "#4C7DFF" },
-  followBtnText: { fontSize: 13, fontWeight: "700", color: "#4C7DFF" },
-  followBtnTextActive: { color: "#FFFFFF" },
+  avatarChip: { alignItems: "center", justifyContent: "center" },
+  avatarInitial: { fontWeight: "700" },
 
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "rgba(255,255,255,0.8)",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-  },
-  searchInput: { flex: 1, fontSize: 15, color: "#111827", fontWeight: "500" },
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 80,
-    gap: 10,
-  },
+  empty: { alignItems: "center", paddingVertical: 80, gap: 10 },
   emptyEmoji: { fontSize: 48 },
   emptyTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
-  emptySub: { fontSize: 14, fontWeight: "500", color: "#9CA3AF", textAlign: "center", paddingHorizontal: 24 },
+  emptySub: { fontSize: 14, color: "#9CA3AF", textAlign: "center", paddingHorizontal: 24 },
 });

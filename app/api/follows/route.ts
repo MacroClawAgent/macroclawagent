@@ -36,7 +36,7 @@ export async function DELETE(request: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-/** GET /api/follows — get who the current user follows */
+/** GET /api/follows?type=following|followers — returns user profiles */
 export async function GET(request: NextRequest) {
   const token = getBearerToken(request);
   const supabase = token ? createClientFromToken(token) : await createClient();
@@ -44,10 +44,25 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const type = request.nextUrl.searchParams.get("type") ?? "following";
+
+  if (type === "followers") {
+    // People who follow me
+    const { data } = await supabase
+      .from("follows")
+      .select("follower_id, users!follows_follower_id_fkey(id, username, full_name, bio, avatar_url, fitness_goal, is_public)")
+      .eq("following_id", user.id);
+    const users = (data ?? []).map((r: any) => r.users).filter(Boolean);
+    return NextResponse.json({ users });
+  }
+
+  // People I follow
   const { data } = await supabase
     .from("follows")
-    .select("following_id")
+    .select("following_id, users!follows_following_id_fkey(id, username, full_name, bio, avatar_url, fitness_goal, is_public)")
     .eq("follower_id", user.id);
-
-  return NextResponse.json({ following: (data ?? []).map((r) => r.following_id) });
+  const users = (data ?? []).map((r: any) => r.users).filter(Boolean);
+  // Also return just IDs for quick lookup
+  const ids = (data ?? []).map((r: any) => r.following_id);
+  return NextResponse.json({ users, ids });
 }
