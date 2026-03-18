@@ -66,13 +66,13 @@ export default function TabLayout() {
         }}
       />
 
-      {/* ── Activity ── */}
+      {/* ── Community ── */}
       <Tabs.Screen
-        name="activity"
+        name="community"
         options={{
-          title: "Activity",
+          title: "Community",
           tabBarIcon: ({ color }) => (
-            <TabIcon iosName="figure.run" androidName="directions_run" color={color} />
+            <TabIcon iosName="person.2.fill" androidName="group" color={color} />
           ),
         }}
       />
@@ -101,6 +101,7 @@ export default function TabLayout() {
 
       {/* ── Hidden screens (not in tab bar) ── */}
       <Tabs.Screen name="index" options={{ href: null }} />
+      <Tabs.Screen name="activity" options={{ href: null }} />
       <Tabs.Screen name="meals" options={{ href: null }} />
       <Tabs.Screen name="nutrition" options={{ href: null }} />
       <Tabs.Screen name="profile" options={{ href: null }} />
