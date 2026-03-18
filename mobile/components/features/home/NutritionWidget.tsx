@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Card } from "../../ui/Card";
@@ -21,6 +22,12 @@ interface NutritionWidgetProps {
   goalLabel: string;
 }
 
+const MACRO_GRADIENTS: Record<string, [string, string]> = {
+  Protein: ["#3ED598", "#1FBF75"],
+  Carbs:   ["#F7D07A", "#F4A622"],
+  Fat:     ["#7A7DFF", "#5C5FFF"],
+};
+
 function VerticalBar({
   label,
   consumed,
@@ -32,24 +39,31 @@ function VerticalBar({
   target: number;
   color: string;
 }) {
-  const { colors } = useTheme();
   const ratio = target > 0 ? Math.min(1, consumed / target) : 0;
   const remaining = Math.max(0, target - consumed);
   const pct = Math.round(ratio * 100);
+  const gradient = MACRO_GRADIENTS[label] ?? ([color, color] as [string, string]);
 
   return (
     <View style={vb.col}>
-      <Text style={[vb.consumed, { color: colors.textPrimary }]}>
+      <Text style={vb.consumed}>
         {Number.isInteger(consumed) ? consumed : +consumed.toFixed(1)}
-        <Text style={[vb.unit, { color: colors.textMuted }]}>g</Text>
+        <Text style={vb.unit}>g</Text>
       </Text>
-      <View style={[vb.track, { backgroundColor: color + "30" }]}>
-        <View
-          style={[vb.fill, { backgroundColor: color, height: `${pct}%` as `${number}%` }]}
+      {/* Capsule track */}
+      <View style={[vb.track, { backgroundColor: gradient[0] + "20" }]}>
+        {/* Gradient fill from bottom */}
+        <LinearGradient
+          colors={[gradient[1], gradient[0]]}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 0, y: 0 }}
+          style={[vb.fill, { height: `${pct}%` as `${number}%` }]}
         />
+        {/* Glass shine overlay */}
+        <View style={vb.shine} />
       </View>
-      <Text style={[vb.label, { color: colors.textSecondary }]}>{label}</Text>
-      <Text style={[vb.rem, { color }]}>
+      <Text style={vb.label}>{label}</Text>
+      <Text style={[vb.rem, { color: gradient[0] }]}>
         {Number.isInteger(remaining) ? remaining : +remaining.toFixed(1)}g left
       </Text>
     </View>
@@ -58,17 +72,26 @@ function VerticalBar({
 
 const vb = StyleSheet.create({
   col:      { flex: 1, alignItems: "center", gap: 5 },
-  consumed: { fontSize: 14, fontWeight: "700" },
-  unit:     { fontSize: 10, fontWeight: "500" },
+  consumed: { fontSize: 14, fontWeight: "700", color: "#1A1A1A" },
+  unit:     { fontSize: 10, fontWeight: "500", color: "#6B7280" },
   track: {
     width: 48,
     height: 88,
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: "hidden",
     justifyContent: "flex-end",
   },
-  fill:  { width: "100%", borderRadius: 16 },
-  label: { fontSize: 11, fontWeight: "700", letterSpacing: 0.2 },
+  fill:  { width: "100%", borderRadius: 24 },
+  shine: {
+    position: "absolute",
+    top: 0,
+    left: 4,
+    width: 8,
+    bottom: 0,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderRadius: 8,
+  },
+  label: { fontSize: 11, fontWeight: "600", letterSpacing: 0.1, color: "#6B7280" },
   rem:   { fontSize: 10, fontWeight: "600" },
 });
 
@@ -82,10 +105,10 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={[styles.iconBadge, { backgroundColor: colors.tealAlpha }]}>
+          <View style={styles.iconBadge}>
             <SymbolView
               name={{ ios: "fork.knife", android: "restaurant", web: "restaurant" }}
-              tintColor={colors.teal}
+              tintColor="#1FA79E"
               size={16}
             />
           </View>
@@ -96,35 +119,44 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
         </View>
         <TouchableOpacity
           onPress={() => router.push("/nutrition/log-food" as any)}
-          style={styles.logBtn}
           activeOpacity={0.8}
         >
-          <Text style={styles.logBtnText}>+ Log</Text>
+          <LinearGradient
+            colors={["#5C8CFF", "#6BA9FF"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.logBtn}
+          >
+            <Text style={styles.logBtnText}>+ Log</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
       {/* Calorie summary row */}
       <View style={styles.calRow}>
         <View style={styles.calLeft}>
-          <Text style={[styles.calBig, { color: colors.textPrimary }]}>
+          <Text style={styles.calBig}>
             {calorieProgress.consumed.toLocaleString()}
           </Text>
-          <Text style={[styles.calOf, { color: colors.textMuted }]}>
+          <Text style={styles.calOf}>
             {" / "}{calorieProgress.target.toLocaleString()} kcal
           </Text>
         </View>
-        <View style={[styles.calBadge, { backgroundColor: colors.tealAlpha }]}>
-          <Text style={[styles.calBadgePct, { color: colors.teal }]}>{calPct}%</Text>
-          <Text style={[styles.calBadgeRem, { color: colors.textMuted }]}>
+        <View style={styles.calBadge}>
+          <Text style={styles.calBadgePct}>{calPct}%</Text>
+          <Text style={styles.calBadgeRem}>
             {calorieProgress.remaining.toLocaleString()} left
           </Text>
         </View>
       </View>
 
-      {/* Thick calorie bar */}
-      <View style={[styles.calBar, { backgroundColor: colors.teal + "22" }]}>
-        <View
-          style={[styles.calBarFill, { backgroundColor: colors.teal, width: `${calPct}%` as `${number}%` }]}
+      {/* Glowing calorie capsule bar */}
+      <View style={styles.calBar}>
+        <LinearGradient
+          colors={["#2BB6A6", "#35C7B8"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.calBarFill, { width: `${calPct}%` as `${number}%` }]}
         />
       </View>
 
@@ -144,25 +176,25 @@ const styles = StyleSheet.create({
   // Header
   header:     { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  iconBadge:  { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  widgetTitle: { fontSize: 16, fontWeight: "800", letterSpacing: -0.3 },
-  widgetSub:   { fontSize: 11, fontWeight: "500", marginTop: 1 },
-  logBtn:     { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, backgroundColor: "#4C7DFF" },
-  logBtnText: { color: "#FFFFFF", fontSize: 13, fontWeight: "800" },
+  iconBadge:  { width: 36, height: 36, borderRadius: 11, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(43,182,166,0.18)" },
+  widgetTitle: { fontSize: 16, fontWeight: "700", letterSpacing: -0.3, color: "#1A1A1A" },
+  widgetSub:   { fontSize: 11, fontWeight: "500", marginTop: 1, color: "#6B7280" },
+  logBtn:     { borderRadius: 20, paddingHorizontal: 16, paddingVertical: 7 },
+  logBtnText: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
 
   // Calorie summary
   calRow:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   calLeft: { flexDirection: "row", alignItems: "baseline", gap: 3 },
-  calBig:  { fontSize: 32, fontWeight: "900", letterSpacing: -1 },
-  calOf:   { fontSize: 13, fontWeight: "500" },
-  calBadge:    { alignItems: "center", backgroundColor: "transparent", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6 },
-  calBadgePct: { fontSize: 18, fontWeight: "800" },
-  calBadgeRem: { fontSize: 10, fontWeight: "500", marginTop: 1 },
+  calBig:  { fontSize: 32, fontWeight: "800", letterSpacing: -1, color: "#1A1A1A" },
+  calOf:   { fontSize: 13, fontWeight: "500", color: "#6B7280" },
+  calBadge:    { alignItems: "center", backgroundColor: "rgba(43,182,166,0.12)", borderRadius: 14, paddingHorizontal: 12, paddingVertical: 6 },
+  calBadgePct: { fontSize: 18, fontWeight: "800", color: "#1FA79E" },
+  calBadgeRem: { fontSize: 10, fontWeight: "500", marginTop: 1, color: "#6B7280" },
 
-  // Calorie bar
-  calBar:    { height: 8, borderRadius: 100, overflow: "hidden" },
+  // Calorie bar — glowing capsule
+  calBar:    { height: 8, borderRadius: 100, overflow: "hidden", backgroundColor: "rgba(43,182,166,0.15)" },
   calBarFill: { height: 8, borderRadius: 100 },
 
   // Vertical macro bars
-  barsRow: { flexDirection: "row", alignItems: "flex-start", borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, gap: 4 },
+  barsRow: { flexDirection: "row", alignItems: "flex-start", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(0,0,0,0.06)", paddingTop: 16, gap: 4 },
 });

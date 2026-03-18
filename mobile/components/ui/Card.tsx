@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View, ViewStyle } from "react-native";
-import { useTheme } from "../../context/ThemeContext";
+import { BlurView } from "expo-blur";
 
 interface CardProps {
   children: React.ReactNode;
@@ -9,32 +9,42 @@ interface CardProps {
 }
 
 export function Card({ children, style, padding = 20 }: CardProps) {
-  const { colors } = useTheme();
   return (
-    <View
+    <BlurView
+      intensity={28}
+      tint="light"
       style={[
         styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          padding,
-        },
+        { padding },
         style,
       ]}
     >
+      {/* Inner highlight — subtle top-edge shimmer */}
+      <View style={styles.highlight} pointerEvents="none" />
       {children}
-    </View>
+    </BlurView>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.38)",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.08,
+    shadowRadius: 40,
+    elevation: 6,
+  },
+  highlight: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.6)",
   },
 });

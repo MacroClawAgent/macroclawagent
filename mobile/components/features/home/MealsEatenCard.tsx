@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Card } from "../../ui/Card";
-import { useTheme } from "../../../context/ThemeContext";
 import { apiGet } from "../../../lib/api";
 
 interface FoodItem {
@@ -24,7 +24,6 @@ function toLocalDateStr() {
 }
 
 export function MealsEatenCard() {
-  const { colors } = useTheme();
   const router = useRouter();
   const [items, setItems] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,13 +47,13 @@ export function MealsEatenCard() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={[styles.iconBadge, { backgroundColor: colors.tealAlpha }]}>
+          <View style={styles.iconBadge}>
             <Text style={styles.iconEmoji}>🍽️</Text>
           </View>
           <View>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>Meals Today</Text>
+            <Text style={styles.title}>Meals Today</Text>
             {items.length > 0 && (
-              <Text style={[styles.sub, { color: colors.textMuted }]}>
+              <Text style={styles.sub}>
                 {+totalKcal.toFixed(1)} kcal logged
               </Text>
             )}
@@ -62,42 +61,48 @@ export function MealsEatenCard() {
         </View>
         <TouchableOpacity
           onPress={() => router.push("/nutrition/log-food" as any)}
-          style={styles.logBtn}
           activeOpacity={0.8}
         >
-          <Text style={styles.logBtnText}>+ Log</Text>
+          <LinearGradient
+            colors={["#5C8CFF", "#6BA9FF"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.logBtn}
+          >
+            <Text style={styles.logBtnText}>+ Log</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
       {/* Content */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color={colors.teal} />
+          <ActivityIndicator color="#2BB6A6" />
         </View>
       ) : grouped.length === 0 ? (
         <View style={styles.center}>
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>Nothing logged yet</Text>
-          <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
+          <Text style={styles.emptyTitle}>Nothing logged yet</Text>
+          <Text style={styles.emptyBody}>
             Tap + Log to add your first meal
           </Text>
         </View>
       ) : (
         <View style={styles.groups}>
           {grouped.map((g) => (
-            <View key={g.tag} style={[styles.group, { borderTopColor: colors.border }]}>
-              <Text style={[styles.tagLabel, { color: colors.teal }]}>{g.tag}</Text>
+            <View key={g.tag} style={styles.group}>
+              <Text style={styles.tagLabel}>{g.tag}</Text>
               {g.items.slice(0, 3).map((item) => (
                 <View key={item.id} style={styles.itemRow}>
-                  <Text style={[styles.itemName, { color: colors.textPrimary }]} numberOfLines={1}>
+                  <Text style={styles.itemName} numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text style={[styles.itemKcal, { color: colors.textMuted }]}>
+                  <Text style={styles.itemKcal}>
                     {+item.calories.toFixed(1)} kcal
                   </Text>
                 </View>
               ))}
               {g.items.length > 3 && (
-                <Text style={[styles.more, { color: colors.textMuted }]}>
+                <Text style={styles.more}>
                   +{g.items.length - 3} more
                 </Text>
               )}
@@ -114,22 +119,22 @@ const styles = StyleSheet.create({
 
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  iconBadge: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  iconBadge: { width: 36, height: 36, borderRadius: 11, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(43,182,166,0.15)" },
   iconEmoji: { fontSize: 18 },
-  title: { fontSize: 16, fontWeight: "800", letterSpacing: -0.3 },
-  sub: { fontSize: 11, fontWeight: "500", marginTop: 1 },
-  logBtn: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, backgroundColor: "#4C7DFF" },
-  logBtnText: { color: "#FFFFFF", fontSize: 13, fontWeight: "800" },
+  title: { fontSize: 16, fontWeight: "700", letterSpacing: -0.3, color: "#1A1A1A" },
+  sub: { fontSize: 11, fontWeight: "500", marginTop: 1, color: "#6B7280" },
+  logBtn: { borderRadius: 20, paddingHorizontal: 16, paddingVertical: 7 },
+  logBtnText: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
 
   center: { alignItems: "center", justifyContent: "center", paddingVertical: 28, gap: 4 },
-  emptyTitle: { fontSize: 14, fontWeight: "700" },
-  emptyBody: { fontSize: 12, fontWeight: "500" },
+  emptyTitle: { fontSize: 14, fontWeight: "700", color: "#1A1A1A" },
+  emptyBody: { fontSize: 12, fontWeight: "500", color: "#6B7280" },
 
   groups: { gap: 0 },
-  group: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, paddingBottom: 4, gap: 4 },
-  tagLabel: { fontSize: 11, fontWeight: "700", letterSpacing: 0.3, marginBottom: 2 },
+  group: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(0,0,0,0.07)", paddingTop: 8, paddingBottom: 4, gap: 4 },
+  tagLabel: { fontSize: 11, fontWeight: "700", letterSpacing: 0.3, marginBottom: 2, color: "#2BB6A6" },
   itemRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  itemName: { fontSize: 13, fontWeight: "500", flex: 1, marginRight: 8 },
-  itemKcal: { fontSize: 12, fontWeight: "600" },
-  more: { fontSize: 11, fontWeight: "500", marginTop: 2 },
+  itemName: { fontSize: 13, fontWeight: "500", flex: 1, marginRight: 8, color: "#1A1A1A" },
+  itemKcal: { fontSize: 12, fontWeight: "600", color: "#6B7280" },
+  more: { fontSize: 11, fontWeight: "500", marginTop: 2, color: "#9CA3AF" },
 });

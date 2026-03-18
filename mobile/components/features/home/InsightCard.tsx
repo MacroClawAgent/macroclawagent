@@ -1,5 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 
 interface InsightCardProps {
@@ -14,7 +16,15 @@ export function InsightCard({ insight }: InsightCardProps) {
     "Log your meals and activity to unlock personalised AI insights for today.";
 
   return (
-    <View style={s.card}>
+    <BlurView intensity={60} tint="dark" style={s.card}>
+      {/* Subtle diagonal highlight */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.10)", "transparent"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
       {/* Top row: badge + spark */}
       <View style={s.topRow}>
         <View style={s.badge}>
@@ -32,14 +42,20 @@ export function InsightCard({ insight }: InsightCardProps) {
 
       {/* CTA */}
       <TouchableOpacity
-        style={s.cta}
         activeOpacity={0.82}
         onPress={() => router.push("/(tabs)/agent" as any)}
       >
-        <Text style={s.ctaText}>Generate meal suggestion</Text>
-        <Text style={s.ctaArrow}>→</Text>
+        <LinearGradient
+          colors={["#2BB6A6", "#35C7B8"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={s.cta}
+        >
+          <Text style={s.ctaText}>Generate meal suggestion</Text>
+          <Text style={s.ctaArrow}>→</Text>
+        </LinearGradient>
       </TouchableOpacity>
-    </View>
+    </BlurView>
   );
 }
 
@@ -49,19 +65,20 @@ const TEAL = "#20C7B7";
 const s = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: NAVY,
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: "rgba(14,30,69,0.72)",
     paddingHorizontal: 18,
     paddingTop: 16,
     paddingBottom: 14,
     gap: 12,
     borderWidth: 1,
-    borderColor: "rgba(76,125,255,0.25)",
+    borderColor: "rgba(255,255,255,0.14)",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.22,
+    shadowRadius: 32,
+    elevation: 8,
   },
 
   // Top row
@@ -115,10 +132,9 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: TEAL,
-    borderRadius: 14,
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 13,
   },
   ctaText: {
     fontSize: 14,

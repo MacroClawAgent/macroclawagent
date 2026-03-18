@@ -10,6 +10,7 @@ import {
   Pressable,
   Alert,
 } from "react-native";
+import { BlurView } from "expo-blur";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
 import { apiGet, apiDelete } from "@/lib/api";
@@ -275,7 +276,8 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   return (
     <>
       {/* ══ Week strip card ══ */}
-      <View style={styles.card}>
+      <BlurView intensity={28} tint="light" style={styles.card}>
+        <View style={styles.cardHighlight} pointerEvents="none" />
 
         {/* Header row */}
         <View style={styles.cardHeader}>
@@ -355,7 +357,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
           })}
         </View>
 
-      </View>
+      </BlurView>
 
       {/* ══ Bottom sheet modal ══ */}
       <Modal
@@ -546,11 +548,26 @@ const styles = StyleSheet.create({
   // ── Card ──────────────────────────────────────────────────────────
   card: {
     marginHorizontal: 16,
-    borderRadius: 18,
-    backgroundColor: "#4C7DFF",
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.38)",
     paddingTop: 10,
     paddingBottom: 8,
     paddingHorizontal: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 24,
+  },
+  cardHighlight: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.65)",
   },
   cardHeader: {
     flexDirection: "row",
@@ -563,18 +580,18 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#fff",
+    color: "#1A1A1A",
     letterSpacing: 0.1,
   },
   cardSub: {
     fontSize: 10,
-    color: "rgba(255,255,255,0.6)",
+    color: "#6B7280",
   },
   // ── Streak badge ──────────────────────────────────────────────────
   streakBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(251,146,60,0.15)",
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -590,11 +607,11 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(0,0,0,0.08)",
     alignItems: "center",
     justifyContent: "center",
   },
-  legendToggleText: { fontSize: 11, fontWeight: "800", color: "#fff" },
+  legendToggleText: { fontSize: 11, fontWeight: "800", color: "#1A1A1A" },
   inlineLegend: {
     flexDirection: "row",
     gap: 14,
@@ -617,17 +634,17 @@ const styles = StyleSheet.create({
     minWidth: 32,
   },
   dayPillToday: {
-    backgroundColor: BLUE,
-    shadowColor: BLUE,
+    backgroundColor: "#2BB6A6",
+    shadowColor: "#2BB6A6",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.55,
-    shadowRadius: 8,
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
     elevation: 6,
   },
   dayNum: { fontSize: 15, fontWeight: "700" },
-  textBright: { color: "rgba(255,255,255,0.85)" },
+  textBright: { color: "rgba(26,26,26,0.85)" },
   textWhite: { color: "#fff" },
-  textDim: { color: "rgba(255,255,255,0.28)" },
+  textDim: { color: "rgba(26,26,26,0.25)" },
   // ── Status dots ───────────────────────────────────────────────────
   statusDot: {
     width: 6,
@@ -648,17 +665,17 @@ const styles = StyleSheet.create({
   dotEmpty: {
     backgroundColor: "transparent",
     borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.35)",
+    borderColor: "rgba(26,26,26,0.28)",
   },
   dotFuture: {
     backgroundColor: "transparent",
     borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.12)",
+    borderColor: "rgba(26,26,26,0.12)",
   },
   // ── Legend ────────────────────────────────────────────────────────
   legendItem: { flexDirection: "row", alignItems: "center", gap: 5 },
   legendDot: { width: 6, height: 6, borderRadius: 3 },
-  legendText: { fontSize: 10, color: "rgba(255,255,255,0.75)", fontWeight: "600" },
+  legendText: { fontSize: 10, color: "#6B7280", fontWeight: "600" },
   // ── Modal ─────────────────────────────────────────────────────────
   backdrop: {
     flex: 1,

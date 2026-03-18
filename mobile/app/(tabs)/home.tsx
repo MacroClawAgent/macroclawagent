@@ -1,6 +1,9 @@
 import React, { useCallback, useRef, useState } from "react";
 import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { useFocusEffect, useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import { Screen } from "@/components/ui/Screen";
 import { AvatarButton } from "@/components/ui/AvatarButton";
 import { InsightCard } from "@/components/features/home/InsightCard";
@@ -14,6 +17,13 @@ import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
 
 const SCREEN_W = Dimensions.get("window").width;
 const CARD_COUNT = 3;
+
+const DISCOVER_ITEMS = [
+  { label: "Workouts",  route: "/discover/workouts",  ios: "dumbbell.fill",          android: "fitness_center",  iconColor: "#5C8CFF", iconBg: "rgba(92,140,255,0.18)" },
+  { label: "Recipes",   route: "/discover/recipes",   ios: "leaf.fill",              android: "eco",             iconColor: "#2BB6A6", iconBg: "rgba(43,182,166,0.18)" },
+  { label: "Meal Prep", route: "/discover/meal-prep", ios: "tray.2.fill",            android: "inventory_2",     iconColor: "#A78BFA", iconBg: "rgba(167,139,250,0.18)" },
+  { label: "Trends",    route: "/discover/trends",    ios: "chart.line.uptrend.xyaxis", android: "trending_up",  iconColor: "#34D399", iconBg: "rgba(52,211,153,0.18)" },
+];
 
 function SkeletonCard() {
   const { colors } = useTheme();
@@ -44,7 +54,15 @@ export default function HomeScreen() {
   );
 
   return (
-    <Screen style={{ backgroundColor: "#20C7B7" }}>
+    <Screen style={{ backgroundColor: "#35C7B8" }}>
+      {/* Full-screen teal gradient backdrop */}
+      <LinearGradient
+        colors={["#35C7B8", "#1FA79E"]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        pointerEvents="none"
+      />
       {/* Top header: greeting left, avatar + goal right */}
       <View style={styles.topHeader}>
         <View style={styles.greetingBlock}>
@@ -131,22 +149,25 @@ export default function HomeScreen() {
 
         {/* Discover */}
         <View style={styles.discoverSection}>
-          <Text style={[styles.discoverHeading, { color: "#FFF" }]}>Discover</Text>
+          <Text style={styles.discoverHeading}>Discover</Text>
           <View style={styles.discoverGrid}>
-            {[
-              { label: "Workouts", emoji: "💪", route: "/discover/workouts", bg: "#1A2B6B" },
-              { label: "Recipes",  emoji: "🥗", route: "/discover/recipes",  bg: "#0E4A3E" },
-              { label: "Meal Prep",emoji: "🥡", route: "/discover/meal-prep",bg: "#3A1A5C" },
-              { label: "Trends",   emoji: "📈", route: "/discover/trends",   bg: "#1A3A3A" },
-            ].map((item) => (
+            {DISCOVER_ITEMS.map((item) => (
               <TouchableOpacity
                 key={item.label}
                 activeOpacity={0.82}
                 onPress={() => router.push(item.route as any)}
-                style={[styles.discoverCard, { backgroundColor: item.bg }]}
               >
-                <Text style={styles.discoverEmoji}>{item.emoji}</Text>
-                <Text style={styles.discoverLabel}>{item.label}</Text>
+                <BlurView intensity={22} tint="light" style={styles.discoverCard}>
+                  <View style={styles.discoverHighlight} pointerEvents="none" />
+                  <View style={[styles.discoverIconWrap, { backgroundColor: item.iconBg }]}>
+                    <SymbolView
+                      name={{ ios: item.ios, android: item.android, web: item.android }}
+                      tintColor={item.iconColor}
+                      size={24}
+                    />
+                  </View>
+                  <Text style={styles.discoverLabel}>{item.label}</Text>
+                </BlurView>
               </TouchableOpacity>
             ))}
           </View>
@@ -176,15 +197,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   greetingWord: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "500",
-    letterSpacing: 0.1,
+    letterSpacing: 0.2,
+    color: "rgba(255,255,255,0.7)",
   },
   greetingName: {
-    fontSize: 32,
-    fontWeight: "900",
-    letterSpacing: -1,
-    lineHeight: 36,
+    fontSize: 30,
+    fontWeight: "800",
+    letterSpacing: -0.8,
+    lineHeight: 35,
+    color: "#FFFFFF",
   },
 
   skeleton: {
@@ -214,18 +237,38 @@ const styles = StyleSheet.create({
   bottomSpacer: { height: 24 },
 
   discoverSection: { paddingHorizontal: 20, gap: 12 },
-  discoverHeading: { fontSize: 18, fontWeight: "800", letterSpacing: -0.4 },
+  discoverHeading: { fontSize: 18, fontWeight: "700", letterSpacing: -0.3, color: "rgba(255,255,255,0.92)" },
   discoverGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   discoverCard: {
     width: (SCREEN_W - 40 - 12) / 2,
     aspectRatio: 1,
-    borderRadius: 20,
+    borderRadius: 24,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    gap: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+    borderColor: "rgba(255,255,255,0.38)",
+    backgroundColor: "rgba(255,255,255,0.22)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 24,
   },
-  discoverEmoji: { fontSize: 36 },
-  discoverLabel: { fontSize: 14, fontWeight: "700", color: "#FFF", letterSpacing: -0.2 },
+  discoverHighlight: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.7)",
+  },
+  discoverIconWrap: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  discoverLabel: { fontSize: 13, fontWeight: "600", color: "#1A1A1A", letterSpacing: -0.1 },
 });
