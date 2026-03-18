@@ -383,8 +383,6 @@ export default function CommunityScreen() {
     });
   };
 
-  const firstName = userProfile?.full_name?.split(" ")[0] ?? "You";
-
   return (
     <Screen style={{ backgroundColor: "#EEF4FA" }}>
       <LinearGradient
@@ -433,25 +431,6 @@ export default function CommunityScreen() {
         {/* ── Feed ── */}
         {activeTab === "feed" && (
           <>
-            {/* Share prompt */}
-            <View style={styles.shareCard}>
-              <View style={[styles.shareAvatar, { backgroundColor: "#4C7DFF22" }]}>
-                <Text style={[styles.avatarInitial, { color: "#4C7DFF" }]}>
-                  {(userProfile?.full_name ?? "Y")[0].toUpperCase()}
-                </Text>
-              </View>
-              <TouchableOpacity style={styles.shareInput} activeOpacity={0.75}>
-                <Text style={styles.shareInputText}>Share a meal, {firstName}…</Text>
-              </TouchableOpacity>
-              <View style={styles.shareIcon}>
-                <SymbolView
-                  name={{ ios: "camera.fill", android: "photo_camera", web: "photo_camera" }}
-                  tintColor="#20C7B7"
-                  size={18}
-                />
-              </View>
-            </View>
-
             {posts.map((post) => (
               <PostCard
                 key={post.id}
