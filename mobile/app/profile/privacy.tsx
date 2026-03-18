@@ -124,7 +124,7 @@ export default function PrivacyScreen() {
           <Para>If you are in the UK or European Economic Area, you have the following rights:</Para>
           <Bullet label="Access" detail="Request a copy of all personal data we hold about you." />
           <Bullet label="Rectification" detail="Correct inaccurate or incomplete data." />
-          <Bullet label="Erasure" detail="Request deletion of your data (\"right to be forgotten\")." />
+          <Bullet label="Erasure" detail='Request deletion of your data ("right to be forgotten").' />
           <Bullet label="Portability" detail="Receive your data in a machine-readable format." />
           <Bullet label="Restriction" detail="Request we restrict processing of your data." />
           <Bullet label="Objection" detail="Object to processing based on legitimate interests." />

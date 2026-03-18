@@ -177,7 +177,7 @@ const s = StyleSheet.create({
   content: { padding: 20, gap: 0, paddingBottom: 60 },
 
   hero: {
-    alignItems: "center", paddingVertical: 24, gap: 6, marginBottom: 8,
+    alignItems: "center", paddingVertical: 24, gap: 6,
     backgroundColor: WHITE, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     marginBottom: 20,
   },
