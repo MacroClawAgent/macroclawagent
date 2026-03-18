@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   RefreshControl,
   ScrollView,
@@ -9,11 +9,15 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
+import { useFocusEffect } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
+import { consumePendingCommunityPost } from "@/lib/communityStore";
 
 // ── Types ────────────────────────────────────────────────────────────────────
+interface Ingredient { name: string; grams: number; calories: number; }
+
 interface Post {
   id: string;
   userName: string;
@@ -28,6 +32,8 @@ interface Post {
   carbs: number;
   fat: number;
   bumps: number;
+  ingredients?: Ingredient[];
+  isOwn?: boolean;
 }
 
 interface Group {
@@ -141,34 +147,66 @@ function MacroChip({ value, label, color }: { value: number; label: string; colo
 function PostCard({
   post,
   bumped,
+  expanded,
   onBump,
+  onToggleExpand,
 }: {
   post: Post;
   bumped: boolean;
+  expanded: boolean;
   onBump: (id: string) => void;
+  onToggleExpand: (id: string) => void;
 }) {
   const bumpCount = post.bumps + (bumped ? 1 : 0);
   return (
-    <View style={styles.postCard}>
+    <View style={[styles.postCard, post.isOwn && styles.postCardOwn]}>
       {/* User row */}
       <View style={styles.postUserRow}>
         <View style={[styles.avatar, { backgroundColor: post.userColor + "22" }]}>
           <Text style={[styles.avatarInitial, { color: post.userColor }]}>{post.userInitial}</Text>
         </View>
         <View style={styles.postUserInfo}>
-          <Text style={styles.postUserName}>{post.userName}</Text>
+          <Text style={styles.postUserName}>{post.userName}{post.isOwn ? " · You" : ""}</Text>
           <Text style={styles.postTime}>{post.timeAgo}</Text>
         </View>
+        {post.isOwn && (
+          <View style={styles.yourPostBadge}>
+            <Text style={styles.yourPostBadgeText}>Just posted</Text>
+          </View>
+        )}
       </View>
 
-      {/* Meal display */}
-      <View style={[styles.mealDisplay, { backgroundColor: post.mealBg }]}>
-        <Text style={styles.mealEmoji}>{post.mealEmoji}</Text>
-        <View style={styles.mealInfo}>
-          <Text style={styles.mealName}>{post.mealName}</Text>
-          <Text style={styles.mealCal}>{post.calories} kcal</Text>
+      {/* Meal display — tappable if has ingredients */}
+      <TouchableOpacity
+        activeOpacity={post.ingredients?.length ? 0.75 : 1}
+        onPress={() => post.ingredients?.length && onToggleExpand(post.id)}
+      >
+        <View style={[styles.mealDisplay, { backgroundColor: post.mealBg }]}>
+          <Text style={styles.mealEmoji}>{post.mealEmoji}</Text>
+          <View style={styles.mealInfo}>
+            <Text style={styles.mealName}>{post.mealName}</Text>
+            <Text style={styles.mealCal}>{post.calories} kcal</Text>
+          </View>
+          {post.ingredients?.length ? (
+            <View style={styles.expandHint}>
+              <Text style={styles.expandHintText}>{expanded ? "▲" : "▼"}</Text>
+            </View>
+          ) : null}
         </View>
-      </View>
+      </TouchableOpacity>
+
+      {/* Ingredients — shown when expanded */}
+      {expanded && post.ingredients?.length ? (
+        <View style={styles.ingredientsList}>
+          <Text style={styles.ingredientsTitle}>Ingredients</Text>
+          {post.ingredients.map((ing, i) => (
+            <View key={i} style={styles.ingredientRow}>
+              <Text style={styles.ingredientName}>{ing.name}</Text>
+              <Text style={styles.ingredientMeta}>{ing.grams}g · {ing.calories} kcal</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       {/* Macro row */}
       <View style={styles.macroRow}>
@@ -272,14 +310,53 @@ const TABS: { key: TabKey; label: string }[] = [
 export default function CommunityScreen() {
   const { userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>("feed");
+  const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
   const [bumpedIds, setBumpedIds] = useState<Set<string>>(new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set(["g1"]));
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set(["u2"]));
   const [refreshing, setRefreshing] = useState(false);
 
+  // Consume any pending post from photo-confirm on focus
+  useFocusEffect(
+    useCallback(() => {
+      const pending = consumePendingCommunityPost();
+      if (!pending) return;
+      const firstName = userProfile?.full_name?.split(" ")[0] ?? "You";
+      const initial = (userProfile?.full_name ?? "Y")[0].toUpperCase();
+      const newPost: Post = {
+        id: pending.id,
+        userName: firstName,
+        userInitial: initial,
+        userColor: "#20C7B7",
+        timeAgo: "Just now",
+        mealName: pending.dishName,
+        mealEmoji: pending.mealEmoji,
+        mealBg: "rgba(32,199,183,0.12)",
+        calories: pending.calories,
+        protein: Math.round(pending.protein),
+        carbs: Math.round(pending.carbs),
+        fat: Math.round(pending.fat),
+        bumps: 0,
+        ingredients: pending.ingredients,
+        isOwn: true,
+      };
+      setPosts((prev) => [newPost, ...prev.filter((p) => p.id !== pending.id)]);
+      setActiveTab("feed");
+    }, [userProfile])
+  );
+
   const handleRefresh = () => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 800);
+  };
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   };
 
   const toggleBump = (id: string) => {
@@ -375,11 +452,13 @@ export default function CommunityScreen() {
               </View>
             </View>
 
-            {MOCK_POSTS.map((post) => (
+            {posts.map((post) => (
               <PostCard
                 key={post.id}
                 post={post}
                 bumped={bumpedIds.has(post.id)}
+                expanded={expandedIds.has(post.id)}
+                onToggleExpand={toggleExpand}
                 onBump={toggleBump}
               />
             ))}
@@ -498,6 +577,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
+
     borderColor: "rgba(255,255,255,0.8)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -505,6 +585,10 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     gap: 12,
   },
+  postCardOwn: { borderColor: "rgba(32,199,183,0.35)", borderWidth: 1.5 },
+  yourPostBadge: { backgroundColor: "rgba(32,199,183,0.12)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  yourPostBadgeText: { fontSize: 11, fontWeight: "700", color: "#20C7B7" },
+
   postUserRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   avatar: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
   avatarInitial: { fontSize: 16, fontWeight: "700" },
@@ -520,9 +604,20 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   mealEmoji: { fontSize: 28 },
-  mealInfo: { gap: 2 },
+  mealInfo: { flex: 1, gap: 2 },
   mealName: { fontSize: 15, fontWeight: "700", color: "#111827" },
   mealCal: { fontSize: 13, fontWeight: "500", color: "#6B7280" },
+  expandHint: { width: 24, height: 24, alignItems: "center", justifyContent: "center" },
+  expandHintText: { fontSize: 11, color: "#9CA3AF", fontWeight: "700" },
+
+  ingredientsList: {
+    backgroundColor: "rgba(0,0,0,0.03)", borderRadius: 12, padding: 12, gap: 6,
+    borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.06)",
+  },
+  ingredientsTitle: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 },
+  ingredientRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  ingredientName: { fontSize: 13, fontWeight: "600", color: "#374151", flex: 1 },
+  ingredientMeta: { fontSize: 12, fontWeight: "500", color: "#9CA3AF" },
 
   macroRow: { flexDirection: "row", gap: 6 },
   macroChip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },

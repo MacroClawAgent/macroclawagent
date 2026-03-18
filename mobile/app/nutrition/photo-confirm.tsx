@@ -9,8 +9,9 @@ import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useTheme } from "@/context/ThemeContext";
 import { apiPost } from "@/lib/api";
+import { setPendingCommunityPost } from "@/lib/communityStore";
 
-type Stage = "picking" | "analyzing" | "review" | "saving" | "error";
+type Stage = "picking" | "analyzing" | "review" | "saving" | "error" | "share_prompt";
 
 const MEAL_TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 type MealTag = (typeof MEAL_TAGS)[number];
@@ -68,6 +69,7 @@ export default function PhotoConfirmScreen() {
   const [gramInputs, setGramInputs] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState<MealTag>(getMealTagForTime());
   const [errorMsg, setErrorMsg] = useState("");
+  const savedDishRef = useRef<{ dishName: string; totals: ReturnType<typeof sumTotals> } | null>(null);
   const launched = useRef(false);
   // Stable UUID v4 for this photo session — groups all detected foods as one dish
   const batchId = useRef(
@@ -197,8 +199,8 @@ export default function PhotoConfirmScreen() {
           })
         )
       );
-      // Navigate to home tab so the Nutrition widget refreshes immediately
-      router.replace("/(tabs)/home" as any);
+      savedDishRef.current = { dishName, totals };
+      setStage("share_prompt");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to save meal.";
       Alert.alert("Save failed", msg);
@@ -207,6 +209,84 @@ export default function PhotoConfirmScreen() {
   };
 
   const totals = sumTotals(foods);
+
+  const TAG_EMOJI: Record<string, string> = { Breakfast: "🍳", Lunch: "🥗", Dinner: "🍽", Snack: "🍎" };
+
+  const handleShareToComm = () => {
+    const saved = savedDishRef.current;
+    if (!saved) { router.replace("/(tabs)/home" as any); return; }
+    setPendingCommunityPost({
+      id: batchId.current,
+      dishName: saved.dishName,
+      mealTag: selectedTag,
+      mealEmoji: TAG_EMOJI[selectedTag] ?? "🍽",
+      calories: saved.totals.calories,
+      protein: saved.totals.protein_g,
+      carbs: saved.totals.carbs_g,
+      fat: saved.totals.fat_g,
+      ingredients: foods.map((f) => ({ name: f.name, grams: f.grams, calories: f.calories })),
+      postedAt: Date.now(),
+    });
+    router.replace("/(tabs)/community" as any);
+  };
+
+  const handleKeepPrivate = () => {
+    router.replace("/(tabs)/home" as any);
+  };
+
+  // Share prompt — shown after successful save
+  if (stage === "share_prompt") {
+    const saved = savedDishRef.current;
+    const emoji = TAG_EMOJI[selectedTag] ?? "🍽";
+    return (
+      <Screen style={{ backgroundColor: "#0B0B0B" }}>
+        <AppHeader title="" textColor="#F5F5F7" />
+        <View style={sp.container}>
+          <View style={sp.emojiWrap}>
+            <Text style={sp.emoji}>{emoji}</Text>
+          </View>
+          <Text style={sp.heading}>Meal saved! 🎉</Text>
+          <Text style={sp.sub}>Share it with the community?</Text>
+
+          {/* Meal card */}
+          <View style={sp.mealCard}>
+            <Text style={sp.dishName}>{saved?.dishName ?? selectedTag}</Text>
+            <View style={sp.macroRow}>
+              <View style={sp.macroItem}>
+                <Text style={sp.macroVal}>{saved?.totals.calories ?? 0}</Text>
+                <Text style={sp.macroLbl}>kcal</Text>
+              </View>
+              <View style={sp.macroDivider} />
+              <View style={sp.macroItem}>
+                <Text style={[sp.macroVal, { color: "#34D399" }]}>{+(saved?.totals.protein_g ?? 0).toFixed(1)}g</Text>
+                <Text style={sp.macroLbl}>Protein</Text>
+              </View>
+              <View style={sp.macroDivider} />
+              <View style={sp.macroItem}>
+                <Text style={[sp.macroVal, { color: "#FBBF24" }]}>{+(saved?.totals.carbs_g ?? 0).toFixed(1)}g</Text>
+                <Text style={sp.macroLbl}>Carbs</Text>
+              </View>
+              <View style={sp.macroDivider} />
+              <View style={sp.macroItem}>
+                <Text style={[sp.macroVal, { color: "#F97316" }]}>{+(saved?.totals.fat_g ?? 0).toFixed(1)}g</Text>
+                <Text style={sp.macroLbl}>Fat</Text>
+              </View>
+            </View>
+            <Text style={sp.ingredientsHint}>
+              {foods.length} ingredient{foods.length !== 1 ? "s" : ""} · tap meal to see details in feed
+            </Text>
+          </View>
+
+          <TouchableOpacity style={sp.postBtn} activeOpacity={0.85} onPress={handleShareToComm}>
+            <Text style={sp.postBtnText}>Post to Community</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={sp.privateBtn} activeOpacity={0.7} onPress={handleKeepPrivate}>
+            <Text style={sp.privateBtnText}>Keep private</Text>
+          </TouchableOpacity>
+        </View>
+      </Screen>
+    );
+  }
 
   // Loading states
   if (stage === "picking" || stage === "analyzing") {
@@ -420,4 +500,32 @@ const styles = StyleSheet.create({
     backgroundColor: "#20C7B7", borderRadius: 16, paddingVertical: 16, alignItems: "center",
   },
   confirmText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
+});
+
+const sp = StyleSheet.create({
+  container: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, gap: 16 },
+  emojiWrap: {
+    width: 88, height: 88, borderRadius: 28, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(32,199,183,0.12)", borderWidth: 1, borderColor: "rgba(32,199,183,0.25)",
+  },
+  emoji: { fontSize: 40 },
+  heading: { fontSize: 26, fontWeight: "800", color: "#F5F5F7", letterSpacing: -0.5 },
+  sub: { fontSize: 15, color: "rgba(245,245,247,0.55)", fontWeight: "500", marginTop: -6 },
+  mealCard: {
+    width: "100%", backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 20,
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", padding: 18, gap: 12, marginVertical: 4,
+  },
+  dishName: { color: "#F5F5F7", fontSize: 17, fontWeight: "700" },
+  macroRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  macroItem: { alignItems: "center", flex: 1, gap: 2 },
+  macroVal: { color: "#F5F5F7", fontSize: 17, fontWeight: "800" },
+  macroLbl: { color: "rgba(245,245,247,0.4)", fontSize: 11, fontWeight: "500" },
+  macroDivider: { width: 1, height: 32, backgroundColor: "rgba(255,255,255,0.08)" },
+  ingredientsHint: { color: "rgba(245,245,247,0.3)", fontSize: 12, fontWeight: "500" },
+  postBtn: {
+    width: "100%", backgroundColor: "#20C7B7", borderRadius: 16, paddingVertical: 16, alignItems: "center",
+  },
+  postBtnText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
+  privateBtn: { paddingVertical: 12 },
+  privateBtnText: { color: "rgba(245,245,247,0.4)", fontSize: 15, fontWeight: "600" },
 });
