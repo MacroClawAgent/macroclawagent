@@ -33,7 +33,14 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "react-native-health",
+        {
+          "NSHealthShareUsageDescription": "MacroClaw reads your workouts and activity data to personalise your nutrition recommendations.",
+          "NSHealthUpdateUsageDescription": "MacroClaw may write nutrition data to Apple Health to keep your health records in sync."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
