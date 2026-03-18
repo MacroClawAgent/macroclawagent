@@ -1,14 +1,16 @@
 import React from "react";
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
+import { useHealthKit } from "@/hooks/useHealthKit";
+import { initHealthKit } from "@/services/healthKit";
 
 const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB"; const TEAL = "#2BB6A6";
 
 const ITEMS = [
   { key: "strava",        name: "Strava",          sub: "Sync training & activities",     emoji: "🏃", bg: "rgba(252,82,0,0.10)",    connectUrl: "https://jonnoai.com", live: true },
-  { key: "apple_health",  name: "Apple Health",    sub: "Steps, heart rate & sleep",      emoji: "❤️", bg: "rgba(255,59,48,0.10)",   live: false },
+  { key: "apple_health",  name: "Apple Health",    sub: "Steps, heart rate & sleep",      emoji: "❤️", bg: "rgba(255,59,48,0.10)",   live: Platform.OS === "ios" },
   { key: "garmin",        name: "Garmin Connect",  sub: "GPS watch & workout data",       emoji: "⌚", bg: "rgba(0,126,200,0.10)",   live: false },
   { key: "myfitnesspal",  name: "MyFitnessPal",    sub: "Import food diary & logs",       emoji: "🥗", bg: "rgba(0,180,90,0.10)",    live: false },
   { key: "uber_eats",     name: "Uber Eats",       sub: "Order meals from Smart Cart",    emoji: "🛵", bg: "rgba(6,202,127,0.10)",   live: false },
@@ -19,14 +21,30 @@ function Divider() { return <View style={s.divider} />; }
 
 export default function IntegrationsScreen() {
   const { userProfile } = useAuth();
+  const hk = useHealthKit();
   const live = ITEMS.filter((i) => i.live);
   const soon = ITEMS.filter((i) => !i.live);
+
+  function isConnected(key: string) {
+    if (key === "strava") return !!userProfile?.strava_athlete_id;
+    if (key === "apple_health") return hk.authorized;
+    return false;
+  }
+
+  async function handleConnect(item: typeof ITEMS[number]) {
+    if (item.key === "apple_health") {
+      await initHealthKit();
+      await hk.refresh();
+    } else if (item.connectUrl) {
+      Linking.openURL(item.connectUrl);
+    }
+  }
 
   function Card({ items }: { items: typeof ITEMS }) {
     return (
       <View style={s.card}>
         {items.map((item, i) => {
-          const connected = item.key === "strava" && !!userProfile?.strava_athlete_id;
+          const connected = isConnected(item.key);
           return (
             <React.Fragment key={item.key}>
               {i > 0 && <Divider />}
@@ -42,7 +60,7 @@ export default function IntegrationsScreen() {
                   connected ? (
                     <View style={s.badgeOn}><Text style={s.badgeOnTxt}>Connected</Text></View>
                   ) : (
-                    <TouchableOpacity style={s.connectBtn} onPress={() => Linking.openURL(item.connectUrl!)} activeOpacity={0.75}>
+                    <TouchableOpacity style={s.connectBtn} onPress={() => handleConnect(item)} activeOpacity={0.75}>
                       <Text style={s.connectTxt}>Connect</Text>
                     </TouchableOpacity>
                   )
