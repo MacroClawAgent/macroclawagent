@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -20,227 +20,105 @@ const WHITE = "#FFFFFF";
 const TEAL = "#2BB6A6";
 const BORDER = "#E5E7EB";
 
+// ── Category definitions ──────────────────────────────────────────────────────
+
+type Category = "nutrition" | "training" | "smart_cart";
+
+interface Action {
+  emoji: string;
+  title: string;
+  subtitle: string;
+  prompt: string;
+}
+
+const CATEGORIES: { id: Category; label: string; emoji: string }[] = [
+  { id: "nutrition", label: "Nutrition", emoji: "🍽" },
+  { id: "training", label: "Training", emoji: "💪" },
+  { id: "smart_cart", label: "Smart Cart", emoji: "🛒" },
+];
+
+const ACTIONS: Record<Category, Action[]> = {
+  nutrition: [
+    { emoji: "🍽", title: "Today's Meal Plan", subtitle: "Full day of meals", prompt: "Build a complete meal plan for today based on my goals and remaining macros" },
+    { emoji: "📅", title: "This Week's Plan", subtitle: "7-day meal structure", prompt: "Create a full 7-day meal plan tailored to my fitness goal and dietary preferences" },
+    { emoji: "🥩", title: "Hit Protein Goal", subtitle: "Meals to close the gap", prompt: "What should I eat to hit my protein goal today? Show me specific meals." },
+    { emoji: "🔄", title: "Recovery Nutrition", subtitle: "Post-training meals", prompt: "What should I eat after training to maximise recovery?" },
+  ],
+  training: [
+    { emoji: "💪", title: "Weekly Workout Plan", subtitle: "Structured schedule", prompt: "Create a weekly workout plan for me based on my fitness goal. Include days, exercises, sets and reps." },
+    { emoji: "🎯", title: "Achieve My Goal", subtitle: "Step-by-step strategy", prompt: "Give me a clear step-by-step strategy to achieve my fitness goal. Be specific and practical." },
+    { emoji: "⚡", title: "Pre-Workout Fuel", subtitle: "Optimise your energy", prompt: "What should I eat before my workout to maximise performance and energy?" },
+    { emoji: "🏃", title: "Cardio Plan", subtitle: "Endurance & fat burn", prompt: "Create a weekly cardio plan for me that supports my fitness goal." },
+  ],
+  smart_cart: [
+    { emoji: "🛒", title: "Build Smart Cart", subtitle: "Convert plan to cart", prompt: "Build today's meals and save everything to Smart Cart" },
+    { emoji: "🥗", title: "Budget Meal Plan", subtitle: "Affordable & balanced", prompt: "Create a budget-friendly meal plan for this week and add it to Smart Cart" },
+    { emoji: "🛍", title: "Weekly Grocery List", subtitle: "All ingredients", prompt: "Create a complete weekly grocery list based on my meal plan" },
+    { emoji: "🍱", title: "Meal Prep Plan", subtitle: "Cook once, eat all week", prompt: "Give me a meal prep plan I can do on Sunday for the whole week" },
+  ],
+};
+
 // ── Macro pill ────────────────────────────────────────────────────────────────
 
-function MacroPill({
-  label,
-  value,
-  target,
-  color,
-}: {
-  label: string;
-  value: number;
-  target: number;
-  color: string;
-}) {
+function MacroPill({ label, value, target, color }: { label: string; value: number; target: number; color: string }) {
   const pct = target > 0 ? Math.min(value / target, 1) : 0;
-  const pctLabel = `${Math.round(pct * 100)}%`;
   return (
     <View style={pill.wrap}>
       <Text style={pill.label}>{label}</Text>
-      <Text style={[pill.value, { color }]}>{value}<Text style={pill.unit}>/{target}{label === "Cal" ? "" : "g"}</Text></Text>
+      <Text style={[pill.value, { color }]}>
+        {value}<Text style={pill.unit}>/{target}{label === "Cal" ? "" : "g"}</Text>
+      </Text>
       <View style={pill.track}>
         <View style={[pill.fill, { width: `${Math.round(pct * 100)}%` as any, backgroundColor: color }]} />
       </View>
-      <Text style={[pill.pct, { color }]}>{pctLabel}</Text>
     </View>
   );
 }
 
 const pill = StyleSheet.create({
   wrap: { flex: 1, gap: 3 },
-  label: { fontSize: 9, fontWeight: "700", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: 0.5 },
+  label: { fontSize: 9, fontWeight: "700", color: "rgba(255,255,255,0.65)", textTransform: "uppercase", letterSpacing: 0.4 },
   value: { fontSize: 13, fontWeight: "800" },
-  unit: { fontSize: 10, fontWeight: "600", color: "rgba(255,255,255,0.65)" },
+  unit: { fontSize: 10, fontWeight: "600", color: "rgba(255,255,255,0.55)" },
   track: { height: 3, borderRadius: 100, backgroundColor: "rgba(255,255,255,0.2)", overflow: "hidden" },
   fill: { height: 3, borderRadius: 100 },
-  pct: { fontSize: 9, fontWeight: "700" },
-});
-
-// ── Action card ───────────────────────────────────────────────────────────────
-
-interface ActionCardProps {
-  emoji: string;
-  title: string;
-  subtitle: string;
-  onPress: () => void;
-  disabled?: boolean;
-  primary?: boolean;
-  fullWidth?: boolean;
-}
-
-function ActionCard({ emoji, title, subtitle, onPress, disabled, primary, fullWidth }: ActionCardProps) {
-  if (primary) {
-    return (
-      <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled}
-        activeOpacity={0.82}
-        style={[card.primaryWrap, disabled && { opacity: 0.5 }]}
-      >
-        <LinearGradient
-          colors={["#3FD4C8", "#2BB6A6", "#1E9E8F"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={card.primaryGradient}
-        >
-          <Text style={card.primaryEmoji}>{emoji}</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={card.primaryTitle}>{title}</Text>
-            <Text style={card.primarySub}>{subtitle}</Text>
-          </View>
-          <Text style={card.primaryArrow}>→</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-    );
-  }
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
-      activeOpacity={0.78}
-      style={[card.wrap, fullWidth && card.fullWidth, disabled && { opacity: 0.5 }]}
-    >
-      <Text style={card.emoji}>{emoji}</Text>
-      <Text style={card.title}>{title}</Text>
-      <Text style={card.sub}>{subtitle}</Text>
-    </TouchableOpacity>
-  );
-}
-
-const card = StyleSheet.create({
-  primaryWrap: { marginHorizontal: 20, borderRadius: 20, overflow: "hidden", shadowColor: TEAL, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 14, elevation: 6 },
-  primaryGradient: { flexDirection: "row", alignItems: "center", padding: 20, gap: 14 },
-  primaryEmoji: { fontSize: 32 },
-  primaryTitle: { fontSize: 17, fontWeight: "800", color: WHITE, letterSpacing: -0.3 },
-  primarySub: { fontSize: 12, color: "rgba(255,255,255,0.8)", marginTop: 2, fontWeight: "500" },
-  primaryArrow: { fontSize: 22, color: "rgba(255,255,255,0.7)", fontWeight: "300" },
-  wrap: { flex: 1, backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 14, gap: 5, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 6 },
-  fullWidth: { flex: undefined, marginHorizontal: 0 },
-  emoji: { fontSize: 24 },
-  title: { fontSize: 13, fontWeight: "700", color: "#1C1C1E", lineHeight: 17 },
-  sub: { fontSize: 11, fontWeight: "500", color: "#9CA3AF", lineHeight: 15 },
-});
-
-// ── Section label ─────────────────────────────────────────────────────────────
-
-function SectionLabel({ text }: { text: string }) {
-  return <Text style={sec.label}>{text}</Text>;
-}
-
-const sec = StyleSheet.create({
-  label: { fontSize: 11, fontWeight: "800", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 20 },
-});
-
-// ── Response card ─────────────────────────────────────────────────────────────
-
-function ResponseCard({
-  text,
-  error,
-  sending,
-  onAdjust,
-  onDifferent,
-  onRetry,
-}: {
-  text: string | null;
-  error: string | null;
-  sending: boolean;
-  onAdjust: () => void;
-  onDifferent: () => void;
-  onRetry: () => void;
-}) {
-  if (!sending && !text && !error) return null;
-
-  return (
-    <View style={resp.card}>
-      <View style={resp.header}>
-        <Image source={AVATAR} style={resp.avatar} />
-        <View>
-          <Text style={resp.name}>Jonno</Text>
-          <Text style={resp.sub}>Your nutrition coach</Text>
-        </View>
-      </View>
-      {sending ? (
-        <View style={resp.loadingRow}>
-          <ActivityIndicator size="small" color={TEAL} />
-          <Text style={resp.loadingText}>Thinking…</Text>
-        </View>
-      ) : error ? (
-        <View style={resp.errorWrap}>
-          <Text style={resp.errorText}>{error}</Text>
-          <TouchableOpacity onPress={onRetry} style={resp.retryBtn} activeOpacity={0.75}>
-            <Text style={resp.retryTxt}>Try again</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <>
-          <Text style={resp.text}>{text}</Text>
-          <View style={resp.actions}>
-            <TouchableOpacity onPress={onAdjust} style={resp.actionBtn} activeOpacity={0.75}>
-              <Text style={resp.actionTxt}>Adjust it</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onDifferent} style={resp.actionBtn} activeOpacity={0.75}>
-              <Text style={resp.actionTxt}>Different option</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
-    </View>
-  );
-}
-
-const resp = StyleSheet.create({
-  card: { marginHorizontal: 20, backgroundColor: WHITE, borderRadius: 18, borderWidth: 1, borderColor: BORDER, padding: 16, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 10 },
-  header: { flexDirection: "row", alignItems: "center", gap: 10 },
-  avatar: { width: 36, height: 36, borderRadius: 11 },
-  name: { fontSize: 14, fontWeight: "800", color: "#1C1C1E" },
-  sub: { fontSize: 11, color: "#9CA3AF", fontWeight: "500", marginTop: 1 },
-  loadingRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 4 },
-  loadingText: { fontSize: 14, color: "#9CA3AF", fontWeight: "500" },
-  text: { fontSize: 15, color: "#1C1C1E", lineHeight: 23, fontWeight: "400" },
-  actions: { flexDirection: "row", gap: 8, paddingTop: 4, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: BORDER },
-  actionBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: BG, borderWidth: 1, borderColor: BORDER },
-  actionTxt: { fontSize: 12, fontWeight: "700", color: "#6B7280" },
-  errorWrap: { gap: 10 },
-  errorText: { fontSize: 14, color: "#EF4444", lineHeight: 20, fontWeight: "500" },
-  retryBtn: { alignSelf: "flex-start", paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: "rgba(239,68,68,0.08)", borderWidth: 1, borderColor: "rgba(239,68,68,0.2)" },
-  retryTxt: { fontSize: 12, fontWeight: "700", color: "#EF4444" },
 });
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function AgentScreen() {
   const vm = useAgentViewModel();
-  const { macroContext: mc, activityContext: ac } = vm;
-  const [lastSent, setLastSent] = React.useState("");
+  const { macroContext: mc } = vm;
+  const [category, setCategory] = useState<Category>("nutrition");
+  const [lastPrompt, setLastPrompt] = useState("");
 
-  function send(text: string) {
-    setLastSent(text);
-    vm.quickSend(text);
+  function fire(prompt: string) {
+    setLastPrompt(prompt);
+    vm.quickSend(prompt);
   }
+
+  const actions = ACTIONS[category];
 
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
-      {/* ── Teal header with macro stats ── */}
+
+      {/* ── Header ── */}
       <LinearGradient
-        colors={["#2BB6A6", "#1E9E8F"]}
+        colors={["#2BB6A6", "#1A9488"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={s.header}
       >
-        <View style={s.headerTop}>
+        <View style={s.headerRow}>
           <Image source={AVATAR} style={s.avatar} />
           <View style={{ flex: 1 }}>
-            <Text style={s.coachName}>Jonno</Text>
-            <Text style={s.coachSub}>Your AI nutrition coach</Text>
+            <Text style={s.name}>Jonno</Text>
+            <Text style={s.nameSub}>AI nutrition & fitness coach</Text>
           </View>
-          <View style={s.onlineDot} />
+          <View style={s.dot} />
         </View>
-
-        {/* Live macro strip */}
-        <View style={s.macroStrip}>
-          <MacroPill label="Cal" value={mc.calories} target={mc.caloriesTarget} color="#FFFFFF" />
+        <View style={s.macroRow}>
+          <MacroPill label="Cal" value={mc.calories} target={mc.caloriesTarget} color="#fff" />
           <View style={s.macroDivider} />
           <MacroPill label="Protein" value={mc.protein} target={mc.proteinTarget} color="#FCD34D" />
           <View style={s.macroDivider} />
@@ -250,138 +128,183 @@ export default function AgentScreen() {
         </View>
       </LinearGradient>
 
-      {/* ── Scrollable action area ── */}
-      <ScrollView
-        style={s.scroll}
-        contentContainerStyle={s.content}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Primary action */}
-        <ActionCard
-          emoji="🍽"
-          title="Generate Today's Meal Plan"
-          subtitle="Full day tailored to your macros & goal"
-          onPress={() => send("Build a complete meal plan for today tailored to my goals and macros")}
-          disabled={vm.sending}
-          primary
-        />
+      {/* ── Category pills ── */}
+      <View style={s.pillsRow}>
+        {CATEGORIES.map((cat) => (
+          <TouchableOpacity
+            key={cat.id}
+            onPress={() => setCategory(cat.id)}
+            style={[s.catPill, category === cat.id && s.catPillActive]}
+            activeOpacity={0.75}
+          >
+            <Text style={s.catPillEmoji}>{cat.emoji}</Text>
+            <Text style={[s.catPillLabel, category === cat.id && s.catPillLabelActive]}>
+              {cat.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        {/* Nutrition section */}
-        <SectionLabel text="Nutrition" />
-        <View style={s.grid}>
-          <ActionCard
-            emoji="📅"
-            title="This Week's Plan"
-            subtitle="7-day meal structure"
-            onPress={() => send("Create a full meal plan for this week")}
+      {/* ── 2×2 Action grid ── */}
+      <View style={s.grid}>
+        {actions.map((action) => (
+          <TouchableOpacity
+            key={action.title}
+            onPress={() => fire(action.prompt)}
             disabled={vm.sending}
-          />
-          <ActionCard
-            emoji="🥩"
-            title="Hit Protein Goal"
-            subtitle={`${Math.max(0, mc.proteinTarget - mc.protein)}g still to go today`}
-            onPress={() => send("What should I eat to hit my protein goal today?")}
-            disabled={vm.sending}
-          />
-        </View>
-        <View style={s.grid}>
-          <ActionCard
-            emoji="⚡"
-            title="Pre-Workout Fuel"
-            subtitle="Optimise your energy"
-            onPress={() => send("What should I eat before my workout?")}
-            disabled={vm.sending}
-          />
-          <ActionCard
-            emoji="🔄"
-            title="Recovery Nutrition"
-            subtitle={ac ? `After your ${ac.type}` : "Post-training meals"}
-            onPress={() => send("What should I eat after training to recover?")}
-            disabled={vm.sending}
-          />
-        </View>
+            activeOpacity={0.78}
+            style={[s.actionCard, vm.sending && { opacity: 0.5 }]}
+          >
+            <Text style={s.actionEmoji}>{action.emoji}</Text>
+            <Text style={s.actionTitle}>{action.title}</Text>
+            <Text style={s.actionSub}>{action.subtitle}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        {/* Training section */}
-        <SectionLabel text="Training" />
-        <View style={s.grid}>
-          <ActionCard
-            emoji="💪"
-            title="Weekly Workout Plan"
-            subtitle="Structured training schedule"
-            onPress={() => send("Create a weekly workout plan for me based on my fitness goal")}
-            disabled={vm.sending}
-          />
-          <ActionCard
-            emoji="🎯"
-            title="Achieve My Goal"
-            subtitle="Step-by-step strategy"
-            onPress={() => send("What's the best strategy for me to achieve my fitness goal?")}
-            disabled={vm.sending}
-          />
-        </View>
-
-        {/* Smart Cart section */}
-        <SectionLabel text="Smart Cart" />
-        <View style={[s.grid, { paddingHorizontal: 20 }]}>
-          <ActionCard
-            emoji="🛒"
-            title="Build Smart Cart"
-            subtitle="Turn your plan into a cart"
-            onPress={() => send("Build today's meals and save to Smart Cart")}
-            disabled={vm.sending}
-            fullWidth={false}
-          />
-          <ActionCard
-            emoji="🥗"
-            title="Budget Meal Plan"
-            subtitle="Affordable & balanced"
-            onPress={() => send("Create a budget-friendly meal plan for this week")}
-            disabled={vm.sending}
-          />
-        </View>
-
-        {/* Jonno response card */}
-        {(vm.sending || vm.latestResponse || vm.apiError) && (
-          <ResponseCard
-            text={vm.latestResponse}
-            error={vm.apiError}
-            sending={vm.sending}
-            onAdjust={() => send("Can you adjust that plan?")}
-            onDifferent={() => send("Give me a completely different option")}
-            onRetry={() => send(lastSent)}
-          />
-        )}
-
-        {/* Smart Cart CTA */}
-        {vm.pendingSmartCartAction && (
-          <View style={{ paddingHorizontal: 20 }}>
-            <SmartCartCTACard onConfirm={vm.confirmSmartCart} onDismiss={vm.dismissSmartCart} />
+      {/* ── Response area (fills remaining space) ── */}
+      <View style={s.responseArea}>
+        {vm.sending ? (
+          <View style={s.loadingWrap}>
+            <ActivityIndicator size="small" color={TEAL} />
+            <Text style={s.loadingText}>Jonno is thinking…</Text>
+          </View>
+        ) : vm.apiError ? (
+          <View style={s.errorWrap}>
+            <Text style={s.errorText}>{vm.apiError}</Text>
+            <TouchableOpacity
+              onPress={() => fire(lastPrompt)}
+              style={s.retryBtn}
+              activeOpacity={0.75}
+            >
+              <Text style={s.retryTxt}>Try again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : vm.latestResponse ? (
+          <>
+            <View style={s.responseHeader}>
+              <Image source={AVATAR} style={s.responseAvatar} />
+              <Text style={s.responseLabel}>Jonno says</Text>
+            </View>
+            <ScrollView
+              style={s.responseScroll}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 8 }}
+            >
+              <Text style={s.responseText}>{vm.latestResponse}</Text>
+            </ScrollView>
+            <View style={s.responseActions}>
+              <TouchableOpacity
+                onPress={() => fire("Can you adjust that?")}
+                style={s.followBtn}
+                activeOpacity={0.75}
+              >
+                <Text style={s.followTxt}>Adjust it</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => fire("Give me a completely different option")}
+                style={s.followBtn}
+                activeOpacity={0.75}
+              >
+                <Text style={s.followTxt}>Different option</Text>
+              </TouchableOpacity>
+            </View>
+            {vm.pendingSmartCartAction && (
+              <SmartCartCTACard onConfirm={vm.confirmSmartCart} onDismiss={vm.dismissSmartCart} />
+            )}
+          </>
+        ) : (
+          <View style={s.emptyWrap}>
+            <Text style={s.emptyEmoji}>👆</Text>
+            <Text style={s.emptyText}>Choose an action above</Text>
+            <Text style={s.emptySub}>Jonno's response will appear here</Text>
           </View>
         )}
+      </View>
 
-        <View style={{ height: Platform.OS === "ios" ? 40 : 24 }} />
-      </ScrollView>
     </SafeAreaView>
   );
 }
+
+// ── Styles ────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
 
   // Header
-  header: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 20, gap: 16 },
-  headerTop: { flexDirection: "row", alignItems: "center", gap: 12 },
-  avatar: { width: 44, height: 44, borderRadius: 14 },
-  coachName: { fontSize: 18, fontWeight: "800", color: WHITE },
-  coachSub: { fontSize: 12, color: "rgba(255,255,255,0.75)", fontWeight: "500", marginTop: 1 },
-  onlineDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#A7F3D0", borderWidth: 2, borderColor: "rgba(255,255,255,0.4)" },
-  macroStrip: { flexDirection: "row", backgroundColor: "rgba(0,0,0,0.12)", borderRadius: 16, padding: 14, gap: 4 },
-  macroDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.2)", marginHorizontal: 4 },
+  header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16, gap: 12 },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  avatar: { width: 40, height: 40, borderRadius: 12 },
+  name: { fontSize: 17, fontWeight: "800", color: WHITE },
+  nameSub: { fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: "500", marginTop: 1 },
+  dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: "#A7F3D0", borderWidth: 2, borderColor: "rgba(255,255,255,0.3)" },
+  macroRow: { flexDirection: "row", backgroundColor: "rgba(0,0,0,0.12)", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, gap: 4 },
+  macroDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.18)", marginHorizontal: 4 },
 
-  // Scroll
-  scroll: { flex: 1 },
-  content: { gap: 12, paddingTop: 20, paddingBottom: 40 },
+  // Category pills
+  pillsRow: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingVertical: 12 },
+  catPill: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingVertical: 9, borderRadius: 12, backgroundColor: WHITE, borderWidth: 1, borderColor: BORDER },
+  catPillActive: { backgroundColor: TEAL, borderColor: TEAL },
+  catPillEmoji: { fontSize: 14 },
+  catPillLabel: { fontSize: 12, fontWeight: "700", color: "#6B7280" },
+  catPillLabelActive: { color: WHITE },
 
-  // Grid
-  grid: { flexDirection: "row", gap: 10, paddingHorizontal: 20 },
+  // 2×2 grid
+  grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 16, gap: 10 },
+  actionCard: {
+    width: "47.5%",
+    backgroundColor: WHITE,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: BORDER,
+    padding: 14,
+    gap: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+  },
+  actionEmoji: { fontSize: 22 },
+  actionTitle: { fontSize: 13, fontWeight: "700", color: "#1C1C1E", lineHeight: 17 },
+  actionSub: { fontSize: 11, fontWeight: "500", color: "#9CA3AF", lineHeight: 15 },
+
+  // Response area
+  responseArea: {
+    flex: 1,
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: Platform.OS === "ios" ? 4 : 8,
+    backgroundColor: WHITE,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: BORDER,
+    padding: 16,
+    overflow: "hidden",
+  },
+
+  // Loading
+  loadingWrap: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
+  loadingText: { fontSize: 14, color: "#9CA3AF", fontWeight: "500" },
+
+  // Error
+  errorWrap: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  errorText: { fontSize: 14, color: "#EF4444", textAlign: "center", lineHeight: 20 },
+  retryBtn: { paddingHorizontal: 20, paddingVertical: 9, borderRadius: 100, backgroundColor: "rgba(239,68,68,0.08)", borderWidth: 1, borderColor: "rgba(239,68,68,0.2)" },
+  retryTxt: { fontSize: 13, fontWeight: "700", color: "#EF4444" },
+
+  // Response
+  responseHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  responseAvatar: { width: 28, height: 28, borderRadius: 9 },
+  responseLabel: { fontSize: 13, fontWeight: "800", color: "#1C1C1E" },
+  responseScroll: { flex: 1 },
+  responseText: { fontSize: 15, color: "#1C1C1E", lineHeight: 24, fontWeight: "400" },
+  responseActions: { flexDirection: "row", gap: 8, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: BORDER, marginTop: 8 },
+  followBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: BG, borderWidth: 1, borderColor: BORDER },
+  followTxt: { fontSize: 12, fontWeight: "700", color: "#6B7280" },
+
+  // Empty state
+  emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", gap: 6 },
+  emptyEmoji: { fontSize: 28 },
+  emptyText: { fontSize: 15, fontWeight: "700", color: "#1C1C1E" },
+  emptySub: { fontSize: 13, color: "#9CA3AF", fontWeight: "500" },
 });
