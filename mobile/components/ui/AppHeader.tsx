@@ -42,8 +42,8 @@ export function AppHeader({
       <View style={styles.left}>
         {showBack ? (
           <TouchableOpacity onPress={handleBack} activeOpacity={0.7} style={styles.backBtn}>
-            <Text style={[styles.backArrow, { color: resolvedText }]}>‹</Text>
-            <Text style={[styles.backLabel, { color: resolvedText }]}>Back</Text>
+            <Text style={[styles.backArrow, { color: "#1C1C1E" }]}>‹</Text>
+            <Text style={[styles.backLabel, { color: "#1C1C1E" }]}>Back</Text>
           </TouchableOpacity>
         ) : null}
         {wordmark ? (
