@@ -4,6 +4,10 @@ import { SymbolView } from "expo-symbols";
 import { Card } from "../../ui/Card";
 import { apiGet } from "../../../lib/api";
 import type { ActivityRow } from "../../../types";
+import { useHevyWorkouts } from "../../../hooks/useHevyWorkouts";
+import { HevyWorkoutCard } from "./HevyWorkoutCard";
+import { HevyConnectPrompt } from "./HevyConnectPrompt";
+import { formatWorkoutDate } from "../../../utils/hevyHelpers";
 
 const TYPE_META: Record<string, { ios: string; android: string; color: string }> = {
   run:      { ios: "figure.run",           android: "directions_run",   color: "#F97316" },
@@ -81,6 +85,7 @@ function ActivityList({
 
 export function TodayActivitiesCard({ activities }: Props) {
   const [recentActivities, setRecentActivities] = useState<ActivityRow[]>([]);
+  const hevy = useHevyWorkouts(30);
 
   useEffect(() => {
     apiGet<{ activities: ActivityRow[] }>("/api/activities?limit=5")
@@ -91,6 +96,11 @@ export function TodayActivitiesCard({ activities }: Props) {
       })
       .catch(() => {});
   }, [activities]);
+
+  // Today's Hevy workout (if any)
+  const todayHevy = hevy.isConnected
+    ? hevy.workouts.find((w) => formatWorkoutDate(w.workout.start_time) === "Today") ?? null
+    : null;
 
   return (
     <Card style={styles.card}>
@@ -111,7 +121,7 @@ export function TodayActivitiesCard({ activities }: Props) {
         </View>
       </View>
 
-      {/* Today's activities */}
+      {/* Today's cardio/activities */}
       {activities.length === 0 ? (
         <View style={styles.emptyWrap}>
           <Text style={styles.emptyText}>No activities today</Text>
@@ -120,12 +130,29 @@ export function TodayActivitiesCard({ activities }: Props) {
         <ActivityList activities={activities} />
       )}
 
-      {/* Recent history — fills card height */}
+      {/* Recent history */}
       {recentActivities.length > 0 && (
         <>
           <Text style={styles.sectionLabel}>Recent</Text>
           <ActivityList activities={recentActivities} dimmed />
         </>
+      )}
+
+      {/* ── Strength Training (Hevy) ── */}
+      <View style={styles.strengthHeader}>
+        <Text style={styles.sectionLabel}>🏋️  Strength Training</Text>
+      </View>
+
+      {hevy.isConnected ? (
+        todayHevy ? (
+          <HevyWorkoutCard stats={todayHevy} />
+        ) : (
+          <View style={styles.emptyWrap}>
+            <Text style={styles.emptyText}>No strength session today</Text>
+          </View>
+        )
+      ) : (
+        <HevyConnectPrompt />
       )}
     </Card>
   );
@@ -152,6 +179,9 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(0,0,0,0.07)",
+  },
+  strengthHeader: {
+    marginTop: 4,
   },
 
   list: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(0,0,0,0.07)", marginTop: 8, paddingTop: 2 },

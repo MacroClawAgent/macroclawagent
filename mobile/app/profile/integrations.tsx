@@ -4,16 +4,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { useHealthKit } from "@/hooks/useHealthKit";
+import { useHevyWorkouts } from "@/hooks/useHevyWorkouts";
 
 const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB"; const TEAL = "#2BB6A6";
 
 const ITEMS = [
-  { key: "strava",        name: "Strava",          sub: "Sync training & activities",     emoji: "🏃", bg: "rgba(252,82,0,0.10)",    connectUrl: "https://jonnoai.com", live: true },
-  { key: "apple_health",  name: "Apple Health",    sub: "Steps, heart rate & sleep",      emoji: "❤️", bg: "rgba(255,59,48,0.10)",   live: Platform.OS === "ios" },
-  { key: "garmin",        name: "Garmin Connect",  sub: "GPS watch & workout data",       emoji: "⌚", bg: "rgba(0,126,200,0.10)",   live: false },
-  { key: "myfitnesspal",  name: "MyFitnessPal",    sub: "Import food diary & logs",       emoji: "🥗", bg: "rgba(0,180,90,0.10)",    live: false },
-  { key: "uber_eats",     name: "Uber Eats",       sub: "Order meals from Smart Cart",    emoji: "🛵", bg: "rgba(6,202,127,0.10)",   live: false },
-  { key: "google_fit",    name: "Google Fit",      sub: "Android health & activity data", emoji: "🟢", bg: "rgba(66,133,244,0.10)",  live: false },
+  { key: "strava",        name: "Strava",          sub: "Sync training & activities",          emoji: "🏃", bg: "rgba(252,82,0,0.10)",    connectUrl: "https://jonnoai.com",          live: true },
+  { key: "apple_health",  name: "Apple Health",    sub: "Steps, heart rate & sleep",           emoji: "❤️", bg: "rgba(255,59,48,0.10)",   live: Platform.OS === "ios" },
+  { key: "hevy",          name: "Hevy",            sub: "Strength workouts, sets & volume",    emoji: "🏋️", bg: "rgba(168,85,247,0.10)",  connectUrl: "https://hevy.com/settings?developer", live: true },
+  { key: "garmin",        name: "Garmin Connect",  sub: "GPS watch & workout data",            emoji: "⌚", bg: "rgba(0,126,200,0.10)",   live: false },
+  { key: "myfitnesspal",  name: "MyFitnessPal",    sub: "Import food diary & logs",            emoji: "🥗", bg: "rgba(0,180,90,0.10)",    live: false },
+  { key: "uber_eats",     name: "Uber Eats",       sub: "Order meals from Smart Cart",         emoji: "🛵", bg: "rgba(6,202,127,0.10)",   live: false },
+  { key: "google_fit",    name: "Google Fit",      sub: "Android health & activity data",      emoji: "🟢", bg: "rgba(66,133,244,0.10)",  live: false },
 ];
 
 function Divider() { return <View style={s.divider} />; }
@@ -21,12 +23,14 @@ function Divider() { return <View style={s.divider} />; }
 export default function IntegrationsScreen() {
   const { userProfile } = useAuth();
   const hk = useHealthKit();
+  const hevy = useHevyWorkouts(1); // lightweight check — just 1 day to test connection
   const live = ITEMS.filter((i) => i.live);
   const soon = ITEMS.filter((i) => !i.live);
 
   function isConnected(key: string) {
     if (key === "strava") return !!userProfile?.strava_athlete_id;
     if (key === "apple_health") return hk.authorized;
+    if (key === "hevy") return hevy.isConnected;
     return false;
   }
 
