@@ -1,5 +1,5 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
@@ -25,10 +25,11 @@ function TabIcon({
   );
 }
 
-function LogFABButton({ onPress }: { onPress?: () => void }) {
+function LogFABButton() {
+  const router = useRouter();
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => router.push("/nutrition/log-food" as any)}
       activeOpacity={0.82}
       style={fabStyles.wrap}
     >
@@ -131,7 +132,7 @@ export default function TabLayout() {
         name="log"
         options={{
           title: "",
-          tabBarButton: (props) => <LogFABButton onPress={props.onPress ?? undefined} />,
+          tabBarButton: () => <LogFABButton />,
         }}
       />
 
