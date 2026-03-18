@@ -17,7 +17,7 @@ import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
 
 const SCREEN_W = Dimensions.get("window").width;
 const CARD_COUNT = 3;
-const CAROUSEL_H = 300;
+const CAROUSEL_H = 400;
 
 const DISCOVER_ITEMS = [
   { label: "Workouts",  route: "/discover/workouts",  ios: "dumbbell.fill",          android: "fitness_center",  iconColor: "#5C8CFF", iconBg: "rgba(92,140,255,0.18)" },
