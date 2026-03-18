@@ -42,7 +42,8 @@ export function AppHeader({
       <View style={styles.left}>
         {showBack ? (
           <TouchableOpacity onPress={handleBack} activeOpacity={0.7} style={styles.backBtn}>
-            <Text style={[styles.backArrow, { color: resolvedText }]}>←</Text>
+            <Text style={[styles.backArrow, { color: resolvedText }]}>‹</Text>
+            <Text style={[styles.backLabel, { color: resolvedText }]}>Back</Text>
           </TouchableOpacity>
         ) : null}
         {wordmark ? (
@@ -111,10 +112,18 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   backBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
     marginRight: 4,
   },
   backArrow: {
-    fontSize: 22,
-    fontWeight: "400",
+    fontSize: 26,
+    fontWeight: "300",
+    lineHeight: 28,
+  },
+  backLabel: {
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
