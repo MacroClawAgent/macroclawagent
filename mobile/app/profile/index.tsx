@@ -1,7 +1,6 @@
 import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
@@ -63,20 +62,16 @@ export default function ProfileScreen() {
     performance: "Performance",  maintain: "Stay Healthy",
   };
 
-  const GOAL_META: Record<string, { emoji: string; colors: [string, string] }> = {
-    lose_weight:  { emoji: "🔥", colors: ["#FB923C", "#EF4444"] },
-    build_muscle: { emoji: "💪", colors: ["#C084FC", "#7C3AED"] },
-    performance:  { emoji: "⚡", colors: ["#60A5FA", "#2563EB"] },
-    maintain:     { emoji: "🌿", colors: ["#4ADE80", "#16A34A"] },
+  const GOAL_EMOJI: Record<string, string> = {
+    lose_weight: "🔥", build_muscle: "💪", performance: "⚡", maintain: "🌿",
   };
-  const goal     = userProfile?.fitness_goal ?? "maintain";
-  const goalMeta = GOAL_META[goal] ?? { emoji: "🌿", colors: ["#34D399", "#2BB6A6"] as [string,string] };
+  const goal = userProfile?.fitness_goal ?? "maintain";
 
-  // Extra badges: activity, nutrition
+  // Badges: goal, activity source, nutrition
   const badges = [
-    { emoji: goalMeta.emoji,                         pos: { bottom: -4, right: -4 },  bg: goalMeta.colors[0] },
-    { emoji: userProfile?.strava_athlete_id ? "🏃" : "🥗", pos: { top: -4, right: -4 },   bg: "#F4F5F7" },
-    { emoji: "✦",                                    pos: { top: -4, left: -4 },   bg: "#2BB6A6" },
+    { emoji: GOAL_EMOJI[goal] ?? "🌿",                      pos: { bottom: -5, right: -5 } },
+    { emoji: userProfile?.strava_athlete_id ? "🏃" : "🥗",  pos: { top: -5, right: -5 } },
+    { emoji: "📊",                                           pos: { top: -5, left: -5 } },
   ];
 
   return (
@@ -93,18 +88,13 @@ export default function ProfileScreen() {
         <View style={s.hero}>
           {/* Avatar with gradient ring + floating badges */}
           <View style={s.avatarWrap}>
-            <LinearGradient
-              colors={goalMeta.colors}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={s.gradientRing}
-            >
+            <View style={s.avatarRing}>
               <View style={s.avatar}>
                 <Text style={s.avatarText}>{initials}</Text>
               </View>
-            </LinearGradient>
+            </View>
             {badges.map((b, i) => (
-              <View key={i} style={[s.badge, { backgroundColor: b.bg }, b.pos as any]}>
+              <View key={i} style={[s.badge, b.pos as any]}>
                 <Text style={s.badgeEmoji}>{b.emoji}</Text>
               </View>
             ))}
@@ -114,9 +104,9 @@ export default function ProfileScreen() {
             <Text style={s.heroName}>{name}</Text>
             <Text style={s.heroEmail}>{email}</Text>
             {userProfile?.fitness_goal && (
-              <View style={[s.goalPill, { backgroundColor: goalMeta.colors[0] + "22" }]}>
-                <Text style={[s.goalPillText, { color: goalMeta.colors[1] }]}>
-                  {goalMeta.emoji}  {goalLabel[goal]}
+              <View style={s.goalPill}>
+                <Text style={s.goalPillText}>
+                  {GOAL_EMOJI[goal]}  {goalLabel[goal]}
                 </Text>
               </View>
             )}
@@ -187,29 +177,34 @@ const s = StyleSheet.create({
     backgroundColor: WHITE, borderRadius: 20, padding: 20,
     borderWidth: 1, borderColor: BORDER,
   },
-  avatarWrap:  { width: 84, height: 84, position: "relative" },
-  gradientRing: {
-    width: 84, height: 84, borderRadius: 42,
-    padding: 3, justifyContent: "center", alignItems: "center",
-  },
-  avatar:     { width: 76, height: 76, borderRadius: 38, backgroundColor: WHITE, justifyContent: "center", alignItems: "center" },
-  avatarText: { fontSize: 26, fontWeight: "900", color: "#1C1C1E" },
-  badge: {
-    position: "absolute", width: 26, height: 26, borderRadius: 13,
+  avatarWrap: { width: 88, height: 88, position: "relative" },
+  avatarRing: {
+    width: 88, height: 88, borderRadius: 44,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderWidth: 3, borderColor: "rgba(255,255,255,0.95)",
     justifyContent: "center", alignItems: "center",
-    borderWidth: 2, borderColor: WHITE,
-    shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    shadowColor: "#000", shadowOpacity: 0.10, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  badgeEmoji: { fontSize: 12 },
+  avatar:     { width: 78, height: 78, borderRadius: 39, backgroundColor: TEAL, justifyContent: "center", alignItems: "center" },
+  avatarText: { fontSize: 26, fontWeight: "900", color: WHITE },
+  badge: {
+    position: "absolute", width: 28, height: 28, borderRadius: 14,
+    backgroundColor: WHITE,
+    justifyContent: "center", alignItems: "center",
+    borderWidth: 2, borderColor: "rgba(255,255,255,0.9)",
+    shadowColor: "#000", shadowOpacity: 0.10, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  badgeEmoji: { fontSize: 13 },
   heroInfo:   { flex: 1, gap: 2 },
   heroName:   { fontSize: 18, fontWeight: "800", color: "#1C1C1E" },
   heroEmail:  { fontSize: 12, color: "#9CA3AF" },
   goalPill: {
     marginTop: 6, alignSelf: "flex-start",
-    borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5,
+    backgroundColor: TEAL2, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5,
   },
-  goalPillText: { fontSize: 13, fontWeight: "700" },
+  goalPillText: { fontSize: 13, fontWeight: "700", color: TEAL },
 
   sectionLabel: {
     fontSize: 11, fontWeight: "700", color: "#9CA3AF",
