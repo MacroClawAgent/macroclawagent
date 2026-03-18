@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Card } from "../../ui/Card";
 import { apiGet } from "../../../lib/api";
 
@@ -24,7 +22,6 @@ function toLocalDateStr() {
 }
 
 export function MealsEatenCard() {
-  const router = useRouter();
   const [items, setItems] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,19 +56,6 @@ export function MealsEatenCard() {
             )}
           </View>
         </View>
-        <TouchableOpacity
-          onPress={() => router.push("/nutrition/log-food" as any)}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={["#5C8CFF", "#6BA9FF"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.logBtn}
-          >
-            <Text style={styles.logBtnText}>+ Log</Text>
-          </LinearGradient>
-        </TouchableOpacity>
       </View>
 
       {/* Content */}
@@ -83,7 +67,7 @@ export function MealsEatenCard() {
         <View style={styles.center}>
           <Text style={styles.emptyTitle}>Nothing logged yet</Text>
           <Text style={styles.emptyBody}>
-            Tap + Log to add your first meal
+            Use the + button below to log a meal
           </Text>
         </View>
       ) : (
@@ -115,7 +99,7 @@ export function MealsEatenCard() {
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 20, gap: 12 },
+  card: { marginHorizontal: 20, gap: 12, flex: 1 },
 
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -123,9 +107,6 @@ const styles = StyleSheet.create({
   iconEmoji: { fontSize: 18 },
   title: { fontSize: 16, fontWeight: "700", letterSpacing: -0.3, color: "#1A1A1A" },
   sub: { fontSize: 11, fontWeight: "500", marginTop: 1, color: "#6B7280" },
-  logBtn: { borderRadius: 20, paddingHorizontal: 16, paddingVertical: 7 },
-  logBtnText: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
-
   center: { alignItems: "center", justifyContent: "center", paddingVertical: 28, gap: 4 },
   emptyTitle: { fontSize: 14, fontWeight: "700", color: "#1A1A1A" },
   emptyBody: { fontSize: 12, fontWeight: "500", color: "#6B7280" },

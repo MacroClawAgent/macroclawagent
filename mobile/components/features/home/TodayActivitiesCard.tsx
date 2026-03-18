@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useRouter } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { Card } from "../../ui/Card";
 import { apiGet } from "../../../lib/api";
@@ -32,11 +31,9 @@ interface Props {
 
 function ActivityList({
   activities,
-  router,
   dimmed = false,
 }: {
   activities: ActivityRow[];
-  router: any;
   dimmed?: boolean;
 }) {
   return (
@@ -44,10 +41,8 @@ function ActivityList({
       {activities.map((act, idx) => {
         const meta = getTypeMeta(act.type);
         return (
-          <TouchableOpacity
+          <View
             key={act.id}
-            onPress={() => router.push("/(tabs)/activity" as any)}
-            activeOpacity={0.7}
             style={[
               styles.row,
               idx === activities.length - 1 && styles.rowLast,
@@ -77,7 +72,7 @@ function ActivityList({
             ) : act.calories ? (
               <Text style={[styles.kcalText, { color: "#9CA3AF" }]}>{act.calories} kcal</Text>
             ) : null}
-          </TouchableOpacity>
+          </View>
         );
       })}
     </View>
@@ -85,7 +80,6 @@ function ActivityList({
 }
 
 export function TodayActivitiesCard({ activities }: Props) {
-  const router = useRouter();
   const [recentActivities, setRecentActivities] = useState<ActivityRow[]>([]);
 
   useEffect(() => {
@@ -115,18 +109,6 @@ export function TodayActivitiesCard({ activities }: Props) {
             <Text style={styles.sub}>Today</Text>
           </View>
         </View>
-        <TouchableOpacity
-          onPress={() => router.push("/(tabs)/activity" as any)}
-          style={styles.viewAllBtn}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.viewAllText}>View all</Text>
-          <SymbolView
-            name={{ ios: "chevron.right", android: "chevron_right", web: "chevron_right" }}
-            tintColor="#9CA3AF"
-            size={11}
-          />
-        </TouchableOpacity>
       </View>
 
       {/* Today's activities */}
@@ -135,14 +117,14 @@ export function TodayActivitiesCard({ activities }: Props) {
           <Text style={styles.emptyText}>No activities today</Text>
         </View>
       ) : (
-        <ActivityList activities={activities} router={router} />
+        <ActivityList activities={activities} />
       )}
 
       {/* Recent history — fills card height */}
       {recentActivities.length > 0 && (
         <>
           <Text style={styles.sectionLabel}>Recent</Text>
-          <ActivityList activities={recentActivities} router={router} dimmed />
+          <ActivityList activities={recentActivities} dimmed />
         </>
       )}
     </Card>
@@ -150,16 +132,13 @@ export function TodayActivitiesCard({ activities }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 20, minHeight: 240 },
+  card: { marginHorizontal: 20, flex: 1 },
 
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   iconBadge: { width: 36, height: 36, borderRadius: 11, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(249,115,22,0.15)" },
   title: { fontSize: 16, fontWeight: "700", letterSpacing: -0.3, color: "#1A1A1A" },
   sub: { fontSize: 11, fontWeight: "500", marginTop: 1, color: "#6B7280" },
-  viewAllBtn: { flexDirection: "row", alignItems: "center", gap: 3 },
-  viewAllText: { fontSize: 12, fontWeight: "600", color: "#9CA3AF" },
-
   emptyWrap: { paddingVertical: 8 },
   emptyText: { fontSize: 13, fontWeight: "500", color: "#9CA3AF" },
 

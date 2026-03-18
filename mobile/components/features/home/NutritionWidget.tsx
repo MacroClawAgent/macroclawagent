@@ -174,7 +174,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 20, gap: 14 },
+  card: { marginHorizontal: 20, gap: 14, flex: 1 },
 
   // Header
   header:     { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },

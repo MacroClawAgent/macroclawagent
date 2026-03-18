@@ -17,6 +17,7 @@ import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
 
 const SCREEN_W = Dimensions.get("window").width;
 const CARD_COUNT = 3;
+const CAROUSEL_H = 300;
 
 const DISCOVER_ITEMS = [
   { label: "Workouts",  route: "/discover/workouts",  ios: "dumbbell.fill",          android: "fitness_center",  iconColor: "#5C8CFF", iconBg: "rgba(92,140,255,0.18)" },
@@ -120,7 +121,7 @@ export default function HomeScreen() {
               setCarouselIdx(idx);
             }}
           >
-            <View style={{ width: SCREEN_W }}>
+            <View style={{ width: SCREEN_W, height: CAROUSEL_H }}>
               {vm.loading ? <SkeletonCard /> : (
                 <NutritionWidget
                   calorieProgress={vm.calorieProgress}
@@ -129,12 +130,12 @@ export default function HomeScreen() {
                 />
               )}
             </View>
-            <View style={{ width: SCREEN_W }}>
+            <View style={{ width: SCREEN_W, height: CAROUSEL_H }}>
               {vm.loading ? <SkeletonCard /> : (
                 <TodayActivitiesCard activities={vm.todayActivities} />
               )}
             </View>
-            <View style={{ width: SCREEN_W }}>
+            <View style={{ width: SCREEN_W, height: CAROUSEL_H }}>
               <MealsEatenCard />
             </View>
           </ScrollView>
