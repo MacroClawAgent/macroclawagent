@@ -1,7 +1,6 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Card } from "../../ui/Card";
 
@@ -115,7 +114,6 @@ const vb = StyleSheet.create({
 });
 
 export function NutritionWidget({ calorieProgress, macros, goalLabel }: NutritionWidgetProps) {
-  const router = useRouter();
   const calPct = Math.round(calorieProgress.ratio * 100);
 
   return (
@@ -135,19 +133,6 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
             <Text style={styles.widgetSub}>{goalLabel}</Text>
           </View>
         </View>
-        <TouchableOpacity
-          onPress={() => router.push("/nutrition/log-food" as any)}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={["#3B82F6", "#60A5FA"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.logBtn}
-          >
-            <Text style={styles.logBtnText}>+ Log</Text>
-          </LinearGradient>
-        </TouchableOpacity>
       </View>
 
       {/* Calorie summary row */}
@@ -197,9 +182,6 @@ const styles = StyleSheet.create({
   iconBadge:  { width: 36, height: 36, borderRadius: 11, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(43,182,166,0.18)" },
   widgetTitle: { fontSize: 16, fontWeight: "700", letterSpacing: -0.3, color: "#1A1A1A" },
   widgetSub:   { fontSize: 11, fontWeight: "500", marginTop: 1, color: "#6B7280" },
-  logBtn:     { borderRadius: 20, paddingHorizontal: 16, paddingVertical: 7 },
-  logBtnText: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
-
   // Calorie summary
   calRow:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   calLeft: { flexDirection: "row", alignItems: "baseline", gap: 3 },

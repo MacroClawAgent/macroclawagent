@@ -1,6 +1,7 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import { Platform, StyleSheet } from "react-native";
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -23,6 +24,54 @@ function TabIcon({
     />
   );
 }
+
+function LogFABButton({ onPress }: { onPress?: () => void }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.82}
+      style={fabStyles.wrap}
+    >
+      <LinearGradient
+        colors={["#3FD4C8", "#20C7B7", "#18A89A"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={fabStyles.circle}
+      >
+        <Text style={fabStyles.plus}>+</Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+}
+
+const fabStyles = StyleSheet.create({
+  wrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginBottom: Platform.OS === "ios" ? 10 : 4,
+  },
+  circle: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -22,
+    shadowColor: "#20C7B7",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  plus: {
+    fontSize: 30,
+    fontWeight: "300",
+    color: "#FFFFFF",
+    lineHeight: 34,
+    marginTop: -1,
+  },
+});
 
 export default function TabLayout() {
   const { colors } = useTheme();
@@ -74,6 +123,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <TabIcon iosName="person.2.fill" androidName="group" color={color} />
           ),
+        }}
+      />
+
+      {/* ── Log FAB (center) ── */}
+      <Tabs.Screen
+        name="log"
+        options={{
+          title: "",
+          tabBarButton: (props) => <LogFABButton onPress={props.onPress ?? undefined} />,
         }}
       />
 
