@@ -20,6 +20,7 @@ export interface ActivityContext {
 export interface AgentViewModel {
   messages: AgentMessage[];
   latestResponse: string | null;
+  apiError: string | null;
   input: string;
   setInput: (s: string) => void;
   send: () => Promise<void>;
@@ -119,6 +120,7 @@ export function useAgentViewModel(): AgentViewModel {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [pendingSmartCartAction, setPendingSmartCartAction] = useState(false);
   const [activityContext, setActivityContext] = useState<ActivityContext | null>(null);
   const [macroContext, setMacroContext] = useState({
@@ -143,7 +145,7 @@ export function useAgentViewModel(): AgentViewModel {
     async function init() {
       try {
         const [nutritionRes, activityRes] = await Promise.allSettled([
-          apiGet<{ log: NutritionLog; goals: UserProfile }>("/api/nutrition/today"),
+          apiGet<{ today: NutritionLog; goals: UserProfile }>("/api/nutrition/today"),
           apiGet<{ activities: ActivityRow[] }>("/api/activities?limit=1"),
         ]);
 
@@ -153,7 +155,7 @@ export function useAgentViewModel(): AgentViewModel {
         let firstName = userProfile?.full_name?.split(" ")[0] ?? "there";
 
         if (nutritionRes.status === "fulfilled") {
-          const { log, goals } = nutritionRes.value;
+          const { today: log, goals } = nutritionRes.value;
           const proteinConsumed = Math.round(log?.protein_g ?? 0);
           const proteinTarget = goals?.protein_goal ?? 120;
           const caloriesConsumed = log?.calories_consumed ?? 0;
@@ -211,16 +213,8 @@ export function useAgentViewModel(): AgentViewModel {
   const sendMessage = useCallback(async (text: string) => {
     if (!text || sending) return;
     setSending(true);
+    setApiError(null);
     setPendingSmartCartAction(false);
-
-    const tempId = `temp_${Date.now()}`;
-    const tempMsg: AgentMessage = {
-      id: tempId,
-      role: "user",
-      content: text,
-      created_at: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, tempMsg]);
 
     try {
       const res = await apiPost<{ reply: string; intent: string; suggestSmartCart: boolean }>(
@@ -235,18 +229,13 @@ export function useAgentViewModel(): AgentViewModel {
         created_at: new Date().toISOString(),
       };
 
-      setMessages((prev) =>
-        prev.filter((m) => m.id !== tempId).concat([
-          { ...tempMsg, id: `user_${Date.now() - 1}` },
-          assistantMsg,
-        ])
-      );
+      setMessages((prev) => [...prev, assistantMsg]);
 
       if (res.suggestSmartCart) {
         setPendingSmartCartAction(true);
       }
-    } catch {
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+    } catch (e) {
+      setApiError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {
       setSending(false);
     }
@@ -282,6 +271,7 @@ export function useAgentViewModel(): AgentViewModel {
   return {
     messages,
     latestResponse,
+    apiError,
     input,
     setInput,
     send,

@@ -137,16 +137,20 @@ const sec = StyleSheet.create({
 
 function ResponseCard({
   text,
+  error,
   sending,
   onAdjust,
   onDifferent,
+  onRetry,
 }: {
   text: string | null;
+  error: string | null;
   sending: boolean;
   onAdjust: () => void;
   onDifferent: () => void;
+  onRetry: () => void;
 }) {
-  if (!sending && !text) return null;
+  if (!sending && !text && !error) return null;
 
   return (
     <View style={resp.card}>
@@ -161,6 +165,13 @@ function ResponseCard({
         <View style={resp.loadingRow}>
           <ActivityIndicator size="small" color={TEAL} />
           <Text style={resp.loadingText}>Thinking…</Text>
+        </View>
+      ) : error ? (
+        <View style={resp.errorWrap}>
+          <Text style={resp.errorText}>{error}</Text>
+          <TouchableOpacity onPress={onRetry} style={resp.retryBtn} activeOpacity={0.75}>
+            <Text style={resp.retryTxt}>Try again</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <>
@@ -191,6 +202,10 @@ const resp = StyleSheet.create({
   actions: { flexDirection: "row", gap: 8, paddingTop: 4, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: BORDER },
   actionBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: BG, borderWidth: 1, borderColor: BORDER },
   actionTxt: { fontSize: 12, fontWeight: "700", color: "#6B7280" },
+  errorWrap: { gap: 10 },
+  errorText: { fontSize: 14, color: "#EF4444", lineHeight: 20, fontWeight: "500" },
+  retryBtn: { alignSelf: "flex-start", paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: "rgba(239,68,68,0.08)", borderWidth: 1, borderColor: "rgba(239,68,68,0.2)" },
+  retryTxt: { fontSize: 12, fontWeight: "700", color: "#EF4444" },
 });
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -198,6 +213,12 @@ const resp = StyleSheet.create({
 export default function AgentScreen() {
   const vm = useAgentViewModel();
   const { macroContext: mc, activityContext: ac } = vm;
+  const [lastSent, setLastSent] = React.useState("");
+
+  function send(text: string) {
+    setLastSent(text);
+    vm.quickSend(text);
+  }
 
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
@@ -240,7 +261,7 @@ export default function AgentScreen() {
           emoji="🍽"
           title="Generate Today's Meal Plan"
           subtitle="Full day tailored to your macros & goal"
-          onPress={() => vm.quickSend("Build a complete meal plan for today tailored to my goals and macros")}
+          onPress={() => send("Build a complete meal plan for today tailored to my goals and macros")}
           disabled={vm.sending}
           primary
         />
@@ -252,14 +273,14 @@ export default function AgentScreen() {
             emoji="📅"
             title="This Week's Plan"
             subtitle="7-day meal structure"
-            onPress={() => vm.quickSend("Create a full meal plan for this week")}
+            onPress={() => send("Create a full meal plan for this week")}
             disabled={vm.sending}
           />
           <ActionCard
             emoji="🥩"
             title="Hit Protein Goal"
             subtitle={`${Math.max(0, mc.proteinTarget - mc.protein)}g still to go today`}
-            onPress={() => vm.quickSend("What should I eat to hit my protein goal today?")}
+            onPress={() => send("What should I eat to hit my protein goal today?")}
             disabled={vm.sending}
           />
         </View>
@@ -268,14 +289,14 @@ export default function AgentScreen() {
             emoji="⚡"
             title="Pre-Workout Fuel"
             subtitle="Optimise your energy"
-            onPress={() => vm.quickSend("What should I eat before my workout?")}
+            onPress={() => send("What should I eat before my workout?")}
             disabled={vm.sending}
           />
           <ActionCard
             emoji="🔄"
             title="Recovery Nutrition"
             subtitle={ac ? `After your ${ac.type}` : "Post-training meals"}
-            onPress={() => vm.quickSend("What should I eat after training to recover?")}
+            onPress={() => send("What should I eat after training to recover?")}
             disabled={vm.sending}
           />
         </View>
@@ -287,14 +308,14 @@ export default function AgentScreen() {
             emoji="💪"
             title="Weekly Workout Plan"
             subtitle="Structured training schedule"
-            onPress={() => vm.quickSend("Create a weekly workout plan for me based on my fitness goal")}
+            onPress={() => send("Create a weekly workout plan for me based on my fitness goal")}
             disabled={vm.sending}
           />
           <ActionCard
             emoji="🎯"
             title="Achieve My Goal"
             subtitle="Step-by-step strategy"
-            onPress={() => vm.quickSend("What's the best strategy for me to achieve my fitness goal?")}
+            onPress={() => send("What's the best strategy for me to achieve my fitness goal?")}
             disabled={vm.sending}
           />
         </View>
@@ -306,7 +327,7 @@ export default function AgentScreen() {
             emoji="🛒"
             title="Build Smart Cart"
             subtitle="Turn your plan into a cart"
-            onPress={() => vm.quickSend("Build today's meals and save to Smart Cart")}
+            onPress={() => send("Build today's meals and save to Smart Cart")}
             disabled={vm.sending}
             fullWidth={false}
           />
@@ -314,18 +335,20 @@ export default function AgentScreen() {
             emoji="🥗"
             title="Budget Meal Plan"
             subtitle="Affordable & balanced"
-            onPress={() => vm.quickSend("Create a budget-friendly meal plan for this week")}
+            onPress={() => send("Create a budget-friendly meal plan for this week")}
             disabled={vm.sending}
           />
         </View>
 
         {/* Jonno response card */}
-        {(vm.sending || vm.latestResponse) && (
+        {(vm.sending || vm.latestResponse || vm.apiError) && (
           <ResponseCard
             text={vm.latestResponse}
+            error={vm.apiError}
             sending={vm.sending}
-            onAdjust={() => vm.quickSend("Can you adjust that plan?")}
-            onDifferent={() => vm.quickSend("Give me a completely different option")}
+            onAdjust={() => send("Can you adjust that plan?")}
+            onDifferent={() => send("Give me a completely different option")}
+            onRetry={() => send(lastSent)}
           />
         )}
 
