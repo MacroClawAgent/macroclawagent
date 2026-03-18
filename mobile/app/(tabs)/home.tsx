@@ -49,8 +49,8 @@ export default function HomeScreen() {
   // (e.g. after returning from food log or photo confirm screens)
   useFocusEffect(
     useCallback(() => {
-      vm.refresh();
-    }, [vm.refresh])
+      vm.silentRefresh();
+    }, [vm.silentRefresh])
   );
 
   return (

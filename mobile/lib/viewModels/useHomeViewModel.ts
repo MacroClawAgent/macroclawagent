@@ -38,6 +38,7 @@ export interface HomeViewModel {
   loading: boolean;
   refreshing: boolean;
   refresh: () => void;
+  silentRefresh: () => void;
 }
 
 const GOAL_META: Record<string, { label: string; icon: GoalIcon; ringColor: string }> = {
@@ -159,6 +160,7 @@ export function useHomeViewModel(): HomeViewModel {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const refresh = useCallback(() => { fetchData(true); }, [fetchData]);
+  const silentRefresh = useCallback(() => { fetchData(false); }, [fetchData]);
 
   const profile = userProfile!;
   const cal = nutrition?.calories_consumed ?? 0;
@@ -210,5 +212,6 @@ export function useHomeViewModel(): HomeViewModel {
     loading,
     refreshing,
     refresh,
+    silentRefresh,
   };
 }
