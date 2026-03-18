@@ -19,6 +19,7 @@ export interface ActivityContext {
 
 export interface AgentViewModel {
   messages: AgentMessage[];
+  latestResponse: string | null;
   input: string;
   setInput: (s: string) => void;
   send: () => Promise<void>;
@@ -31,6 +32,10 @@ export interface AgentViewModel {
     proteinTarget: number;
     calories: number;
     caloriesTarget: number;
+    carbs: number;
+    carbsTarget: number;
+    fat: number;
+    fatTarget: number;
   };
   activityContext: ActivityContext | null;
   suggestedPrompts: string[];
@@ -121,6 +126,10 @@ export function useAgentViewModel(): AgentViewModel {
     proteinTarget: userProfile?.protein_goal ?? 120,
     calories: 0,
     caloriesTarget: userProfile?.calorie_goal ?? 2000,
+    carbs: 0,
+    carbsTarget: userProfile?.carbs_goal ?? 250,
+    fat: 0,
+    fatTarget: userProfile?.fat_goal ?? 70,
   });
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([
     "What should I eat today?",
@@ -158,6 +167,10 @@ export function useAgentViewModel(): AgentViewModel {
             proteinTarget,
             calories: caloriesConsumed,
             caloriesTarget,
+            carbs: Math.round(log?.carbs_g ?? 0),
+            carbsTarget: goals?.carbs_goal ?? 250,
+            fat: Math.round(log?.fat_g ?? 0),
+            fatTarget: goals?.fat_goal ?? 70,
           });
         }
 
@@ -261,8 +274,14 @@ export function useAgentViewModel(): AgentViewModel {
 
   const showFollowUps = messages.length > 1 && !sending && !pendingSmartCartAction;
 
+  // Latest non-welcome assistant response (for the response card)
+  const latestResponse = messages
+    .filter((m) => m.role === "assistant" && m.id !== "welcome")
+    .slice(-1)[0]?.content ?? null;
+
   return {
     messages,
+    latestResponse,
     input,
     setInput,
     send,
