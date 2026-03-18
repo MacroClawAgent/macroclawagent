@@ -281,8 +281,12 @@ export default function ProfileScreen() {
       if (!res.url) return;
       const result = await WebBrowser.openAuthSessionAsync(res.url, "jonno://strava-connected");
       if (result.type === "success") {
+        if (result.url.includes("error=denied")) {
+          Alert.alert("Connection cancelled", "Strava authorisation was declined.");
+          return;
+        }
         if (result.url.includes("error=")) {
-          Alert.alert("Connection failed", "Strava authorization was denied.");
+          Alert.alert("Connection failed", "Something went wrong on the server. Check your Strava app settings and try again.");
           return;
         }
         router.push("/strava-connected");

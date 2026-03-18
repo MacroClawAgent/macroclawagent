@@ -84,7 +84,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`jonno://strava-connected`);
     }
     return NextResponse.redirect(`${settingsUrl}&connected=true`);
-  } catch {
+  } catch (err) {
+    console.error("[strava/callback] error:", err);
     if (isMobile) return NextResponse.redirect(`jonno://strava-connected?error=server_error`);
     return NextResponse.redirect(`${settingsUrl}&error=strava_error`);
   }
