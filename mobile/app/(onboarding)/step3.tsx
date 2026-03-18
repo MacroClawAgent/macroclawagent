@@ -56,10 +56,11 @@ export default function OnboardingStep3() {
         calorie_goal: parseInt(calorieGoal) || 2000,
         protein_goal: parseInt(proteinGoal) || 120,
         fitness_goal: params.goal,
-        profile_complete: true,
       });
-      await refreshProfile();
-      router.replace("/(tabs)/home");
+      router.push({
+        pathname: "/(onboarding)/step4",
+        params: { full_name: params.full_name, goal: params.goal },
+      });
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Something went wrong.";
       Alert.alert("Error", message);
@@ -82,9 +83,11 @@ export default function OnboardingStep3() {
           <View style={[styles.progressDot, styles.progressDone]} />
           <View style={[styles.progressLine, styles.progressLineDone]} />
           <View style={[styles.progressDot, styles.progressActive]} />
+          <View style={styles.progressLine} />
+          <View style={styles.progressDot} />
         </View>
 
-        <Text style={styles.step}>Step 3 of 3</Text>
+        <Text style={styles.step}>Step 3 of 4</Text>
         <Text style={styles.title}>Your body stats</Text>
         <Text style={styles.subtitle}>
           Jonno will calculate accurate targets for{" "}
@@ -158,7 +161,7 @@ export default function OnboardingStep3() {
           >
             {loading
               ? <ActivityIndicator color="#0B0B0B" />
-              : <Text style={styles.buttonText}>Start using Jonno 🎉</Text>
+              : <Text style={styles.buttonText}>Continue →</Text>
             }
           </TouchableOpacity>
         </View>

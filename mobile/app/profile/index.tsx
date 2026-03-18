@@ -36,6 +36,14 @@ const MENU_ITEMS = [
     route: "/profile/integrations",
   },
   {
+    key: "community",
+    label: "Community Profile",
+    sub: "Username, bio & privacy settings",
+    emoji: "🌐",
+    bg: "rgba(43,182,166,0.10)",
+    route: "/profile/community-profile",
+  },
+  {
     key: "settings",
     label: "Settings",
     sub: "Units, notifications & preferences",

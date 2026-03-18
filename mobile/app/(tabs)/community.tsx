@@ -1,19 +1,29 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { consumePendingCommunityPost } from "@/lib/communityStore";
+import { apiPost, apiDelete } from "@/lib/api";
+
+const BASE_URL: string = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://jonnoai.com");
+
+interface SearchUser {
+  id: string; username: string; full_name: string;
+  bio?: string; avatar_url?: string; fitness_goal?: string; is_public?: boolean;
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface Ingredient { name: string; grams: number; calories: number; }
@@ -230,6 +240,7 @@ const TABS: { key: TabKey; label: string }[] = [
 
 export default function CommunityScreen() {
   const { userProfile } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("feed");
   const [posts, setPosts] = useState<Post[]>([]);
   const [bumpedIds, setBumpedIds] = useState<Set<string>>(new Set());
@@ -237,6 +248,12 @@ export default function CommunityScreen() {
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
+
+  // Search / follow state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Consume any pending post from photo-confirm on focus
   useFocusEffect(
@@ -296,13 +313,43 @@ export default function CommunityScreen() {
     });
   };
 
-  const toggleFollow = (id: string) => {
+  const toggleFollow = async (userId: string) => {
+    const isFollowing = followingIds.has(userId);
     setFollowingIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      isFollowing ? next.delete(userId) : next.add(userId);
       return next;
     });
+    try {
+      if (isFollowing) {
+        await apiDelete(`/api/follows?following_id=${userId}`);
+      } else {
+        await apiPost("/api/follows", { following_id: userId });
+      }
+    } catch {
+      // revert on error
+      setFollowingIds((prev) => {
+        const next = new Set(prev);
+        isFollowing ? next.add(userId) : next.delete(userId);
+        return next;
+      });
+    }
   };
+
+  function handleSearchChange(q: string) {
+    setSearchQuery(q);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    if (q.trim().length < 2) { setSearchResults([]); return; }
+    setSearchLoading(true);
+    searchTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/users/search?q=${encodeURIComponent(q.trim())}`);
+        const json = await res.json();
+        setSearchResults(json.users ?? []);
+      } catch { setSearchResults([]); }
+      finally { setSearchLoading(false); }
+    }, 500);
+  }
 
   return (
     <Screen style={{ backgroundColor: "#EEF4FA" }}>
@@ -382,10 +429,61 @@ export default function CommunityScreen() {
 
         {/* ── Following ── */}
         {activeTab === "following" && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🔍</Text>
-            <Text style={styles.emptyTitle}>No one here yet</Text>
-            <Text style={styles.emptySub}>Follow other members to see their meals and progress.</Text>
+          <View style={{ gap: 12 }}>
+            {/* Search bar */}
+            <View style={styles.searchBar}>
+              <SymbolView
+                name={{ ios: "magnifyingglass", android: "search", web: "search" }}
+                tintColor="#9CA3AF" size={16}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by username..."
+                placeholderTextColor="#9CA3AF"
+                value={searchQuery}
+                onChangeText={handleSearchChange}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {searchLoading && <ActivityIndicator size="small" color="#9CA3AF" />}
+            </View>
+
+            {/* Results */}
+            {searchResults.length > 0 ? searchResults.map((user) => (
+              <View key={user.id} style={styles.userCard}>
+                <View style={[styles.avatar, { backgroundColor: "#2BB6A622" }]}>
+                  <Text style={[styles.avatarInitial, { color: "#2BB6A6" }]}>
+                    {(user.full_name || user.username || "?")[0].toUpperCase()}
+                  </Text>
+                </View>
+                <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.7}
+                  onPress={() => router.push(`/community/${user.username}` as any)}>
+                  <Text style={styles.userName}>@{user.username}</Text>
+                  <Text style={styles.userGoal}>{user.full_name}{user.bio ? ` · ${user.bio}` : ""}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.followBtn, followingIds.has(user.id) && styles.followBtnActive]}
+                  activeOpacity={0.8}
+                  onPress={() => toggleFollow(user.id)}
+                >
+                  <Text style={[styles.followBtnText, followingIds.has(user.id) && styles.followBtnTextActive]}>
+                    {followingIds.has(user.id) ? "Following" : "Follow"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )) : searchQuery.length >= 2 && !searchLoading ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyEmoji}>🔍</Text>
+                <Text style={styles.emptyTitle}>No users found</Text>
+                <Text style={styles.emptySub}>Try a different username.</Text>
+              </View>
+            ) : searchQuery.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyEmoji}>👥</Text>
+                <Text style={styles.emptyTitle}>Find people to follow</Text>
+                <Text style={styles.emptySub}>Search by username to find and follow other members.</Text>
+              </View>
+            ) : null}
           </View>
         )}
 
@@ -605,6 +703,18 @@ const styles = StyleSheet.create({
   followBtnText: { fontSize: 13, fontWeight: "700", color: "#4C7DFF" },
   followBtnTextActive: { color: "#FFFFFF" },
 
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "rgba(255,255,255,0.8)",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
+  },
+  searchInput: { flex: 1, fontSize: 15, color: "#111827", fontWeight: "500" },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",

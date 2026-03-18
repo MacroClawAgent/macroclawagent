@@ -6,19 +6,41 @@ import {
 import { Link, router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
+const BASE_URL: string = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://jonnoai.com");
+
 export default function SignInScreen() {
   const { signIn } = useAuth();
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSignIn() {
-    if (!email || !password) {
-      Alert.alert("Required", "Please enter your email and password.");
+    if (!emailOrUsername || !password) {
+      Alert.alert("Required", "Please enter your email (or username) and password.");
       return;
     }
     setLoading(true);
-    const { error } = await signIn(email.trim(), password);
+    let email = emailOrUsername.trim();
+
+    // If no @ it's a username — look up the email first
+    if (!email.includes("@")) {
+      try {
+        const res = await fetch(`${BASE_URL}/api/users/by-username?username=${encodeURIComponent(email)}`);
+        const json = await res.json();
+        if (!res.ok || !json.email) {
+          setLoading(false);
+          Alert.alert("Not found", "No account found with that username.");
+          return;
+        }
+        email = json.email;
+      } catch {
+        setLoading(false);
+        Alert.alert("Error", "Could not reach the server. Try again.");
+        return;
+      }
+    }
+
+    const { error } = await signIn(email, password);
     setLoading(false);
     if (error) {
       Alert.alert("Sign in failed", error);
@@ -44,13 +66,13 @@ export default function SignInScreen() {
 
         <View style={styles.form}>
           <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>Email or Username</Text>
             <TextInput
               style={styles.input}
-              placeholder="you@example.com"
+              placeholder="you@example.com or @handle"
               placeholderTextColor="rgba(245,245,247,0.35)"
-              value={email}
-              onChangeText={setEmail}
+              value={emailOrUsername}
+              onChangeText={setEmailOrUsername}
               autoCapitalize="none"
               keyboardType="email-address"
               autoCorrect={false}

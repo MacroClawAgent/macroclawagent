@@ -15,6 +15,9 @@ export interface UserProfile {
   fitness_goal: string | null;
   profile_complete: boolean;
   strava_athlete_id: string | null;
+  username: string | null;
+  bio: string | null;
+  is_public: boolean;
   created_at: string;
 }
 

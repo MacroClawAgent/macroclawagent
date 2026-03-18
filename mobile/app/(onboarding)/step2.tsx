@@ -58,9 +58,11 @@ export default function OnboardingStep2() {
         <View style={[styles.progressDot, styles.progressActive]} />
         <View style={styles.progressLine} />
         <View style={styles.progressDot} />
+        <View style={styles.progressLine} />
+        <View style={styles.progressDot} />
       </View>
 
-      <Text style={styles.step}>Step 2 of 3</Text>
+      <Text style={styles.step}>Step 2 of 4</Text>
       <Text style={styles.title}>What's your goal, {firstName}?</Text>
       <Text style={styles.subtitle}>
         Jonno uses this to personalise every meal plan and nutrition recommendation for you.
