@@ -68,10 +68,10 @@ const s = StyleSheet.create({
     borderRadius: 24,
     overflow: "hidden",
     backgroundColor: "rgba(17,24,39,0.82)",
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 14,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 11,
+    paddingBottom: 10,
+    gap: 8,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.14)",
     shadowColor: "#000",
@@ -120,10 +120,10 @@ const s = StyleSheet.create({
 
   // Body
   body: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "500",
     color: "rgba(255,255,255,0.88)",
-    lineHeight: 21,
+    lineHeight: 18,
     letterSpacing: 0.1,
   },
 
@@ -134,7 +134,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 13,
+    paddingVertical: 10,
   },
   ctaText: {
     fontSize: 14,

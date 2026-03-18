@@ -127,6 +127,7 @@ interface Props {
 
 export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   const { colors } = useTheme();
+  const [showLegend, setShowLegend] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isFutureSelected, setIsFutureSelected] = useState(false);
   const [detail, setDetail] = useState<DayDetail | null>(null);
@@ -276,6 +277,10 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   return (
     <>
       {/* ══ Week strip card ══ */}
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => setShowLegend((v) => !v)}
+      >
       <BlurView intensity={20} tint="light" style={styles.card}>
         <View style={styles.cardHighlight} pointerEvents="none" />
 
@@ -340,23 +345,26 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
           })}
         </View>
 
-        {/* Always-visible legend */}
-        <View style={styles.inlineLegend}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
-            <Text style={styles.legendText}>Goal met</Text>
+        {/* Tap-to-reveal legend */}
+        {showLegend && (
+          <View style={styles.inlineLegend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
+              <Text style={styles.legendText}>Goal met</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: BLUE }]} />
+              <Text style={styles.legendText}>Logged</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
+              <Text style={styles.legendText}>Missed</Text>
+            </View>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: BLUE }]} />
-            <Text style={styles.legendText}>Logged</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
-            <Text style={styles.legendText}>Missed</Text>
-          </View>
-        </View>
+        )}
 
       </BlurView>
+      </TouchableOpacity>
 
       {/* ══ Bottom sheet modal ══ */}
       <Modal
