@@ -52,86 +52,7 @@ interface CommunityUser {
   goal: string;
 }
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
-const MOCK_POSTS: Post[] = [
-  {
-    id: "1",
-    userName: "Marcus T.",
-    userInitial: "M",
-    userColor: "#4C7DFF",
-    timeAgo: "2m ago",
-    mealName: "Post-run protein bowl",
-    mealEmoji: "🥗",
-    mealBg: "rgba(16,185,129,0.12)",
-    calories: 520,
-    protein: 48,
-    carbs: 42,
-    fat: 14,
-    bumps: 12,
-  },
-  {
-    id: "2",
-    userName: "Layla K.",
-    userInitial: "L",
-    userColor: "#F97316",
-    timeAgo: "18m ago",
-    mealName: "Overnight oats + berries",
-    mealEmoji: "🫐",
-    mealBg: "rgba(99,102,241,0.12)",
-    calories: 380,
-    protein: 24,
-    carbs: 58,
-    fat: 8,
-    bumps: 7,
-  },
-  {
-    id: "3",
-    userName: "James O.",
-    userInitial: "J",
-    userColor: "#10B981",
-    timeAgo: "1h ago",
-    mealName: "Chicken & sweet potato",
-    mealEmoji: "🍠",
-    mealBg: "rgba(249,115,22,0.12)",
-    calories: 610,
-    protein: 55,
-    carbs: 65,
-    fat: 12,
-    bumps: 24,
-  },
-  {
-    id: "4",
-    userName: "Priya N.",
-    userInitial: "P",
-    userColor: "#A78BFA",
-    timeAgo: "3h ago",
-    mealName: "Greek yoghurt parfait",
-    mealEmoji: "🍯",
-    mealBg: "rgba(167,139,250,0.12)",
-    calories: 290,
-    protein: 28,
-    carbs: 30,
-    fat: 6,
-    bumps: 18,
-  },
-];
-
-const MOCK_GROUPS: Group[] = [
-  { id: "g1", name: "Morning Runners", emoji: "🏃", description: "Daily runs, weekly goals", memberCount: 284 },
-  { id: "g2", name: "Muscle Builders", emoji: "💪", description: "Lifting logs & protein tips", memberCount: 512 },
-  { id: "g3", name: "Plant-Based Crew", emoji: "🌿", description: "Vegan & veggie meal ideas", memberCount: 193 },
-  { id: "g4", name: "Cyclists United", emoji: "🚴", description: "Rides, routes & fuelling", memberCount: 341 },
-  { id: "g5", name: "Weight Loss Squad", emoji: "🔥", description: "Deficit tracking & support", memberCount: 678 },
-  { id: "g6", name: "Meal Preppers", emoji: "📦", description: "Batch cook & macro planning", memberCount: 421 },
-];
-
-const MOCK_USERS: CommunityUser[] = [
-  { id: "u1", name: "Sofia R.", initial: "S", color: "#F97316", goal: "Build Muscle" },
-  { id: "u2", name: "Noah B.", initial: "N", color: "#4C7DFF", goal: "Performance" },
-  { id: "u3", name: "Aisha M.", initial: "A", color: "#10B981", goal: "Lose Weight" },
-  { id: "u4", name: "Ethan C.", initial: "E", color: "#A78BFA", goal: "Stay Healthy" },
-  { id: "u5", name: "Zara D.", initial: "Z", color: "#F59E0B", goal: "Build Muscle" },
-];
+// No mock data — community is empty until real users post
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -310,11 +231,11 @@ const TABS: { key: TabKey; label: string }[] = [
 export default function CommunityScreen() {
   const { userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>("feed");
-  const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [bumpedIds, setBumpedIds] = useState<Set<string>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set(["g1"]));
-  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set(["u2"]));
+  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
 
   // Consume any pending post from photo-confirm on focus
@@ -431,7 +352,13 @@ export default function CommunityScreen() {
         {/* ── Feed ── */}
         {activeTab === "feed" && (
           <>
-            {posts.map((post) => (
+            {posts.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyEmoji}>🍽️</Text>
+                <Text style={styles.emptyTitle}>No posts yet</Text>
+                <Text style={styles.emptySub}>Be the first to share a meal with the community.</Text>
+              </View>
+            ) : posts.map((post) => (
               <PostCard
                 key={post.id}
                 post={post}
@@ -446,32 +373,20 @@ export default function CommunityScreen() {
 
         {/* ── Groups ── */}
         {activeTab === "groups" && (
-          <>
-            <Text style={styles.sectionLabel}>Discover Groups</Text>
-            {MOCK_GROUPS.map((group) => (
-              <GroupCard
-                key={group.id}
-                group={group}
-                joined={joinedIds.has(group.id)}
-                onToggle={toggleJoin}
-              />
-            ))}
-          </>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>👥</Text>
+            <Text style={styles.emptyTitle}>Groups coming soon</Text>
+            <Text style={styles.emptySub}>Join groups to connect with people who share your goals.</Text>
+          </View>
         )}
 
         {/* ── Following ── */}
         {activeTab === "following" && (
-          <>
-            <Text style={styles.sectionLabel}>People you may know</Text>
-            {MOCK_USERS.map((user) => (
-              <UserCard
-                key={user.id}
-                user={user}
-                following={followingIds.has(user.id)}
-                onToggle={toggleFollow}
-              />
-            ))}
-          </>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>🔍</Text>
+            <Text style={styles.emptyTitle}>No one here yet</Text>
+            <Text style={styles.emptySub}>Follow other members to see their meals and progress.</Text>
+          </View>
         )}
 
         <View style={{ height: 32 }} />
@@ -689,4 +604,14 @@ const styles = StyleSheet.create({
   followBtnActive: { backgroundColor: "#4C7DFF", borderColor: "#4C7DFF" },
   followBtnText: { fontSize: 13, fontWeight: "700", color: "#4C7DFF" },
   followBtnTextActive: { color: "#FFFFFF" },
+
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 80,
+    gap: 10,
+  },
+  emptyEmoji: { fontSize: 48 },
+  emptyTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
+  emptySub: { fontSize: 14, fontWeight: "500", color: "#9CA3AF", textAlign: "center", paddingHorizontal: 24 },
 });
