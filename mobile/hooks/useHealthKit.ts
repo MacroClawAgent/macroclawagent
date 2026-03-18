@@ -12,6 +12,7 @@ interface UseHealthKitResult {
   summary: DailyActivitySummary | null;
   error: string | null;
   refresh: () => Promise<void>;
+  requestPermission: () => Promise<boolean>;
 }
 
 export function useHealthKit(): UseHealthKitResult {
@@ -46,5 +47,13 @@ export function useHealthKit(): UseHealthKitResult {
     })();
   }, []);
 
-  return { authorized, loading, summary, error, refresh };
+  const requestPermission = async (): Promise<boolean> => {
+    if (Platform.OS !== "ios") return false;
+    const ok = await initHealthKit();
+    setAuthorized(ok);
+    if (ok) await refresh();
+    return ok;
+  };
+
+  return { authorized, loading, summary, error, refresh, requestPermission };
 }

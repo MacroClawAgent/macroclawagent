@@ -4,7 +4,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { useHealthKit } from "@/hooks/useHealthKit";
-import { initHealthKit } from "@/services/healthKit";
 
 const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB"; const TEAL = "#2BB6A6";
 
@@ -33,8 +32,7 @@ export default function IntegrationsScreen() {
 
   async function handleConnect(item: typeof ITEMS[number]) {
     if (item.key === "apple_health") {
-      await initHealthKit();
-      await hk.refresh();
+      await hk.requestPermission();
     } else if (item.connectUrl) {
       Linking.openURL(item.connectUrl);
     }
