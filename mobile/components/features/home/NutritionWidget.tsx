@@ -21,13 +21,15 @@ interface NutritionWidgetProps {
   goalLabel: string;
 }
 
-const MACRO_CARDS: Record<string, { bg: string; accent: string; gradient: [string, string] }> = {
-  Protein: { bg: "#DCFCE7", accent: "#16A34A", gradient: ["#3ED598", "#1FBF75"] },
-  Carbs:   { bg: "#FEF9C3", accent: "#D97706", gradient: ["#F7D07A", "#F4A622"] },
-  Fat:     { bg: "#EDE9FE", accent: "#7C3AED", gradient: ["#7A7DFF", "#5C5FFF"] },
+const BAR_HEIGHT = 96;
+
+const MACRO_CFG: Record<string, { accent: string; trackBg: string; gradient: [string, string] }> = {
+  Protein: { accent: "#16A34A", trackBg: "rgba(22,163,74,0.12)",  gradient: ["#1FBF75", "#3ED598"] },
+  Carbs:   { accent: "#D97706", trackBg: "rgba(217,119,6,0.12)",  gradient: ["#F4A622", "#F7D07A"] },
+  Fat:     { accent: "#7C3AED", trackBg: "rgba(124,58,237,0.12)", gradient: ["#5C5FFF", "#7A7DFF"] },
 };
 
-function MacroCard({
+function VerticalBar({
   label,
   consumed,
   target,
@@ -38,66 +40,78 @@ function MacroCard({
   target: number;
   color: string;
 }) {
-  const cfg = MACRO_CARDS[label] ?? { bg: "#F3F4F6", accent: color, gradient: [color, color] as [string, string] };
+  const cfg = MACRO_CFG[label] ?? { accent: color, trackBg: color + "20", gradient: [color, color] as [string, string] };
   const ratio = target > 0 ? Math.min(1, consumed / target) : 0;
-  const remaining = Math.max(0, target - consumed);
-  const pct = Math.round(ratio * 100);
+  const fillH = Math.round(ratio * BAR_HEIGHT);
+  const consumedStr = Number.isInteger(consumed) ? String(consumed) : consumed.toFixed(1);
+  const targetStr = Number.isInteger(target) ? String(target) : target.toFixed(0);
 
   return (
-    <View style={[mc.card, { backgroundColor: cfg.bg }]}>
-      {/* Top gloss shimmer */}
-      <View style={mc.gloss} />
-      <Text style={mc.consumed}>
-        {Number.isInteger(consumed) ? consumed : +consumed.toFixed(1)}
-        <Text style={mc.unit}>g</Text>
+    <View style={vb.col}>
+      {/* Consumed value */}
+      <Text style={vb.valTop}>
+        {consumedStr}<Text style={vb.unit}>g</Text>
       </Text>
-      {/* Horizontal progress bar */}
-      <View style={[mc.track, { backgroundColor: cfg.accent + "28" }]}>
-        <LinearGradient
-          colors={cfg.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[mc.fill, { width: `${pct}%` as `${number}%` }]}
-        />
+
+      {/* Vertical track */}
+      <View style={[vb.track, { backgroundColor: cfg.trackBg }]}>
+        {/* Fill from bottom */}
+        <View style={vb.fillWrap}>
+          <LinearGradient
+            colors={cfg.gradient}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 0, y: 0 }}
+            style={[vb.fill, { height: fillH }]}
+          />
+        </View>
+        {/* Gloss overlay */}
+        <View style={vb.gloss} />
       </View>
-      <Text style={mc.label}>{label}</Text>
-      <Text style={[mc.rem, { color: cfg.accent }]}>
-        {Number.isInteger(remaining) ? remaining : +remaining.toFixed(1)}g left
-      </Text>
+
+      {/* Label + target */}
+      <Text style={[vb.label, { color: cfg.accent }]}>{label}</Text>
+      <Text style={vb.target}>{targetStr}g</Text>
     </View>
   );
 }
 
-const mc = StyleSheet.create({
-  card: {
+const vb = StyleSheet.create({
+  col: {
     flex: 1,
-    borderRadius: 18,
-    padding: 12,
     alignItems: "center",
     gap: 5,
+  },
+  valTop: { fontSize: 15, fontWeight: "800", color: "#111827", letterSpacing: -0.4 },
+  unit:   { fontSize: 10, fontWeight: "600", color: "#6B7280" },
+  track: {
+    width: 32,
+    height: BAR_HEIGHT,
+    borderRadius: 100,
     overflow: "hidden",
+    justifyContent: "flex-end",
+  },
+  fillWrap: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  fill: {
+    width: "100%",
+    borderRadius: 100,
   },
   gloss: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: 28,
-    backgroundColor: "rgba(255,255,255,0.35)",
+    height: 20,
+    backgroundColor: "rgba(255,255,255,0.22)",
     borderBottomLeftRadius: 14,
     borderBottomRightRadius: 14,
   },
-  consumed: { fontSize: 20, fontWeight: "800", color: "#111827", letterSpacing: -0.5 },
-  unit:     { fontSize: 11, fontWeight: "600", color: "#6B7280" },
-  track: {
-    width: "100%",
-    height: 5,
-    borderRadius: 100,
-    overflow: "hidden",
-  },
-  fill: { height: 5, borderRadius: 100 },
-  label: { fontSize: 11, fontWeight: "600", color: "#6B7280", letterSpacing: 0.1 },
-  rem:   { fontSize: 10, fontWeight: "700" },
+  label:  { fontSize: 11, fontWeight: "700", letterSpacing: 0.1 },
+  target: { fontSize: 10, fontWeight: "500", color: "#9CA3AF" },
 });
 
 export function NutritionWidget({ calorieProgress, macros, goalLabel }: NutritionWidgetProps) {
@@ -164,11 +178,11 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
         />
       </View>
 
-      {/* Pastel macro cards */}
+      {/* Vertical macro bars */}
       <View style={styles.macroRow}>
-        <MacroCard label="Protein" consumed={macros.protein.consumed} target={macros.protein.target} color="#16A34A" />
-        <MacroCard label="Carbs"   consumed={macros.carbs.consumed}   target={macros.carbs.target}   color="#D97706" />
-        <MacroCard label="Fat"     consumed={macros.fat.consumed}     target={macros.fat.target}     color="#7C3AED" />
+        <VerticalBar label="Protein" consumed={macros.protein.consumed} target={macros.protein.target} color="#16A34A" />
+        <VerticalBar label="Carbs"   consumed={macros.carbs.consumed}   target={macros.carbs.target}   color="#D97706" />
+        <VerticalBar label="Fat"     consumed={macros.fat.consumed}     target={macros.fat.target}     color="#7C3AED" />
       </View>
     </Card>
   );
@@ -199,6 +213,13 @@ const styles = StyleSheet.create({
   calBar:    { height: 12, borderRadius: 100, overflow: "hidden", backgroundColor: "rgba(43,182,166,0.15)" },
   calBarFill: { height: 12, borderRadius: 100 },
 
-  // Macro cards row
-  macroRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  // Vertical macro bars row
+  macroRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(0,0,0,0.06)",
+    paddingTop: 14,
+    gap: 8,
+  },
 });
