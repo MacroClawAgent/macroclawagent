@@ -42,10 +42,10 @@ export interface HomeViewModel {
 }
 
 const GOAL_META: Record<string, { label: string; icon: GoalIcon; ringColor: string }> = {
-  lose_weight:  { label: "Lose Weight",  icon: { ios: "flame.fill",    android: "local_fire_department" }, ringColor: "#FF7043" },
-  build_muscle: { label: "Build Muscle", icon: { ios: "dumbbell.fill", android: "fitness_center" },        ringColor: "#A78BFA" },
-  performance:  { label: "Performance",  icon: { ios: "figure.run",    android: "directions_run" },         ringColor: "#34D399" },
-  maintain:     { label: "Stay Healthy", icon: { ios: "heart.fill",    android: "favorite" },               ringColor: "#F472B6" },
+  lose_weight:  { label: "Lose Weight",  icon: { ios: "flame.fill",    android: "local_fire_department" }, ringColor: "#2BB6A6" },
+  build_muscle: { label: "Build Muscle", icon: { ios: "dumbbell.fill", android: "fitness_center" },        ringColor: "#2BB6A6" },
+  performance:  { label: "Performance",  icon: { ios: "figure.run",    android: "directions_run" },         ringColor: "#2BB6A6" },
+  maintain:     { label: "Stay Healthy", icon: { ios: "heart.fill",    android: "favorite" },               ringColor: "#2BB6A6" },
 };
 
 function deriveInsight(
