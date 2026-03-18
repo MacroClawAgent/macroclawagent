@@ -39,6 +39,10 @@ export async function GET(request: NextRequest) {
 
     if (isMobile) {
       // Mobile: user identified via signed state — use service role to update any user row
+      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.error("[strava/callback] SUPABASE_SERVICE_ROLE_KEY is not set in environment");
+        throw new Error("SUPABASE_SERVICE_ROLE_KEY missing");
+      }
       userId = mobileUserId!;
       supabase = createServiceRoleClient();
     } else {
@@ -52,7 +56,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Exchange code for tokens
+    console.log("[strava/callback] exchanging code for tokens, userId:", userId);
     const tokens = await exchangeCodeForTokens(code);
+    console.log("[strava/callback] tokens received, athlete:", tokens.athlete?.id);
 
     // Save tokens + athlete ID to public.users
     const { error: updateError } = await supabase
@@ -65,7 +71,10 @@ export async function GET(request: NextRequest) {
       })
       .eq("id", userId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error("[strava/callback] supabase update error:", updateError);
+      throw updateError;
+    }
 
     // Initial sync — import up to 30 most recent activities
     try {
