@@ -31,11 +31,11 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#2BB6A6",
-        tabBarInactiveTintColor: "#8C96A0",
+        tabBarActiveTintColor: "#35C7B8",
+        tabBarInactiveTintColor: "#9CA3AF",
         tabBarStyle: {
-          backgroundColor: "rgba(255,255,255,0.72)",
-          borderTopColor: "rgba(255,255,255,0.5)",
+          backgroundColor: "rgba(255,255,255,0.85)",
+          borderTopColor: "rgba(230,235,242,0.8)",
           borderTopWidth: StyleSheet.hairlineWidth,
           elevation: 0,
           shadowColor: "#000",

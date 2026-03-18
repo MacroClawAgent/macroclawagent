@@ -54,10 +54,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <Screen style={{ backgroundColor: "#35C7B8" }}>
-      {/* Full-screen teal gradient backdrop */}
+    <Screen style={{ backgroundColor: "#F5F7FA" }}>
+      {/* Full-screen light neutral gradient backdrop */}
       <LinearGradient
-        colors={["#35C7B8", "#1FA79E"]}
+        colors={["#F5F7FA", "#E9EEF4"]}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -66,10 +66,10 @@ export default function HomeScreen() {
       {/* Top header: greeting left, avatar + goal right */}
       <View style={styles.topHeader}>
         <View style={styles.greetingBlock}>
-          <Text style={[styles.greetingWord, { color: "rgba(255,255,255,0.72)" }]}>
+          <Text style={styles.greetingWord}>
             {vm.greeting}
           </Text>
-          <Text style={[styles.greetingName, { color: "#FFF" }]}>
+          <Text style={styles.greetingName}>
             {vm.userName}
           </Text>
         </View>
@@ -88,7 +88,7 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={vm.refreshing}
             onRefresh={vm.refresh}
-            tintColor="#FFF"
+            tintColor="#35C7B8"
           />
         }
       >
@@ -200,21 +200,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     letterSpacing: 0.2,
-    color: "rgba(255,255,255,0.7)",
+    color: "#6B7280",
   },
   greetingName: {
     fontSize: 30,
     fontWeight: "800",
     letterSpacing: -0.8,
     lineHeight: 35,
-    color: "#FFFFFF",
+    color: "#111827",
   },
 
   skeleton: {
     height: 140,
     marginHorizontal: 20,
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(255,255,255,0.7)",
+    borderColor: "rgba(255,255,255,0.6)",
   },
   dots: {
     flexDirection: "row",
@@ -227,17 +229,17 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "rgba(255,255,255,0.3)",
+    backgroundColor: "rgba(0,0,0,0.15)",
   },
   dotActive: {
     width: 18,
-    backgroundColor: "#FFF",
+    backgroundColor: "#35C7B8",
     borderRadius: 3,
   },
   bottomSpacer: { height: 24 },
 
   discoverSection: { paddingHorizontal: 20, gap: 12 },
-  discoverHeading: { fontSize: 18, fontWeight: "700", letterSpacing: -0.3, color: "rgba(255,255,255,0.92)" },
+  discoverHeading: { fontSize: 18, fontWeight: "700", letterSpacing: -0.3, color: "#111827" },
   discoverGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   discoverCard: {
     width: (SCREEN_W - 40 - 12) / 2,
@@ -248,12 +250,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.38)",
-    backgroundColor: "rgba(255,255,255,0.22)",
+    borderColor: "rgba(255,255,255,0.6)",
+    backgroundColor: "rgba(255,255,255,0.75)",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.08,
+    shadowRadius: 50,
   },
   discoverHighlight: {
     position: "absolute",

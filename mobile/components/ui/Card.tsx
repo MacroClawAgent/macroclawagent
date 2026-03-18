@@ -11,7 +11,7 @@ interface CardProps {
 export function Card({ children, style, padding = 20 }: CardProps) {
   return (
     <BlurView
-      intensity={28}
+      intensity={20}
       tint="light"
       style={[
         styles.card,
@@ -30,13 +30,13 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.22)",
+    backgroundColor: "rgba(255,255,255,0.75)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.38)",
+    borderColor: "rgba(255,255,255,0.6)",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 12 },
+    shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 0.08,
-    shadowRadius: 40,
+    shadowRadius: 50,
     elevation: 6,
   },
   highlight: {

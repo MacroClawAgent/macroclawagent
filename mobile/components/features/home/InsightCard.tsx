@@ -16,7 +16,7 @@ export function InsightCard({ insight }: InsightCardProps) {
     "Log your meals and activity to unlock personalised AI insights for today.";
 
   return (
-    <BlurView intensity={60} tint="dark" style={s.card}>
+    <BlurView intensity={80} tint="dark" style={s.card}>
       {/* Subtle diagonal highlight */}
       <LinearGradient
         colors={["rgba(255,255,255,0.10)", "transparent"]}
@@ -67,7 +67,7 @@ const s = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "rgba(14,30,69,0.72)",
+    backgroundColor: "rgba(17,24,39,0.82)",
     paddingHorizontal: 18,
     paddingTop: 16,
     paddingBottom: 14,

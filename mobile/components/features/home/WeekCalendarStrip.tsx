@@ -276,7 +276,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   return (
     <>
       {/* ══ Week strip card ══ */}
-      <BlurView intensity={28} tint="light" style={styles.card}>
+      <BlurView intensity={20} tint="light" style={styles.card}>
         <View style={styles.cardHighlight} pointerEvents="none" />
 
         {/* Header row */}
@@ -550,16 +550,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.22)",
+    backgroundColor: "rgba(255,255,255,0.75)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.38)",
+    borderColor: "rgba(255,255,255,0.6)",
     paddingTop: 10,
     paddingBottom: 8,
     paddingHorizontal: 14,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.08,
+    shadowRadius: 50,
   },
   cardHighlight: {
     position: "absolute",
