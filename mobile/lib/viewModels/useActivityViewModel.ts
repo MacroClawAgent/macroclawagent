@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { apiGet, apiPost } from "../api";
+import { apiGet, apiPost, apiDelete } from "../api";
 import { formatDate } from "../formatters";
 import type { ActivityRow } from "../../types";
 
@@ -14,6 +14,7 @@ export interface ActivityViewModel {
   lastSyncLabel: string;
   macroAdaptationText: string | null;
   sync: () => Promise<void>;
+  deleteActivity: (id: string) => Promise<void>;
   loading: boolean;
   refreshing: boolean;
   refresh: () => void;
@@ -67,6 +68,16 @@ export function useActivityViewModel(): ActivityViewModel {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const deleteActivity = useCallback(async (id: string) => {
+    setActivities((prev) => prev.filter((a) => a.id !== id));
+    try {
+      await apiDelete(`/api/activities/${id}`);
+    } catch {
+      // Re-fetch to restore state if delete failed
+      fetchData();
+    }
+  }, [fetchData]);
+
   const sync = useCallback(async () => {
     setSyncing(true);
     try {
@@ -93,6 +104,7 @@ export function useActivityViewModel(): ActivityViewModel {
     lastSyncLabel,
     macroAdaptationText: buildMacroAdaptation(activities),
     sync,
+    deleteActivity,
     loading,
     refreshing,
     refresh: () => fetchData(true),

@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Card } from "../../ui/Card";
 import { Pill } from "../../ui/Pill";
 import { useTheme } from "../../../context/ThemeContext";
@@ -15,13 +15,27 @@ const TYPE_EMOJI: Record<string, string> = {
 
 interface ActivityCardProps {
   activity: ActivityRow;
+  onDelete?: (id: string) => void;
 }
 
-export function ActivityCard({ activity }: ActivityCardProps) {
+export function ActivityCard({ activity, onDelete }: ActivityCardProps) {
   const { colors } = useTheme();
   const emoji = TYPE_EMOJI[activity.type] ?? "💪";
 
+  const handleLongPress = () => {
+    if (!onDelete) return;
+    Alert.alert(
+      "Delete activity?",
+      `Remove "${activity.name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => onDelete(activity.id) },
+      ]
+    );
+  };
+
   return (
+    <TouchableOpacity activeOpacity={0.85} onLongPress={handleLongPress} delayLongPress={400}>
     <Card style={styles.card}>
       <View style={styles.topRow}>
         <View style={[styles.iconWrap, { backgroundColor: colors.orangeAlpha }]}>
@@ -53,6 +67,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
         <View style={[styles.bottomBarFill, { backgroundColor: colors.orange, width: "65%" }]} />
       </View>
     </Card>
+    </TouchableOpacity>
   );
 }
 

@@ -74,7 +74,7 @@ export default function ActivityScreen() {
           <>
             <SectionTitle label="Recent" style={styles.sectionTitle} />
             {vm.activities.map((a) => (
-              <ActivityCard key={a.id} activity={a} />
+              <ActivityCard key={a.id} activity={a} onDelete={vm.deleteActivity} />
             ))}
           </>
         ) : vm.isStravaConnected && !vm.loading ? (
