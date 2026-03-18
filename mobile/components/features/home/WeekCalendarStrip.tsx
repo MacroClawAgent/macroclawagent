@@ -55,9 +55,10 @@ const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct"
 const FULL_DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const MEAL_TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"];
 
-const BLUE       = "#4C7DFF";
+const BLUE       = "#3B82F6";
 const GREEN      = "#22C55E";
 const AMBER      = "#F59E0B";
+const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 
 /** Use local date parts — avoids UTC timezone shift from toISOString() */
 function toLocalDateStr(d: Date): string {
@@ -132,7 +133,6 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   const [loading, setLoading] = useState(false);
   const [expandedDishes, setExpandedDishes] = useState<Set<string>>(new Set());
   const [deletingBatch, setDeletingBatch] = useState<string | null>(null);
-  const [showLegend, setShowLegend] = useState(false);
 
   const todayDate = useMemo(() => {
     const d = new Date();
@@ -296,33 +296,12 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                 <Text style={styles.streakCount}>{streak}</Text>
               </View>
             )}
-            <TouchableOpacity onPress={() => setShowLegend((v) => !v)} hitSlop={10} style={styles.legendToggle}>
-              <Text style={styles.legendToggleText}>{showLegend ? "✕" : "?"}</Text>
-            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Inline legend (toggled) */}
-        {showLegend && (
-          <View style={styles.inlineLegend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
-              <Text style={styles.legendText}>Goal met</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: AMBER }]} />
-              <Text style={styles.legendText}>Logged</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
-              <Text style={styles.legendText}>Missed</Text>
-            </View>
-          </View>
-        )}
-
         {/* Day pills row */}
         <View style={styles.daysRow}>
-          {weekDays.map((date) => {
+          {weekDays.map((date, idx) => {
             const dateStr = toLocalDateStr(date);
             const kcal = calMap.get(dateStr) ?? 0;
             const isToday = dateStr === todayStr;
@@ -336,8 +315,12 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                 style={styles.dayWrapper}
                 activeOpacity={0.7}
               >
+                {/* Day letter */}
+                <Text style={[styles.dayLetter, isFuture ? styles.textDim : styles.textMid]}>
+                  {DAY_LETTERS[idx]}
+                </Text>
                 <View style={[styles.dayPill, isToday && styles.dayPillToday]}>
-                  {/* Date number only */}
+                  {/* Date number */}
                   <Text style={[
                     styles.dayNum,
                     isFuture ? styles.textDim : styles.textBright,
@@ -346,15 +329,31 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                     {date.getDate()}
                   </Text>
 
-                  {/* Status indicator */}
+                  {/* Status dot */}
                   {status === "goal_met"  && <View style={[styles.statusDot, styles.dotGreen]} />}
-                  {status === "logged"    && <View style={[styles.statusDot, styles.dotAmber]} />}
+                  {status === "logged"    && <View style={[styles.statusDot, styles.dotBlue]} />}
                   {status === "missed"    && <View style={[styles.statusDot, styles.dotEmpty]} />}
                   {status === "future"    && <View style={[styles.statusDot, styles.dotFuture]} />}
                 </View>
               </TouchableOpacity>
             );
           })}
+        </View>
+
+        {/* Always-visible legend */}
+        <View style={styles.inlineLegend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
+            <Text style={styles.legendText}>Goal met</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: BLUE }]} />
+            <Text style={styles.legendText}>Logged</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
+            <Text style={styles.legendText}>Missed</Text>
+          </View>
         </View>
 
       </BlurView>
@@ -550,16 +549,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.75)",
+    backgroundColor: "rgba(255,255,255,0.65)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
+    borderColor: "rgba(255,255,255,0.8)",
     paddingTop: 10,
-    paddingBottom: 8,
+    paddingBottom: 10,
     paddingHorizontal: 14,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.08,
-    shadowRadius: 50,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 24,
   },
   cardHighlight: {
     position: "absolute",
@@ -603,19 +602,13 @@ const styles = StyleSheet.create({
     color: "#FB923C",
   },
   // ── Legend toggle ─────────────────────────────────────────────────
-  legendToggle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "rgba(0,0,0,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  legendToggleText: { fontSize: 11, fontWeight: "800", color: "#1A1A1A" },
   inlineLegend: {
     flexDirection: "row",
     gap: 14,
-    paddingBottom: 8,
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(0,0,0,0.06)",
   },
   // ── Days row ──────────────────────────────────────────────────────
   daysRow: {
@@ -634,17 +627,19 @@ const styles = StyleSheet.create({
     minWidth: 32,
   },
   dayPillToday: {
-    backgroundColor: "#2BB6A6",
-    shadowColor: "#2BB6A6",
+    backgroundColor: "#3B82F6",
+    shadowColor: "#3B82F6",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.45,
+    shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 6,
   },
+  dayLetter: { fontSize: 9, fontWeight: "600", letterSpacing: 0.3, marginBottom: 2 },
   dayNum: { fontSize: 15, fontWeight: "700" },
-  textBright: { color: "rgba(26,26,26,0.85)" },
+  textBright: { color: "#374151" },
+  textMid: { color: "#6B7280" },
   textWhite: { color: "#fff" },
-  textDim: { color: "rgba(26,26,26,0.25)" },
+  textDim: { color: "rgba(55,65,81,0.28)" },
   // ── Status dots ───────────────────────────────────────────────────
   statusDot: {
     width: 6,
@@ -661,6 +656,13 @@ const styles = StyleSheet.create({
   },
   dotAmber: {
     backgroundColor: AMBER,
+  },
+  dotBlue: {
+    backgroundColor: BLUE,
+    shadowColor: BLUE,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 3,
   },
   dotEmpty: {
     backgroundColor: "transparent",

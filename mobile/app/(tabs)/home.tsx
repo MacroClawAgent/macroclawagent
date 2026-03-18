@@ -54,10 +54,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <Screen style={{ backgroundColor: "#F5F7FA" }}>
-      {/* Full-screen light neutral gradient backdrop */}
+    <Screen style={{ backgroundColor: "#EEF4FA" }}>
+      {/* Full-screen cool blue-white gradient backdrop */}
       <LinearGradient
-        colors={["#F5F7FA", "#E9EEF4"]}
+        colors={["#EEF4FA", "#F5F8FC"]}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
