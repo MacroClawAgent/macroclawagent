@@ -42,7 +42,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="profile" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="profile" options={{ headerShown: false }} />
           <Stack.Screen name="nutrition" options={{ headerShown: false }} />
           <Stack.Screen name="meals" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
