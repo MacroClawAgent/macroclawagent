@@ -150,8 +150,7 @@ export function AppleHealthCard({ authorized, loading, summary, error }: Props) 
 
 const s = StyleSheet.create({
   card: {
-    flex: 1,
-    marginHorizontal: 20,
+    marginHorizontal: 16,
     borderRadius: 28,
     backgroundColor: "rgba(255,255,255,0.92)",
     borderWidth: 1,
@@ -165,9 +164,9 @@ const s = StyleSheet.create({
     gap: 16,
   },
   centerBox: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 24,
     gap: 8,
   },
   unavailIcon: { fontSize: 36 },

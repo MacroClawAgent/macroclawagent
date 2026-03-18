@@ -18,7 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
 
 const SCREEN_W = Dimensions.get("window").width;
-const CARD_COUNT = 4;
+const CARD_COUNT = 3;
 const CAROUSEL_H = 350;
 
 const DISCOVER_ITEMS = [
@@ -141,14 +141,6 @@ export default function HomeScreen() {
             <View style={{ width: SCREEN_W, height: CAROUSEL_H }}>
               <MealsEatenCard />
             </View>
-            <View style={{ width: SCREEN_W, height: CAROUSEL_H }}>
-              <AppleHealthCard
-                authorized={hk.authorized}
-                loading={hk.loading}
-                summary={hk.summary}
-                error={hk.error}
-              />
-            </View>
           </ScrollView>
 
           {/* Dot indicators */}
@@ -158,6 +150,14 @@ export default function HomeScreen() {
             ))}
           </View>
         </View>
+
+        {/* Apple Health standalone card */}
+        <AppleHealthCard
+          authorized={hk.authorized}
+          loading={hk.loading}
+          summary={hk.summary}
+          error={hk.error}
+        />
 
         {/* Discover */}
         <View style={styles.discoverSection}>

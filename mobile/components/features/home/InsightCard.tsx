@@ -16,16 +16,16 @@ export function InsightCard({ insight }: InsightCardProps) {
     "Log your meals and activity to unlock personalised AI insights for today.";
 
   return (
-    <BlurView intensity={80} tint="dark" style={s.card}>
-      {/* Subtle diagonal highlight */}
+    <BlurView intensity={60} tint="light" style={s.card}>
+      {/* Teal top accent strip */}
       <LinearGradient
-        colors={["rgba(255,255,255,0.10)", "transparent"]}
+        colors={["rgba(43,182,166,0.12)", "transparent"]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 1 }}
         style={StyleSheet.absoluteFillObject}
         pointerEvents="none"
       />
-      {/* Top row: badge + spark */}
+      {/* Top row: badge + live */}
       <View style={s.topRow}>
         <View style={s.badge}>
           <Text style={s.badgeDot}>✦</Text>
@@ -59,7 +59,6 @@ export function InsightCard({ insight }: InsightCardProps) {
   );
 }
 
-const NAVY = "#0E1E45";
 const TEAL = "#20C7B7";
 
 const s = StyleSheet.create({
@@ -67,18 +66,18 @@ const s = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "rgba(17,24,39,0.82)",
+    backgroundColor: "rgba(255,255,255,0.75)",
     paddingHorizontal: 16,
     paddingTop: 11,
     paddingBottom: 10,
     gap: 8,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.14)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.22,
-    shadowRadius: 32,
-    elevation: 8,
+    borderColor: "rgba(43,182,166,0.2)",
+    shadowColor: "#2BB6A6",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 4,
   },
 
   // Top row
@@ -91,12 +90,12 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "rgba(32,199,183,0.15)",
+    backgroundColor: "rgba(32,199,183,0.12)",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: "rgba(32,199,183,0.3)",
+    borderColor: "rgba(32,199,183,0.25)",
   },
   badgeDot: { fontSize: 9, color: TEAL },
   badgeText: { fontSize: 11, fontWeight: "700", color: TEAL, letterSpacing: 0.3 },
@@ -116,13 +115,13 @@ const s = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 4,
   },
-  liveText: { fontSize: 11, fontWeight: "600", color: "rgba(255,255,255,0.45)" },
+  liveText: { fontSize: 11, fontWeight: "600", color: "#9CA3AF" },
 
   // Body
   body: {
     fontSize: 13,
     fontWeight: "500",
-    color: "rgba(255,255,255,0.88)",
+    color: "#374151",
     lineHeight: 18,
     letterSpacing: 0.1,
   },
