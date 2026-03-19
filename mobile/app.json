@@ -37,7 +37,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Jonno uses your location to find the nearest Woolworths and Coles supermarket for your grocery order."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
