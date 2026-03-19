@@ -10,62 +10,64 @@ interface SmartCartCTACardProps {
 export function SmartCartCTACard({ onConfirm, onDismiss }: SmartCartCTACardProps) {
   const { colors } = useTheme();
   return (
-    <View style={[styles.card, { backgroundColor: colors.tealAlpha, borderColor: colors.teal }]}>
-      <Text style={[styles.label, { color: colors.teal }]}>✦ Ready to build</Text>
-      <Text style={[styles.body, { color: colors.textSecondary }]}>
-        Save this plan to Smart Cart and start building your week.
+    <View style={[styles.strip, { backgroundColor: colors.tealAlpha, borderColor: colors.teal }]}>
+      <View style={[styles.accent, { backgroundColor: colors.teal }]} />
+      <Text style={[styles.label, { color: colors.teal }]} numberOfLines={1}>
+        Save to Smart Cart
       </Text>
       <TouchableOpacity
         onPress={onConfirm}
         activeOpacity={0.85}
         style={[styles.confirmBtn, { backgroundColor: colors.teal }]}
       >
-        <Text style={styles.confirmText}>Build Smart Cart</Text>
+        <Text style={styles.confirmText}>Build Cart</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn}>
-        <Text style={[styles.dismissText, { color: colors.textMuted }]}>Dismiss</Text>
+      <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn} activeOpacity={0.7}>
+        <Text style={[styles.dismissText, { color: colors.textMuted }]}>×</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 20,
+  strip: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingRight: 10,
+    overflow: "hidden",
+  },
+  accent: {
+    width: 3,
+    alignSelf: "stretch",
+    borderRadius: 2,
+    marginLeft: 0,
   },
   label: {
+    flex: 1,
     fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  body: {
-    fontSize: 14,
-    fontWeight: "500",
-    lineHeight: 20,
+    fontWeight: "700",
   },
   confirmBtn: {
-    borderRadius: 14,
-    paddingVertical: 13,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     alignItems: "center",
-    marginTop: 2,
   },
   confirmText: {
     color: "#FFF",
-    fontWeight: "800",
-    fontSize: 15,
+    fontWeight: "700",
+    fontSize: 12,
   },
   dismissBtn: {
-    alignItems: "center",
-    paddingVertical: 4,
+    paddingHorizontal: 4,
   },
   dismissText: {
-    fontSize: 13,
-    fontWeight: "600",
+    fontSize: 20,
+    fontWeight: "400",
+    lineHeight: 22,
   },
 });

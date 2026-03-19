@@ -306,12 +306,10 @@ export default function AgentScreen() {
             </View>
 
             {vm.pendingSmartCartAction && (
-              <View style={{ marginTop: 8 }}>
-                <SmartCartCTACard
-                  onConfirm={vm.confirmSmartCart}
-                  onDismiss={vm.dismissSmartCart}
-                />
-              </View>
+              <SmartCartCTACard
+                onConfirm={vm.confirmSmartCart}
+                onDismiss={vm.dismissSmartCart}
+              />
             )}
           </>
 
