@@ -282,7 +282,7 @@ export default function AgentScreen() {
               style={{ flex: 1 }}
               showsVerticalScrollIndicator={true}
               indicatorStyle="black"
-              contentContainerStyle={{ paddingBottom: 8 }}
+              contentContainerStyle={{ paddingBottom: 8, paddingRight: 10 }}
             >
               <Text style={s.respText}>{localResponse}</Text>
             </ScrollView>
