@@ -426,11 +426,11 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
                         <Sparkles className="w-4 h-4" style={{ color: "#20C7B7" }} />
                       </div>
                       <h3 className="text-2xl font-black leading-tight mb-2" style={{ color: "#1C1C1E" }}>
-                        Thank you you&apos;re shaping Jonno.
+                        Thank you — you&apos;re shaping Jonno.
                       </h3>
                       <p className="text-sm leading-relaxed max-w-xs mx-auto" style={{ color: "#6B7280" }}>
                         Every response directly influences what we build. You&apos;re entered into
-                        the <strong style={{ color: "#1C1C1E" }}>$200 gift card draw</strong> at
+                        the <strong style={{ color: "#1C1C1E" }}>Hoka running shoes draw</strong> at
                         launch. We&apos;ll be in touch.
                       </p>
                     </div>
@@ -438,7 +438,7 @@ export function SurveyModal({ isOpen, onClose, onComplete, waitlistEmail }: Surv
                     <div className="flex flex-col gap-2 w-full text-left rounded-2xl p-4" style={{ backgroundColor: "#F4F5F7", border: "1px solid #E5E7EB" }}>
                       {[
                         "Your responses have been saved",
-                        "You're entered in the $200 draw",
+                        "You're entered in the Hoka shoes draw",
                         "Beta access waiting for you at launch",
                       ].map((item) => (
                         <div key={item} className="flex items-center gap-2.5">

@@ -54,8 +54,6 @@ export default function JoinPage() {
       setSubmittedName(form.full_name.split(" ")[0]);
       setSubmittedEmail(form.email);
       setSuccess(true);
-      // Auto-open the survey modal after the full-page celebration animation has settled
-      setTimeout(() => setSurveyOpen(true), 2500);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setError("Network error. Please try again.");
@@ -312,7 +310,7 @@ export default function JoinPage() {
                   <div className="flex flex-col gap-3 items-center">
                     <div className="flex items-center gap-2.5 px-5 py-3.5 rounded-2xl w-full justify-center" style={{ backgroundColor: "rgba(143,211,244,0.12)", border: "1px solid rgba(105,189,235,0.30)" }}>
                       <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: "#4C7DFF" }} />
-                      <p className="text-sm font-bold" style={{ color: "#4C7DFF" }}>Survey submitted. You&apos;re entered in the $200 draw.</p>
+                      <p className="text-sm font-bold" style={{ color: "#4C7DFF" }}>Survey submitted. You&apos;re entered to win Hoka running shoes.</p>
                     </div>
                     <p className="text-xs" style={{ color: "#6B7280" }}>Thanks for helping shape Jonno. We&apos;ll announce the winner at launch.</p>
                   </div>
@@ -322,22 +320,22 @@ export default function JoinPage() {
                     {/* Card top — warm gradient */}
                     <div className="px-6 pt-6 pb-7 flex flex-col gap-4 text-white" style={{ background: "linear-gradient(135deg, #20C7B7 0%, #4C7DFF 60%, #C8E7F5 100%)" }}>
                       <div className="flex items-center gap-2 w-fit">
-                        <span className="text-xl">🏆</span>
+                        <span className="text-xl">👟</span>
                         <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full" style={{ backgroundColor: "rgba(255,253,251,0.20)" }}>
-                          Win $200
+                          Win Hoka Running Shoes
                         </span>
                       </div>
                       <div className="text-left">
                         <h3 className="text-xl font-black leading-snug">
-                          Help us build the right product for you.
+                          Complete the survey for a chance to win a brand new pair of Hoka running shoes.
                         </h3>
                         <p className="text-sm mt-1.5 leading-relaxed" style={{ color: "rgba(255,253,251,0.85)" }}>
-                          Answer 7 quick questions. One respondent wins a $200 gift card, drawn at launch.{" "}
+                          Answer 7 quick questions and go in the draw. One winner picked at launch.{" "}
                           <span className="text-white font-semibold">Completely optional.</span>
                         </p>
                       </div>
                     </div>
-                    {/* Card bottom — cream */}
+                    {/* Card bottom */}
                     <div className="px-6 py-5 flex flex-col gap-3" style={{ backgroundColor: "#FFFFFF" }}>
                       <button
                         type="button"
@@ -345,7 +343,7 @@ export default function JoinPage() {
                         className="w-full py-4 rounded-xl text-white font-black text-base tracking-wide transition-opacity duration-150 hover:opacity-90"
                         style={{ background: "linear-gradient(135deg, #20C7B7, #4C7DFF)", boxShadow: "0 4px 16px rgba(32,199,183,0.30)" }}
                       >
-                        Take the survey →
+                        Enter the draw →
                       </button>
                       <p className="text-center text-xs" style={{ color: "#6B7280" }}>
                         3 minutes · skip any question · no account needed
