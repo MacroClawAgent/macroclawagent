@@ -76,6 +76,29 @@ async function searchNearbyStore(
   }
 }
 
+// ── Mock fallback stores (Sydney CBD) ─────────────────────────────────────────
+
+export const MOCK_STORES: NearbyStore[] = [
+  { id: 'mock-1', name: 'Woolworths Bondi Junction', store: 'woolworths',
+    address: '500 Oxford St, Bondi Junction NSW 2022',
+    distance: 800, isOpen: true, lat: -33.8915, lng: 151.2481 },
+  { id: 'mock-2', name: 'Coles Bondi Junction', store: 'coles',
+    address: '500 Oxford St, Bondi Junction NSW 2022',
+    distance: 850, isOpen: true, lat: -33.8915, lng: 151.2481 },
+  { id: 'mock-3', name: 'Woolworths Westfield Sydney', store: 'woolworths',
+    address: 'Pitt St Mall, Sydney NSW 2000',
+    distance: 1200, isOpen: true, lat: -33.8708, lng: 151.2073 },
+  { id: 'mock-4', name: 'Coles World Square', store: 'coles',
+    address: '644 George St, Sydney NSW 2000',
+    distance: 1400, isOpen: true, lat: -33.8784, lng: 151.2057 },
+  { id: 'mock-5', name: 'Woolworths Surry Hills', store: 'woolworths',
+    address: '376 Victoria St, Darlinghurst NSW 2010',
+    distance: 1600, isOpen: false, lat: -33.8789, lng: 151.2175 },
+  { id: 'mock-6', name: 'Coles Pyrmont', store: 'coles',
+    address: 'Harris St, Pyrmont NSW 2009',
+    distance: 2100, isOpen: true, lat: -33.8738, lng: 151.1953 },
+];
+
 export async function findNearbyStores(lat: number, lng: number): Promise<NearbyStore[]> {
   const [woolworths, coles] = await Promise.all([
     searchNearbyStore(lat, lng, 'Woolworths Supermarket', 'woolworths'),

@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Linking,
   Modal,
   Platform,
   ScrollView,
@@ -17,9 +16,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 import { useSmartCart } from '@/hooks/useSmartCart';
 import { searchBothStores, logApiDebug, testRapidAPIConnection } from '@/services/supermarketApi';
+import { StoreSelector } from '@/components/SmartCart/StoreSelector';
 import type {
   IngredientCategory,
-  NearbyStore,
   SmartCartIngredient,
   SupermarketProduct,
   StoreType,
@@ -36,14 +35,14 @@ const WW_GREEN = '#007837';
 const COLES_RED = '#E31837';
 
 // ── Category meta ──────────────────────────────────────────────────────────────
-const CATEGORY_META: Record<IngredientCategory, { label: string; symbol: string }> = {
-  protein:    { label: 'Protein',     symbol: 'flame.fill'          },
-  carbs:      { label: 'Carbs',       symbol: 'leaf.fill'           },
-  vegetables: { label: 'Vegetables',  symbol: 'carrot'              },
-  dairy:      { label: 'Dairy',       symbol: 'drop.fill'           },
-  fats:       { label: 'Fats',        symbol: 'circle.fill'         },
-  condiments: { label: 'Condiments',  symbol: 'oval.fill'           },
-  other:      { label: 'Other',       symbol: 'bag.fill'            },
+const CATEGORY_META: Record<IngredientCategory, { label: string; emoji: string }> = {
+  protein:    { label: 'Protein',     emoji: '🥩' },
+  carbs:      { label: 'Carbs',       emoji: '🌾' },
+  vegetables: { label: 'Vegetables',  emoji: '🥦' },
+  dairy:      { label: 'Dairy',       emoji: '🥛' },
+  fats:       { label: 'Fats',        emoji: '🫒' },
+  condiments: { label: 'Condiments',  emoji: '🧂' },
+  other:      { label: 'Other',       emoji: '🛒' },
 };
 
 const CATEGORY_ORDER: IngredientCategory[] = [
@@ -121,7 +120,7 @@ function IngredientRow({
         {ingredient.isLoadingProducts ? (
           <Skeleton width="70%" height={9} />
         ) : selectedProduct ? (
-          <Text style={s.rowProduct} numberOfLines={1}>
+          <Text style={s.rowProduct} numberOfLines={2}>
             {selectedProduct.name}
             {selectedProduct.price > 0 ? ` · $${selectedProduct.price.toFixed(2)}` : ''}
           </Text>
@@ -274,9 +273,6 @@ export default function CartScreen() {
   const total = sc.getEstimatedTotal();
   const checkedCount = sc.cart?.ingredients.filter((i) => i.isChecked).length ?? 0;
 
-  const nearestWW = sc.getNearestStore('woolworths');
-  const nearestColes = sc.getNearestStore('coles');
-
   function toggleCollapse(cat: IngredientCategory) {
     setCollapsed((prev) => {
       const next = new Set(prev);
@@ -285,40 +281,10 @@ export default function CartScreen() {
     });
   }
 
-  function formatDistance(m: number): string {
-    return m < 1000 ? `${Math.round(m)}m` : `${(m / 1000).toFixed(1)}km`;
-  }
-
-  function getNearestForStore(store: StoreType): NearbyStore | undefined {
-    return sc.cart?.nearbyStores.find((s) => s.store === store);
-  }
-
   const groupedIngredients = CATEGORY_ORDER.map((cat) => ({
     cat,
     items: sc.cart?.ingredients.filter((i) => i.category === cat) ?? [],
   })).filter((g) => g.items.length > 0);
-
-  // ── Store button ─────────────────────────────────────────────────────────
-  function StoreButton({ store, color, label }: { store: StoreType; color: string; label: string }) {
-    const isSelected = sc.cart?.selectedStore === store;
-    const nearest = getNearestForStore(store);
-    return (
-      <TouchableOpacity
-        onPress={() => sc.selectStore(store)}
-        activeOpacity={0.8}
-        style={[
-          s.storeBtn,
-          isSelected && { borderColor: color, backgroundColor: `${color}10` },
-        ]}
-      >
-        <View style={[s.storeBtnDot, { backgroundColor: color }]} />
-        <Text style={[s.storeBtnLabel, isSelected && { color }]}>{label}</Text>
-        {isSelected && nearest && (
-          <Text style={[s.storeBtnSub, { color }]}>✓</Text>
-        )}
-      </TouchableOpacity>
-    );
-  }
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
@@ -378,39 +344,13 @@ export default function CartScreen() {
         >
           {/* ── Store selector card ── */}
           <View style={s.card}>
-            <Text style={s.cardLabel}>Shop at</Text>
-            <View style={s.storeBtnRow}>
-              <StoreButton store="woolworths" color={WW_GREEN} label="Woolworths" />
-              <StoreButton store="coles" color={COLES_RED} label="Coles" />
-            </View>
-
-            {sc.locationLoading ? (
-              <View style={s.locationRow}>
-                <Skeleton width="80%" height={10} />
-              </View>
-            ) : sc.locationPermissionDenied ? (
-              <TouchableOpacity
-                style={s.locationRow}
-                onPress={() => Linking.openURL('app-settings:')}
-              >
-                <Text style={s.locationText}>Enable location to find your nearest store →</Text>
-              </TouchableOpacity>
-            ) : sc.cart.selectedStore ? (
-              (() => {
-                const nearest = getNearestForStore(sc.cart.selectedStore);
-                return nearest ? (
-                  <View style={s.locationRow}>
-                    <Text style={s.locationText}>
-                      📍 {nearest.name} — {formatDistance(nearest.distance)} away
-                      {' · '}
-                      <Text style={{ color: nearest.isOpen ? '#10B981' : '#EF4444' }}>
-                        {nearest.isOpen ? 'Open now' : 'Closed'}
-                      </Text>
-                    </Text>
-                  </View>
-                ) : null;
-              })()
-            ) : null}
+            <StoreSelector
+              nearbyStores={sc.cart.nearbyStores}
+              selectedNearbyStore={sc.cart.selectedNearbyStore ?? null}
+              onSelectStore={sc.selectNearbyStore}
+              locationLoading={sc.locationLoading}
+              locationPermissionDenied={sc.locationPermissionDenied}
+            />
           </View>
 
           {/* ── Estimated total card ── */}
@@ -421,7 +361,7 @@ export default function CartScreen() {
             </Text>
             <Text style={s.totalSub}>
               Based on {checkedCount} item{checkedCount !== 1 ? 's' : ''}
-              {sc.cart.selectedStore ? ` · ${sc.cart.selectedStore === 'woolworths' ? 'Woolworths' : 'Coles'}` : ''}
+              {sc.cart.selectedNearbyStore ? ` · ${sc.cart.selectedNearbyStore.store === 'woolworths' ? 'Woolworths' : 'Coles'}` : ''}
             </Text>
             {sc.productsLoading && (
               <View style={s.loadingBadge}>
@@ -436,9 +376,9 @@ export default function CartScreen() {
               style={[s.shopBtn, !sc.cart.selectedStore && s.shopBtnDisabled]}
             >
               <Text style={s.shopBtnLabel}>
-                {sc.cart.selectedStore
-                  ? `Shop at ${sc.cart.selectedStore === 'woolworths' ? 'Woolworths' : 'Coles'} →`
-                  : 'Select a store above'}
+                {sc.cart.selectedNearbyStore
+                  ? `Shop at ${sc.cart.selectedNearbyStore.store === 'woolworths' ? 'Woolworths' : 'Coles'} →`
+                  : 'Select a store first'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -455,12 +395,7 @@ export default function CartScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={s.categoryHeaderLeft}>
-                    <SymbolView
-                      name={meta.symbol as any}
-                      size={13}
-                      tintColor={TEAL}
-                      style={{ width: 13, height: 13 }}
-                    />
+                    <Text style={{ fontSize: 14 }}>{meta.emoji}</Text>
                     <Text style={s.categoryLabel}>{meta.label}</Text>
                     <View style={s.categoryCount}>
                       <Text style={s.categoryCountTxt}>{items.length}</Text>

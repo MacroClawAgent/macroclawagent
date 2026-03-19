@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
 import { apiGet } from '../lib/api';
 import { smartSearchIngredient } from '../services/supermarketApi';
-import { getUserLocation, findNearbyStores } from '../services/storeLocator';
+import { getUserLocation, findNearbyStores, MOCK_STORES } from '../services/storeLocator';
 import { openInStore as deepLinkOpenInStore } from '../services/deepLinkService';
 import {
   generateCartFromGroceryList,
@@ -48,14 +48,18 @@ export function useSmartCart() {
   const [networkError, setNetworkError] = useState(false);
   const abortRef = useRef(false);
 
-  // Load persisted cart on mount
+  // Load persisted cart on mount — always reset isChecked to false
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((raw) => {
         if (!raw) return;
         const saved = JSON.parse(raw) as SmartCart;
         const age = Date.now() - new Date(saved.lastUpdated).getTime();
-        if (age < CACHE_MAX_AGE_MS) setCart(saved);
+        if (age < CACHE_MAX_AGE_MS) {
+          saved.ingredients = saved.ingredients.map((ing) => ({ ...ing, isChecked: false }));
+          saved.selectedNearbyStore = saved.selectedNearbyStore ?? null;
+          setCart(saved);
+        }
       })
       .catch(() => {});
   }, []);
@@ -107,20 +111,29 @@ export function useSmartCart() {
     setLocationLoading(true);
     setLocationError(null);
     setLocationPermissionDenied(false);
+    let finalStores: NearbyStore[] = MOCK_STORES;
     try {
       const { lat, lng } = await getUserLocation();
       const stores = await findNearbyStores(lat, lng);
-      setCart((prev) => {
-        if (!prev || prev.id !== cartId) return prev;
-        const next = { ...prev, nearbyStores: stores };
-        persistCart(next);
-        return next;
-      });
+      finalStores = stores.length > 0 ? stores : MOCK_STORES;
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Could not get location';
       if (msg.includes('permission')) setLocationPermissionDenied(true);
       setLocationError(msg);
+      finalStores = MOCK_STORES;
     } finally {
+      const autoSelected = finalStores.find((s) => s.isOpen) ?? finalStores[0] ?? null;
+      setCart((prev) => {
+        if (!prev || prev.id !== cartId) return prev;
+        const next = {
+          ...prev,
+          nearbyStores: finalStores,
+          selectedNearbyStore: prev.selectedNearbyStore ?? autoSelected,
+          selectedStore: prev.selectedStore ?? autoSelected?.store ?? null,
+        };
+        persistCart(next);
+        return next;
+      });
       setLocationLoading(false);
     }
   }, []);
@@ -131,6 +144,7 @@ export function useSmartCart() {
     setInitializing(true);
     setNetworkError(false);
     abortRef.current = true; // stop any in-flight product loading
+    await AsyncStorage.removeItem(STORAGE_KEY).catch(() => {});
 
     let ingredients: SmartCartIngredient[] = [];
 
@@ -158,6 +172,7 @@ export function useSmartCart() {
       createdAt: new Date().toISOString(),
       ingredients,
       selectedStore: null,
+      selectedNearbyStore: null,
       nearbyStores: [],
       estimatedTotal: 0,
       lastUpdated: new Date().toISOString(),
@@ -211,7 +226,7 @@ export function useSmartCart() {
       quantity: 1,
       unit: 'unit',
       category: assignCategory(trimmed),
-      isChecked: true,
+      isChecked: false,
       woolworthsProducts: [],
       colesProducts: [],
       selectedProductId: null,
@@ -235,6 +250,20 @@ export function useSmartCart() {
     setCart((prev) => {
       if (!prev) return prev;
       const next = { ...prev, selectedStore: store, lastUpdated: new Date().toISOString() };
+      persistCart(next);
+      return next;
+    });
+  }, []);
+
+  const selectNearbyStore = useCallback((store: NearbyStore) => {
+    setCart((prev) => {
+      if (!prev) return prev;
+      const next = {
+        ...prev,
+        selectedNearbyStore: store,
+        selectedStore: store.store,
+        lastUpdated: new Date().toISOString(),
+      };
       persistCart(next);
       return next;
     });
@@ -322,6 +351,7 @@ export function useSmartCart() {
     removeIngredient,
     addIngredient,
     selectStore,
+    selectNearbyStore,
     selectProductForIngredient,
     refreshProducts,
     clearCart,

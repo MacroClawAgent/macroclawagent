@@ -49,6 +49,7 @@ export interface SmartCart {
   createdAt: string;
   ingredients: SmartCartIngredient[];
   selectedStore: StoreType | null;
+  selectedNearbyStore: NearbyStore | null;
   nearbyStores: NearbyStore[];
   estimatedTotal: number;
   lastUpdated: string;
