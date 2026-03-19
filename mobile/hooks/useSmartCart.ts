@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
 import { apiGet } from '../lib/api';
@@ -64,6 +65,21 @@ export function useSmartCart() {
       })
       .catch(() => {});
   }, []);
+
+  // Re-try location when app returns to foreground after permission was denied
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active' && (locationPermissionDenied || locationError)) {
+        setCart((prev) => {
+          if (!prev) return prev;
+          // Trigger retry with current cart id
+          loadNearbyStores(prev.id);
+          return prev;
+        });
+      }
+    });
+    return () => sub.remove();
+  }, [locationPermissionDenied, locationError, loadNearbyStores]);
 
   // ── Product batch loading ─────────────────────────────────────────────────
 
