@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -22,103 +22,99 @@ const WHITE = "#FFFFFF";
 const TEAL = "#2BB6A6";
 const BORDER = "#E5E7EB";
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function cleanResponse(text: string): string {
+  return text
+    .replace(/\*\*/g, "")
+    .replace(/#{1,6}\s?/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 // ── Category & action data ────────────────────────────────────────────────────
 
 type Category = "nutrition" | "training" | "smart_cart";
 
 interface Action {
-  iosSymbol: string;
-  androidSymbol: string;
+  symbol: string;
   color: string;
   bg: string;
   title: string;
-  subtitle: string;
   prompt: string;
 }
 
-const CATEGORIES: { id: Category; label: string; iosSymbol: string; androidSymbol: string }[] = [
-  { id: "nutrition", label: "Nutrition", iosSymbol: "fork.knife", androidSymbol: "restaurant" },
-  { id: "training", label: "Training", iosSymbol: "dumbbell.fill", androidSymbol: "fitness_center" },
-  { id: "smart_cart", label: "Smart Cart", iosSymbol: "cart.fill", androidSymbol: "shopping_cart" },
+const CATEGORIES: { id: Category; label: string; symbol: string }[] = [
+  { id: "nutrition",  label: "Nutrition",   symbol: "fork.knife"   },
+  { id: "training",   label: "Training",    symbol: "dumbbell.fill" },
+  { id: "smart_cart", label: "Smart Cart",  symbol: "cart.fill"    },
 ];
 
 const ACTIONS: Record<Category, Action[]> = {
   nutrition: [
     {
-      iosSymbol: "fork.knife", androidSymbol: "restaurant",
-      color: "#3B82F6", bg: "rgba(59,130,246,0.10)",
-      title: "Today's Meal Plan", subtitle: "Full day based on your macros",
-      prompt: "Build me a complete meal plan for today based on my remaining macros and fitness goal. Show each meal with foods and portion sizes.",
+      symbol: "fork.knife", color: "#3B82F6", bg: "rgba(59,130,246,0.10)",
+      title: "Today's Meal Plan",
+      prompt: "Build me a complete meal plan for today based on my remaining macros and fitness goal. List each meal with specific foods and portions. No markdown, plain text only.",
     },
     {
-      iosSymbol: "calendar", androidSymbol: "calendar_today",
-      color: "#8B5CF6", bg: "rgba(139,92,246,0.10)",
-      title: "This Week's Plan", subtitle: "7-day structured meals",
-      prompt: "Create a full 7-day meal plan tailored to my fitness goal and dietary preferences. Break it down by day with each meal.",
+      symbol: "calendar", color: "#8B5CF6", bg: "rgba(139,92,246,0.10)",
+      title: "This Week's Plan",
+      prompt: "Create a full 7-day meal plan for my fitness goal. List day by day with each meal. No markdown, plain text only.",
     },
     {
-      iosSymbol: "chart.bar.fill", androidSymbol: "bar_chart",
-      color: "#EF4444", bg: "rgba(239,68,68,0.10)",
-      title: "Hit Protein Goal", subtitle: "Close the gap today",
-      prompt: "What should I eat today to hit my protein goal? Show me specific meals and snacks with protein amounts.",
+      symbol: "chart.bar.fill", color: "#EF4444", bg: "rgba(239,68,68,0.10)",
+      title: "Hit Protein Goal",
+      prompt: "What should I eat today to hit my protein goal? Give me specific meals and snacks with protein amounts. No markdown, plain text only.",
     },
     {
-      iosSymbol: "arrow.clockwise", androidSymbol: "refresh",
-      color: TEAL, bg: "rgba(43,182,166,0.10)",
-      title: "Recovery Nutrition", subtitle: "Optimise post-training",
-      prompt: "What should I eat after training to maximise recovery? Give me specific meals and timing.",
+      symbol: "arrow.clockwise", color: TEAL, bg: "rgba(43,182,166,0.10)",
+      title: "Recovery Nutrition",
+      prompt: "What should I eat after training to maximise recovery? Give specific meals and timing. No markdown, plain text only.",
     },
   ],
   training: [
     {
-      iosSymbol: "dumbbell.fill", androidSymbol: "fitness_center",
-      color: "#F97316", bg: "rgba(249,115,22,0.10)",
-      title: "Weekly Workout Plan", subtitle: "Structured training schedule",
-      prompt: "Create a weekly workout plan based on my fitness goal. Include training days, rest days, exercises, sets and reps.",
+      symbol: "dumbbell.fill", color: "#F97316", bg: "rgba(249,115,22,0.10)",
+      title: "Weekly Workout Plan",
+      prompt: "Create a weekly workout plan for my fitness goal. List training days, rest days, exercises, sets and reps. No markdown, plain text only.",
     },
     {
-      iosSymbol: "flag.fill", androidSymbol: "flag",
-      color: "#10B981", bg: "rgba(16,185,129,0.10)",
-      title: "Achieve My Goal", subtitle: "Clear step-by-step strategy",
-      prompt: "Give me a clear strategy to achieve my fitness goal. Be specific about nutrition, training frequency and what to prioritise.",
+      symbol: "flag.fill", color: "#10B981", bg: "rgba(16,185,129,0.10)",
+      title: "Achieve My Goal",
+      prompt: "Give me a clear strategy to achieve my fitness goal. Be specific about nutrition, training frequency and priorities. No markdown, plain text only.",
     },
     {
-      iosSymbol: "bolt.fill", androidSymbol: "bolt",
-      color: "#F59E0B", bg: "rgba(245,158,11,0.10)",
-      title: "Pre-Workout Fuel", subtitle: "Maximise your energy",
-      prompt: "What should I eat before my workout for maximum energy and performance? Include timing and specific food options.",
+      symbol: "bolt.fill", color: "#F59E0B", bg: "rgba(245,158,11,0.10)",
+      title: "Pre-Workout Fuel",
+      prompt: "What should I eat before my workout for maximum energy? Include timing and food options. No markdown, plain text only.",
     },
     {
-      iosSymbol: "figure.run", androidSymbol: "directions_run",
-      color: "#EC4899", bg: "rgba(236,72,153,0.10)",
-      title: "Cardio Plan", subtitle: "Endurance & fat burn",
-      prompt: "Create a weekly cardio plan that supports my fitness goal. Include type, duration and intensity for each session.",
+      symbol: "figure.run", color: "#EC4899", bg: "rgba(236,72,153,0.10)",
+      title: "Cardio Plan",
+      prompt: "Create a weekly cardio plan for my fitness goal. Include type, duration and intensity per session. No markdown, plain text only.",
     },
   ],
   smart_cart: [
     {
-      iosSymbol: "cart.fill", androidSymbol: "shopping_cart",
-      color: TEAL, bg: "rgba(43,182,166,0.10)",
-      title: "Build Smart Cart", subtitle: "Convert plan to a cart",
-      prompt: "Build today's complete meal plan and save it to my Smart Cart.",
+      symbol: "cart.fill", color: TEAL, bg: "rgba(43,182,166,0.10)",
+      title: "Build Smart Cart",
+      prompt: "Build today's complete meal plan and convert it into a Smart Cart grocery list. No markdown, plain text only.",
     },
     {
-      iosSymbol: "dollarsign.circle.fill", androidSymbol: "payments",
-      color: "#10B981", bg: "rgba(16,185,129,0.10)",
-      title: "Budget Meal Plan", subtitle: "Affordable and balanced",
-      prompt: "Create a budget-friendly meal plan for this week. Keep it practical, affordable and still hitting my macro targets.",
+      symbol: "dollarsign.circle.fill", color: "#10B981", bg: "rgba(16,185,129,0.10)",
+      title: "Budget Meal Plan",
+      prompt: "Create a budget-friendly meal plan for this week that still hits my macro targets. No markdown, plain text only.",
     },
     {
-      iosSymbol: "list.bullet.clipboard.fill", androidSymbol: "list_alt",
-      color: "#3B82F6", bg: "rgba(59,130,246,0.10)",
-      title: "Weekly Grocery List", subtitle: "All ingredients in one place",
-      prompt: "Generate a complete weekly grocery list based on my meal plan goals. Group by category.",
+      symbol: "list.bullet.clipboard.fill", color: "#3B82F6", bg: "rgba(59,130,246,0.10)",
+      title: "Weekly Grocery List",
+      prompt: "Generate a complete weekly grocery list for my meal plan goals, grouped by category. No markdown, plain text only.",
     },
     {
-      iosSymbol: "timer", androidSymbol: "timer",
-      color: "#F97316", bg: "rgba(249,115,22,0.10)",
-      title: "Meal Prep Plan", subtitle: "Cook once, eat all week",
-      prompt: "Give me a meal prep plan I can do on Sunday to prepare food for the whole week. Include steps and what to cook.",
+      symbol: "timer", color: "#F97316", bg: "rgba(249,115,22,0.10)",
+      title: "Meal Prep Plan",
+      prompt: "Give me a meal prep plan I can do on Sunday to prepare food for the whole week. Include steps and what to cook. No markdown, plain text only.",
     },
   ],
 };
@@ -143,12 +139,12 @@ function MacroPill({ label, value, target, color }: {
 }
 
 const pill = StyleSheet.create({
-  wrap: { flex: 1, gap: 3 },
+  wrap:  { flex: 1, gap: 3 },
   label: { fontSize: 9, fontWeight: "700", color: "rgba(255,255,255,0.65)", textTransform: "uppercase", letterSpacing: 0.4 },
   value: { fontSize: 12, fontWeight: "800" },
-  unit: { fontSize: 9, fontWeight: "600", color: "rgba(255,255,255,0.55)" },
+  unit:  { fontSize: 9, fontWeight: "600", color: "rgba(255,255,255,0.55)" },
   track: { height: 3, borderRadius: 100, backgroundColor: "rgba(255,255,255,0.2)", overflow: "hidden" },
-  fill: { height: 3, borderRadius: 100 },
+  fill:  { height: 3, borderRadius: 100 },
 });
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -157,76 +153,51 @@ export default function AgentScreen() {
   const vm = useAgentViewModel();
   const { macroContext: mc } = vm;
   const [category, setCategory] = useState<Category>("nutrition");
-  const [response, setResponse] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
-  const [showSmartCart, setShowSmartCart] = useState(false);
-  const lastPromptRef = useRef("");
+  // Local response — seeded from vm.latestResponse so we can clear it independently
+  const [localResponse, setLocalResponse] = useState<string | null>(null);
 
-  // Fire a prompt directly — manages local state for reliability
-  const fire = useCallback(async (prompt: string) => {
-    if (sending) return;
-    lastPromptRef.current = prompt;
-    setSending(true);
-    setResponse(null);
-    setShowSmartCart(false);
-
-    try {
-      // Use the viewmodel's quickSend but capture the result via messages
-      await vm.quickSend(prompt);
-    } catch {
-      // quickSend doesn't throw — errors go to vm.apiError
-    } finally {
-      setSending(false);
-    }
-  }, [sending, vm]);
-
-  // Sync response from viewmodel whenever messages update
   useEffect(() => {
-    const latest = vm.messages
-      .filter((m) => m.role === "assistant" && m.id !== "welcome")
-      .slice(-1)[0];
-    if (latest) {
-      setResponse(latest.content);
-      setSending(false);
-    }
-  }, [vm.messages]);
+    if (vm.latestResponse) setLocalResponse(cleanResponse(vm.latestResponse));
+  }, [vm.latestResponse]);
 
-  // Sync error from viewmodel
   useEffect(() => {
-    if (vm.apiError) {
-      setSending(false);
-      Alert.alert("Couldn't reach Jonno", vm.apiError, [{ text: "OK" }]);
-    }
+    if (vm.apiError) Alert.alert("Jonno", vm.apiError, [{ text: "OK" }]);
   }, [vm.apiError]);
 
-  // Sync smart cart suggestion
-  useEffect(() => {
-    if (vm.pendingSmartCartAction) setShowSmartCart(true);
-  }, [vm.pendingSmartCartAction]);
+  function fire(prompt: string) {
+    if (vm.sending) return;
+    setLocalResponse(null);
+    vm.quickSend(prompt);
+  }
 
   const actions = ACTIONS[category];
 
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
 
-      {/* ── Teal header ── */}
-      <LinearGradient colors={["#2BB6A6", "#1A9488"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.header}>
+      {/* ── Header ── */}
+      <LinearGradient
+        colors={["#2BB6A6", "#1A9488"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={s.header}
+      >
         <View style={s.headerRow}>
           <Image source={AVATAR} style={s.avatar} />
           <View style={{ flex: 1 }}>
             <Text style={s.name}>Jonno</Text>
-            <Text style={s.nameSub}>AI nutrition & fitness coach</Text>
+            <Text style={s.nameSub}>AI nutrition and fitness coach</Text>
           </View>
           <View style={s.onlineDot} />
         </View>
         <View style={s.macroRow}>
-          <MacroPill label="Cal" value={mc.calories} target={mc.caloriesTarget} color="#fff" />
+          <MacroPill label="Cal"     value={mc.calories} target={mc.caloriesTarget} color="#fff"     />
           <View style={s.macroDivider} />
-          <MacroPill label="Protein" value={mc.protein} target={mc.proteinTarget} color="#FCD34D" />
+          <MacroPill label="Protein" value={mc.protein}  target={mc.proteinTarget}  color="#FCD34D" />
           <View style={s.macroDivider} />
-          <MacroPill label="Carbs" value={mc.carbs} target={mc.carbsTarget} color="#A5F3FC" />
+          <MacroPill label="Carbs"   value={mc.carbs}    target={mc.carbsTarget}    color="#A5F3FC" />
           <View style={s.macroDivider} />
-          <MacroPill label="Fat" value={mc.fat} target={mc.fatTarget} color="#FCA5A5" />
+          <MacroPill label="Fat"     value={mc.fat}      target={mc.fatTarget}      color="#FCA5A5" />
         </View>
       </LinearGradient>
 
@@ -240,55 +211,64 @@ export default function AgentScreen() {
             activeOpacity={0.75}
           >
             <SymbolView
-              name={{ ios: cat.iosSymbol, android: cat.androidSymbol, web: cat.androidSymbol }}
-              size={14}
+              name={cat.symbol as any}
+              size={13}
               tintColor={category === cat.id ? WHITE : "#9CA3AF"}
+              style={{ width: 13, height: 13 }}
             />
-            <Text style={[s.tabLabel, category === cat.id && s.tabLabelActive]}>{cat.label}</Text>
+            <Text style={[s.tabLabel, category === cat.id && s.tabLabelActive]}>
+              {cat.label}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* ── 2×2 Action grid ── */}
-      <View style={s.grid}>
+      {/* ── Compact action chips (2×2) ── */}
+      <View style={s.chips}>
         {actions.map((action) => (
           <TouchableOpacity
             key={action.title}
             onPress={() => fire(action.prompt)}
-            disabled={sending}
+            disabled={vm.sending}
             activeOpacity={0.78}
-            style={[s.card, sending && s.cardDisabled]}
+            style={[s.chip, vm.sending && s.chipDisabled]}
           >
-            <View style={[s.iconBox, { backgroundColor: action.bg }]}>
+            <View style={[s.chipIcon, { backgroundColor: action.bg }]}>
               <SymbolView
-                name={{ ios: action.iosSymbol, android: action.androidSymbol, web: action.androidSymbol }}
-                size={18}
+                name={action.symbol as any}
+                size={14}
                 tintColor={action.color}
+                style={{ width: 14, height: 14 }}
               />
             </View>
-            <Text style={s.cardTitle}>{action.title}</Text>
-            <Text style={s.cardSub}>{action.subtitle}</Text>
+            <Text style={s.chipLabel} numberOfLines={1}>{action.title}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* ── Response panel ── */}
+      {/* ── Section label ── */}
+      <View style={s.sectionRow}>
+        <View style={s.sectionLine} />
+        <Text style={s.sectionLabel}>Response</Text>
+        <View style={s.sectionLine} />
+      </View>
+
+      {/* ── Response panel (flex: 1 — dominant element) ── */}
       <View style={s.responsePanel}>
-        {sending ? (
+
+        {vm.sending ? (
           <View style={s.centred}>
             <ActivityIndicator size="large" color={TEAL} />
-            <Text style={s.loadingText}>Jonno is thinking…</Text>
+            <Text style={s.loadingText}>Jonno is thinking...</Text>
           </View>
-        ) : response ? (
+
+        ) : localResponse ? (
           <>
             <View style={s.respHeader}>
               <Image source={AVATAR} style={s.respAvatar} />
-              <View>
-                <Text style={s.respName}>Jonno</Text>
-                <Text style={s.respSub}>Your nutrition coach</Text>
-              </View>
+              <Text style={s.respName}>Jonno</Text>
               <TouchableOpacity
-                onPress={() => { setResponse(null); setShowSmartCart(false); }}
+                onPress={() => setLocalResponse(null)}
                 style={s.clearBtn}
                 activeOpacity={0.7}
               >
@@ -296,45 +276,60 @@ export default function AgentScreen() {
               </TouchableOpacity>
             </View>
 
+            <View style={s.respDivider} />
+
             <ScrollView
               style={{ flex: 1 }}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 12 }}
+              contentContainerStyle={{ paddingBottom: 8 }}
             >
-              <Text style={s.respText}>{response}</Text>
+              <Text style={s.respText}>{localResponse}</Text>
             </ScrollView>
 
+            <View style={s.respDivider} />
+
             <View style={s.respActions}>
-              <TouchableOpacity onPress={() => fire("Can you adjust that?")} style={s.followBtn} activeOpacity={0.75}>
+              <TouchableOpacity
+                onPress={() => fire("Can you adjust that? Give me a slightly different version.")}
+                style={s.followBtn}
+                activeOpacity={0.75}
+              >
                 <Text style={s.followTxt}>Adjust it</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => fire("Give me a completely different option")} style={s.followBtn} activeOpacity={0.75}>
+              <TouchableOpacity
+                onPress={() => fire("Give me a completely different option for the same goal.")}
+                style={s.followBtn}
+                activeOpacity={0.75}
+              >
                 <Text style={s.followTxt}>Different option</Text>
               </TouchableOpacity>
             </View>
 
-            {showSmartCart && (
+            {vm.pendingSmartCartAction && (
               <View style={{ marginTop: 8 }}>
                 <SmartCartCTACard
-                  onConfirm={() => { vm.confirmSmartCart(); setShowSmartCart(false); }}
-                  onDismiss={() => setShowSmartCart(false)}
+                  onConfirm={vm.confirmSmartCart}
+                  onDismiss={vm.dismissSmartCart}
                 />
               </View>
             )}
           </>
+
         ) : (
           <View style={s.centred}>
             <View style={s.emptyIcon}>
               <SymbolView
-                name={{ ios: "sparkles", android: "auto_awesome", web: "auto_awesome" }}
-                size={24}
+                name={"sparkles" as any}
+                size={26}
                 tintColor={TEAL}
+                style={{ width: 26, height: 26 }}
               />
             </View>
             <Text style={s.emptyTitle}>Choose an action above</Text>
             <Text style={s.emptySub}>Jonno's response will appear here</Text>
           </View>
         )}
+
       </View>
 
     </SafeAreaView>
@@ -347,72 +342,88 @@ const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
 
   // Header
-  header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 14, gap: 10 },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  avatar: { width: 38, height: 38, borderRadius: 12 },
-  name: { fontSize: 16, fontWeight: "800", color: WHITE },
-  nameSub: { fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: "500", marginTop: 1 },
-  onlineDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: "#A7F3D0", borderWidth: 2, borderColor: "rgba(255,255,255,0.3)" },
-  macroRow: { flexDirection: "row", backgroundColor: "rgba(0,0,0,0.12)", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, gap: 4 },
-  macroDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.18)", marginHorizontal: 4 },
+  header:      { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, gap: 8 },
+  headerRow:   { flexDirection: "row", alignItems: "center", gap: 11 },
+  avatar:      { width: 36, height: 36, borderRadius: 11 },
+  name:        { fontSize: 15, fontWeight: "800", color: WHITE },
+  nameSub:     { fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: "500", marginTop: 1 },
+  onlineDot:   { width: 8, height: 8, borderRadius: 4, backgroundColor: "#A7F3D0", borderWidth: 2, borderColor: "rgba(255,255,255,0.3)" },
+  macroRow:    { flexDirection: "row", backgroundColor: "rgba(0,0,0,0.12)", borderRadius: 11, paddingHorizontal: 12, paddingVertical: 8, gap: 4 },
+  macroDivider:{ width: 1, backgroundColor: "rgba(255,255,255,0.18)", marginHorizontal: 4 },
 
-  // Tabs
-  tabs: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
-  tab: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingVertical: 8, borderRadius: 10, backgroundColor: WHITE, borderWidth: 1, borderColor: BORDER },
-  tabActive: { backgroundColor: TEAL, borderColor: TEAL },
-  tabLabel: { fontSize: 12, fontWeight: "700", color: "#9CA3AF" },
-  tabLabelActive: { color: WHITE },
+  // Category tabs
+  tabs:          { flexDirection: "row", gap: 7, paddingHorizontal: 16, paddingVertical: 8 },
+  tab:           { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingVertical: 7, borderRadius: 9, backgroundColor: WHITE, borderWidth: 1, borderColor: BORDER },
+  tabActive:     { backgroundColor: TEAL, borderColor: TEAL },
+  tabLabel:      { fontSize: 12, fontWeight: "700", color: "#9CA3AF" },
+  tabLabelActive:{ color: WHITE },
 
-  // Grid
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, paddingHorizontal: 16 },
-  card: {
+  // Compact action chips
+  chips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 4,
+  },
+  chip: {
     width: "47.5%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
     backgroundColor: WHITE,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: BORDER,
-    padding: 12,
-    gap: 6,
+    paddingHorizontal: 11,
+    paddingVertical: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowRadius: 4,
   },
-  cardDisabled: { opacity: 0.45 },
-  iconBox: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  cardTitle: { fontSize: 13, fontWeight: "700", color: "#1C1C1E", lineHeight: 17 },
-  cardSub: { fontSize: 11, fontWeight: "500", color: "#9CA3AF", lineHeight: 14 },
+  chipDisabled: { opacity: 0.45 },
+  chipIcon:    { width: 30, height: 30, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  chipLabel:   { flex: 1, fontSize: 12, fontWeight: "700", color: "#1C1C1E" },
+
+  // Section divider label
+  sectionRow:   { flexDirection: "row", alignItems: "center", marginHorizontal: 16, marginTop: 10, marginBottom: 6, gap: 8 },
+  sectionLine:  { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: BORDER },
+  sectionLabel: { fontSize: 10, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.8 },
 
   // Response panel
   responsePanel: {
     flex: 1,
     marginHorizontal: 16,
-    marginTop: 10,
-    marginBottom: Platform.OS === "ios" ? 4 : 8,
+    marginBottom: Platform.OS === "ios" ? 6 : 10,
     backgroundColor: WHITE,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: BORDER,
     padding: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
   },
 
-  centred: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
+  centred:     { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   loadingText: { fontSize: 14, color: "#9CA3AF", fontWeight: "500", marginTop: 4 },
 
-  emptyIcon: { width: 52, height: 52, borderRadius: 16, backgroundColor: "rgba(43,182,166,0.1)", alignItems: "center", justifyContent: "center" },
+  emptyIcon:  { width: 54, height: 54, borderRadius: 16, backgroundColor: "rgba(43,182,166,0.10)", alignItems: "center", justifyContent: "center" },
   emptyTitle: { fontSize: 15, fontWeight: "700", color: "#1C1C1E" },
-  emptySub: { fontSize: 13, color: "#9CA3AF", fontWeight: "500" },
+  emptySub:   { fontSize: 13, color: "#9CA3AF", fontWeight: "500", textAlign: "center" },
 
-  respHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: BORDER, paddingBottom: 10 },
-  respAvatar: { width: 30, height: 30, borderRadius: 9 },
-  respName: { fontSize: 13, fontWeight: "800", color: "#1C1C1E" },
-  respSub: { fontSize: 11, color: "#9CA3AF", fontWeight: "500" },
-  clearBtn: { marginLeft: "auto" as any, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: BG },
-  clearTxt: { fontSize: 12, fontWeight: "600", color: "#9CA3AF" },
+  respHeader:  { flexDirection: "row", alignItems: "center", gap: 8, paddingBottom: 10 },
+  respAvatar:  { width: 28, height: 28, borderRadius: 8 },
+  respName:    { flex: 1, fontSize: 13, fontWeight: "800", color: "#1C1C1E" },
+  clearBtn:    { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: BG },
+  clearTxt:    { fontSize: 12, fontWeight: "600", color: "#9CA3AF" },
+  respDivider: { height: StyleSheet.hairlineWidth, backgroundColor: BORDER, marginBottom: 10 },
 
-  respText: { fontSize: 15, color: "#1C1C1E", lineHeight: 24, fontWeight: "400" },
+  respText:    { fontSize: 14, color: "#1C1C1E", lineHeight: 22, fontWeight: "400" },
 
-  respActions: { flexDirection: "row", gap: 8, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: BORDER, marginTop: 6 },
-  followBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: BG, borderWidth: 1, borderColor: BORDER },
-  followTxt: { fontSize: 12, fontWeight: "700", color: "#6B7280" },
+  respActions: { flexDirection: "row", gap: 8, paddingTop: 10, marginTop: 4 },
+  followBtn:   { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: BG, borderWidth: 1, borderColor: BORDER },
+  followTxt:   { fontSize: 12, fontWeight: "700", color: "#6B7280" },
 });
