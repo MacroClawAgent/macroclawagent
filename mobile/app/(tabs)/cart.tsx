@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 import { useSmartCart } from '@/hooks/useSmartCart';
-import { searchBothStores, logApiDebug, testRapidAPIConnection } from '@/services/supermarketApi';
+import { searchBothStores } from '@/services/supermarketApi';
 import { StoreSelector } from '@/components/SmartCart/StoreSelector';
 import type {
   IngredientCategory,
@@ -268,11 +268,6 @@ export default function CartScreen() {
   const [collapsed, setCollapsed] = useState<Set<IngredientCategory>>(new Set());
   const [addText, setAddText] = useState('');
   const [pickerIngredient, setPickerIngredient] = useState<SmartCartIngredient | null>(null);
-
-  useEffect(() => {
-    logApiDebug();
-    testRapidAPIConnection();
-  }, []);
 
   const total = sc.getEstimatedTotal();
   const checkedCount = sc.cart?.ingredients.filter((i) => i.isChecked).length ?? 0;

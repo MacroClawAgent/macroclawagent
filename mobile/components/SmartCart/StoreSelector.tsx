@@ -72,7 +72,7 @@ export function StoreSelector({
     return (
       <TouchableOpacity
         style={ss.enableBtn}
-        onPress={() => Linking.openURL('app-settings:')}
+        onPress={() => Linking.openURL('app-settings:').catch(() => {})}
         activeOpacity={0.8}
       >
         <Text style={ss.enableTxt}>📍 Enable location to see nearby stores →</Text>
@@ -179,7 +179,7 @@ export function StoreSelector({
                     📍 Allow location access for accurate results
                   </Text>
                   <TouchableOpacity
-                    onPress={() => Linking.openURL('app-settings:')}
+                    onPress={() => Linking.openURL('app-settings:').catch(() => {})}
                     activeOpacity={0.8}
                   >
                     <Text style={ss.locationBannerBtn}>Enable Location</Text>
