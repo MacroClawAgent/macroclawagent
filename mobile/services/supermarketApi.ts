@@ -6,12 +6,9 @@
 // The API key alone is not enough — subscription is mandatory.
 
 import type { SmartCartIngredient, SupermarketProduct } from '../types/smartCart';
+import { RAPIDAPI_KEY } from '../constants/apiKeys';
 
-// Read inside functions — NOT at module level — so Metro --clear is not
-// required every time the .env changes.
-function getRapidApiKey(): string {
-  return process.env.EXPO_PUBLIC_RAPIDAPI_KEY ?? '';
-}
+function getRapidApiKey(): string { return RAPIDAPI_KEY; }
 
 // ── Debug ─────────────────────────────────────────────────────────────────────
 
@@ -20,7 +17,6 @@ export function logApiDebug(): void {
   console.log('=== SMART CART API DEBUG ===');
   console.log('RapidAPI Key exists:', !!key);
   console.log('RapidAPI Key first 8 chars:', key.substring(0, 8) || '(empty)');
-  console.log('Google Places Key exists:', !!process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY);
 }
 
 export async function testRapidAPIConnection(): Promise<void> {
@@ -234,7 +230,7 @@ export async function smartSearchIngredient(
 
   console.log('[SmartCart] Searching:', query);
 
-  // Try real API first
+  // Try real API if key available — never block on failure
   const key = getRapidApiKey();
   if (key && key.length > 10) {
     try {
@@ -244,14 +240,12 @@ export async function smartSearchIngredient(
         return results;
       }
     } catch (e) {
-      console.warn('[SmartCart] API failed, using mock for:', query, e);
+      console.warn('[SmartCart] API failed, falling back to mock for:', query, e);
     }
-  } else {
-    console.log('[SmartCart] No API key — using mock for:', query);
   }
 
-  // Always fall back to mock
+  // Always fall through to mock — never return empty
   const mock = getMockProducts(query);
-  console.log('[SmartCart] 📦 Mock data for:', query, mock);
+  console.log('[SmartCart] 📦 Mock data for:', query);
   return mock;
 }

@@ -5,5 +5,7 @@ export default ({ config }) => ({
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://jonnoai.com",
+    rapidApiKey: process.env.EXPO_PUBLIC_RAPIDAPI_KEY ?? "",
+    googlePlacesKey: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY ?? "",
   },
 });

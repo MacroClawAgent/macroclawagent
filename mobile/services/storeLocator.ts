@@ -1,7 +1,6 @@
 import * as Location from 'expo-location';
 import type { NearbyStore, StoreType } from '../types/smartCart';
-
-const GOOGLE_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY ?? '';
+import { GOOGLE_PLACES_KEY as GOOGLE_KEY } from '../constants/apiKeys';
 
 // ── Location ──────────────────────────────────────────────────────────────────
 
