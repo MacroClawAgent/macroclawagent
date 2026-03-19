@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
 import { apiGet } from '../lib/api';
 import { smartSearchIngredient } from '../services/supermarketApi';
-import { getUserLocation, findNearbyStores, MOCK_STORES } from '../services/storeLocator';
+import { getUserLocation, findNearbyStores, getSuburb, MOCK_STORES } from '../services/storeLocator';
 import { openInStore as deepLinkOpenInStore } from '../services/deepLinkService';
 import {
   generateCartFromGroceryList,
@@ -46,6 +46,7 @@ export function useSmartCart() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
   const [networkError, setNetworkError] = useState(false);
+  const [suburb, setSuburb] = useState<string | null>(null);
   const abortRef = useRef(false);
 
   // Load persisted cart on mount — always reset isChecked to false
@@ -114,8 +115,12 @@ export function useSmartCart() {
     let finalStores: NearbyStore[] = MOCK_STORES;
     try {
       const { lat, lng } = await getUserLocation();
-      const stores = await findNearbyStores(lat, lng);
+      const [stores, suburbName] = await Promise.all([
+        findNearbyStores(lat, lng),
+        getSuburb(lat, lng),
+      ]);
       finalStores = stores.length > 0 ? stores : MOCK_STORES;
+      if (suburbName) setSuburb(suburbName);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Could not get location';
       if (msg.includes('permission')) setLocationPermissionDenied(true);
@@ -210,6 +215,20 @@ export function useSmartCart() {
       const next = {
         ...prev,
         ingredients: prev.ingredients.filter((i) => i.id !== id),
+        lastUpdated: new Date().toISOString(),
+      };
+      persistCart(next);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    setCart((prev) => {
+      if (!prev) return prev;
+      const allChecked = prev.ingredients.every((i) => i.isChecked);
+      const next = {
+        ...prev,
+        ingredients: prev.ingredients.map((i) => ({ ...i, isChecked: !allChecked })),
         lastUpdated: new Date().toISOString(),
       };
       persistCart(next);
@@ -346,8 +365,10 @@ export function useSmartCart() {
     locationError,
     locationPermissionDenied,
     networkError,
+    suburb,
     initializeCart,
     toggleIngredient,
+    toggleAll,
     removeIngredient,
     addIngredient,
     selectStore,

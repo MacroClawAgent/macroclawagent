@@ -116,18 +116,22 @@ function IngredientRow({
           {ingredient.quantity}{ingredient.unit}
         </Text>
 
-        {/* Product line */}
+        {/* Product name only (no price here) */}
         {ingredient.isLoadingProducts ? (
           <Skeleton width="70%" height={9} />
         ) : selectedProduct ? (
           <Text style={s.rowProduct} numberOfLines={2}>
             {selectedProduct.name}
-            {selectedProduct.price > 0 ? ` · $${selectedProduct.price.toFixed(2)}` : ''}
           </Text>
         ) : selectedStore ? (
           <Text style={s.rowNoMatch}>No match found</Text>
         ) : null}
       </View>
+
+      {/* Price — shown between info and actions */}
+      {!ingredient.isLoadingProducts && selectedProduct && selectedProduct.price > 0 ? (
+        <Text style={s.rowPrice}>${selectedProduct.price.toFixed(2)}</Text>
+      ) : null}
 
       {/* Actions */}
       <TouchableOpacity onPress={onSwap} style={s.actionBtn} activeOpacity={0.7}>
@@ -350,6 +354,7 @@ export default function CartScreen() {
               onSelectStore={sc.selectNearbyStore}
               locationLoading={sc.locationLoading}
               locationPermissionDenied={sc.locationPermissionDenied}
+              suburb={sc.suburb}
             />
           </View>
 
@@ -382,6 +387,33 @@ export default function CartScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* ── Select all row ── */}
+          {(() => {
+            const total = sc.cart.ingredients.length;
+            const checked = sc.cart.ingredients.filter((i) => i.isChecked).length;
+            const allChecked = checked === total;
+            const someChecked = checked > 0 && checked < total;
+            return (
+              <View style={s.selectAllRow}>
+                <TouchableOpacity onPress={sc.toggleAll} style={s.checkbox} activeOpacity={0.7}>
+                  {allChecked ? (
+                    <View style={s.checkboxFilled}>
+                      <SymbolView name={'checkmark' as any} size={10} tintColor={WHITE} style={{ width: 10, height: 10 }} />
+                    </View>
+                  ) : someChecked ? (
+                    <View style={s.checkboxPartial}>
+                      <View style={s.dashMark} />
+                    </View>
+                  ) : (
+                    <View style={s.checkboxEmpty} />
+                  )}
+                </TouchableOpacity>
+                <Text style={s.selectAllLabel}>Select all</Text>
+                <Text style={s.selectAllCount}>{checked}/{total} items</Text>
+              </View>
+            );
+          })()}
 
           {/* ── Ingredient list by category ── */}
           {groupedIngredients.map(({ cat, items }) => {
@@ -599,8 +631,9 @@ const s = StyleSheet.create({
   rowName: { fontSize: 14, fontWeight: '600', color: TEXT, marginBottom: 1 },
   rowNameChecked: { textDecorationLine: 'line-through' },
   rowQty: { fontSize: 11, fontWeight: '500', color: MUTED, marginBottom: 3 },
-  rowProduct: { fontSize: 11, fontWeight: '500', color: TEAL },
+  rowProduct: { fontSize: 11, fontWeight: '500', color: MUTED },
   rowNoMatch: { fontSize: 11, fontWeight: '400', color: MUTED, fontStyle: 'italic' },
+  rowPrice: { fontSize: 13, fontWeight: '800', color: TEAL, minWidth: 44, textAlign: 'right' },
   actionBtn: {
     width: 30, height: 30, borderRadius: 8, backgroundColor: BG,
     alignItems: 'center', justifyContent: 'center',
@@ -623,6 +656,19 @@ const s = StyleSheet.create({
     backgroundColor: TEAL, borderRadius: 9, paddingHorizontal: 14, paddingVertical: 7,
   },
   addBtnLabel: { color: WHITE, fontWeight: '700', fontSize: 13 },
+
+  selectAllRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: WHITE, borderRadius: 14, borderWidth: 1, borderColor: BORDER,
+    paddingHorizontal: 14, paddingVertical: 11,
+  },
+  selectAllLabel: { flex: 1, fontSize: 13, fontWeight: '700', color: TEXT },
+  selectAllCount: { fontSize: 12, fontWeight: '500', color: MUTED },
+  checkboxPartial: {
+    width: 20, height: 20, borderRadius: 6, backgroundColor: TEAL,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  dashMark: { width: 10, height: 2, backgroundColor: WHITE, borderRadius: 1 },
 
   clearCartBtn: { alignItems: 'center', paddingVertical: 8 },
   clearCartTxt: { fontSize: 13, fontWeight: '600', color: '#EF4444' },

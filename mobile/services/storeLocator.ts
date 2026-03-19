@@ -4,6 +4,25 @@ import { GOOGLE_PLACES_KEY as GOOGLE_KEY } from '../constants/apiKeys';
 
 // ── Location ──────────────────────────────────────────────────────────────────
 
+const AU_STATE: Record<string, string> = {
+  'New South Wales': 'NSW', 'Victoria': 'VIC', 'Queensland': 'QLD',
+  'South Australia': 'SA', 'Western Australia': 'WA', 'Tasmania': 'TAS',
+  'Australian Capital Territory': 'ACT', 'Northern Territory': 'NT',
+};
+
+export async function getSuburb(lat: number, lng: number): Promise<string> {
+  try {
+    const results = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+    const r = results[0];
+    if (!r) return '';
+    const suburb = r.district || r.subregion || r.city || '';
+    const state = AU_STATE[r.region ?? ''] || r.region || '';
+    return [suburb, state].filter(Boolean).join(', ');
+  } catch {
+    return '';
+  }
+}
+
 export async function getUserLocation(): Promise<{ lat: number; lng: number }> {
   const { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') {

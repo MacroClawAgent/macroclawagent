@@ -45,6 +45,7 @@ interface Props {
   onSelectStore: (store: NearbyStore) => void;
   locationLoading: boolean;
   locationPermissionDenied: boolean;
+  suburb?: string | null;
 }
 
 export function StoreSelector({
@@ -53,6 +54,7 @@ export function StoreSelector({
   onSelectStore,
   locationLoading,
   locationPermissionDenied,
+  suburb,
 }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -61,6 +63,7 @@ export function StoreSelector({
       <>
         <Text style={ss.cardLabel}>SHOP AT</Text>
         <SkeletonRow />
+        <Text style={ss.locatingText}>📍 Locating you...</Text>
       </>
     );
   }
@@ -107,6 +110,12 @@ export function StoreSelector({
           <Text style={ss.chevron}>⌄</Text>
         </View>
       </TouchableOpacity>
+
+      {suburb ? (
+        <Text style={ss.suburbText}>📍 {suburb}</Text>
+      ) : locationPermissionDenied ? (
+        <Text style={ss.suburbText}>📍 Sydney area (enable location for accuracy)</Text>
+      ) : null}
 
       {/* Store picker modal */}
       <Modal
@@ -265,4 +274,7 @@ const ss = StyleSheet.create({
   },
   locationBannerTxt: { fontSize: 12, fontWeight: '500', color: TEXT },
   locationBannerBtn: { fontSize: 13, fontWeight: '700', color: TEAL },
+
+  locatingText: { fontSize: 12, fontWeight: '500', color: MUTED, marginTop: 4 },
+  suburbText: { fontSize: 12, fontWeight: '500', color: MUTED, marginTop: 4 },
 });
