@@ -20,107 +20,72 @@ interface NutritionWidgetProps {
   goalLabel: string;
 }
 
-interface MacroTabletProps {
+interface MacroBarProps {
   label: string;
-  grams: number;
+  color: string;
+  trackColor: string;
+  consumed: number;
   target: number;
-  gradientColors: [string, string, string];
-  shadowColor: string;
-  accentColor: string;
 }
 
-function MacroTablet({ label, grams, target, gradientColors, shadowColor, accentColor }: MacroTabletProps) {
-  const remaining = Math.max(0, target - grams);
+function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps) {
+  const pct = target > 0 ? Math.min(1, consumed / target) : 0;
   return (
-    <View style={{ alignItems: "center", flex: 1 }}>
-      {/* Gram amount above */}
-      <Text style={{ fontSize: 14, fontWeight: "600", color: "#1E293B", marginBottom: 8, letterSpacing: -0.3 }}>
-        {grams}g
-      </Text>
-
-      {/* The 3D tablet */}
-      <View style={{
-        shadowColor,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.4,
-        shadowRadius: 14,
-        elevation: 10,
-      }}>
+    <View style={mb.row}>
+      <Text style={mb.label}>{label}</Text>
+      <View style={[mb.track, { backgroundColor: trackColor }]}>
         <LinearGradient
-          colors={gradientColors}
-          start={{ x: 0.1, y: 0 }}
-          end={{ x: 0.9, y: 1 }}
-          style={{ width: 88, height: 88, borderRadius: 26, overflow: "hidden" }}
-        >
-          {/* Diagonal light streak — key 3D glass effect */}
-          <View style={{
-            position: "absolute",
-            top: -15,
-            left: -20,
-            width: 80,
-            height: 55,
-            borderRadius: 28,
-            backgroundColor: "rgba(255,255,255,0.45)",
-            transform: [{ rotate: "-25deg" }],
-          }} />
-
-          {/* Bright glint at top-left corner */}
-          <View style={{
-            position: "absolute",
-            top: 8,
-            left: 8,
-            width: 22,
-            height: 22,
-            borderRadius: 11,
-            backgroundColor: "rgba(255,255,255,0.6)",
-          }} />
-
-          {/* Bottom depth gradient */}
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.12)"]}
-            start={{ x: 0.5, y: 0.5 }}
-            end={{ x: 0.5, y: 1 }}
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 35,
-              borderBottomLeftRadius: 26,
-              borderBottomRightRadius: 26,
-            }}
-          />
-
-          {/* Right-edge depth shadow */}
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.08)"]}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: 20,
-              borderTopRightRadius: 26,
-              borderBottomRightRadius: 26,
-            }}
-          />
-        </LinearGradient>
+          colors={[color, color]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[mb.fill, { width: `${Math.round(pct * 100)}%` as DimensionValue }]}
+        />
       </View>
-
-      {/* Label */}
-      <Text style={{ fontSize: 13, fontWeight: "600", color: "#1E293B", marginTop: 10 }}>
-        {label}
-      </Text>
-
-      {/* Xg left */}
-      <Text style={{ fontSize: 12, fontWeight: "500", color: accentColor, marginTop: 2 }}>
-        {remaining}g left
+      <Text style={mb.values}>
+        <Text style={[mb.consumed, { color }]}>{Math.round(consumed)}g</Text>
+        <Text style={mb.target}> / {target}g</Text>
       </Text>
     </View>
   );
 }
+
+const mb = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  label: {
+    width: 52,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#64748B",
+    letterSpacing: 0.1,
+  },
+  track: {
+    flex: 1,
+    height: 10,
+    borderRadius: 5,
+    overflow: "hidden",
+  },
+  fill: {
+    height: 10,
+    borderRadius: 5,
+  },
+  values: {
+    width: 72,
+    textAlign: "right",
+  },
+  consumed: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  target: {
+    fontSize: 12,
+    fontWeight: "400",
+    color: "#94A3B8",
+  },
+});
 
 export function NutritionWidget({ calorieProgress, macros, goalLabel }: NutritionWidgetProps) {
   const calPct = Math.round(calorieProgress.ratio * 100);
@@ -175,32 +140,11 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
         />
       </View>
 
-      {/* 3D Macro tablets */}
+      {/* Macro bar chart */}
       <View style={styles.macroRow}>
-        <MacroTablet
-          label="Protein"
-          grams={Math.round(macros.protein.consumed)}
-          target={macros.protein.target}
-          gradientColors={["#6EE7B7", "#34D399", "#059669"]}
-          shadowColor="#059669"
-          accentColor="#059669"
-        />
-        <MacroTablet
-          label="Carbs"
-          grams={Math.round(macros.carbs.consumed)}
-          target={macros.carbs.target}
-          gradientColors={["#FDE68A", "#FCD34D", "#F59E0B"]}
-          shadowColor="#D97706"
-          accentColor="#D97706"
-        />
-        <MacroTablet
-          label="Fat"
-          grams={Math.round(macros.fat.consumed)}
-          target={macros.fat.target}
-          gradientColors={["#DDD6FE", "#A78BFA", "#7C3AED"]}
-          shadowColor="#6D28D9"
-          accentColor="#7C3AED"
-        />
+        <MacroBar label="Protein" color="#34D399" trackColor="rgba(52,211,153,0.15)" consumed={macros.protein.consumed} target={macros.protein.target} />
+        <MacroBar label="Carbs"   color="#F59E0B" trackColor="rgba(245,158,11,0.15)"  consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
+        <MacroBar label="Fat"     color="#A78BFA" trackColor="rgba(167,139,250,0.15)" consumed={macros.fat.consumed}     target={macros.fat.target}     />
       </View>
     </View>
   );
@@ -297,13 +241,11 @@ const styles = StyleSheet.create({
   },
   calBarFill: { height: 5, borderRadius: 3 },
 
-  // 3D macro tablets row
+  // Macro bar chart
   macroRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "flex-end",
-    paddingHorizontal: 12,
-    paddingTop: 4,
-    paddingBottom: 14,
+    flexDirection: "column",
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
 });
