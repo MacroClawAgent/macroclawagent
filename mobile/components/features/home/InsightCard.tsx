@@ -46,7 +46,7 @@ export function InsightCard({ insight }: InsightCardProps) {
         onPress={() => router.push("/(tabs)/agent" as any)}
       >
         <LinearGradient
-          colors={["#2BB6A6", "#35C7B8"]}
+          colors={["#3B6FD4", "#5B8FE8"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={s.cta}
