@@ -352,21 +352,23 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
           })}
         </View>
 
-        {/* Always-visible legend */}
-        <View style={styles.inlineLegend}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#FFD580' }]} />
-            <Text style={styles.legendText}>Goal met</Text>
+        {/* Tap-to-reveal legend */}
+        {showLegend && (
+          <View style={styles.inlineLegend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#FFD580' }]} />
+              <Text style={styles.legendText}>Goal met</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: 'rgba(255,255,255,0.4)' }]} />
+              <Text style={styles.legendText}>Logged</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
+              <Text style={styles.legendText}>Missed</Text>
+            </View>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: 'rgba(255,255,255,0.4)' }]} />
-            <Text style={styles.legendText}>Logged</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
-            <Text style={styles.legendText}>Missed</Text>
-          </View>
-        </View>
+        )}
 
         </View>
       </LinearGradient>
