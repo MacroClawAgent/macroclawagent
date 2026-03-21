@@ -20,29 +20,65 @@ interface NutritionWidgetProps {
   goalLabel: string;
 }
 
-function MacroShape({ color1, color2, highlight, width, height, value, label }: {
-  color1: string; color2: string; highlight: string;
-  width: number; height: number; value: number; label: string;
-}) {
+interface MacroTabletProps {
+  label: string;
+  grams: number;
+  target: number;
+  gradientColors: [string, string, string];
+  shadowColor: string;
+  leftColor: string;
+}
+
+function MacroTablet({ label, grams, target, gradientColors, shadowColor, leftColor }: MacroTabletProps) {
+  const remaining = Math.max(0, target - grams);
   return (
-    <View style={{ alignItems: 'center', gap: 6 }}>
-      <LinearGradient
-        colors={[color1, color2]}
-        start={{ x: 0.2, y: 0 }}
-        end={{ x: 0.8, y: 1 }}
-        style={{ width, height, borderRadius: width * 0.38, overflow: 'hidden' }}
-      >
-        <View style={{
-          position: 'absolute', top: 6, left: 6,
-          width: width * 0.45, height: height * 0.38,
-          backgroundColor: highlight,
-          borderRadius: width * 0.25,
-          transform: [{ rotate: '-15deg' }],
-          opacity: 0.55,
-        }} />
-      </LinearGradient>
-      <Text style={{ fontSize: 13, fontWeight: '700', color: '#0F172A' }}>{value}g</Text>
-      <Text style={{ fontSize: 10, fontWeight: '500', color: '#64748B' }}>{label}</Text>
+    <View style={{ alignItems: 'center', flex: 1 }}>
+      {/* Gram amount ABOVE shape */}
+      <Text style={{ fontSize: 13, fontWeight: '600', color: '#1E293B', marginBottom: 6 }}>
+        {grams}g
+      </Text>
+      {/* The 3D tablet shape */}
+      <View style={{
+        shadowColor,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 10,
+        elevation: 8,
+      }}>
+        <LinearGradient
+          colors={gradientColors}
+          start={{ x: 0.2, y: 0 }}
+          end={{ x: 0.8, y: 1 }}
+          style={{ width: 72, height: 90, borderRadius: 24, overflow: 'hidden', justifyContent: 'flex-end' }}
+        >
+          {/* Large soft oval highlight — glossy shine */}
+          <View style={{
+            position: 'absolute', top: -10, left: -8,
+            width: 52, height: 52, borderRadius: 26,
+            backgroundColor: 'rgba(255,255,255,0.38)',
+          }} />
+          {/* Small bright dot highlight */}
+          <View style={{
+            position: 'absolute', top: 10, left: 10,
+            width: 18, height: 18, borderRadius: 9,
+            backgroundColor: 'rgba(255,255,255,0.55)',
+          }} />
+          {/* Bottom darker area for depth */}
+          <View style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 28,
+            borderBottomLeftRadius: 24, borderBottomRightRadius: 24,
+            backgroundColor: 'rgba(0,0,0,0.08)',
+          }} />
+        </LinearGradient>
+      </View>
+      {/* Label below shape */}
+      <Text style={{ fontSize: 13, fontWeight: '600', color: '#1E293B', marginTop: 10 }}>
+        {label}
+      </Text>
+      {/* "Xg left" coloured text */}
+      <Text style={{ fontSize: 12, fontWeight: '500', color: leftColor, marginTop: 2 }}>
+        {remaining}g left
+      </Text>
     </View>
   );
 }
@@ -99,20 +135,29 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
 
       {/* 3D Macro tablet shapes */}
       <View style={styles.macroRow}>
-        <MacroShape
-          color1="#1FBF75" color2="#3ED598" highlight="rgba(255,255,255,0.6)"
-          width={85} height={105}
-          value={Math.round(macros.protein.consumed)} label="Protein"
+        <MacroTablet
+          label="Protein"
+          grams={Math.round(macros.protein.consumed)}
+          target={macros.protein.target}
+          gradientColors={['#86EFAC', '#4ADE80', '#22C55E']}
+          shadowColor="#16A34A"
+          leftColor="#16A34A"
         />
-        <MacroShape
-          color1="#F4A622" color2="#F7D07A" highlight="rgba(255,255,255,0.55)"
-          width={80} height={88}
-          value={Math.round(macros.carbs.consumed)} label="Carbs"
+        <MacroTablet
+          label="Carbs"
+          grams={Math.round(macros.carbs.consumed)}
+          target={macros.carbs.target}
+          gradientColors={['#FDE68A', '#FCD34D', '#F59E0B']}
+          shadowColor="#D97706"
+          leftColor="#D97706"
         />
-        <MacroShape
-          color1="#5C5FFF" color2="#7A7DFF" highlight="rgba(255,255,255,0.5)"
-          width={78} height={95}
-          value={Math.round(macros.fat.consumed)} label="Fat"
+        <MacroTablet
+          label="Fat"
+          grams={Math.round(macros.fat.consumed)}
+          target={macros.fat.target}
+          gradientColors={['#C4B5FD', '#A78BFA', '#7C3AED']}
+          shadowColor="#7C3AED"
+          leftColor="#7C3AED"
         />
       </View>
     </View>
@@ -127,6 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.82)',
     borderRadius: 28,
     padding: 20,
+    overflow: 'visible',
     shadowColor: '#A0C0D8',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
@@ -163,11 +209,14 @@ const styles = StyleSheet.create({
 
   // 3D macro tablets row
   macroRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    overflow: 'visible',
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    paddingBottom: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(0,0,0,0.06)",
-    paddingTop: 14,
+    borderTopColor: 'rgba(0,0,0,0.06)',
   },
 });
