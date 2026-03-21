@@ -58,13 +58,13 @@ export default function HomeScreen() {
   );
 
   return (
-    <Screen style={{ backgroundColor: "#EEF4FA" }}>
+    <Screen style={{ backgroundColor: "#DDE6F0" }}>
       {/* Full-screen cool blue-white gradient backdrop */}
       <LinearGradient
-        colors={["#EEF4FA", "#F5F8FC"]}
+        colors={['#F0F5FA', '#E4ECF4', '#DDE6F0']}
         style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
         pointerEvents="none"
       />
       {/* Top header: greeting left, avatar + goal right */}

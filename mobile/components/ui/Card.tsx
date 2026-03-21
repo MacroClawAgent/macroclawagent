@@ -28,15 +28,15 @@ export function Card({ children, style, padding = 20 }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
+    borderRadius: 28,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.65)",
+    backgroundColor: "rgba(255,255,255,0.82)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.8)",
-    shadowColor: "#000",
+    shadowColor: "#A0C0D8",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 24,
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
     elevation: 6,
   },
   highlight: {

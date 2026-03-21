@@ -10,6 +10,7 @@ import {
   Pressable,
   Alert,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
@@ -281,7 +282,13 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
         activeOpacity={1}
         onPress={() => setShowLegend((v) => !v)}
       >
-      <BlurView intensity={20} tint="light" style={styles.card}>
+      <LinearGradient
+        colors={['#5DD6C8', '#4BBFCC', '#5BA8D4', '#6B9FD4']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.card}
+      >
+        <View style={styles.glassOverlay}>
         <View style={styles.cardHighlight} pointerEvents="none" />
 
         {/* Header row */}
@@ -295,7 +302,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
               <View style={styles.streakBadge}>
                 <SymbolView
                   name={{ ios: "flame.fill", android: "local_fire_department", web: "local_fire_department" }}
-                  tintColor="#FB923C"
+                  tintColor="#FFD580"
                   size={12}
                 />
                 <Text style={styles.streakCount}>{streak}</Text>
@@ -345,25 +352,24 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
           })}
         </View>
 
-        {/* Tap-to-reveal legend */}
-        {showLegend && (
-          <View style={styles.inlineLegend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
-              <Text style={styles.legendText}>Goal met</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: BLUE }]} />
-              <Text style={styles.legendText}>Logged</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
-              <Text style={styles.legendText}>Missed</Text>
-            </View>
+        {/* Always-visible legend */}
+        <View style={styles.inlineLegend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#FFD580' }]} />
+            <Text style={styles.legendText}>Goal met</Text>
           </View>
-        )}
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: 'rgba(255,255,255,0.4)' }]} />
+            <Text style={styles.legendText}>Logged</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, styles.dotEmpty, { width: 6, height: 6 }]} />
+            <Text style={styles.legendText}>Missed</Text>
+          </View>
+        </View>
 
-      </BlurView>
+        </View>
+      </LinearGradient>
       </TouchableOpacity>
 
       {/* ══ Bottom sheet modal ══ */}
@@ -557,16 +563,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.65)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.8)",
+    shadowColor: "#4A90B8",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  glassOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 24,
     paddingTop: 10,
     paddingBottom: 10,
     paddingHorizontal: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 24,
   },
   cardHighlight: {
     position: "absolute",
@@ -574,7 +583,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: "rgba(255,255,255,0.65)",
+    backgroundColor: "rgba(255,255,255,0.35)",
   },
   cardHeader: {
     flexDirection: "row",
@@ -587,18 +596,18 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#1A1A1A",
+    color: "#FFFFFF",
     letterSpacing: 0.1,
   },
   cardSub: {
     fontSize: 10,
-    color: "#6B7280",
+    color: "rgba(255,255,255,0.75)",
   },
   // ── Streak badge ──────────────────────────────────────────────────
   streakBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(251,146,60,0.15)",
+    backgroundColor: "rgba(251,200,120,0.25)",
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -607,16 +616,16 @@ const styles = StyleSheet.create({
   streakCount: {
     fontSize: 12,
     fontWeight: "800",
-    color: "#FB923C",
+    color: "#FFD580",
   },
-  // ── Legend toggle ─────────────────────────────────────────────────
+  // ── Legend ────────────────────────────────────────────────────────
   inlineLegend: {
     flexDirection: "row",
     gap: 14,
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(0,0,0,0.06)",
+    borderTopColor: "rgba(255,255,255,0.2)",
   },
   // ── Days row ──────────────────────────────────────────────────────
   daysRow: {
@@ -635,8 +644,8 @@ const styles = StyleSheet.create({
     minWidth: 32,
   },
   dayPillToday: {
-    backgroundColor: "#3B82F6",
-    shadowColor: "#3B82F6",
+    backgroundColor: "#3B6FD4",
+    shadowColor: "#3B6FD4",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 10,
@@ -644,10 +653,10 @@ const styles = StyleSheet.create({
   },
   dayLetter: { fontSize: 9, fontWeight: "600", letterSpacing: 0.3, marginBottom: 2 },
   dayNum: { fontSize: 15, fontWeight: "700" },
-  textBright: { color: "#374151" },
-  textMid: { color: "#6B7280" },
+  textBright: { color: "rgba(255,255,255,0.9)" },
+  textMid: { color: "rgba(255,255,255,0.65)" },
   textWhite: { color: "#fff" },
-  textDim: { color: "rgba(55,65,81,0.28)" },
+  textDim: { color: "rgba(255,255,255,0.3)" },
   // ── Status dots ───────────────────────────────────────────────────
   statusDot: {
     width: 6,
@@ -656,8 +665,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   dotGreen: {
-    backgroundColor: GREEN,
-    shadowColor: GREEN,
+    backgroundColor: "#FFD580",
+    shadowColor: "#FFD580",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.9,
     shadowRadius: 4,
@@ -666,26 +675,21 @@ const styles = StyleSheet.create({
     backgroundColor: AMBER,
   },
   dotBlue: {
-    backgroundColor: BLUE,
-    shadowColor: BLUE,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.4)",
   },
   dotEmpty: {
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(255,255,255,0.2)",
     borderWidth: 1.5,
-    borderColor: "rgba(26,26,26,0.28)",
+    borderColor: "rgba(255,255,255,0.4)",
   },
   dotFuture: {
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(255,255,255,0.2)",
     borderWidth: 1.5,
-    borderColor: "rgba(26,26,26,0.12)",
+    borderColor: "rgba(255,255,255,0.4)",
   },
-  // ── Legend ────────────────────────────────────────────────────────
   legendItem: { flexDirection: "row", alignItems: "center", gap: 5 },
   legendDot: { width: 6, height: 6, borderRadius: 3 },
-  legendText: { fontSize: 10, color: "#6B7280", fontWeight: "600" },
+  legendText: { fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: "600" },
   // ── Modal ─────────────────────────────────────────────────────────
   backdrop: {
     flex: 1,
