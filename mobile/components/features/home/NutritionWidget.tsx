@@ -1,9 +1,8 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import type { DimensionValue } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
-import { useRouter } from "expo-router";
 
 interface MacroStat {
   consumed: number;
@@ -124,7 +123,6 @@ function MacroTablet({ label, grams, target, gradientColors, shadowColor, accent
 }
 
 export function NutritionWidget({ calorieProgress, macros, goalLabel }: NutritionWidgetProps) {
-  const router = useRouter();
   const calPct = Math.round(calorieProgress.ratio * 100);
 
   return (
@@ -147,15 +145,6 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
             <Text style={styles.widgetSub}>{goalLabel}</Text>
           </View>
         </View>
-
-        {/* + Log button */}
-        <TouchableOpacity
-          onPress={() => router.push("/nutrition/log-food" as any)}
-          activeOpacity={0.75}
-          style={styles.logBtn}
-        >
-          <Text style={styles.logBtnText}>+ Log</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Calorie summary row */}
@@ -263,27 +252,6 @@ const styles = StyleSheet.create({
   widgetTitle: { fontSize: 16, fontWeight: "700", letterSpacing: -0.3, color: "#1A1A1A" },
   widgetSub: { fontSize: 11, fontWeight: "500", marginTop: 1, color: "#6B7280" },
 
-  // + Log button
-  logBtn: {
-    backgroundColor: "rgba(235,240,255,0.9)",
-    borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: "rgba(180,195,255,0.7)",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    shadowColor: "#6366F1",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  logBtnText: {
-    color: "#6366F1",
-    fontSize: 15,
-    fontWeight: "700",
-    letterSpacing: 0.2,
-  },
-
   // Calorie summary
   calRow: {
     flexDirection: "row",
@@ -293,7 +261,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   calLeft: { flexDirection: "row", alignItems: "baseline", gap: 4 },
-  calBig: { fontSize: 56, fontWeight: "800", letterSpacing: -2, color: "#0F172A" },
+  calBig: { fontSize: 46, fontWeight: "800", letterSpacing: -2, color: "#0F172A" },
   calOf: {
     fontSize: 16,
     fontWeight: "400",
@@ -325,7 +293,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "rgba(45,212,191,0.15)",
     marginHorizontal: 20,
-    marginVertical: 16,
+    marginVertical: 10,
   },
   calBarFill: { height: 5, borderRadius: 3 },
 
@@ -336,6 +304,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     paddingHorizontal: 12,
     paddingTop: 4,
-    paddingBottom: 20,
+    paddingBottom: 14,
   },
 });
