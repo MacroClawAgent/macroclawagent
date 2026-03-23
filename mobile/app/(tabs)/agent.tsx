@@ -1,428 +1,557 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Image,
+  Animated,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { SymbolView } from "expo-symbols";
+import { Ionicons } from "@expo/vector-icons";
 import { useAgentViewModel } from "@/lib/viewModels/useAgentViewModel";
-import { SmartCartCTACard } from "@/components/features/agent/SmartCartCTACard";
 
-const AVATAR = require("../../assets/images/avatar.png");
-const BG = "#EEF4FA";
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const BG    = "#F0F5FA";
 const WHITE = "#FFFFFF";
-const TEAL = "#2BB6A6";
-const BORDER = "#E5E7EB";
+const TEAL  = "#2BB6A6";
+const BLUE  = "#3B6FD4";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Mock data ─────────────────────────────────────────────────────────────────
 
-function cleanResponse(text: string): string {
-  return text
-    .replace(/\*\*/g, "")
-    .replace(/#{1,6}\s?/g, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-// ── Category & action data ────────────────────────────────────────────────────
-
-type Category = "nutrition" | "training" | "smart_cart";
-
-interface Action {
-  symbol: string;
-  color: string;
-  bg: string;
-  title: string;
-  prompt: string;
-}
-
-const CATEGORIES: { id: Category; label: string; symbol: string }[] = [
-  { id: "nutrition",  label: "Nutrition",   symbol: "fork.knife"   },
-  { id: "training",   label: "Training",    symbol: "dumbbell.fill" },
-  { id: "smart_cart", label: "Smart Cart",  symbol: "cart.fill"    },
-];
-
-const ACTIONS: Record<Category, Action[]> = {
-  nutrition: [
-    {
-      symbol: "fork.knife", color: "#3B82F6", bg: "rgba(59,130,246,0.10)",
-      title: "Today's Meal Plan",
-      prompt: "Build me a complete meal plan for today based on my remaining macros and fitness goal. List each meal with specific foods and portions. No markdown, plain text only.",
-    },
-    {
-      symbol: "calendar", color: "#8B5CF6", bg: "rgba(139,92,246,0.10)",
-      title: "This Week's Plan",
-      prompt: "Create a full 7-day meal plan for my fitness goal. List day by day with each meal. No markdown, plain text only.",
-    },
-    {
-      symbol: "chart.bar.fill", color: "#EF4444", bg: "rgba(239,68,68,0.10)",
-      title: "Hit Protein Goal",
-      prompt: "What should I eat today to hit my protein goal? Give me specific meals and snacks with protein amounts. No markdown, plain text only.",
-    },
-    {
-      symbol: "arrow.clockwise", color: TEAL, bg: "rgba(43,182,166,0.10)",
-      title: "Recovery Nutrition",
-      prompt: "What should I eat after training to maximise recovery? Give specific meals and timing. No markdown, plain text only.",
-    },
+const JONNO_CONTEXT = {
+  status: "You're on track today",
+  statusDetail: "3 of 4 meals logged · Great work",
+  mealPlan: [
+    { time: "7:30 AM",  name: "Breakfast", desc: "Greek yoghurt, banana, granola",         cal: 450, pro: 28, state: "done"     },
+    { time: "12:00 PM", name: "Lunch",     desc: "Grilled chicken wrap, side salad",        cal: 620, pro: 42, state: "current"  },
+    { time: "3:30 PM",  name: "Snack",     desc: "Protein shake + almonds",                cal: 280, pro: 30, state: "upcoming" },
+    { time: "7:00 PM",  name: "Dinner",    desc: "Salmon, sweet potato, broccoli",          cal: 580, pro: 44, state: "upcoming" },
   ],
-  training: [
-    {
-      symbol: "dumbbell.fill", color: "#F97316", bg: "rgba(249,115,22,0.10)",
-      title: "Weekly Workout Plan",
-      prompt: "Create a weekly workout plan for my fitness goal. List training days, rest days, exercises, sets and reps. No markdown, plain text only.",
-    },
-    {
-      symbol: "flag.fill", color: "#10B981", bg: "rgba(16,185,129,0.10)",
-      title: "Achieve My Goal",
-      prompt: "Give me a clear strategy to achieve my fitness goal. Be specific about nutrition, training frequency and priorities. No markdown, plain text only.",
-    },
-    {
-      symbol: "bolt.fill", color: "#F59E0B", bg: "rgba(245,158,11,0.10)",
-      title: "Pre-Workout Fuel",
-      prompt: "What should I eat before my workout for maximum energy? Include timing and food options. No markdown, plain text only.",
-    },
-    {
-      symbol: "figure.run", color: "#EC4899", bg: "rgba(236,72,153,0.10)",
-      title: "Cardio Plan",
-      prompt: "Create a weekly cardio plan for my fitness goal. Include type, duration and intensity per session. No markdown, plain text only.",
-    },
+  macros: { cal: 1070, calT: 1930, pro: 70, proT: 144, carb: 95, carbT: 220, fat: 28, fatT: 64 },
+  insights: [
+    { border: "#F59E0B", icon: "⚠️", title: "Protein gap",          body: "You need 74g more protein today. Add a shake or chicken breast.",  cta: "Fix it"      },
+    { border: TEAL,      icon: "💡", title: "Post-workout window",   body: "Your 5km run was 40 min ago. Eat within the next 20 min.",         cta: "Log meal"    },
+    { border: "#8B5CF6", icon: "📈", title: "Weekly pattern spotted",body: "You consistently under-eat on Mondays. Let's build a fix.",        cta: "Adjust plan" },
   ],
-  smart_cart: [
-    {
-      symbol: "cart.fill", color: TEAL, bg: "rgba(43,182,166,0.10)",
-      title: "Build Smart Cart",
-      prompt: "Build today's complete meal plan and convert it into a Smart Cart grocery list. No markdown, plain text only.",
-    },
-    {
-      symbol: "dollarsign.circle.fill", color: "#10B981", bg: "rgba(16,185,129,0.10)",
-      title: "Budget Meal Plan",
-      prompt: "Create a budget-friendly meal plan for this week that still hits my macro targets. No markdown, plain text only.",
-    },
-    {
-      symbol: "list.bullet.clipboard.fill", color: "#3B82F6", bg: "rgba(59,130,246,0.10)",
-      title: "Weekly Grocery List",
-      prompt: "Generate a complete weekly grocery list for my meal plan goals, grouped by category. No markdown, plain text only.",
-    },
-    {
-      symbol: "timer", color: "#F97316", bg: "rgba(249,115,22,0.10)",
-      title: "Meal Prep Plan",
-      prompt: "Give me a meal prep plan I can do on Sunday to prepare food for the whole week. Include steps and what to cook. No markdown, plain text only.",
-    },
+  quickActions: [
+    { icon: "🍽️", title: "Generate Meal Plan", sub: "Based on your goals",  color: BLUE,      prompt: "Generate a complete meal plan for today based on my macros and fitness goal. Plain text only." },
+    { icon: "🛒", title: "Build Smart Cart",    sub: "Order in 2 taps",      color: TEAL,      prompt: "Build a grocery smart cart for today's meals. Plain text only."                                 },
+    { icon: "⚖️", title: "Adjust Macros",       sub: "Tweak your targets",   color: "#8B5CF6", prompt: "Suggest macro adjustments for my current fitness goal and activity level. Plain text only."     },
+    { icon: "📊", title: "Weekly Review",        sub: "How last week went",   color: "#F59E0B", prompt: "Give me a brief weekly nutrition review based on my typical intake. Plain text only."           },
   ],
+  suggestions: ["What should I eat tonight?", "Am I on track today?", "Best post-workout meal?"],
+  lastResponse: "Your protein is looking low — I'd suggest adding a chicken breast or protein shake after your next workout window.",
 };
 
-// ── Macro pill ────────────────────────────────────────────────────────────────
+// ── Animated pulse dot ────────────────────────────────────────────────────────
 
-function MacroPill({ label, value, target, color }: {
-  label: string; value: number; target: number; color: string;
-}) {
-  const pct = target > 0 ? Math.min(value / target, 1) : 0;
+function PulseDot() {
+  const opacity = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.3, duration: 900, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1,   duration: 900, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
   return (
-    <View style={pill.wrap}>
-      <Text style={pill.label}>{label}</Text>
-      <Text style={[pill.value, { color }]}>
-        {value}<Text style={pill.unit}>/{target}{label === "Cal" ? "" : "g"}</Text>
-      </Text>
-      <View style={pill.track}>
-        <View style={[pill.fill, { width: `${Math.round(pct * 100)}%` as any, backgroundColor: color }]} />
-      </View>
-    </View>
+    <Animated.View style={[s.pulseDot, { opacity }]} />
   );
 }
 
-const pill = StyleSheet.create({
-  wrap:  { flex: 1, gap: 3 },
-  label: { fontSize: 9, fontWeight: "700", color: "rgba(255,255,255,0.65)", textTransform: "uppercase", letterSpacing: 0.4 },
-  value: { fontSize: 12, fontWeight: "800" },
-  unit:  { fontSize: 9, fontWeight: "600", color: "rgba(255,255,255,0.55)" },
-  track: { height: 3, borderRadius: 100, backgroundColor: "rgba(255,255,255,0.2)", overflow: "hidden" },
-  fill:  { height: 3, borderRadius: 100 },
-});
+// ── Fade-slide-in wrapper ─────────────────────────────────────────────────────
+
+function FadeIn({ delay = 0, children }: { delay?: number; children: React.ReactNode }) {
+  const anim = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(18)).current;
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(anim,  { toValue: 1, delay, duration: 420, useNativeDriver: true }),
+      Animated.timing(slide, { toValue: 0, delay, duration: 420, useNativeDriver: true }),
+    ]).start();
+  }, []);
+  return (
+    <Animated.View style={{ opacity: anim, transform: [{ translateY: slide }] }}>
+      {children}
+    </Animated.View>
+  );
+}
+
+// ── Glass card ────────────────────────────────────────────────────────────────
+
+function Card({ children, style }: { children: React.ReactNode; style?: object }) {
+  return <View style={[s.card, style]}>{children}</View>;
+}
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function AgentScreen() {
   const vm = useAgentViewModel();
-  const { macroContext: mc } = vm;
-  const [category, setCategory] = useState<Category>("nutrition");
-  // Local response — seeded from vm.latestResponse so we can clear it independently
-  const [localResponse, setLocalResponse] = useState<string | null>(null);
+  const ctx = JONNO_CONTEXT;
+
+  const [chatExpanded, setChatExpanded] = useState(false);
+  const [inputText, setInputText]       = useState("");
+  const [localResp, setLocalResp]       = useState<string | null>(ctx.lastResponse);
 
   useEffect(() => {
-    if (vm.latestResponse) setLocalResponse(cleanResponse(vm.latestResponse));
+    if (vm.latestResponse) setLocalResp(vm.latestResponse.replace(/\*\*/g, "").replace(/#{1,6}\s?/g, "").trim());
   }, [vm.latestResponse]);
 
-  useEffect(() => {
-    if (vm.apiError) Alert.alert("Jonno", vm.apiError, [{ text: "OK" }]);
-  }, [vm.apiError]);
-
-  function fire(prompt: string) {
-    if (vm.sending) return;
-    setLocalResponse(null);
-    vm.quickSend(prompt);
+  function sendMessage() {
+    const text = inputText.trim();
+    if (!text || vm.sending) return;
+    setInputText("");
+    setLocalResp(null);
+    vm.quickSend(text);
   }
 
-  const actions = ACTIONS[category];
+  const m = ctx.macros;
+  const calPct = Math.min(m.cal / m.calT, 1);
 
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
-
-      {/* ── Header ── */}
-      <LinearGradient
-        colors={["#2BB6A6", "#1A9488"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={s.header}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={90}
       >
-        <View style={s.headerRow}>
-          <Image source={AVATAR} style={s.avatar} />
-          <View style={{ flex: 1 }}>
-            <Text style={s.name}>Jonno</Text>
-            <Text style={s.nameSub}>AI nutrition and fitness coach</Text>
-          </View>
-          <View style={s.onlineDot} />
-        </View>
-        <View style={s.macroRow}>
-          <MacroPill label="Cal"     value={mc.calories} target={mc.caloriesTarget} color="#fff"     />
-          <View style={s.macroDivider} />
-          <MacroPill label="Protein" value={mc.protein}  target={mc.proteinTarget}  color="#FCD34D" />
-          <View style={s.macroDivider} />
-          <MacroPill label="Carbs"   value={mc.carbs}    target={mc.carbsTarget}    color="#A5F3FC" />
-          <View style={s.macroDivider} />
-          <MacroPill label="Fat"     value={mc.fat}      target={mc.fatTarget}      color="#FCA5A5" />
-        </View>
-      </LinearGradient>
+        <ScrollView
+          contentContainerStyle={s.scroll}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
 
-      {/* ── Category tabs ── */}
-      <View style={s.tabs}>
-        {CATEGORIES.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            onPress={() => setCategory(cat.id)}
-            style={[s.tab, category === cat.id && s.tabActive]}
-            activeOpacity={0.75}
-          >
-            <SymbolView
-              name={cat.symbol as any}
-              size={13}
-              tintColor={category === cat.id ? WHITE : "#9CA3AF"}
-              style={{ width: 13, height: 13 }}
-            />
-            <Text style={[s.tabLabel, category === cat.id && s.tabLabelActive]}>
-              {cat.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* ── Compact action chips (2×2) ── */}
-      <View style={s.chips}>
-        {actions.map((action) => (
-          <TouchableOpacity
-            key={action.title}
-            onPress={() => fire(action.prompt)}
-            disabled={vm.sending}
-            activeOpacity={0.78}
-            style={[s.chip, vm.sending && s.chipDisabled]}
-          >
-            <View style={[s.chipIcon, { backgroundColor: action.bg }]}>
-              <SymbolView
-                name={action.symbol as any}
-                size={14}
-                tintColor={action.color}
-                style={{ width: 14, height: 14 }}
-              />
-            </View>
-            <Text style={s.chipLabel} numberOfLines={1}>{action.title}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* ── Section label ── */}
-      <View style={s.sectionRow}>
-        <View style={s.sectionLine} />
-        <Text style={s.sectionLabel}>Response</Text>
-        <View style={s.sectionLine} />
-      </View>
-
-      {/* ── Response panel (flex: 1 — dominant element) ── */}
-      <View style={s.responsePanel}>
-
-        {vm.sending ? (
-          <View style={s.centred}>
-            <ActivityIndicator size="large" color={TEAL} />
-            <Text style={s.loadingText}>Jonno is thinking...</Text>
-          </View>
-
-        ) : localResponse ? (
-          <>
-            <View style={s.respHeader}>
-              <Image source={AVATAR} style={s.respAvatar} />
-              <Text style={s.respName}>Jonno</Text>
-              <TouchableOpacity
-                onPress={() => setLocalResponse(null)}
-                style={s.clearBtn}
-                activeOpacity={0.7}
-              >
-                <Text style={s.clearTxt}>Clear</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={s.respDivider} />
-
-            <ScrollView
-              style={{ flex: 1 }}
-              showsVerticalScrollIndicator={true}
-              indicatorStyle="black"
-              contentContainerStyle={{ paddingBottom: 8, paddingRight: 10 }}
+          {/* ── SECTION 1: Status Header ── */}
+          <FadeIn delay={0}>
+            <LinearGradient
+              colors={["#3B6FD4", "#2BB6A6"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={s.headerCard}
             >
-              <Text style={s.respText}>{localResponse}</Text>
-            </ScrollView>
+              <View style={s.headerTop}>
+                <View style={s.jonnoIconWrap}>
+                  <Text style={s.jonnoIcon}>✦</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.jonnoTitle}>Jonno</Text>
+                  <Text style={s.jonnoSub}>Proactive AI nutrition coach</Text>
+                </View>
+                <View style={s.onlineWrap}>
+                  <PulseDot />
+                  <Text style={s.onlineLabel}>Active</Text>
+                </View>
+              </View>
 
-            <View style={s.respDivider} />
+              <View style={s.statusBubble}>
+                <Text style={s.statusMain}>{ctx.status}</Text>
+                <Text style={s.statusSub}>{ctx.statusDetail}</Text>
+              </View>
 
-            <View style={s.respActions}>
-              <TouchableOpacity
-                onPress={() => fire("Can you adjust that? Give me a slightly different version.")}
-                style={s.followBtn}
-                activeOpacity={0.75}
+              <View style={s.datePill}>
+                <Text style={s.datePillText}>
+                  {new Date().toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" })}
+                </Text>
+              </View>
+            </LinearGradient>
+          </FadeIn>
+
+          {/* ── SECTION 2: Today's Action Plan ── */}
+          <FadeIn delay={80}>
+            <Card style={{ marginTop: 14 }}>
+              <View style={s.sectionHeader}>
+                <Text style={s.sectionTitle}>Today's Action Plan</Text>
+                <TouchableOpacity
+                  onPress={() => vm.quickSend("Regenerate today's meal plan based on my remaining macros. Plain text only.")}
+                  disabled={vm.sending}
+                  activeOpacity={0.75}
+                  style={s.regenBtn}
+                >
+                  <Ionicons name="refresh" size={13} color={TEAL} />
+                  <Text style={s.regenBtnText}>Regenerate</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Timeline */}
+              {ctx.mealPlan.map((meal, i) => (
+                <View key={meal.name} style={s.timelineRow}>
+                  {/* Line */}
+                  <View style={s.timelineCol}>
+                    <View style={[
+                      s.timelineDot,
+                      meal.state === "done"    && s.dotDone,
+                      meal.state === "current" && s.dotCurrent,
+                      meal.state === "upcoming"&& s.dotUpcoming,
+                    ]} />
+                    {i < ctx.mealPlan.length - 1 && (
+                      <View style={[s.timelineLine, meal.state === "done" && s.lineDone]} />
+                    )}
+                  </View>
+
+                  {/* Content */}
+                  <View style={[s.timelineContent, meal.state === "current" && s.contentCurrent]}>
+                    <View style={s.mealRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[s.mealTime, meal.state === "upcoming" && s.textFaded]}>{meal.time}</Text>
+                        <Text style={[s.mealName, meal.state === "upcoming" && s.textFaded]}>{meal.name}</Text>
+                        <Text style={[s.mealDesc, meal.state === "upcoming" && s.textFaded]} numberOfLines={1}>{meal.desc}</Text>
+                      </View>
+                      <View style={{ alignItems: "flex-end", gap: 2 }}>
+                        <Text style={[s.mealCal, meal.state === "upcoming" && s.textFaded]}>{meal.cal} kcal</Text>
+                        <Text style={[s.mealPro, meal.state === "upcoming" && s.textFaded]}>{meal.pro}g pro</Text>
+                        {meal.state === "current" && (
+                          <TouchableOpacity style={s.logNowBtn} activeOpacity={0.8}>
+                            <Text style={s.logNowText}>Log Now</Text>
+                          </TouchableOpacity>
+                        )}
+                        {meal.state === "done" && (
+                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              ))}
+
+              {/* Macro progress */}
+              <View style={s.macroSummary}>
+                <View style={s.macroRow}>
+                  <Text style={s.macroLabel}>Daily Progress</Text>
+                  <Text style={s.macroVal}>{m.cal} / {m.calT} kcal</Text>
+                </View>
+                <View style={s.macroTrack}>
+                  <LinearGradient
+                    colors={["#2BB6A6", "#3B6FD4"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[s.macroFill, { width: `${Math.round(calPct * 100)}%` as any }]}
+                  />
+                </View>
+                <View style={s.macroMinis}>
+                  {[
+                    { label: "Protein", val: m.pro, target: m.proT, color: "#10B981" },
+                    { label: "Carbs",   val: m.carb,target: m.carbT,color: "#F59E0B" },
+                    { label: "Fat",     val: m.fat, target: m.fatT, color: "#8B5CF6" },
+                  ].map((mac) => (
+                    <View key={mac.label} style={s.macroMini}>
+                      <View style={[s.macroMiniDot, { backgroundColor: mac.color }]} />
+                      <Text style={s.macroMiniText}>{mac.val}g <Text style={s.macroMiniTarget}>/ {mac.target}g</Text></Text>
+                      <Text style={s.macroMiniLabel}>{mac.label}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </Card>
+          </FadeIn>
+
+          {/* ── SECTION 3: Jonno Noticed ── */}
+          <FadeIn delay={160}>
+            <Card style={{ marginTop: 14 }}>
+              <Text style={s.sectionTitle}>Jonno Noticed</Text>
+              <View style={{ gap: 10, marginTop: 12 }}>
+                {ctx.insights.map((ins) => (
+                  <View key={ins.title} style={[s.insightCard, { borderLeftColor: ins.border }]}>
+                    <View style={{ flex: 1 }}>
+                      <View style={s.insightHeadRow}>
+                        <Text style={s.insightEmoji}>{ins.icon}</Text>
+                        <Text style={s.insightTitle}>{ins.title}</Text>
+                      </View>
+                      <Text style={s.insightBody}>{ins.body}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[s.insightCTA, { borderColor: ins.border }]}
+                      activeOpacity={0.75}
+                      onPress={() => vm.quickSend(`${ins.title}: ${ins.body} What's your recommendation?`)}
+                    >
+                      <Text style={[s.insightCTAText, { color: ins.border }]}>{ins.cta}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            </Card>
+          </FadeIn>
+
+          {/* ── SECTION 4: Quick Actions ── */}
+          <FadeIn delay={240}>
+            <Card style={{ marginTop: 14 }}>
+              <Text style={s.sectionTitle}>Quick Actions</Text>
+              <View style={s.actionsGrid}>
+                {ctx.quickActions.map((action) => (
+                  <TouchableOpacity
+                    key={action.title}
+                    style={s.actionTile}
+                    activeOpacity={0.8}
+                    disabled={vm.sending}
+                    onPress={() => vm.quickSend(action.prompt)}
+                  >
+                    <View style={[s.actionIconWrap, { backgroundColor: `${action.color}18` }]}>
+                      <Text style={s.actionEmoji}>{action.icon}</Text>
+                    </View>
+                    <Text style={s.actionTitle}>{action.title}</Text>
+                    <Text style={s.actionSub}>{action.sub}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </Card>
+          </FadeIn>
+
+          {/* ── SECTION 5: Ask Jonno ── */}
+          <FadeIn delay={320}>
+            <Card style={{ marginTop: 14, marginBottom: 16 }}>
+              <View style={s.sectionHeader}>
+                <Text style={s.sectionTitle}>Ask Jonno</Text>
+                <Text style={s.askSub}>Last resort — Jonno already works in the background</Text>
+              </View>
+
+              {/* Suggestion chips */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 8, paddingVertical: 12 }}
               >
-                <Text style={s.followTxt}>Adjust it</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => fire("Give me a completely different option for the same goal.")}
-                style={s.followBtn}
-                activeOpacity={0.75}
-              >
-                <Text style={s.followTxt}>Different option</Text>
-              </TouchableOpacity>
-            </View>
+                {ctx.suggestions.map((s_) => (
+                  <TouchableOpacity
+                    key={s_}
+                    style={chip.wrap}
+                    activeOpacity={0.75}
+                    onPress={() => { setInputText(s_); }}
+                  >
+                    <Text style={chip.text}>{s_}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
 
-            {vm.pendingSmartCartAction && (
-              <SmartCartCTACard
-                onConfirm={vm.confirmSmartCart}
-                onDismiss={vm.dismissSmartCart}
-              />
-            )}
-          </>
+              {/* Last response preview */}
+              {vm.sending ? (
+                <View style={s.thinkingRow}>
+                  <ActivityIndicator size="small" color={TEAL} />
+                  <Text style={s.thinkingText}>Jonno is thinking...</Text>
+                </View>
+              ) : localResp ? (
+                <View style={s.respPreview}>
+                  <View style={s.respPreviewHeader}>
+                    <View style={s.jonnoIconSmall}><Text style={s.jonnoIconSmallText}>✦</Text></View>
+                    <Text style={s.respPreviewName}>Jonno</Text>
+                    <TouchableOpacity onPress={() => setLocalResp(null)}>
+                      <Text style={s.clearText}>Clear</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={s.respText} numberOfLines={chatExpanded ? undefined : 4}>{localResp}</Text>
+                  {localResp.length > 160 && (
+                    <TouchableOpacity onPress={() => setChatExpanded((v) => !v)} activeOpacity={0.75}>
+                      <Text style={s.expandText}>{chatExpanded ? "Show less" : "Read more"}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : null}
 
-        ) : (
-          <View style={s.centred}>
-            <View style={s.emptyIcon}>
-              <SymbolView
-                name={"sparkles" as any}
-                size={26}
-                tintColor={TEAL}
-                style={{ width: 26, height: 26 }}
-              />
-            </View>
-            <Text style={s.emptyTitle}>Choose an action above</Text>
-            <Text style={s.emptySub}>Jonno's response will appear here</Text>
-          </View>
-        )}
+              {/* Text input */}
+              <View style={s.inputRow}>
+                <TextInput
+                  style={s.input}
+                  placeholder="Ask Jonno anything..."
+                  placeholderTextColor="#9CA3AF"
+                  value={inputText}
+                  onChangeText={setInputText}
+                  multiline={false}
+                  returnKeyType="send"
+                  onSubmitEditing={sendMessage}
+                />
+                <TouchableOpacity
+                  style={[s.sendBtn, (!inputText.trim() || vm.sending) && s.sendBtnDisabled]}
+                  onPress={sendMessage}
+                  disabled={!inputText.trim() || vm.sending}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="send" size={15} color={WHITE} />
+                </TouchableOpacity>
+              </View>
+            </Card>
+          </FadeIn>
 
-      </View>
-
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// ── Suggestion chip styles ────────────────────────────────────────────────────
+
+const chip = StyleSheet.create({
+  wrap: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 100,
+    backgroundColor: "rgba(59,111,212,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(59,111,212,0.18)",
+  },
+  text: { fontSize: 13, fontWeight: "600", color: BLUE },
+});
+
+// ── Main styles ───────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG },
+  safe:   { flex: 1, backgroundColor: BG },
+  scroll: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 30 },
 
-  // Header
-  header:      { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, gap: 8 },
-  headerRow:   { flexDirection: "row", alignItems: "center", gap: 11 },
-  avatar:      { width: 36, height: 36, borderRadius: 11 },
-  name:        { fontSize: 15, fontWeight: "800", color: WHITE },
-  nameSub:     { fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: "500", marginTop: 1 },
-  onlineDot:   { width: 8, height: 8, borderRadius: 4, backgroundColor: "#A7F3D0", borderWidth: 2, borderColor: "rgba(255,255,255,0.3)" },
-  macroRow:    { flexDirection: "row", backgroundColor: "rgba(0,0,0,0.12)", borderRadius: 11, paddingHorizontal: 12, paddingVertical: 8, gap: 4 },
-  macroDivider:{ width: 1, backgroundColor: "rgba(255,255,255,0.18)", marginHorizontal: 4 },
-
-  // Category tabs
-  tabs:          { flexDirection: "row", gap: 7, paddingHorizontal: 16, paddingVertical: 8 },
-  tab:           { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingVertical: 7, borderRadius: 9, backgroundColor: WHITE, borderWidth: 1, borderColor: BORDER },
-  tabActive:     { backgroundColor: TEAL, borderColor: TEAL },
-  tabLabel:      { fontSize: 12, fontWeight: "700", color: "#9CA3AF" },
-  tabLabelActive:{ color: WHITE },
-
-  // Compact action chips
-  chips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 4,
+  // Glass card
+  card: {
+    backgroundColor: "rgba(255,255,255,0.88)",
+    borderRadius: 24,
+    padding: 18,
+    shadowColor: "#A0C0D8",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  chip: {
-    width: "47.5%",
+
+  // ── Header card
+  headerCard: {
+    borderRadius: 24,
+    padding: 20,
+    gap: 14,
+    shadowColor: BLUE,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  headerTop:     { flexDirection: "row", alignItems: "center", gap: 12 },
+  jonnoIconWrap: { width: 42, height: 42, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
+  jonnoIcon:     { fontSize: 20, color: WHITE },
+  jonnoTitle:    { fontSize: 17, fontWeight: "800", color: WHITE },
+  jonnoSub:      { fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: "500", marginTop: 1 },
+  onlineWrap:    { alignItems: "center", gap: 4 },
+  pulseDot:      { width: 9, height: 9, borderRadius: 5, backgroundColor: "#A7F3D0", borderWidth: 2, borderColor: "rgba(255,255,255,0.35)" },
+  onlineLabel:   { fontSize: 10, fontWeight: "700", color: "rgba(255,255,255,0.75)" },
+
+  statusBubble:  { backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, gap: 3 },
+  statusMain:    { fontSize: 14, fontWeight: "700", color: WHITE },
+  statusSub:     { fontSize: 12, color: "rgba(255,255,255,0.75)", fontWeight: "500" },
+
+  datePill:      { alignSelf: "flex-start", backgroundColor: "rgba(255,255,255,0.18)", borderRadius: 100, paddingHorizontal: 12, paddingVertical: 5 },
+  datePillText:  { fontSize: 12, fontWeight: "600", color: "rgba(255,255,255,0.9)" },
+
+  // ── Section header
+  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  sectionTitle:  { fontSize: 15, fontWeight: "800", color: "#0F172A" },
+
+  // Regen btn
+  regenBtn:      { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100, borderWidth: 1, borderColor: "rgba(43,182,166,0.3)", backgroundColor: "rgba(43,182,166,0.07)" },
+  regenBtnText:  { fontSize: 12, fontWeight: "700", color: TEAL },
+
+  // ── Timeline
+  timelineRow:     { flexDirection: "row", marginTop: 14 },
+  timelineCol:     { alignItems: "center", width: 22, marginTop: 4 },
+  timelineDot:     { width: 10, height: 10, borderRadius: 5 },
+  dotDone:         { backgroundColor: "#10B981" },
+  dotCurrent:      { backgroundColor: BLUE, borderWidth: 2, borderColor: "rgba(59,111,212,0.35)", width: 13, height: 13, borderRadius: 7 },
+  dotUpcoming:     { backgroundColor: "#E5E7EB", borderWidth: 1.5, borderColor: "#D1D5DB" },
+  timelineLine:    { width: 2, flex: 1, backgroundColor: "#E5E7EB", marginTop: 4 },
+  lineDone:        { backgroundColor: "#10B981" },
+  timelineContent: { flex: 1, marginLeft: 10, paddingBottom: 12 },
+  contentCurrent:  { backgroundColor: "rgba(59,111,212,0.05)", borderRadius: 14, padding: 10, borderWidth: 1, borderColor: "rgba(59,111,212,0.12)" },
+
+  mealRow:    { flexDirection: "row", alignItems: "flex-start" },
+  mealTime:   { fontSize: 10, fontWeight: "600", color: "#9CA3AF", marginBottom: 1 },
+  mealName:   { fontSize: 13, fontWeight: "800", color: "#0F172A" },
+  mealDesc:   { fontSize: 11, color: "#64748B", fontWeight: "500", marginTop: 2 },
+  mealCal:    { fontSize: 12, fontWeight: "700", color: "#0F172A" },
+  mealPro:    { fontSize: 10, fontWeight: "600", color: "#9CA3AF" },
+  textFaded:  { opacity: 0.45 },
+
+  logNowBtn:  { marginTop: 6, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 100, backgroundColor: BLUE },
+  logNowText: { fontSize: 11, fontWeight: "800", color: WHITE },
+
+  // Macro summary
+  macroSummary: { marginTop: 16, paddingTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "#E5E7EB", gap: 8 },
+  macroRow:     { flexDirection: "row", justifyContent: "space-between" },
+  macroLabel:   { fontSize: 11, fontWeight: "700", color: "#64748B" },
+  macroVal:     { fontSize: 11, fontWeight: "700", color: "#0F172A" },
+  macroTrack:   { height: 6, borderRadius: 100, backgroundColor: "#E5E7EB", overflow: "hidden" },
+  macroFill:    { height: 6, borderRadius: 100 },
+  macroMinis:   { flexDirection: "row", gap: 12, marginTop: 4 },
+  macroMini:    { flex: 1, gap: 2 },
+  macroMiniDot: { width: 6, height: 6, borderRadius: 3, marginBottom: 1 },
+  macroMiniText:{ fontSize: 12, fontWeight: "700", color: "#0F172A" },
+  macroMiniTarget: { fontSize: 10, fontWeight: "500", color: "#9CA3AF" },
+  macroMiniLabel:  { fontSize: 10, fontWeight: "500", color: "#9CA3AF" },
+
+  // ── Insights
+  insightCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 9,
-    backgroundColor: WHITE,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER,
-    paddingHorizontal: 11,
+    gap: 12,
+    backgroundColor: "#FAFBFC",
+    borderRadius: 14,
+    borderLeftWidth: 4,
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
   },
-  chipDisabled: { opacity: 0.45 },
-  chipIcon:    { width: 30, height: 30, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  chipLabel:   { flex: 1, fontSize: 12, fontWeight: "700", color: "#1C1C1E" },
+  insightHeadRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 3 },
+  insightEmoji:   { fontSize: 14 },
+  insightTitle:   { fontSize: 12, fontWeight: "800", color: "#0F172A" },
+  insightBody:    { fontSize: 11, color: "#64748B", fontWeight: "500", lineHeight: 16 },
+  insightCTA:     { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100, borderWidth: 1.5, backgroundColor: WHITE },
+  insightCTAText: { fontSize: 11, fontWeight: "800" },
 
-  // Section divider label
-  sectionRow:   { flexDirection: "row", alignItems: "center", marginHorizontal: 16, marginTop: 10, marginBottom: 6, gap: 8 },
-  sectionLine:  { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: BORDER },
-  sectionLabel: { fontSize: 10, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.8 },
-
-  // Response panel
-  responsePanel: {
-    flex: 1,
-    marginHorizontal: 16,
-    marginBottom: Platform.OS === "ios" ? 6 : 10,
+  // ── Quick actions
+  actionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
+  actionTile: {
+    width: "47.5%",
     backgroundColor: WHITE,
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: BORDER,
     padding: 14,
-    shadowColor: "#000",
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    shadowColor: "#A0C0D8",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
+  actionIconWrap: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  actionEmoji:    { fontSize: 19 },
+  actionTitle:    { fontSize: 13, fontWeight: "800", color: "#0F172A" },
+  actionSub:      { fontSize: 10, fontWeight: "500", color: "#9CA3AF" },
 
-  centred:     { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
-  loadingText: { fontSize: 14, color: "#9CA3AF", fontWeight: "500", marginTop: 4 },
+  // ── Ask Jonno
+  askSub:      { fontSize: 10, fontWeight: "500", color: "#9CA3AF", flexShrink: 1, textAlign: "right", maxWidth: 160 },
 
-  emptyIcon:  { width: 54, height: 54, borderRadius: 16, backgroundColor: "rgba(43,182,166,0.10)", alignItems: "center", justifyContent: "center" },
-  emptyTitle: { fontSize: 15, fontWeight: "700", color: "#1C1C1E" },
-  emptySub:   { fontSize: 13, color: "#9CA3AF", fontWeight: "500", textAlign: "center" },
+  thinkingRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 12 },
+  thinkingText:{ fontSize: 13, color: "#9CA3AF", fontWeight: "500" },
 
-  respHeader:  { flexDirection: "row", alignItems: "center", gap: 8, paddingBottom: 10 },
-  respAvatar:  { width: 28, height: 28, borderRadius: 8 },
-  respName:    { flex: 1, fontSize: 13, fontWeight: "800", color: "#1C1C1E" },
-  clearBtn:    { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: BG },
-  clearTxt:    { fontSize: 12, fontWeight: "600", color: "#9CA3AF" },
-  respDivider: { height: StyleSheet.hairlineWidth, backgroundColor: BORDER, marginBottom: 10 },
+  respPreview: { backgroundColor: "#F8FAFC", borderRadius: 16, padding: 14, gap: 8, marginBottom: 12, borderWidth: 1, borderColor: "#E5E7EB" },
+  respPreviewHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
+  jonnoIconSmall:    { width: 24, height: 24, borderRadius: 7, backgroundColor: "rgba(59,111,212,0.12)", alignItems: "center", justifyContent: "center" },
+  jonnoIconSmallText:{ fontSize: 12, color: BLUE },
+  respPreviewName:   { flex: 1, fontSize: 12, fontWeight: "800", color: "#0F172A" },
+  clearText:         { fontSize: 12, fontWeight: "600", color: "#9CA3AF" },
+  respText:          { fontSize: 13, color: "#334155", lineHeight: 20, fontWeight: "400" },
+  expandText:        { fontSize: 12, fontWeight: "700", color: BLUE, marginTop: 4 },
 
-  respText:    { fontSize: 14, color: "#1C1C1E", lineHeight: 22, fontWeight: "400" },
-
-  respActions: { flexDirection: "row", gap: 8, paddingTop: 10, marginTop: 4 },
-  followBtn:   { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: BG, borderWidth: 1, borderColor: BORDER },
-  followTxt:   { fontSize: 12, fontWeight: "700", color: "#6B7280" },
+  inputRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 4 },
+  input: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === "ios" ? 11 : 9,
+    fontSize: 14,
+    color: "#0F172A",
+    fontWeight: "500",
+  },
+  sendBtn:         { width: 42, height: 42, borderRadius: 14, backgroundColor: BLUE, alignItems: "center", justifyContent: "center" },
+  sendBtnDisabled: { opacity: 0.4 },
 });
