@@ -34,7 +34,7 @@ function LogFABButton() {
       style={fabStyles.wrap}
     >
       <LinearGradient
-        colors={["#3FD4C8", "#20C7B7", "#18A89A"]}
+        colors={["#5B8DEF", "#3B6FD4", "#2A5AC2"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={fabStyles.circle}
