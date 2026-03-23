@@ -22,6 +22,7 @@ import { MOCK_PROFILES, setFollowing } from '@/data/profileMockData';
 import type { CommunityFilter, CommunityPost, UserProfile } from '@/types/community';
 
 const TEAL = '#2DD4BF';
+const BLUE = '#3B6FD4';
 const BG = '#EEF4FA';
 
 type ActivePill = 'following' | CommunityFilter;
@@ -332,12 +333,12 @@ const s = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11,
-    borderWidth: 1.5, borderColor: TEAL,
+    borderWidth: 1.5, borderColor: BLUE,
   },
   searchInput: { flex: 1, fontSize: 15, color: '#1E293B', fontWeight: '500' },
   clearBtn: { fontSize: 14, color: '#94A3B8', paddingHorizontal: 2 },
   cancelBtn: { paddingHorizontal: 4 },
-  cancelText: { fontSize: 15, color: TEAL, fontWeight: '600' },
+  cancelText: { fontSize: 15, color: BLUE, fontWeight: '600' },
 
   searchHint: { flex: 1, alignItems: 'center', paddingTop: 60 },
   searchHintText: { fontSize: 14, color: '#94A3B8' },
@@ -348,7 +349,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
   },
-  pillActive: { backgroundColor: TEAL, borderColor: TEAL },
+  pillActive: { backgroundColor: BLUE, borderColor: BLUE },
   pillText: { fontSize: 13, fontWeight: '500', color: '#6B7280' },
   pillTextActive: { color: '#fff', fontWeight: '600' },
 
@@ -357,7 +358,7 @@ const s = StyleSheet.create({
   emptyTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
   emptySub: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', paddingHorizontal: 24 },
   emptyBtn: {
-    marginTop: 8, backgroundColor: TEAL,
+    marginTop: 8, backgroundColor: BLUE,
     borderRadius: 28, paddingHorizontal: 28, paddingVertical: 14,
   },
   emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
@@ -381,9 +382,9 @@ const sr = StyleSheet.create({
   username: { fontSize: 12, color: '#94A3B8', marginTop: 1 },
   followBtn: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5, borderColor: TEAL,
+    borderWidth: 1.5, borderColor: BLUE,
   },
-  followBtnActive: { backgroundColor: TEAL },
-  followBtnText: { fontSize: 13, fontWeight: '700', color: TEAL },
+  followBtnActive: { backgroundColor: BLUE },
+  followBtnText: { fontSize: 13, fontWeight: '700', color: BLUE },
   followBtnTextActive: { color: '#fff' },
 });
