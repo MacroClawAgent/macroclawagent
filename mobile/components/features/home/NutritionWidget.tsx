@@ -20,6 +20,8 @@ interface NutritionWidgetProps {
   goalLabel: string;
 }
 
+const BAR_HEIGHT = 96;
+
 interface MacroBarProps {
   label: string;
   color: string;
@@ -30,58 +32,60 @@ interface MacroBarProps {
 
 function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps) {
   const pct = target > 0 ? Math.min(1, consumed / target) : 0;
+  const fillHeight = Math.round(pct * BAR_HEIGHT);
   return (
-    <View style={mb.row}>
-      <Text style={mb.label}>{label}</Text>
+    <View style={mb.col}>
+      <Text style={[mb.grams, { color }]}>{Math.round(consumed)}g</Text>
       <View style={[mb.track, { backgroundColor: trackColor }]}>
-        <LinearGradient
-          colors={[color, color]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[mb.fill, { width: `${Math.round(pct * 100)}%` as DimensionValue }]}
-        />
+        <View style={mb.trackInner}>
+          <LinearGradient
+            colors={[color, color]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={[mb.fill, { height: fillHeight }]}
+          />
+        </View>
       </View>
-      <Text style={mb.values}>
-        <Text style={[mb.consumed, { color }]}>{Math.round(consumed)}g</Text>
-        <Text style={mb.target}> / {target}g</Text>
-      </Text>
+      <Text style={mb.label}>{label}</Text>
+      <Text style={mb.target}>{target}g</Text>
     </View>
   );
 }
 
 const mb = StyleSheet.create({
-  row: {
-    flexDirection: "row",
+  col: {
+    flex: 1,
     alignItems: "center",
-    gap: 10,
+    gap: 4,
   },
-  label: {
-    width: 52,
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#64748B",
-    letterSpacing: 0.1,
+  grams: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: -0.2,
   },
   track: {
-    flex: 1,
-    height: 10,
-    borderRadius: 5,
+    width: 36,
+    height: BAR_HEIGHT,
+    borderRadius: 10,
     overflow: "hidden",
+    justifyContent: "flex-end",
+  },
+  trackInner: {
+    width: "100%",
+    justifyContent: "flex-end",
+    height: "100%",
   },
   fill: {
-    height: 10,
-    borderRadius: 5,
+    width: "100%",
+    borderRadius: 10,
   },
-  values: {
-    width: 72,
-    textAlign: "right",
-  },
-  consumed: {
+  label: {
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "600",
+    color: "#1E293B",
   },
   target: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "400",
     color: "#94A3B8",
   },
@@ -243,9 +247,11 @@ const styles = StyleSheet.create({
 
   // Macro bar chart
   macroRow: {
-    flexDirection: "column",
-    gap: 10,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "flex-end",
     paddingHorizontal: 20,
+    paddingTop: 8,
     paddingBottom: 20,
   },
 });
