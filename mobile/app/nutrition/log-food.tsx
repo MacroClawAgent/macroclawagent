@@ -438,6 +438,7 @@ export default function LogFoodScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={s.pillRow}
+            style={{ height: 54, flexShrink: 0 }}
           >
             {TAGS.map(tag => {
               const active = mealTag === tag;
