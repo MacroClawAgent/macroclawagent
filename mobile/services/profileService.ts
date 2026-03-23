@@ -1,56 +1,201 @@
-// TODO: Replace all mock operations with real Supabase backend calls
-import type { UserProfile } from '@/types/community';
-import type { CommunityPost } from '@/types/community';
-import { getMockProfile, getFollowingIds, setFollowing, MOCK_PROFILES } from '@/data/profileMockData';
-import { MOCK_POSTS } from '@/data/communityMockData';
+import { supabase } from '@/lib/supabase';
+import type { UserProfile, UserGoal, CommunityPost } from '@/types/community';
 import { getUserPosts } from '@/services/communityService';
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function mapGoal(raw: string | null): UserGoal {
+  if (raw === 'build_muscle')  return 'build_muscle';
+  if (raw === 'lose_weight' || raw === 'fat_loss') return 'fat_loss';
+  if (raw === 'performance')   return 'performance';
+  return 'maintenance';
+}
+
+function goalLabel(raw: string | null): string {
+  const g = mapGoal(raw);
+  if (g === 'build_muscle') return 'Build Muscle';
+  if (g === 'fat_loss')     return 'Fat Loss';
+  if (g === 'performance')  return 'Performance';
+  return 'Maintenance';
+}
+
+function weeksOnApp(createdAt: string): number {
+  return Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / (7 * 86400000)));
+}
+
+async function buildProfile(
+  row: any,
+  currentUserId: string | null,
+): Promise<UserProfile> {
+  const userId = row.id as string;
+
+  // Fetch counts in parallel
+  const [postsResult, followersResult, followingResult, mealsResult, isFollowingResult] =
+    await Promise.all([
+      supabase.from('community_posts').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', userId),
+      supabase.from('follows').select('following_id', { count: 'exact', head: true }).eq('follower_id', userId),
+      supabase.from('food_log_items').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      currentUserId && currentUserId !== userId
+        ? supabase.from('follows').select('follower_id').eq('follower_id', currentUserId).eq('following_id', userId).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+  const postsCount     = postsResult.count    ?? 0;
+  const followersCount = followersResult.count ?? 0;
+  const followingCount = followingResult.count ?? 0;
+  const mealsLogged    = mealsResult.count     ?? 0;
+  const isFollowing    = !!isFollowingResult.data;
+
+  const livePosts = await getUserPosts(userId);
+
+  const name = row.full_name ?? 'User';
+  return {
+    id:             userId,
+    name,
+    username:       row.username ? `@${row.username}` : `@user${userId.slice(0, 6)}`,
+    avatarUri:      row.avatar_url ?? undefined,
+    initial:        name[0]?.toUpperCase() ?? 'U',
+    bio:            row.bio ?? undefined,
+    instagramHandle: row.instagram_handle ?? undefined,
+    goal:           mapGoal(row.fitness_goal),
+    goalLabel:      goalLabel(row.fitness_goal),
+    streak:         0,
+    weeksOnJonno:   weeksOnApp(row.created_at),
+    mealsLogged,
+    postsCount,
+    followersCount,
+    followingCount,
+    isFollowing,
+    isCurrentUser:  currentUserId === userId,
+    topCuisines:    [],
+    posts:          livePosts,
+  };
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
 export async function getCurrentUserProfile(): Promise<UserProfile> {
-  // TODO: fetch from auth.getUser() + public.users table
-  const profile = getMockProfile('current-user');
-  if (!profile) throw new Error('Current user not found');
-  const livePosts = await getUserPosts('current-user');
-  return { ...profile, posts: livePosts, postsCount: livePosts.length };
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+  if (error || !data) throw new Error('Profile not found');
+
+  return buildProfile(data, user.id);
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile> {
-  // TODO: fetch from public.users table by ID
-  const profile = getMockProfile(userId);
-  if (!profile) throw new Error(`Profile ${userId} not found`);
-  const livePosts = await getUserPosts(userId);
-  return { ...profile, posts: livePosts, postsCount: livePosts.length };
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (error || !data) throw new Error(`Profile ${userId} not found`);
+
+  return buildProfile(data, user?.id ?? null);
 }
 
 export async function followUser(userId: string): Promise<void> {
-  // TODO: insert into public.follows (follower_id, following_id)
-  setFollowing(userId, true);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from('follows').insert({ follower_id: user.id, following_id: userId });
 }
 
 export async function unfollowUser(userId: string): Promise<void> {
-  // TODO: delete from public.follows where follower_id = current AND following_id = userId
-  setFollowing(userId, false);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', userId);
 }
 
 export async function getFollowing(): Promise<UserProfile[]> {
-  // TODO: fetch from public.follows JOIN public.users
-  const ids = getFollowingIds();
-  return MOCK_PROFILES.filter((p) => ids.includes(p.id));
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from('follows')
+    .select('following:users!follows_following_id_fkey(*)')
+    .eq('follower_id', user.id);
+  if (!data) return [];
+  return Promise.all(data.map((r: any) => buildProfile(r.following, user.id)));
 }
 
 export async function updateProfile(updates: Partial<UserProfile>): Promise<void> {
-  // TODO: PATCH /api/profile/update with updated fields
-  console.log('TODO: save profile updates', updates);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const dbUpdates: Record<string, any> = {};
+  if (updates.name)             dbUpdates.full_name         = updates.name;
+  if (updates.bio !== undefined) dbUpdates.bio              = updates.bio;
+  if (updates.instagramHandle !== undefined) dbUpdates.instagram_handle = updates.instagramHandle;
+  if (updates.username)         dbUpdates.username          = updates.username.replace('@', '');
+  if (Object.keys(dbUpdates).length > 0) {
+    await supabase.from('users').update(dbUpdates).eq('id', user.id);
+  }
 }
 
 export async function updateAvatar(imageUri: string): Promise<void> {
-  // TODO: upload to Supabase storage bucket 'avatars', save URL to profile
-  console.log('TODO: upload avatar', imageUri);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  try {
+    const ext  = imageUri.split('.').pop()?.split('?')[0] ?? 'jpg';
+    const path = `${user.id}/avatar.${ext}`;
+    const res  = await fetch(imageUri);
+    const blob = await res.blob();
+    await supabase.storage.from('avatars').upload(path, blob, {
+      contentType: blob.type || `image/${ext}`, upsert: true,
+    });
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+    await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', user.id);
+  } catch (e) {
+    console.error('Avatar upload failed', e);
+  }
 }
 
 export async function getFollowingFeedPosts(): Promise<CommunityPost[]> {
-  // TODO: fetch from DB filtered by following list
-  const ids = getFollowingIds();
-  return MOCK_POSTS.filter((p) => ids.includes(p.userId)).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: followRows } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', user.id);
+
+  const followingIds = (followRows ?? []).map((r: any) => r.following_id as string);
+  if (followingIds.length === 0) return [];
+
+  const { data } = await supabase
+    .from('community_posts')
+    .select('*, author:users(id, full_name, avatar_url), likes:community_likes(user_id)')
+    .in('user_id', followingIds)
+    .order('created_at', { ascending: false })
+    .limit(60);
+
+  if (!data) return [];
+  return data.map((row: any) => {
+    const likes = (row.likes ?? []) as Array<{ user_id: string }>;
+    const name  = row.author?.full_name ?? 'User';
+    const diff  = Date.now() - new Date(row.created_at).getTime();
+    const m     = Math.floor(diff / 60000);
+    const timeAgo = m < 1 ? 'Just now' : m < 60 ? `${m}m ago` : m < 1440 ? `${Math.floor(m/60)}h ago` : `${Math.floor(m/1440)}d ago`;
+    return {
+      id: row.id, userId: row.user_id, userName: name,
+      userInitial: name[0]?.toUpperCase() ?? 'U',
+      userAvatar: row.author?.avatar_url ?? null, userGoal: 'maintenance' as const,
+      caption: row.caption ?? '', imageUri: row.image_uri ?? null,
+      postType: row.post_type ?? 'home_cooked',
+      restaurantName: row.restaurant_name ?? undefined,
+      mealName: row.meal_name ?? '',
+      nutrition: { calories: row.calories ?? 0, protein: Number(row.protein_g ?? 0), carbs: Number(row.carbs_g ?? 0), fat: Number(row.fat_g ?? 0) },
+      goalHit: false, ingredients: row.ingredients ?? [],
+      likes: likes.length, comments: 0,
+      hasLiked: likes.some((l: any) => l.user_id === user.id),
+      createdAt: row.created_at, timeAgo,
+    };
+  });
 }
+

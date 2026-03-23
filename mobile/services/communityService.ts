@@ -1,77 +1,161 @@
-// TODO: Replace all mock data operations with real Supabase/Firebase backend calls
+import { supabase } from '@/lib/supabase';
 import type { CommunityPost, CommunityComment, CommunityFilter, CreatePostData } from '@/types/community';
-import { MOCK_POSTS, MOCK_COMMENTS } from '@/data/communityMockData';
 
-// In-memory store for optimistic updates (will be replaced by DB)
-let posts: CommunityPost[] = [...MOCK_POSTS];
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'Just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7)  return `${d}d ago`;
+  return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+}
+
+async function getCurrentUserId(): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
+async function uploadPostImage(uri: string, userId: string): Promise<string | null> {
+  try {
+    const ext = uri.split('.').pop()?.split('?')[0] ?? 'jpg';
+    const path = `${userId}/${Date.now()}.${ext}`;
+    const res  = await fetch(uri);
+    const blob = await res.blob();
+    const { error } = await supabase.storage.from('community-images').upload(path, blob, {
+      contentType: blob.type || `image/${ext}`,
+      upsert: false,
+    });
+    if (error) return null;
+    return supabase.storage.from('community-images').getPublicUrl(path).data.publicUrl;
+  } catch {
+    return null;
+  }
+}
+
+function mapRow(row: any, uid: string | null): CommunityPost {
+  const author  = row.author ?? {};
+  const likes   = (row.likes ?? []) as Array<{ user_id: string }>;
+  const name    = author.full_name ?? 'User';
+  return {
+    id:             row.id,
+    userId:         row.user_id,
+    userName:       name,
+    userInitial:    name[0]?.toUpperCase() ?? 'U',
+    userAvatar:     author.avatar_url ?? null,
+    userGoal:       'maintenance',
+    caption:        row.caption ?? '',
+    imageUri:       row.image_uri ?? null,
+    postType:       row.post_type ?? 'home_cooked',
+    restaurantName: row.restaurant_name ?? undefined,
+    mealName:       row.meal_name ?? '',
+    nutrition: {
+      calories: row.calories ?? 0,
+      protein:  Number(row.protein_g ?? 0),
+      carbs:    Number(row.carbs_g ?? 0),
+      fat:      Number(row.fat_g ?? 0),
+    },
+    goalHit:     false,
+    ingredients: row.ingredients ?? [],
+    likes:       likes.length,
+    comments:    0,
+    hasLiked:    uid ? likes.some((l) => l.user_id === uid) : false,
+    createdAt:   row.created_at,
+    timeAgo:     timeAgo(row.created_at),
+  };
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
 
 export async function getPosts(filter?: CommunityFilter): Promise<CommunityPost[]> {
-  // TODO: fetch from /api/community/posts?filter=...
-  let result = [...posts];
+  const uid = await getCurrentUserId();
+
+  let query = supabase
+    .from('community_posts')
+    .select('*, author:users(id, full_name, avatar_url), likes:community_likes(user_id)')
+    .order('created_at', { ascending: false })
+    .limit(60);
 
   if (filter && filter !== 'all') {
-    result = result.filter((p) => {
-      if (filter === 'build_muscle') return p.userGoal === 'build_muscle';
-      if (filter === 'fat_loss') return p.userGoal === 'fat_loss';
-      if (filter === 'home_cooked') return p.postType === 'home_cooked';
-      if (filter === 'eating_out') return p.postType === 'eating_out';
-      if (filter === 'meal_prep') return p.postType === 'meal_prep';
-      return true;
-    });
+    if (filter === 'home_cooked' || filter === 'eating_out' || filter === 'meal_prep') {
+      query = query.eq('post_type', filter);
+    }
+    // build_muscle / fat_loss filters are goal-based — handled client-side for now
   }
 
-  return result.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-}
-
-export async function toggleLike(postId: string): Promise<void> {
-  // Optimistic update — TODO: sync to backend
-  posts = posts.map((p) => {
-    if (p.id !== postId) return p;
-    return {
-      ...p,
-      hasLiked: !p.hasLiked,
-      likes: p.hasLiked ? p.likes - 1 : p.likes + 1,
-    };
-  });
-}
-
-export async function createPost(data: CreatePostData): Promise<CommunityPost> {
-  // TODO: upload imageUri to Supabase storage, then save post to DB
-  const newPost: CommunityPost = {
-    id: `post-${Date.now()}`,
-    userId: 'current-user',
-    userName: 'You',
-    userAvatar: null,
-    userInitial: 'Y',
-    userGoal: 'maintenance',
-    caption: data.caption,
-    imageUri: data.imageUri ?? null,
-    postType: data.postType,
-    restaurantName: data.restaurantName,
-    mealName: data.mealName,
-    nutrition: data.nutrition,
-    goalHit: false,
-    ingredients: data.ingredients,
-    likes: 0,
-    comments: 0,
-    hasLiked: false,
-    createdAt: new Date().toISOString(),
-    timeAgo: 'Just now',
-  };
-
-  posts = [newPost, ...posts];
-  return newPost;
+  const { data, error } = await query;
+  if (error || !data) return [];
+  return data.map((row) => mapRow(row, uid));
 }
 
 export async function getUserPosts(userId: string): Promise<CommunityPost[]> {
-  return posts
-    .filter((p) => p.userId === userId)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const uid = await getCurrentUserId();
+  const { data, error } = await supabase
+    .from('community_posts')
+    .select('*, author:users(id, full_name, avatar_url), likes:community_likes(user_id)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error || !data) return [];
+  return data.map((row) => mapRow(row, uid));
+}
+
+export async function toggleLike(postId: string): Promise<void> {
+  const uid = await getCurrentUserId();
+  if (!uid) return;
+
+  const { data: existing } = await supabase
+    .from('community_likes')
+    .select('user_id')
+    .eq('post_id', postId)
+    .eq('user_id', uid)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from('community_likes').delete().eq('post_id', postId).eq('user_id', uid);
+  } else {
+    await supabase.from('community_likes').insert({ post_id: postId, user_id: uid });
+  }
+}
+
+export async function createPost(data: CreatePostData): Promise<CommunityPost> {
+  const uid = await getCurrentUserId();
+  if (!uid) throw new Error('Not authenticated');
+
+  // Upload image to Supabase Storage if present
+  let storedImageUri: string | null = null;
+  if (data.imageUri) {
+    storedImageUri = await uploadPostImage(data.imageUri, uid);
+    // Fall back to local URI if upload fails (works within same device session)
+    if (!storedImageUri) storedImageUri = data.imageUri;
+  }
+
+  const { data: row, error } = await supabase
+    .from('community_posts')
+    .insert({
+      user_id:         uid,
+      meal_name:       data.mealName,
+      caption:         data.caption,
+      post_type:       data.postType,
+      restaurant_name: data.restaurantName ?? null,
+      image_uri:       storedImageUri,
+      calories:        data.nutrition.calories,
+      protein_g:       data.nutrition.protein,
+      carbs_g:         data.nutrition.carbs,
+      fat_g:           data.nutrition.fat,
+      ingredients:     data.ingredients ?? [],
+    })
+    .select('*, author:users(id, full_name, avatar_url), likes:community_likes(user_id)')
+    .single();
+
+  if (error || !row) throw new Error(error?.message ?? 'Failed to create post');
+  return mapRow(row, uid);
 }
 
 export async function getComments(postId: string): Promise<CommunityComment[]> {
-  // TODO: fetch from /api/community/comments?postId=...
-  return MOCK_COMMENTS[postId] ?? [];
+  // TODO: fetch from community_comments table once created
+  return [];
 }

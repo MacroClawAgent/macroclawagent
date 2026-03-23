@@ -258,3 +258,76 @@ ALTER TABLE public.beta_signups ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_insert_beta_signups"
   ON public.beta_signups FOR INSERT
   WITH CHECK (true);
+
+-- ============================================================
+-- PHASE 3 — COMMUNITY & SOCIAL
+-- Run this block in Supabase SQL Editor
+-- ============================================================
+
+-- 1. Extend users with social/profile columns
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS username TEXT UNIQUE;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS instagram_handle TEXT;
+
+-- 2. Broaden users SELECT policy so authenticated users can view each other's profiles
+DROP POLICY IF EXISTS "users_select_own" ON public.users;
+CREATE POLICY "users_select_authenticated"
+  ON public.users FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+-- 3. Community posts
+CREATE TABLE IF NOT EXISTS public.community_posts (
+  id             UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id        UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  meal_name      TEXT NOT NULL,
+  caption        TEXT NOT NULL DEFAULT '',
+  post_type      TEXT NOT NULL DEFAULT 'home_cooked'
+                   CHECK (post_type IN ('home_cooked','meal_prep','eating_out')),
+  restaurant_name TEXT,
+  image_uri      TEXT,
+  calories       INTEGER NOT NULL DEFAULT 0,
+  protein_g      NUMERIC(7,2) NOT NULL DEFAULT 0,
+  carbs_g        NUMERIC(7,2) NOT NULL DEFAULT 0,
+  fat_g          NUMERIC(7,2) NOT NULL DEFAULT 0,
+  ingredients    TEXT[] DEFAULT '{}',
+  created_at     TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_community_posts_user ON public.community_posts (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_posts_created ON public.community_posts (created_at DESC);
+
+ALTER TABLE public.community_posts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "community_posts_select_all" ON public.community_posts FOR SELECT USING (true);
+CREATE POLICY "community_posts_insert_own" ON public.community_posts FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "community_posts_delete_own" ON public.community_posts FOR DELETE USING (auth.uid() = user_id);
+
+-- 4. Community likes
+CREATE TABLE IF NOT EXISTS public.community_likes (
+  post_id    UUID REFERENCES public.community_posts(id) ON DELETE CASCADE NOT NULL,
+  user_id    UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  PRIMARY KEY (post_id, user_id)
+);
+
+ALTER TABLE public.community_likes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "likes_select_all"  ON public.community_likes FOR SELECT USING (true);
+CREATE POLICY "likes_insert_own"  ON public.community_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "likes_delete_own"  ON public.community_likes FOR DELETE USING (auth.uid() = user_id);
+
+-- 5. Follows
+CREATE TABLE IF NOT EXISTS public.follows (
+  follower_id  UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  following_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  created_at   TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  PRIMARY KEY (follower_id, following_id)
+);
+
+ALTER TABLE public.follows ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "follows_select_all"  ON public.follows FOR SELECT USING (true);
+CREATE POLICY "follows_insert_own"  ON public.follows FOR INSERT WITH CHECK (auth.uid() = follower_id);
+CREATE POLICY "follows_delete_own"  ON public.follows FOR DELETE USING (auth.uid() = follower_id);
+
+-- 6. Storage bucket for community post images
+-- Run manually in Supabase Dashboard → Storage → New Bucket:
+--   Name: community-images   Public: YES
+-- Policy (INSERT): auth.uid()::text = (storage.foldername(name))[1]

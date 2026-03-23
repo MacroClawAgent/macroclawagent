@@ -351,11 +351,10 @@ export default function UserProfileScreen() {
     );
   }
 
-  const TABS: { key: ActiveTab; label: string }[] = [
-    { key: 'posts',  label: 'Posts'  },
-    { key: 'stats',  label: 'Stats'  },
-    { key: 'about',  label: 'About'  },
-  ];
+  // Stats and About are private — only visible on own profile
+  const TABS: { key: ActiveTab; label: string }[] = isOwn
+    ? [{ key: 'posts', label: 'Posts' }, { key: 'stats', label: 'Stats' }, { key: 'about', label: 'About' }]
+    : [{ key: 'posts', label: 'Posts' }];
 
   return (
     <Screen style={{ backgroundColor: BG, flex: 1 }}>
