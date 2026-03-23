@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView } from 'expo-symbols';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Screen } from '@/components/ui/Screen';
 import { CommunityPostCard } from '@/components/Community/CommunityPostCard';
 import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
+import { consumePendingCommunityPost } from '@/lib/communityStore';
 import { getFollowingFeedPosts } from '@/services/profileService';
 import { MOCK_PROFILES, setFollowing } from '@/data/profileMockData';
 import type { CommunityFilter, CommunityPost, UserProfile } from '@/types/community';
@@ -77,6 +78,26 @@ export default function CommunityScreen() {
   const searchRef = useRef<TextInput>(null);
 
   useEffect(() => { loadPosts(); }, []);
+
+  // Auto-post any meal shared from the photo-confirm scan flow
+  useFocusEffect(
+    useCallback(() => {
+      const pending = consumePendingCommunityPost();
+      if (!pending) return;
+      submitPost({
+        postType: 'home_cooked',
+        mealName: pending.dishName,
+        caption: `${pending.mealEmoji} ${pending.dishName} — ${pending.calories} kcal · ${pending.protein}g protein`,
+        nutrition: {
+          calories: pending.calories,
+          protein: pending.protein,
+          carbs: pending.carbs,
+          fat: pending.fat,
+        },
+        ingredients: pending.ingredients.map((i) => i.name),
+      });
+    }, [submitPost])
+  );
 
   // Initialise follow states from mock data
   useEffect(() => {
