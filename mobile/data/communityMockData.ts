@@ -1,5 +1,20 @@
 import type { CommunityPost, CommunityComment } from '@/types/community';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const postImages: Record<string, number> = {
+  'post-1': require('@/components/Community/post1.jpg'),
+  'post-2': require('@/components/Community/post2.jpg'),
+  'post-3': require('@/components/Community/post3.jpg'),
+  'post-4': require('@/components/Community/post4.jpg'),
+  'post-5': require('@/components/Community/post5.jpg'),
+  'post-6': require('@/components/Community/post6.jpg'),
+  'post-7': require('@/components/Community/post7.jpg'),
+};
+
+export function getPostImage(postId: string): number | null {
+  return postImages[postId] ?? null;
+}
+
 export const MOCK_POSTS: CommunityPost[] = [
   {
     id: 'post-1',

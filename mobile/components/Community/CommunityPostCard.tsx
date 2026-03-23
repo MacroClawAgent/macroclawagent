@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import {
   Animated,
+  Image,
   ScrollView,
   Share,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import type { CommunityPost, UserGoal } from '@/types/community';
+import { getPostImage } from '@/data/communityMockData';
 
 const TEAL = '#2DD4BF';
 
@@ -117,15 +119,29 @@ export function CommunityPostCard({ post, onLike, onOpenComments }: Props) {
         </View>
       )}
 
-      {/* Image placeholder */}
-      <LinearGradient colors={imageGradient(post)} style={s.imagePlaceholder}>
-        <Text style={s.imageEmoji}>{mealEmoji(post)}</Text>
-        {post.postType === 'eating_out' && post.restaurantName && (
-          <View style={s.restaurantPill}>
-            <Text style={s.restaurantText}>{post.restaurantName}</Text>
+      {/* Image */}
+      {(() => {
+        const localImg = getPostImage(post.id);
+        return localImg ? (
+          <View style={s.imageContainer}>
+            <Image source={localImg} style={s.image} resizeMode="cover" />
+            {post.postType === 'eating_out' && post.restaurantName && (
+              <View style={s.restaurantPill}>
+                <Text style={s.restaurantText}>{post.restaurantName}</Text>
+              </View>
+            )}
           </View>
-        )}
-      </LinearGradient>
+        ) : (
+          <LinearGradient colors={imageGradient(post)} style={s.imagePlaceholder}>
+            <Text style={s.imageEmoji}>{mealEmoji(post)}</Text>
+            {post.postType === 'eating_out' && post.restaurantName && (
+              <View style={s.restaurantPill}>
+                <Text style={s.restaurantText}>{post.restaurantName}</Text>
+              </View>
+            )}
+          </LinearGradient>
+        );
+      })()}
 
       {/* Caption */}
       <Text style={s.caption}>{post.caption}</Text>
@@ -238,6 +254,8 @@ const s = StyleSheet.create({
   goalBannerText: { fontSize: 12, fontWeight: '500', color: '#16A34A' },
 
   // Image
+  imageContainer: { height: 200, width: '100%' },
+  image: { height: 200, width: '100%' },
   imagePlaceholder: {
     height: 200,
     width: '100%',
