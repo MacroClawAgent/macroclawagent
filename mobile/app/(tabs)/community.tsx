@@ -22,9 +22,10 @@ import type { CommunityFilter, CommunityPost } from '@/types/community';
 const TEAL = '#2DD4BF';
 const BG = '#EEF4FA';
 
-type FeedMode = 'discover' | 'following';
+type ActivePill = 'following' | CommunityFilter;
 
-const FILTERS: { key: CommunityFilter; label: string }[] = [
+const PILLS: { key: ActivePill; label: string }[] = [
+  { key: 'following',    label: 'Following' },
   { key: 'all',          label: 'All' },
   { key: 'build_muscle', label: 'Muscle' },
   { key: 'fat_loss',     label: 'Fat Loss' },
@@ -39,7 +40,6 @@ export default function CommunityScreen() {
     posts,
     loading,
     refreshing,
-    activeFilter,
     showCreatePost,
     loadPosts,
     handleLike,
@@ -50,7 +50,7 @@ export default function CommunityScreen() {
     submitPost,
   } = useCommunity();
 
-  const [feedMode, setFeedMode] = useState<FeedMode>('discover');
+  const [activePill, setActivePill] = useState<ActivePill>('all');
   const [followingPosts, setFollowingPosts] = useState<CommunityPost[]>([]);
   const [followingLoading, setFollowingLoading] = useState(false);
 
@@ -66,46 +66,36 @@ export default function CommunityScreen() {
     }
   }
 
-  function handleModeSwitch(mode: FeedMode) {
-    setFeedMode(mode);
-    if (mode === 'following') loadFollowingPosts();
+  function handlePillPress(key: ActivePill) {
+    setActivePill(key);
+    if (key === 'following') {
+      loadFollowingPosts();
+    } else {
+      setFilter(key as CommunityFilter);
+    }
   }
 
-  const displayedPosts = feedMode === 'following' ? followingPosts : posts;
-  const isLoading = feedMode === 'following' ? followingLoading : (loading && posts.length === 0);
+  const isFollowing = activePill === 'following';
+  const displayedPosts = isFollowing ? followingPosts : posts;
+  const isLoading = isFollowing ? followingLoading : (loading && posts.length === 0);
 
-  function FeedModeToggle() {
+  function PillRow() {
     return (
-      <View style={s.modeRow}>
-        {(['following', 'discover'] as FeedMode[]).map((m) => (
-          <TouchableOpacity
-            key={m}
-            style={[s.modePill, feedMode === m && s.modePillActive]}
-            onPress={() => handleModeSwitch(m)}
-            activeOpacity={0.75}
-          >
-            <Text style={[s.modeText, feedMode === m && s.modeTextActive]}>
-              {m === 'following' ? 'Following' : 'Discover'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  }
-
-  function FilterTabs() {
-    return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
-        {FILTERS.map((f) => {
-          const active = activeFilter === f.key;
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={s.pillRow}
+      >
+        {PILLS.map((p) => {
+          const active = activePill === p.key;
           return (
             <TouchableOpacity
-              key={f.key}
-              style={[s.filterPill, active && s.filterPillActive]}
+              key={p.key}
+              style={[s.pill, active && s.pillActive]}
               activeOpacity={0.75}
-              onPress={() => setFilter(f.key)}
+              onPress={() => handlePillPress(p.key)}
             >
-              <Text style={[s.filterText, active && s.filterTextActive]}>{f.label}</Text>
+              <Text style={[s.pillText, active && s.pillTextActive]}>{p.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -113,20 +103,19 @@ export default function CommunityScreen() {
     );
   }
 
-  function EmptyFollowing() {
-    return (
-      <View style={s.empty}>
-        <Text style={s.emptyEmoji}>👥</Text>
-        <Text style={s.emptyTitle}>No posts yet</Text>
-        <Text style={s.emptySub}>Follow people to see their meals here</Text>
-        <TouchableOpacity style={s.emptyBtn} onPress={() => handleModeSwitch('discover')} activeOpacity={0.8}>
-          <Text style={s.emptyBtnText}>Discover People →</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  function EmptyDiscover() {
+  function EmptyState() {
+    if (isFollowing) {
+      return (
+        <View style={s.empty}>
+          <Text style={s.emptyEmoji}>👥</Text>
+          <Text style={s.emptyTitle}>No posts yet</Text>
+          <Text style={s.emptySub}>Follow people to see their meals here</Text>
+          <TouchableOpacity style={s.emptyBtn} onPress={() => handlePillPress('all')} activeOpacity={0.8}>
+            <Text style={s.emptyBtnText}>Browse All →</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
     return (
       <View style={s.empty}>
         <Text style={s.emptyEmoji}>🍽️</Text>
@@ -171,17 +160,12 @@ export default function CommunityScreen() {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={feedMode === 'following' ? loadFollowingPosts : handleRefresh}
+              onRefresh={isFollowing ? loadFollowingPosts : handleRefresh}
               tintColor={TEAL}
             />
           }
-          ListHeaderComponent={
-            <>
-              <FeedModeToggle />
-              {feedMode === 'discover' && <FilterTabs />}
-            </>
-          }
-          ListEmptyComponent={feedMode === 'following' ? <EmptyFollowing /> : <EmptyDiscover />}
+          ListHeaderComponent={<PillRow />}
+          ListEmptyComponent={<EmptyState />}
           renderItem={({ item }) => (
             <CommunityPostCard post={item} onLike={handleLike} />
           )}
@@ -207,28 +191,15 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
   },
 
-  modeRow: {
-    flexDirection: 'row', gap: 8,
-    paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4,
-  },
-  modePill: {
-    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
-  },
-  modePillActive: { backgroundColor: TEAL, borderColor: TEAL },
-  modeText: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
-  modeTextActive: { color: '#fff' },
-
-  filterRow: { paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
-  filterPill: {
+  pillRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+  pill: {
     borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8,
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
   },
-  filterPillActive: { backgroundColor: TEAL, borderColor: TEAL },
-  filterText: { fontSize: 13, fontWeight: '500', color: '#6B7280' },
-  filterTextActive: { color: '#fff', fontWeight: '600' },
+  pillActive: { backgroundColor: TEAL, borderColor: TEAL },
+  pillText: { fontSize: 13, fontWeight: '500', color: '#6B7280' },
+  pillTextActive: { color: '#fff', fontWeight: '600' },
 
   empty: { alignItems: 'center', paddingVertical: 80, gap: 10 },
   emptyEmoji: { fontSize: 48 },
