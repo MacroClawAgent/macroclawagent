@@ -1,0 +1,55 @@
+export type CommunityPostType = 'home_cooked' | 'meal_prep' | 'eating_out';
+export type UserGoal = 'build_muscle' | 'fat_loss' | 'maintenance' | 'performance';
+export type CommunityFilter = 'all' | 'build_muscle' | 'fat_loss' | 'home_cooked' | 'eating_out' | 'meal_prep';
+
+export interface CommunityPost {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string | null;
+  userInitial: string;
+  userGoal: UserGoal;
+  caption: string;
+  imageUri: string | null;
+  postType: CommunityPostType;
+  restaurantName?: string;
+  mealName: string;
+  nutrition: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  goalHit: boolean;
+  ingredients?: string[];
+  likes: number;
+  comments: number;
+  hasLiked: boolean;
+  createdAt: string;
+  timeAgo: string;
+}
+
+export interface CommunityComment {
+  id: string;
+  userId: string;
+  userName: string;
+  userInitial: string;
+  text: string;
+  createdAt: string;
+  timeAgo: string;
+}
+
+export interface CreatePostData {
+  postType: CommunityPostType;
+  mealName: string;
+  caption: string;
+  restaurantName?: string;
+  imageUri?: string | null;
+  nutrition: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  ingredients?: string[];
+}

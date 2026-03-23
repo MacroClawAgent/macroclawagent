@@ -43,6 +43,12 @@
         {
           "locationWhenInUsePermission": "Jonno uses your location to find the nearest Woolworths and Coles supermarket for your grocery order."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Jonno needs access to your photos to share meals with the community."
+        }
       ]
     ],
     "experiments": {
