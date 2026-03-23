@@ -433,29 +433,7 @@ export default function LogFoodScreen() {
         /* ════════ MAIN VIEW ════════ */
         <View style={{ flex: 1 }}>
 
-          {/* ── 1. Meal type pills ── */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={s.pillRow}
-            style={{ height: 54, flexShrink: 0 }}
-          >
-            {TAGS.map(tag => {
-              const active = mealTag === tag;
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  style={[s.pill, active && s.pillActive]}
-                  onPress={() => setMealTag(tag)}
-                  activeOpacity={0.75}
-                >
-                  <Text style={[s.pillText, active && s.pillTextActive]}>{tag}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-
-          {/* ── 2. Search + barcode ── */}
+          {/* ── Search + barcode ── */}
           <View style={s.searchRow}>
             <View style={s.searchBox}>
               <Ionicons name="search" size={20} color={TEAL} />
@@ -739,7 +717,7 @@ const s = StyleSheet.create({
   pillTextActive:{ fontSize: 14, fontWeight: "600", color: "#fff" },
 
   // ── Search row ─────────────────────────────────────────────────────────────
-  searchRow: { flexDirection: "row", marginHorizontal: 16, gap: 10, marginBottom: 0 },
+  searchRow: { flexDirection: "row", marginHorizontal: 16, gap: 10, marginTop: 8, marginBottom: 0 },
   searchBox: {
     flex: 1, flexDirection: "row", alignItems: "center", gap: 10,
     backgroundColor: "rgba(255,255,255,0.95)",
