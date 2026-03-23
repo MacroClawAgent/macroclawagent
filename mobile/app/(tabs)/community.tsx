@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,12 +13,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView } from 'expo-symbols';
 import { Screen } from '@/components/ui/Screen';
 import { CommunityPostCard } from '@/components/Community/CommunityPostCard';
-import { CommentsSheet } from '@/components/Community/CommentsSheet';
 import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
-import type { CommunityFilter, CommunityPost } from '@/types/community';
+import type { CommunityFilter } from '@/types/community';
 
-const TEAL = '#2DD4BF';
+const BLUE = '#3B6FD4';
 const BG = '#EEF4FA';
 
 const FILTERS: { key: CommunityFilter; label: string }[] = [
@@ -45,8 +44,6 @@ export default function CommunityScreen() {
     closeCreatePost,
     submitPost,
   } = useCommunity();
-
-  const [commentsPost, setCommentsPost] = useState<CommunityPost | null>(null);
 
   useEffect(() => {
     loadPosts();
@@ -121,7 +118,7 @@ export default function CommunityScreen() {
       </View>
 
       {loading && posts.length === 0 ? (
-        <ActivityIndicator color={TEAL} size="large" style={{ marginTop: 60 }} />
+        <ActivityIndicator color={BLUE} size="large" style={{ marginTop: 60 }} />
       ) : (
         <FlatList
           data={posts}
@@ -129,24 +126,15 @@ export default function CommunityScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={TEAL} />
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={BLUE} />
           }
           ListHeaderComponent={<FilterTabs />}
           ListEmptyComponent={<EmptyState />}
           renderItem={({ item }) => (
-            <CommunityPostCard
-              post={item}
-              onLike={handleLike}
-              onOpenComments={(p) => setCommentsPost(p)}
-            />
+            <CommunityPostCard post={item} onLike={handleLike} />
           )}
         />
       )}
-
-      <CommentsSheet
-        post={commentsPost}
-        onClose={() => setCommentsPost(null)}
-      />
 
       <CreatePostSheet
         visible={showCreatePost}
@@ -188,7 +176,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.08)',
   },
-  filterPillActive: { backgroundColor: TEAL, borderColor: TEAL },
+  filterPillActive: { backgroundColor: BLUE, borderColor: BLUE },
   filterText: { fontSize: 13, fontWeight: '500', color: '#6B7280' },
   filterTextActive: { color: '#fff', fontWeight: '600' },
 
@@ -198,7 +186,7 @@ const s = StyleSheet.create({
   emptySub: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', paddingHorizontal: 24 },
   emptyBtn: {
     marginTop: 8,
-    backgroundColor: TEAL,
+    backgroundColor: BLUE,
     borderRadius: 28,
     paddingHorizontal: 28,
     paddingVertical: 14,

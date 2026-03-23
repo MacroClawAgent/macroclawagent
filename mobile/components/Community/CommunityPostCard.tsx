@@ -1,9 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {
   Animated,
   Image,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -14,7 +13,7 @@ import Toast from 'react-native-toast-message';
 import type { CommunityPost, UserGoal } from '@/types/community';
 import { getPostImage } from '@/data/communityMockData';
 
-const TEAL = '#2DD4BF';
+const BLUE = '#3B6FD4';
 
 function goalGradient(goal: UserGoal): [string, string] {
   switch (goal) {
@@ -56,12 +55,10 @@ function postTypeBadge(postType: CommunityPost['postType']): { label: string; bg
 interface Props {
   post: CommunityPost;
   onLike: (id: string) => void;
-  onOpenComments: (post: CommunityPost) => void;
 }
 
-export function CommunityPostCard({ post, onLike, onOpenComments }: Props) {
+export function CommunityPostCard({ post, onLike }: Props) {
   const likeScale = useRef(new Animated.Value(1)).current;
-  const [addedToLog, setAddedToLog] = useState(false);
 
   function handleLike() {
     Animated.sequence([
@@ -71,21 +68,9 @@ export function CommunityPostCard({ post, onLike, onOpenComments }: Props) {
     onLike(post.id);
   }
 
-  function handleAddToLog() {
-    setAddedToLog(true);
-    // TODO: call nutrition log API to add this meal's macros to today's log
-    Toast.show({ type: 'success', text1: 'Added to today\'s log ✓', visibilityTime: 2000 });
-  }
-
   function handleAddToCart() {
     // TODO: pass ingredients to smart cart store
     Toast.show({ type: 'success', text1: 'Ingredients added to Smart Cart 🛒', visibilityTime: 2000 });
-  }
-
-  async function handleShare() {
-    await Share.share({
-      message: `${post.mealName} — ${post.nutrition.calories} kcal, ${post.nutrition.protein}g protein 💪 Shared via Jonno`,
-    });
   }
 
   const badge = postTypeBadge(post.postType);
@@ -178,43 +163,20 @@ export function CommunityPostCard({ post, onLike, onOpenComments }: Props) {
 
       {/* Action row */}
       <View style={s.actionRow}>
-        {/* Left: like, comment, share */}
-        <View style={s.actionLeft}>
-          <TouchableOpacity style={s.actionBtn} onPress={handleLike} activeOpacity={0.75}>
-            <Animated.Text style={[s.actionIcon, post.hasLiked && s.likedIcon, { transform: [{ scale: likeScale }] }]}>
-              {post.hasLiked ? '❤️' : '🤍'}
-            </Animated.Text>
-            <Text style={[s.actionCount, post.hasLiked && { color: '#EF4444' }]}>{post.likes}</Text>
-          </TouchableOpacity>
+        {/* Like */}
+        <TouchableOpacity style={s.actionBtn} onPress={handleLike} activeOpacity={0.75}>
+          <Animated.Text style={[s.actionIcon, { transform: [{ scale: likeScale }] }]}>
+            {post.hasLiked ? '❤️' : '🤍'}
+          </Animated.Text>
+          <Text style={[s.actionCount, post.hasLiked && { color: '#EF4444' }]}>{post.likes}</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity style={s.actionBtn} onPress={() => onOpenComments(post)} activeOpacity={0.75}>
-            <Text style={s.actionIcon}>💬</Text>
-            <Text style={s.actionCount}>{post.comments}</Text>
+        {/* Cart — only for home cooked / meal prep with ingredients */}
+        {post.postType !== 'eating_out' && post.ingredients && post.ingredients.length > 0 && (
+          <TouchableOpacity style={[s.smartBtn, s.cartBtn]} onPress={handleAddToCart} activeOpacity={0.75}>
+            <Text style={[s.smartBtnText, { color: BLUE }]}>🛒 Add to Cart</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity style={s.actionBtn} onPress={handleShare} activeOpacity={0.75}>
-            <Text style={s.actionIcon}>📤</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Right: smart actions */}
-        <View style={s.actionRight}>
-          <TouchableOpacity
-            style={[s.smartBtn, s.logBtn, addedToLog && s.logBtnDone]}
-            onPress={handleAddToLog}
-            activeOpacity={0.75}
-          >
-            <Text style={[s.smartBtnText, { color: TEAL }]}>
-              {addedToLog ? '✓ Logged' : '+ Log'}
-            </Text>
-          </TouchableOpacity>
-
-          {post.postType !== 'eating_out' && post.ingredients && post.ingredients.length > 0 && (
-            <TouchableOpacity style={[s.smartBtn, s.cartBtn]} onPress={handleAddToCart} activeOpacity={0.75}>
-              <Text style={[s.smartBtnText, { color: '#6366F1' }]}>🛒 Cart</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        )}
       </View>
     </View>
   );
@@ -306,33 +268,26 @@ const s = StyleSheet.create({
   // Actions
   actionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(0,0,0,0.06)',
   },
-  actionLeft: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   actionIcon: { fontSize: 18 },
-  likedIcon: {},
   actionCount: { fontSize: 14, color: '#6B7280', fontWeight: '500' },
-  actionRight: { flexDirection: 'row', gap: 8 },
   smartBtn: {
     borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderWidth: 1,
+    marginLeft: 'auto' as const,
   },
-  logBtn: {
-    backgroundColor: 'rgba(45,212,191,0.1)',
-    borderColor: 'rgba(45,212,191,0.3)',
-  },
-  logBtnDone: { backgroundColor: 'rgba(45,212,191,0.18)' },
   cartBtn: {
-    backgroundColor: 'rgba(99,102,241,0.1)',
-    borderColor: 'rgba(99,102,241,0.3)',
+    backgroundColor: 'rgba(59,111,212,0.1)',
+    borderColor: 'rgba(59,111,212,0.3)',
   },
   smartBtnText: { fontSize: 13, fontWeight: '600' },
 });
