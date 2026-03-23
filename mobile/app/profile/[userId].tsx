@@ -203,18 +203,11 @@ export default function UserProfileScreen() {
     if (displayed!.posts.length === 0) {
       return (
         <View style={t.emptyState}>
-          <Text style={t.emptyEmoji}>🍽️</Text>
+          <Text style={t.emptyEmoji}>📷</Text>
           <Text style={t.emptyTitle}>No posts yet</Text>
-          {isOwn ? (
-            <>
-              <Text style={t.emptySub}>Share your first meal with the community</Text>
-              <TouchableOpacity style={t.emptyBtn} activeOpacity={0.8} onPress={() => router.back()}>
-                <Text style={t.emptyBtnText}>Share a Meal</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <Text style={t.emptySub}>{displayed!.username} hasn't posted yet</Text>
-          )}
+          <Text style={t.emptySub}>
+            {isOwn ? 'Scan a meal and share it with the community' : `${displayed!.username} hasn't posted yet`}
+          </Text>
         </View>
       );
     }
@@ -228,6 +221,8 @@ export default function UserProfileScreen() {
               <View key={post.id} style={t.gridItem}>
                 {img ? (
                   <Image source={img} style={t.gridImg} resizeMode="cover" />
+                ) : post.imageUri ? (
+                  <Image source={{ uri: post.imageUri }} style={t.gridImg} resizeMode="cover" />
                 ) : (
                   <LinearGradient colors={gridGradient(post.postType)} style={t.gridImg}>
                     <Text style={t.gridEmoji}>{mealEmoji(post.postType)}</Text>

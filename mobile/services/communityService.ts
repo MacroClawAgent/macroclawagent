@@ -65,6 +65,12 @@ export async function createPost(data: CreatePostData): Promise<CommunityPost> {
   return newPost;
 }
 
+export async function getUserPosts(userId: string): Promise<CommunityPost[]> {
+  return posts
+    .filter((p) => p.userId === userId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 export async function getComments(postId: string): Promise<CommunityComment[]> {
   // TODO: fetch from /api/community/comments?postId=...
   return MOCK_COMMENTS[postId] ?? [];

@@ -3,19 +3,22 @@ import type { UserProfile } from '@/types/community';
 import type { CommunityPost } from '@/types/community';
 import { getMockProfile, getFollowingIds, setFollowing, MOCK_PROFILES } from '@/data/profileMockData';
 import { MOCK_POSTS } from '@/data/communityMockData';
+import { getUserPosts } from '@/services/communityService';
 
 export async function getCurrentUserProfile(): Promise<UserProfile> {
   // TODO: fetch from auth.getUser() + public.users table
   const profile = getMockProfile('current-user');
   if (!profile) throw new Error('Current user not found');
-  return profile;
+  const livePosts = await getUserPosts('current-user');
+  return { ...profile, posts: livePosts, postsCount: livePosts.length };
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile> {
   // TODO: fetch from public.users table by ID
   const profile = getMockProfile(userId);
   if (!profile) throw new Error(`Profile ${userId} not found`);
-  return profile;
+  const livePosts = await getUserPosts(userId);
+  return { ...profile, posts: livePosts, postsCount: livePosts.length };
 }
 
 export async function followUser(userId: string): Promise<void> {
