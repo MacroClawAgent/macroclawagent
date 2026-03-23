@@ -95,6 +95,7 @@ export default function CommunityScreen() {
           fat: pending.fat,
         },
         ingredients: pending.ingredients.map((i) => i.name),
+        imageUri: pending.imageUri ?? null,
       });
     }, [submitPost])
   );

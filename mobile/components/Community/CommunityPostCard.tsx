@@ -99,23 +99,31 @@ export function CommunityPostCard({ post, onLike }: Props) {
       {/* Image */}
       {(() => {
         const localImg = getPostImage(post.id);
-        return localImg ? (
-          <View style={s.imageContainer}>
-            <Image source={localImg} style={s.image} resizeMode="cover" />
-            {post.postType === 'eating_out' && post.restaurantName && (
-              <View style={s.restaurantPill}>
-                <Text style={s.restaurantText}>{post.restaurantName}</Text>
-              </View>
-            )}
+        const restaurantPill = post.postType === 'eating_out' && post.restaurantName ? (
+          <View style={s.restaurantPill}>
+            <Text style={s.restaurantText}>{post.restaurantName}</Text>
           </View>
-        ) : (
+        ) : null;
+        if (localImg) {
+          return (
+            <View style={s.imageContainer}>
+              <Image source={localImg} style={s.image} resizeMode="cover" />
+              {restaurantPill}
+            </View>
+          );
+        }
+        if (post.imageUri) {
+          return (
+            <View style={s.imageContainer}>
+              <Image source={{ uri: post.imageUri }} style={s.image} resizeMode="cover" />
+              {restaurantPill}
+            </View>
+          );
+        }
+        return (
           <LinearGradient colors={imageGradient(post)} style={s.imagePlaceholder}>
             <Text style={s.imageEmoji}>{mealEmoji(post)}</Text>
-            {post.postType === 'eating_out' && post.restaurantName && (
-              <View style={s.restaurantPill}>
-                <Text style={s.restaurantText}>{post.restaurantName}</Text>
-              </View>
-            )}
+            {restaurantPill}
           </LinearGradient>
         );
       })()}
