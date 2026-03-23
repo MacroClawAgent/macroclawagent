@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   FlatList,
   Image,
   Linking,
@@ -25,7 +26,12 @@ import type { UserProfile, UserGoal } from '@/types/community';
 import { updateAvatar } from '@/services/profileService';
 
 const TEAL = '#2DD4BF';
+const BLUE = '#3B6FD4';
 const BG = '#EEF4FA';
+const SCREEN_W = Dimensions.get('window').width;
+const GRID_ITEM_W = (SCREEN_W - 48) / 2;
+
+type ActiveTab = 'posts' | 'stats' | 'about';
 
 function goalStyle(goal: UserGoal): { bg: string; color: string; label: string } {
   switch (goal) {
@@ -34,6 +40,18 @@ function goalStyle(goal: UserGoal): { bg: string; color: string; label: string }
     case 'performance':  return { bg: 'rgba(245,158,11,0.1)',  color: '#D97706', label: '⚡ Performance' };
     default:             return { bg: 'rgba(59,130,246,0.1)',  color: '#2563EB', label: '⚖️ Maintenance' };
   }
+}
+
+function mealEmoji(postType: string): string {
+  if (postType === 'eating_out') return '🍽️';
+  if (postType === 'meal_prep') return '📦';
+  return '🥗';
+}
+
+function gridGradient(postType: string): [string, string] {
+  if (postType === 'eating_out') return ['#DBEAFE', '#60A5FA'];
+  if (postType === 'meal_prep')  return ['#EDE9FE', '#A78BFA'];
+  return ['#D1FAE5', '#34D399'];
 }
 
 function Avatar({ profile, editable, onPress, size = 80 }: {
@@ -53,15 +71,6 @@ function Avatar({ profile, editable, onPress, size = 80 }: {
           <Text style={{ fontSize: 12 }}>📷</Text>
         </View>
       )}
-    </TouchableOpacity>
-  );
-}
-
-function StatItem({ value, label, onPress }: { value: string | number; label: string; onPress?: () => void }) {
-  return (
-    <TouchableOpacity style={s.statItem} onPress={onPress} disabled={!onPress} activeOpacity={onPress ? 0.7 : 1}>
-      <Text style={s.statValue}>{value}</Text>
-      <Text style={s.statLabel}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -132,6 +141,7 @@ export default function UserProfileScreen() {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [localProfile, setLocalProfile] = useState<UserProfile | null>(null);
+  const [activeTab, setActiveTab] = useState<ActiveTab>('posts');
 
   const displayed = localProfile ?? profile;
 
@@ -183,168 +193,286 @@ export default function UserProfileScreen() {
   const gs = goalStyle(displayed.goal);
   const isOwn = displayed.isCurrentUser;
 
-  return (
-    <Screen style={{ backgroundColor: BG }}>
-      <LinearGradient colors={[BG, '#F5F8FC']} style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} pointerEvents="none" />
+  const memberSince = (() => {
+    const ms = Date.now() - displayed.weeksOnJonno * 7 * 24 * 60 * 60 * 1000;
+    return new Date(ms).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+  })();
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-
-        {/* Nav bar */}
-        <View style={s.navbar}>
-          <TouchableOpacity onPress={() => router.back()} style={s.navBtn} activeOpacity={0.7}>
-            <Text style={s.backArrow}>←</Text>
-          </TouchableOpacity>
-          <Text style={s.navTitle}>Profile</Text>
+  // ── Posts tab ────────────────────────────────────────────────────────────────
+  function PostsTab() {
+    if (displayed!.posts.length === 0) {
+      return (
+        <View style={t.emptyState}>
+          <Text style={t.emptyEmoji}>🍽️</Text>
+          <Text style={t.emptyTitle}>No posts yet</Text>
           {isOwn ? (
-            <TouchableOpacity onPress={() => setShowEdit(true)} style={s.navBtn} activeOpacity={0.7}>
-              <Text style={s.editText}>Edit</Text>
-            </TouchableOpacity>
+            <>
+              <Text style={t.emptySub}>Share your first meal with the community</Text>
+              <TouchableOpacity style={t.emptyBtn} activeOpacity={0.8} onPress={() => router.back()}>
+                <Text style={t.emptyBtnText}>Share a Meal</Text>
+              </TouchableOpacity>
+            </>
           ) : (
-            <View style={s.navBtn} />
+            <Text style={t.emptySub}>{displayed!.username} hasn't posted yet</Text>
           )}
         </View>
+      );
+    }
 
-        {/* Hero */}
-        <View style={s.hero}>
-          <Avatar profile={displayed} editable={isOwn} onPress={handleAvatarPress} />
-
-          <Text style={s.name}>{displayed.name}</Text>
-          <Text style={s.username}>{displayed.username}</Text>
-
-          <View style={[s.goalBadge, { backgroundColor: gs.bg }]}>
-            <Text style={[s.goalBadgeText, { color: gs.color }]}>{gs.label}</Text>
-          </View>
-
-          {displayed.bio ? <Text style={s.bio}>{displayed.bio}</Text> : null}
-
-          {displayed.instagramHandle ? (
-            <TouchableOpacity
-              onPress={() => Linking.openURL(`https://instagram.com/${displayed.instagramHandle}`).catch(() => {})}
-              activeOpacity={0.75}
-            >
-              <Text style={s.instagram}>📷 @{displayed.instagramHandle}</Text>
-            </TouchableOpacity>
-          ) : null}
-
-          {/* Follow button — other profiles only */}
-          {!isOwn && (
-            <TouchableOpacity
-              style={[s.followBtn, displayed.isFollowing && s.followBtnFollowing]}
-              onPress={displayed.isFollowing ? handleUnfollow : handleFollow}
-              disabled={isFollowLoading}
-              activeOpacity={0.8}
-            >
-              {isFollowLoading ? (
-                <ActivityIndicator color={displayed.isFollowing ? TEAL : '#fff'} size="small" />
-              ) : (
-                <Text style={[s.followBtnText, displayed.isFollowing && s.followBtnTextFollowing]}>
-                  {displayed.isFollowing ? 'Following ✓' : 'Follow'}
-                </Text>
-              )}
-            </TouchableOpacity>
-          )}
+    return (
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={t.gridScroll}>
+        <View style={t.grid}>
+          {displayed!.posts.map((post) => {
+            const img = getPostImage(post.id);
+            return (
+              <View key={post.id} style={t.gridItem}>
+                {img ? (
+                  <Image source={img} style={t.gridImg} resizeMode="cover" />
+                ) : (
+                  <LinearGradient colors={gridGradient(post.postType)} style={t.gridImg}>
+                    <Text style={t.gridEmoji}>{mealEmoji(post.postType)}</Text>
+                  </LinearGradient>
+                )}
+                <View style={t.gridOverlay}>
+                  <Text style={t.gridMealName} numberOfLines={1}>{post.mealName}</Text>
+                  <Text style={t.gridCal}>{post.nutrition.calories} kcal</Text>
+                </View>
+              </View>
+            );
+          })}
         </View>
+      </ScrollView>
+    );
+  }
 
-        {/* Stats row */}
-        <View style={s.statsRow}>
-          <StatItem value={displayed.postsCount} label="Posts" />
-          <View style={s.statDivider} />
-          <StatItem
-            value={displayed.followersCount}
-            label="Followers"
-            onPress={() => setShowFollowers(true)}
-          />
-          <View style={s.statDivider} />
-          <StatItem
-            value={displayed.followingCount}
-            label="Following"
-            onPress={() => setShowFollowing(true)}
-          />
-          <View style={s.statDivider} />
-          <StatItem value={`${displayed.streak}🔥`} label="Streak" />
-        </View>
-
-        {/* Jonno Stats card */}
-        <View style={s.card}>
-          <Text style={s.cardTitle}>Jonno Stats</Text>
-          <View style={s.jonnoGrid}>
-            <View style={s.jonnoStat}>
-              <Text style={s.jonnoEmoji}>🍽️</Text>
-              <Text style={s.jonnoVal}>{displayed.mealsLogged}</Text>
-              <Text style={s.jonnoLabel}>Meals Logged</Text>
+  // ── Stats tab ────────────────────────────────────────────────────────────────
+  function StatsTab() {
+    return (
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={t.tabScroll}>
+        {/* This Week card */}
+        <View style={t.glassCard}>
+          <Text style={t.cardLabel}>THIS WEEK</Text>
+          <View style={t.statsRow3}>
+            <View style={t.stat3}>
+              <Text style={t.stat3Val}>{displayed!.mealsLogged}</Text>
+              <Text style={t.stat3Label}>meals logged</Text>
             </View>
-            <View style={s.jonnoStat}>
-              <Text style={s.jonnoEmoji}>📅</Text>
-              <Text style={s.jonnoVal}>{displayed.weeksOnJonno}</Text>
-              <Text style={s.jonnoLabel}>Weeks on Jonno</Text>
+            <View style={t.stat3Divider} />
+            <View style={t.stat3}>
+              <Text style={t.stat3Val}>{displayed!.weeksOnJonno}</Text>
+              <Text style={t.stat3Label}>weeks on Jonno</Text>
             </View>
-            <View style={s.jonnoStat}>
-              <Text style={s.jonnoEmoji}>🎯</Text>
-              <Text style={s.jonnoVal}>{displayed.goalLabel}</Text>
-              <Text style={s.jonnoLabel}>Current Goal</Text>
-            </View>
-            <View style={s.jonnoStat}>
-              <Text style={s.jonnoEmoji}>✅</Text>
-              <Text style={s.jonnoVal}>73%</Text>
-              <Text style={s.jonnoLabel}>Goals Hit</Text>
+            <View style={t.stat3Divider} />
+            <View style={t.stat3}>
+              <Text style={t.stat3Val}>73%</Text>
+              <Text style={t.stat3Label}>goals hit</Text>
             </View>
           </View>
         </View>
 
-        {/* Top Cuisines */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>Top Cuisines</Text>
-          <View style={s.cuisineRow}>
-            {displayed.topCuisines.map((c) => (
-              <View key={c} style={s.cuisinePill}>
-                <Text style={s.cuisineText}>{c}</Text>
+        {/* Current Goal card */}
+        <View style={[t.glassCard, { marginTop: 12 }]}>
+          <Text style={t.cardLabel}>CURRENT GOAL</Text>
+          <View style={t.goalRow}>
+            <View style={[t.goalBadgeSm, { backgroundColor: gs.bg }]}>
+              <Text style={[t.goalBadgeSmText, { color: gs.color }]}>{gs.label}</Text>
+            </View>
+            <View style={t.activeBadge}>
+              <Text style={t.activeBadgeText}>Active</Text>
+            </View>
+          </View>
+          <Text style={t.goalSub}>Week {displayed!.weeksOnJonno} of your {displayed!.goalLabel} journey</Text>
+        </View>
+
+        {/* Top Cuisines card */}
+        <View style={[t.glassCard, { marginTop: 12 }]}>
+          <Text style={t.cardLabel}>TOP CUISINES</Text>
+          <Text style={t.cuisineSubtitle}>Based on your meal history</Text>
+          <View style={t.cuisineWrap}>
+            {displayed!.topCuisines.map((c) => (
+              <View key={c} style={t.cuisinePill}>
+                <Text style={t.cuisineText}>{c}</Text>
               </View>
             ))}
           </View>
-          <Text style={s.sectionSub}>Based on meal history</Text>
         </View>
+      </ScrollView>
+    );
+  }
 
-        {/* Posts grid */}
-        <View style={s.section}>
-          <View style={s.sectionHeader}>
-            <Text style={s.sectionTitle}>Posts</Text>
-            <View style={s.countBadge}>
-              <Text style={s.countBadgeText}>{displayed.posts.length}</Text>
+  // ── About tab ────────────────────────────────────────────────────────────────
+  function AboutTab() {
+    return (
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={t.tabScroll}>
+        <View style={t.glassCard}>
+          {/* Name */}
+          <View style={t.aboutRow}>
+            <Text style={t.aboutLabel}>Name</Text>
+            <Text style={t.aboutValue}>{displayed!.name}</Text>
+          </View>
+          <View style={t.aboutDivider} />
+          {/* Username */}
+          <View style={t.aboutRow}>
+            <Text style={t.aboutLabel}>Username</Text>
+            <Text style={[t.aboutValue, { color: TEAL }]}>{displayed!.username}</Text>
+          </View>
+          <View style={t.aboutDivider} />
+          {/* Goal */}
+          <View style={t.aboutRow}>
+            <Text style={t.aboutLabel}>Goal</Text>
+            <View style={[t.goalBadgeSm, { backgroundColor: gs.bg }]}>
+              <Text style={[t.goalBadgeSmText, { color: gs.color }]}>{gs.label}</Text>
             </View>
           </View>
-
-          {displayed.posts.length === 0 ? (
-            <View style={s.noPostsBox}>
-              <Text style={s.noPostsText}>No posts yet</Text>
-              {isOwn && <Text style={s.noPostsSub}>Share your first meal →</Text>}
-            </View>
-          ) : (
-            <View style={s.grid}>
-              {displayed.posts.map((post) => {
-                const img = getPostImage(post.id);
-                return (
-                  <View key={post.id} style={s.gridItem}>
-                    {img ? (
-                      <Image source={img} style={s.gridImage} resizeMode="cover" />
-                    ) : (
-                      <LinearGradient
-                        colors={post.postType === 'eating_out' ? ['#DBEAFE','#60A5FA'] : post.postType === 'meal_prep' ? ['#EDE9FE','#A78BFA'] : ['#D1FAE5','#34D399']}
-                        style={s.gridImage}
-                      />
-                    )}
-                    <View style={s.gridOverlay}>
-                      <Text style={s.gridMealName} numberOfLines={1}>{post.mealName}</Text>
-                      <Text style={s.gridCal}>{post.nutrition.calories} kcal</Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          )}
+          {/* Instagram */}
+          {displayed!.instagramHandle ? (
+            <>
+              <View style={t.aboutDivider} />
+              <TouchableOpacity
+                style={t.aboutRow}
+                activeOpacity={0.75}
+                onPress={() => Linking.openURL(`https://instagram.com/${displayed!.instagramHandle}`).catch(() => {})}
+              >
+                <Text style={t.aboutLabel}>Instagram</Text>
+                <Text style={[t.aboutValue, { color: TEAL }]}>@{displayed!.instagramHandle}</Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
+          <View style={t.aboutDivider} />
+          {/* Member since */}
+          <View style={t.aboutRow}>
+            <Text style={t.aboutLabel}>Member since</Text>
+            <Text style={t.aboutValue}>{memberSince}</Text>
+          </View>
         </View>
 
+        {/* Edit Profile button — own profile only */}
+        {isOwn && (
+          <TouchableOpacity style={t.editProfileBtn} onPress={() => setShowEdit(true)} activeOpacity={0.8}>
+            <Text style={t.editProfileBtnText}>Edit Profile</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
+    );
+  }
+
+  const TABS: { key: ActiveTab; label: string }[] = [
+    { key: 'posts',  label: 'Posts'  },
+    { key: 'stats',  label: 'Stats'  },
+    { key: 'about',  label: 'About'  },
+  ];
+
+  return (
+    <Screen style={{ backgroundColor: BG, flex: 1 }}>
+      <LinearGradient colors={[BG, '#F5F8FC']} style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} pointerEvents="none" />
+
+      {/* ── Navbar ── */}
+      <View style={s.navbar}>
+        <TouchableOpacity onPress={() => router.back()} style={s.navBtn} activeOpacity={0.7}>
+          <Text style={s.backArrow}>←</Text>
+        </TouchableOpacity>
+        <Text style={s.navTitle}>Profile</Text>
+        {isOwn ? (
+          <TouchableOpacity onPress={() => setShowEdit(true)} style={s.navBtnRight} activeOpacity={0.7}>
+            <Text style={s.editText}>Edit</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={s.navBtnRight} />
+        )}
+      </View>
+
+      {/* ── Zone 1: Hero ── */}
+      <View style={s.hero}>
+        <Avatar profile={displayed} editable={isOwn} onPress={handleAvatarPress} />
+
+        <Text style={s.name}>{displayed.name}</Text>
+        <Text style={s.username}>{displayed.username}</Text>
+
+        <View style={[s.goalBadge, { backgroundColor: gs.bg }]}>
+          <Text style={[s.goalBadgeText, { color: gs.color }]}>{gs.label}</Text>
+        </View>
+
+        {displayed.bio ? (
+          <Text style={s.bio} numberOfLines={2}>{displayed.bio}</Text>
+        ) : null}
+
+        {displayed.instagramHandle ? (
+          <TouchableOpacity
+            style={s.igPill}
+            onPress={() => Linking.openURL(`https://instagram.com/${displayed.instagramHandle}`).catch(() => {})}
+            activeOpacity={0.75}
+          >
+            <View style={s.igDot} />
+            <Text style={s.igText}>@{displayed.instagramHandle}</Text>
+            <Text style={s.igArrow}>→</Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {!isOwn && (
+          <TouchableOpacity
+            style={[s.followBtn, displayed.isFollowing && s.followBtnFollowing]}
+            onPress={displayed.isFollowing ? handleUnfollow : handleFollow}
+            disabled={isFollowLoading}
+            activeOpacity={0.8}
+          >
+            {isFollowLoading ? (
+              <ActivityIndicator color={displayed.isFollowing ? TEAL : '#fff'} size="small" />
+            ) : (
+              <Text style={[s.followBtnText, displayed.isFollowing && s.followBtnTextFollowing]}>
+                {displayed.isFollowing ? 'Following ✓' : 'Follow'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* ── Zone 2: Stats bar ── */}
+      <View style={s.statsBar}>
+        <TouchableOpacity style={s.statItem} activeOpacity={1}>
+          <Text style={s.statValue}>{displayed.postsCount}</Text>
+          <Text style={s.statLabel}>Posts</Text>
+        </TouchableOpacity>
+        <View style={s.statDivider} />
+        <TouchableOpacity style={s.statItem} onPress={() => setShowFollowers(true)} activeOpacity={0.7}>
+          <Text style={s.statValue}>{displayed.followersCount}</Text>
+          <Text style={s.statLabel}>Followers</Text>
+        </TouchableOpacity>
+        <View style={s.statDivider} />
+        <TouchableOpacity style={s.statItem} onPress={() => setShowFollowing(true)} activeOpacity={0.7}>
+          <Text style={s.statValue}>{displayed.followingCount}</Text>
+          <Text style={s.statLabel}>Following</Text>
+        </TouchableOpacity>
+        <View style={s.statDivider} />
+        <View style={s.statItem}>
+          <Text style={s.statValue}>{displayed.streak}🔥</Text>
+          <Text style={s.statLabel}>Streak</Text>
+        </View>
+      </View>
+
+      {/* ── Zone 3: Tab bar ── */}
+      <View style={s.tabBar}>
+        {TABS.map((tab) => {
+          const active = activeTab === tab.key;
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              style={[s.tabItem, active && s.tabItemActive]}
+              onPress={() => setActiveTab(tab.key)}
+              activeOpacity={0.75}
+            >
+              <Text style={[s.tabLabel, active && s.tabLabelActive]}>{tab.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* ── Zone 3: Tab content ── */}
+      <View style={{ flex: 1 }}>
+        {activeTab === 'posts'  && <PostsTab />}
+        {activeTab === 'stats'  && <StatsTab />}
+        {activeTab === 'about'  && <AboutTab />}
+      </View>
 
       {/* Edit sheet */}
       {isOwn && (
@@ -356,15 +484,12 @@ export default function UserProfileScreen() {
         />
       )}
 
-      {/* Followers modal */}
       <FollowListModal
         visible={showFollowers}
         title="Followers"
         profiles={followerProfiles}
         onClose={() => setShowFollowers(false)}
       />
-
-      {/* Following modal */}
       <FollowListModal
         visible={showFollowing}
         title="Following"
@@ -375,17 +500,20 @@ export default function UserProfileScreen() {
   );
 }
 
+// ── Main screen styles ────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   navbar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8,
   },
   navBtn: { width: 56, alignItems: 'flex-start' },
+  navBtnRight: { width: 56, alignItems: 'flex-end' },
   backArrow: { fontSize: 22, color: '#1E293B' },
   navTitle: { fontSize: 17, fontWeight: '700', color: '#1E293B' },
-  editText: { fontSize: 15, fontWeight: '600', color: TEAL, textAlign: 'right', width: 56 },
+  editText: { fontSize: 15, fontWeight: '600', color: TEAL },
 
-  hero: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 8, gap: 6 },
+  // Zone 1 — Hero
+  hero: { alignItems: 'center', paddingHorizontal: 24, paddingTop: 4, paddingBottom: 12, gap: 5 },
   avatar: { backgroundColor: TEAL, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontWeight: '700', color: '#fff' },
   cameraOverlay: {
@@ -393,86 +521,152 @@ const s = StyleSheet.create({
     backgroundColor: '#fff', borderRadius: 12, padding: 4,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4,
   },
-  name: { fontSize: 22, fontWeight: '700', color: '#1E293B', marginTop: 10 },
+  name: { fontSize: 22, fontWeight: '700', color: '#1E293B', marginTop: 8 },
   username: { fontSize: 14, color: '#94A3B8' },
-  goalBadge: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, marginTop: 2 },
+  goalBadge: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
   goalBadgeText: { fontSize: 13, fontWeight: '600' },
-  bio: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 20 },
-  instagram: { fontSize: 13, fontWeight: '500', color: TEAL },
+  bio: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 20, marginHorizontal: 40 },
+
+  // Instagram pill
+  igPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
+    paddingHorizontal: 12, paddingVertical: 5,
+  },
+  igDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E1306C' },
+  igText: { fontSize: 13, color: '#6B7280' },
+  igArrow: { fontSize: 13, color: '#94A3B8' },
+
+  // Follow button
   followBtn: {
-    marginTop: 8, width: '80%', backgroundColor: TEAL, borderRadius: 24,
+    marginTop: 4, width: '80%', backgroundColor: TEAL, borderRadius: 24,
     paddingVertical: 12, alignItems: 'center',
     shadowColor: TEAL, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10,
   },
   followBtnFollowing: {
-    backgroundColor: 'transparent', borderWidth: 1.5, borderColor: TEAL,
-    shadowOpacity: 0,
+    backgroundColor: 'transparent', borderWidth: 1.5, borderColor: TEAL, shadowOpacity: 0,
   },
   followBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
   followBtnTextFollowing: { color: TEAL },
 
-  statsRow: {
+  // Zone 2 — Stats bar
+  statsBar: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.85)',
-    borderRadius: 20, marginHorizontal: 16, marginTop: 16,
-    paddingVertical: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12,
+    paddingVertical: 16, paddingHorizontal: 8,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.06)',
   },
   statItem: { flex: 1, alignItems: 'center' },
   statValue: { fontSize: 20, fontWeight: '700', color: '#1E293B' },
-  statLabel: { fontSize: 12, color: '#94A3B8', marginTop: 2 },
-  statDivider: { width: 1, height: 32, backgroundColor: '#E2E8F0' },
+  statLabel: { fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  statDivider: { width: 1, height: 28, backgroundColor: '#E2E8F0' },
 
-  card: {
+  // Zone 3 — Tab bar
+  tabBar: {
+    flexDirection: 'row',
+    borderBottomWidth: 2, borderBottomColor: '#F1F5F9',
+  },
+  tabItem: {
+    flex: 1, paddingVertical: 12, alignItems: 'center',
+    borderBottomWidth: 2, borderBottomColor: 'transparent', marginBottom: -2,
+  },
+  tabItemActive: { borderBottomColor: TEAL },
+  tabLabel: { fontSize: 14, fontWeight: '500', color: '#94A3B8' },
+  tabLabelActive: { fontWeight: '600', color: '#1E293B' },
+});
+
+// ── Tab content styles ────────────────────────────────────────────────────────
+const t = StyleSheet.create({
+  // Posts tab
+  gridScroll: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  gridItem: {
+    width: GRID_ITEM_W, height: GRID_ITEM_W,
+    borderRadius: 16, overflow: 'hidden',
+  },
+  gridImg: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
+  gridEmoji: { fontSize: 36 },
+  gridOverlay: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    height: 44, backgroundColor: 'rgba(0,0,0,0.35)',
+    paddingHorizontal: 8, paddingVertical: 6, justifyContent: 'flex-end',
+  },
+  gridMealName: { fontSize: 11, fontWeight: '600', color: '#fff' },
+  gridCal: { fontSize: 10, color: 'rgba(255,255,255,0.75)', marginTop: 1 },
+
+  emptyState: { flex: 1, alignItems: 'center', paddingTop: 48, gap: 8 },
+  emptyEmoji: { fontSize: 48 },
+  emptyTitle: { fontSize: 16, fontWeight: '600', color: '#1E293B' },
+  emptySub: { fontSize: 13, color: '#94A3B8', textAlign: 'center', paddingHorizontal: 32 },
+  emptyBtn: {
+    marginTop: 8, backgroundColor: TEAL, borderRadius: 24,
+    paddingHorizontal: 24, paddingVertical: 12,
+  },
+  emptyBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+
+  // Shared tab scroll
+  tabScroll: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 },
+
+  // Glass card (Stats + About)
+  glassCard: {
     backgroundColor: 'rgba(255,255,255,0.85)',
-    borderRadius: 20, marginHorizontal: 16, marginTop: 14,
-    padding: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12,
+    borderRadius: 20, padding: 18,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)',
+    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12, shadowRadius: 16, elevation: 3,
   },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 14 },
-  jonnoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  jonnoStat: {
-    width: '47%', backgroundColor: '#F8FAFC', borderRadius: 14,
-    padding: 12, gap: 3,
+  cardLabel: {
+    fontSize: 11, fontWeight: '700', color: '#94A3B8',
+    letterSpacing: 0.8, marginBottom: 14,
   },
-  jonnoEmoji: { fontSize: 20 },
-  jonnoVal: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginTop: 2 },
-  jonnoLabel: { fontSize: 11, color: '#94A3B8' },
 
-  section: { marginTop: 20, paddingHorizontal: 16 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginBottom: 10 },
-  sectionSub: { fontSize: 11, color: '#94A3B8', marginTop: 6 },
-  countBadge: {
-    backgroundColor: TEAL, borderRadius: 10,
-    paddingHorizontal: 8, paddingVertical: 2, marginBottom: 10,
-  },
-  countBadgeText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  // Stats tab — 3-col row
+  statsRow3: { flexDirection: 'row', alignItems: 'center' },
+  stat3: { flex: 1, alignItems: 'center' },
+  stat3Val: { fontSize: 22, fontWeight: '700', color: '#1E293B' },
+  stat3Label: { fontSize: 12, color: '#94A3B8', textAlign: 'center', marginTop: 4 },
+  stat3Divider: { width: 1, height: 36, backgroundColor: '#E2E8F0' },
 
-  cuisineRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  // Stats tab — goal card
+  goalRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  goalBadgeSm: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
+  goalBadgeSmText: { fontSize: 13, fontWeight: '600' },
+  activeBadge: {
+    backgroundColor: 'rgba(34,197,94,0.1)', borderRadius: 12,
+    paddingHorizontal: 8, paddingVertical: 3,
+  },
+  activeBadgeText: { fontSize: 11, fontWeight: '600', color: '#16A34A' },
+  goalSub: { fontSize: 13, color: '#64748B' },
+
+  // Stats tab — cuisines
+  cuisineSubtitle: { fontSize: 12, color: '#94A3B8', marginBottom: 12, marginTop: -8 },
+  cuisineWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   cuisinePill: {
     backgroundColor: 'rgba(45,212,191,0.08)', borderRadius: 20,
     paddingHorizontal: 14, paddingVertical: 6,
     borderWidth: 1, borderColor: 'rgba(45,212,191,0.25)',
+    margin: 2,
   },
   cuisineText: { fontSize: 13, fontWeight: '500', color: TEAL },
 
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
-  gridItem: { width: '48.5%', aspectRatio: 1, borderRadius: 16, overflow: 'hidden' },
-  gridImage: { width: '100%', height: '100%' },
-  gridOverlay: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)', padding: 8,
+  // About tab rows
+  aboutRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: 14,
   },
-  gridMealName: { fontSize: 11, fontWeight: '700', color: '#fff' },
-  gridCal: { fontSize: 10, color: 'rgba(255,255,255,0.75)', marginTop: 1 },
+  aboutDivider: { height: 1, backgroundColor: '#F1F5F9' },
+  aboutLabel: { fontSize: 14, color: '#94A3B8' },
+  aboutValue: { fontSize: 14, color: '#1E293B', fontWeight: '500' },
 
-  noPostsBox: { alignItems: 'center', paddingVertical: 32, gap: 6 },
-  noPostsText: { fontSize: 15, color: '#94A3B8', fontWeight: '500' },
-  noPostsSub: { fontSize: 13, color: TEAL, fontWeight: '600' },
+  editProfileBtn: {
+    marginTop: 16, backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20, paddingVertical: 14, alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
+  },
+  editProfileBtnText: { fontSize: 15, fontWeight: '600', color: '#1E293B' },
 });
 
+// ── Follow list modal styles ──────────────────────────────────────────────────
 const fl = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAFCFF' },
   header: {
@@ -497,9 +691,9 @@ const fl = StyleSheet.create({
   username: { fontSize: 12, color: '#94A3B8', marginTop: 1 },
   followBtn: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-    borderWidth: 1.5, borderColor: TEAL,
+    borderWidth: 1.5, borderColor: BLUE,
   },
-  followBtnActive: { backgroundColor: TEAL },
-  followBtnText: { fontSize: 12, fontWeight: '700', color: TEAL },
+  followBtnActive: { backgroundColor: BLUE },
+  followBtnText: { fontSize: 12, fontWeight: '700', color: BLUE },
   followBtnTextActive: { color: '#fff' },
 });
