@@ -17,16 +17,16 @@ import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
 import type { CommunityFilter } from '@/types/community';
 
-const BLUE = '#3B6FD4';
+const TEAL = '#2DD4BF';
 const BG = '#EEF4FA';
 
 const FILTERS: { key: CommunityFilter; label: string }[] = [
   { key: 'all',           label: 'All' },
-  { key: 'build_muscle',  label: '💪 Muscle' },
-  { key: 'fat_loss',      label: '🔥 Fat Loss' },
-  { key: 'home_cooked',   label: '🏠 Home Cooked' },
-  { key: 'eating_out',    label: '🍽️ Eating Out' },
-  { key: 'meal_prep',     label: '📦 Meal Prep' },
+  { key: 'build_muscle',  label: 'Muscle' },
+  { key: 'fat_loss',      label: 'Fat Loss' },
+  { key: 'home_cooked',   label: 'Home Cooked' },
+  { key: 'eating_out',    label: 'Eating Out' },
+  { key: 'meal_prep',     label: 'Meal Prep' },
 ];
 
 export default function CommunityScreen() {
@@ -118,7 +118,7 @@ export default function CommunityScreen() {
       </View>
 
       {loading && posts.length === 0 ? (
-        <ActivityIndicator color={BLUE} size="large" style={{ marginTop: 60 }} />
+        <ActivityIndicator color={TEAL} size="large" style={{ marginTop: 60 }} />
       ) : (
         <FlatList
           data={posts}
@@ -126,7 +126,7 @@ export default function CommunityScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={BLUE} />
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={TEAL} />
           }
           ListHeaderComponent={<FilterTabs />}
           ListEmptyComponent={<EmptyState />}
@@ -172,11 +172,11 @@ const s = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'rgba(255,255,255,0.9)',
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.08)',
   },
-  filterPillActive: { backgroundColor: BLUE, borderColor: BLUE },
+  filterPillActive: { backgroundColor: '#2DD4BF', borderColor: '#2DD4BF' },
   filterText: { fontSize: 13, fontWeight: '500', color: '#6B7280' },
   filterTextActive: { color: '#fff', fontWeight: '600' },
 
@@ -186,7 +186,7 @@ const s = StyleSheet.create({
   emptySub: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', paddingHorizontal: 24 },
   emptyBtn: {
     marginTop: 8,
-    backgroundColor: BLUE,
+    backgroundColor: TEAL,
     borderRadius: 28,
     paddingHorizontal: 28,
     paddingVertical: 14,
