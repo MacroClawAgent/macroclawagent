@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { CommunityPost, CommunityComment, CommunityFilter, CreatePostData } from '@/types/community';
+import { MOCK_POSTS } from '@/data/communityMockData';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -88,8 +89,21 @@ export async function getPosts(filter?: CommunityFilter): Promise<CommunityPost[
   }
 
   const { data, error } = await query;
-  if (error || !data) return [];
-  return data.map((row) => mapRow(row, uid));
+  const realPosts = (!error && data) ? data.map((row) => mapRow(row, uid)) : [];
+
+  // Seed the feed with mock posts when the DB is empty (new app / no real posts yet)
+  const mockFallback = realPosts.length === 0 ? applyMockFilter(MOCK_POSTS, filter) : [];
+  return [...realPosts, ...mockFallback];
+}
+
+function applyMockFilter(posts: CommunityPost[], filter?: CommunityFilter): CommunityPost[] {
+  if (!filter || filter === 'all') return posts;
+  return posts.filter((p) => {
+    if (filter === 'home_cooked' || filter === 'eating_out' || filter === 'meal_prep') return p.postType === filter;
+    if (filter === 'build_muscle') return p.userGoal === 'build_muscle';
+    if (filter === 'fat_loss')     return p.userGoal === 'fat_loss';
+    return true;
+  });
 }
 
 export async function getUserPosts(userId: string): Promise<CommunityPost[]> {

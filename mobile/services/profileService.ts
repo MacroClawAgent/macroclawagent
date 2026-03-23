@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import type { UserProfile, UserGoal, CommunityPost } from '@/types/community';
 import { getUserPosts } from '@/services/communityService';
+import { getMockProfile } from '@/data/profileMockData';
+import { MOCK_POSTS } from '@/data/communityMockData';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -97,7 +99,16 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     .select('*')
     .eq('id', userId)
     .single();
-  if (error || !data) throw new Error(`Profile ${userId} not found`);
+
+  // Fall back to mock profile for demo accounts that don't exist in Supabase yet
+  if (error || !data) {
+    const mock = getMockProfile(userId);
+    if (mock) {
+      const mockPosts = MOCK_POSTS.filter((p) => p.userId === userId);
+      return { ...mock, posts: mockPosts, postsCount: mockPosts.length, isCurrentUser: false };
+    }
+    throw new Error(`Profile ${userId} not found`);
+  }
 
   return buildProfile(data, user?.id ?? null);
 }
