@@ -4,6 +4,7 @@ export default function ProfileLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="[userId]" />
       <Stack.Screen name="personal" />
       <Stack.Screen name="personalise" />
       <Stack.Screen name="integrations" />

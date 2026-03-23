@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import type { CommunityPost } from '@/types/community';
 import { getPostImage } from '@/data/communityMockData';
@@ -50,6 +51,7 @@ interface Props {
 
 export function CommunityPostCard({ post, onLike }: Props) {
   const likeScale = useRef(new Animated.Value(1)).current;
+  const router = useRouter();
 
   function handleLike() {
     Animated.sequence([
@@ -68,10 +70,12 @@ export function CommunityPostCard({ post, onLike }: Props) {
     <View style={s.card}>
       {/* Header */}
       <View style={s.header}>
-        <View style={s.avatar}>
-          <Text style={s.avatarText}>{post.userInitial}</Text>
-        </View>
-        <View style={s.meta}>
+        <TouchableOpacity onPress={() => router.push(`/profile/${post.userId}` as any)} activeOpacity={0.7}>
+          <View style={s.avatar}>
+            <Text style={s.avatarText}>{post.userInitial}</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.meta} onPress={() => router.push(`/profile/${post.userId}` as any)} activeOpacity={0.7}>
           <View style={s.nameRow}>
             <Text style={s.name}>{post.userName}</Text>
             {post.goalHit && (
@@ -86,7 +90,7 @@ export function CommunityPostCard({ post, onLike }: Props) {
               <Text style={s.typeBadgeText}>{postTypeLabel(post.postType)}</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
         <TouchableOpacity style={s.menuBtn} activeOpacity={0.7}>
           <Text style={s.menuDots}>···</Text>
         </TouchableOpacity>

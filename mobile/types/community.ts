@@ -29,6 +29,34 @@ export interface CommunityPost {
   timeAgo: string;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  username: string;
+  instagramHandle?: string;
+  avatarUri?: string;
+  initial: string;
+  bio?: string;
+  goal: UserGoal;
+  goalLabel: string;
+  streak: number;
+  weeksOnJonno: number;
+  mealsLogged: number;
+  postsCount: number;
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+  isCurrentUser: boolean;
+  topCuisines: string[];
+  posts: CommunityPost[];
+}
+
+export interface FollowAction {
+  followerId: string;
+  followingId: string;
+  createdAt: string;
+}
+
 export interface CommunityComment {
   id: string;
   userId: string;

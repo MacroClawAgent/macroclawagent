@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -11,25 +11,30 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView } from 'expo-symbols';
+import { useRouter } from 'expo-router';
 import { Screen } from '@/components/ui/Screen';
 import { CommunityPostCard } from '@/components/Community/CommunityPostCard';
 import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
-import type { CommunityFilter } from '@/types/community';
+import { getFollowingFeedPosts } from '@/services/profileService';
+import type { CommunityFilter, CommunityPost } from '@/types/community';
 
 const TEAL = '#2DD4BF';
 const BG = '#EEF4FA';
 
+type FeedMode = 'discover' | 'following';
+
 const FILTERS: { key: CommunityFilter; label: string }[] = [
-  { key: 'all',           label: 'All' },
-  { key: 'build_muscle',  label: 'Muscle' },
-  { key: 'fat_loss',      label: 'Fat Loss' },
-  { key: 'home_cooked',   label: 'Home Cooked' },
-  { key: 'eating_out',    label: 'Eating Out' },
-  { key: 'meal_prep',     label: 'Meal Prep' },
+  { key: 'all',          label: 'All' },
+  { key: 'build_muscle', label: 'Muscle' },
+  { key: 'fat_loss',     label: 'Fat Loss' },
+  { key: 'home_cooked',  label: 'Home Cooked' },
+  { key: 'eating_out',   label: 'Eating Out' },
+  { key: 'meal_prep',    label: 'Meal Prep' },
 ];
 
 export default function CommunityScreen() {
+  const router = useRouter();
   const {
     posts,
     loading,
@@ -45,17 +50,52 @@ export default function CommunityScreen() {
     submitPost,
   } = useCommunity();
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  const [feedMode, setFeedMode] = useState<FeedMode>('discover');
+  const [followingPosts, setFollowingPosts] = useState<CommunityPost[]>([]);
+  const [followingLoading, setFollowingLoading] = useState(false);
+
+  useEffect(() => { loadPosts(); }, []);
+
+  async function loadFollowingPosts() {
+    setFollowingLoading(true);
+    try {
+      const data = await getFollowingFeedPosts();
+      setFollowingPosts(data);
+    } finally {
+      setFollowingLoading(false);
+    }
+  }
+
+  function handleModeSwitch(mode: FeedMode) {
+    setFeedMode(mode);
+    if (mode === 'following') loadFollowingPosts();
+  }
+
+  const displayedPosts = feedMode === 'following' ? followingPosts : posts;
+  const isLoading = feedMode === 'following' ? followingLoading : (loading && posts.length === 0);
+
+  function FeedModeToggle() {
+    return (
+      <View style={s.modeRow}>
+        {(['following', 'discover'] as FeedMode[]).map((m) => (
+          <TouchableOpacity
+            key={m}
+            style={[s.modePill, feedMode === m && s.modePillActive]}
+            onPress={() => handleModeSwitch(m)}
+            activeOpacity={0.75}
+          >
+            <Text style={[s.modeText, feedMode === m && s.modeTextActive]}>
+              {m === 'following' ? 'Following' : 'Discover'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  }
 
   function FilterTabs() {
     return (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={s.filterRow}
-      >
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
         {FILTERS.map((f) => {
           const active = activeFilter === f.key;
           return (
@@ -73,7 +113,20 @@ export default function CommunityScreen() {
     );
   }
 
-  function EmptyState() {
+  function EmptyFollowing() {
+    return (
+      <View style={s.empty}>
+        <Text style={s.emptyEmoji}>👥</Text>
+        <Text style={s.emptyTitle}>No posts yet</Text>
+        <Text style={s.emptySub}>Follow people to see their meals here</Text>
+        <TouchableOpacity style={s.emptyBtn} onPress={() => handleModeSwitch('discover')} activeOpacity={0.8}>
+          <Text style={s.emptyBtnText}>Discover People →</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  function EmptyDiscover() {
     return (
       <View style={s.empty}>
         <Text style={s.emptyEmoji}>🍽️</Text>
@@ -88,95 +141,92 @@ export default function CommunityScreen() {
 
   return (
     <Screen style={{ backgroundColor: BG }}>
-      <LinearGradient
-        colors={[BG, '#F5F8FC']}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        pointerEvents="none"
-      />
+      <LinearGradient colors={[BG, '#F5F8FC']} style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} pointerEvents="none" />
 
       {/* Header */}
       <View style={s.header}>
         <Text style={s.headerTitle}>Community</Text>
         <View style={s.headerRight}>
           <TouchableOpacity style={s.iconBtn} activeOpacity={0.7}>
-            <SymbolView
-              name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-              tintColor="#374151"
-              size={20}
-            />
+            <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+              tintColor="#374151" size={20} />
           </TouchableOpacity>
-          <TouchableOpacity style={s.iconBtn} activeOpacity={0.7}>
-            <SymbolView
-              name={{ ios: 'person.circle', android: 'account_circle', web: 'account_circle' }}
-              tintColor="#374151"
-              size={22}
-            />
+          <TouchableOpacity style={s.iconBtn} activeOpacity={0.7}
+            onPress={() => router.push('/profile/current-user' as any)}>
+            <SymbolView name={{ ios: 'person.circle', android: 'account_circle', web: 'account_circle' }}
+              tintColor="#374151" size={22} />
           </TouchableOpacity>
         </View>
       </View>
 
-      {loading && posts.length === 0 ? (
+      {isLoading ? (
         <ActivityIndicator color={TEAL} size="large" style={{ marginTop: 60 }} />
       ) : (
         <FlatList
-          data={posts}
+          data={displayedPosts}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={TEAL} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={feedMode === 'following' ? loadFollowingPosts : handleRefresh}
+              tintColor={TEAL}
+            />
           }
-          ListHeaderComponent={<FilterTabs />}
-          ListEmptyComponent={<EmptyState />}
+          ListHeaderComponent={
+            <>
+              <FeedModeToggle />
+              {feedMode === 'discover' && <FilterTabs />}
+            </>
+          }
+          ListEmptyComponent={feedMode === 'following' ? <EmptyFollowing /> : <EmptyDiscover />}
           renderItem={({ item }) => (
             <CommunityPostCard post={item} onLike={handleLike} />
           )}
         />
       )}
 
-      <CreatePostSheet
-        visible={showCreatePost}
-        onClose={closeCreatePost}
-        onSubmit={submitPost}
-      />
+      <CreatePostSheet visible={showCreatePost} onClose={closeCreatePost} onSubmit={submitPost} />
     </Screen>
   );
 }
 
 const s = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 4,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 10, paddingBottom: 4,
   },
   headerTitle: { fontSize: 28, fontWeight: '800', letterSpacing: -0.6, color: '#111827' },
   headerRight: { flexDirection: 'row', gap: 8 },
   iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 13,
+    width: 40, height: 40, borderRadius: 13,
     backgroundColor: 'rgba(255,255,255,0.75)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
   },
 
-  filterRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-  filterPill: {
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
+  modeRow: {
+    flexDirection: 'row', gap: 8,
+    paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4,
   },
-  filterPillActive: { backgroundColor: '#2DD4BF', borderColor: '#2DD4BF' },
+  modePill: {
+    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
+  },
+  modePillActive: { backgroundColor: TEAL, borderColor: TEAL },
+  modeText: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
+  modeTextActive: { color: '#fff' },
+
+  filterRow: { paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
+  filterPill: {
+    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
+  },
+  filterPillActive: { backgroundColor: TEAL, borderColor: TEAL },
   filterText: { fontSize: 13, fontWeight: '500', color: '#6B7280' },
   filterTextActive: { color: '#fff', fontWeight: '600' },
 
@@ -185,11 +235,8 @@ const s = StyleSheet.create({
   emptyTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
   emptySub: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', paddingHorizontal: 24 },
   emptyBtn: {
-    marginTop: 8,
-    backgroundColor: TEAL,
-    borderRadius: 28,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
+    marginTop: 8, backgroundColor: TEAL,
+    borderRadius: 28, paddingHorizontal: 28, paddingVertical: 14,
   },
   emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });
