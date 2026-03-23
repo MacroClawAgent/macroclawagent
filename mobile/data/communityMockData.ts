@@ -9,6 +9,7 @@ const postImages: Record<string, number> = {
   'post-5': require('@/components/Community/post5.jpg'),
   'post-6': require('@/components/Community/post6.jpg'),
   'post-7': require('@/components/Community/post7.jpg'),
+  'post-8': require('@/components/Community/post8.jpg'),
 };
 
 export function getPostImage(postId: string): number | null {
