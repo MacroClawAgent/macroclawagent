@@ -480,7 +480,7 @@ export default function UserProfileScreen() {
           visible={showEdit}
           profile={displayed}
           onClose={() => setShowEdit(false)}
-          onSaved={(updates) => setLocalProfile((prev) => prev ? { ...prev, ...updates } : null)}
+          onSaved={(updates) => setLocalProfile({ ...displayed, ...updates })}
         />
       )}
 
