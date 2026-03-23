@@ -38,6 +38,7 @@ export default function RootLayout() {
     <ThemeProvider>
     <AuthProvider>
       <NavThemeProvider value={DefaultTheme}>
+        <>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -49,9 +50,10 @@ export default function RootLayout() {
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           <Stack.Screen name="strava-connected" options={{ headerShown: false }} />
         </Stack>
+        <Toast />
+        </>
       </NavThemeProvider>
     </AuthProvider>
     </ThemeProvider>
-    <Toast />
   );
 }
