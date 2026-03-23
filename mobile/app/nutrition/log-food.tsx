@@ -731,26 +731,26 @@ const s = StyleSheet.create({
   iconBtn: { width: 40, height: 40, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.75)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
 
   // ── Meal pills ─────────────────────────────────────────────────────────────
-  pillRow:      { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  pillRow:      { paddingHorizontal: 16, paddingVertical: 6, gap: 8 },
   pill:         { height: 36, paddingHorizontal: 18, borderRadius: 18, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(255,255,255,0.8)", borderWidth: 1, borderColor: "#E2E8F0" },
   pillActive:   { backgroundColor: TEAL, borderColor: TEAL },
   pillText:     { fontSize: 14, fontWeight: "500", color: "#94A3B8" },
   pillTextActive:{ fontSize: 14, fontWeight: "600", color: "#fff" },
 
   // ── Search row ─────────────────────────────────────────────────────────────
-  searchRow: { flexDirection: "row", marginHorizontal: 16, gap: 10, marginBottom: 4 },
+  searchRow: { flexDirection: "row", marginHorizontal: 16, gap: 10, marginBottom: 0 },
   searchBox: {
     flex: 1, flexDirection: "row", alignItems: "center", gap: 10,
     backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 16, borderWidth: 1.5, borderColor: "rgba(45,212,191,0.3)",
-    paddingHorizontal: 16, paddingVertical: 14,
+    paddingHorizontal: 16, paddingVertical: 11,
   },
   searchInput: { flex: 1, fontSize: 16, color: "#1E293B" },
   barcodeBtn: { width: 52, height: 52, backgroundColor: "rgba(255,255,255,0.95)", borderRadius: 16, borderWidth: 1.5, borderColor: "#E2E8F0", alignItems: "center", justifyContent: "center" },
 
   // ── Results list ───────────────────────────────────────────────────────────
   resultsContent: { paddingBottom: 60 },
-  listLabel:      { fontSize: 12, fontWeight: "700", color: "#94A3B8", letterSpacing: 0.6, textTransform: "uppercase", marginLeft: 16, marginTop: 16, marginBottom: 4 },
+  listLabel:      { fontSize: 12, fontWeight: "700", color: "#94A3B8", letterSpacing: 0.6, textTransform: "uppercase", marginLeft: 16, marginTop: 12, marginBottom: 4 },
   resultRow:      { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "#F1F5F9", gap: 12 },
   resultLeft:     { flex: 1 },
   resultName:     { fontSize: 15, fontWeight: "500", color: "#1E293B" },
@@ -765,7 +765,7 @@ const s = StyleSheet.create({
 
   // ── Scan card ──────────────────────────────────────────────────────────────
   scanCard: {
-    marginHorizontal: 16, marginTop: 16,
+    marginHorizontal: 16, marginTop: 6,
     backgroundColor: "rgba(255,255,255,0.9)",
     borderRadius: 20, borderWidth: 1.5, borderColor: "rgba(45,212,191,0.25)",
     padding: 16, flexDirection: "row", alignItems: "center", gap: 14,
@@ -788,7 +788,7 @@ const s = StyleSheet.create({
   },
 
   // ── Recent meals ───────────────────────────────────────────────────────────
-  recentLabel: { fontSize: 12, fontWeight: "700", color: "#94A3B8", letterSpacing: 0.6, textTransform: "uppercase", marginLeft: 16, marginTop: 20, marginBottom: 8 },
+  recentLabel: { fontSize: 12, fontWeight: "700", color: "#94A3B8", letterSpacing: 0.6, textTransform: "uppercase", marginLeft: 16, marginTop: 14, marginBottom: 6 },
   recentRow:   { paddingRight: 16, paddingBottom: 4 },
   recentPill:  {
     backgroundColor: "rgba(255,255,255,0.9)", borderRadius: 16,
