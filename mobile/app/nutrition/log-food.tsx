@@ -70,6 +70,14 @@ const POPULAR_FOODS = [
   FOOD_DATABASE[6],  // Sweet Potato
 ];
 
+const RECENT_MEALS = [
+  { name: "Chicken Bowl",  emoji: "🍗", food: FOOD_DATABASE[0] },
+  { name: "Oats",          emoji: "🥣", food: FOOD_DATABASE[4] },
+  { name: "Salmon Rice",   emoji: "🐟", food: FOOD_DATABASE[5] },
+  { name: "Eggs",          emoji: "🥚", food: FOOD_DATABASE[2] },
+  { name: "Greek Yogurt",  emoji: "🥛", food: FOOD_DATABASE[3] },
+];
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface FoodItem {
   id: string; meal_tag: string; name: string; calories: number;
@@ -274,6 +282,15 @@ export default function LogFoodScreen() {
     } finally { setSaving(false); }
   }
 
+  // ── photo handlers ────────────────────────────────────────────────────────
+  function handleTakePhoto() {
+    router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "camera" } } as any);
+  }
+
+  function handleUploadPhoto() {
+    router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "library" } } as any);
+  }
+
   // ── derived ───────────────────────────────────────────────────────────────
   const ratio   = qty / 100;
   const food    = selectedFood;
@@ -413,7 +430,7 @@ export default function LogFoodScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
       ) : (
-        /* ════════ MAIN — 3 ELEMENTS ════════ */
+        /* ════════ MAIN VIEW ════════ */
         <View style={{ flex: 1 }}>
 
           {/* ── 1. Meal type pills ── */}
@@ -468,13 +485,79 @@ export default function LogFoodScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* ── 3. Results list ── */}
+          {/* ── Scrollable content below search ── */}
           <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={s.resultsContent}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            {/* ── 3. Scan card (hidden while typing) ── */}
+            {!isSearching && (
+              <TouchableOpacity
+                style={s.scanCard}
+                activeOpacity={0.9}
+                onPress={handleTakePhoto}
+              >
+                <LinearGradient
+                  colors={["#CCFBF1", "#99F6E4"]}
+                  style={s.scanCardIcon}
+                >
+                  <Ionicons name="camera-outline" size={28} color="#0D9488" />
+                </LinearGradient>
+
+                <View style={{ flex: 1 }}>
+                  <Text style={s.scanCardTitle}>Scan Meal with AI</Text>
+                  <Text style={s.scanCardSub}>Photo → macros detected instantly</Text>
+                </View>
+
+                <TouchableOpacity
+                  style={s.scanBtnCamera}
+                  activeOpacity={0.8}
+                  onPress={handleTakePhoto}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="camera" size={20} color="white" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={s.scanBtnLibrary}
+                  activeOpacity={0.8}
+                  onPress={handleUploadPhoto}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="image-outline" size={20} color={TEAL} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            )}
+
+            {/* ── 4. Recent meals (hidden while typing) ── */}
+            {!isSearching && (
+              <>
+                <Text style={s.recentLabel}>Recent</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={s.recentRow}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {RECENT_MEALS.map((meal, idx) => (
+                    <TouchableOpacity
+                      key={meal.name}
+                      style={[s.recentPill, idx === 0 && { marginLeft: 16 }]}
+                      activeOpacity={0.8}
+                      onPress={() => openQty(meal.food)}
+                    >
+                      <Text style={s.recentEmoji}>{meal.emoji}</Text>
+                      <Text style={s.recentName}>{meal.name}</Text>
+                      <Text style={s.recentPlus}>+</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
+            {/* ── 5. Popular foods / search results ── */}
             {!isSearching && (
               <Text style={s.listLabel}>Popular Foods</Text>
             )}
@@ -506,7 +589,6 @@ export default function LogFoodScreen() {
               ))
             )}
 
-            {/* Create custom food link */}
             {displayedFoods.length > 0 && (
               <TouchableOpacity
                 style={s.createCustom}
@@ -680,6 +762,45 @@ const s = StyleSheet.create({
   addCustomText:  { fontSize: 14, color: TEAL, fontWeight: "500" },
   createCustom:   { alignItems: "center", paddingVertical: 18 },
   createCustomText:{ fontSize: 14, color: TEAL },
+
+  // ── Scan card ──────────────────────────────────────────────────────────────
+  scanCard: {
+    marginHorizontal: 16, marginTop: 16,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderRadius: 20, borderWidth: 1.5, borderColor: "rgba(45,212,191,0.25)",
+    padding: 16, flexDirection: "row", alignItems: "center", gap: 14,
+    shadowColor: "#B0C4D8", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15, shadowRadius: 12, elevation: 3,
+  },
+  scanCardIcon:  { width: 52, height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  scanCardTitle: { fontSize: 15, fontWeight: "700", color: "#1E293B", marginBottom: 2 },
+  scanCardSub:   { fontSize: 12, color: "#94A3B8" },
+  scanBtnCamera: {
+    width: 42, height: 42, backgroundColor: TEAL, borderRadius: 12,
+    alignItems: "center", justifyContent: "center",
+    shadowColor: TEAL, shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 3,
+  },
+  scanBtnLibrary: {
+    width: 42, height: 42, backgroundColor: "rgba(45,212,191,0.1)", borderRadius: 12,
+    borderWidth: 1.5, borderColor: "rgba(45,212,191,0.3)",
+    alignItems: "center", justifyContent: "center",
+  },
+
+  // ── Recent meals ───────────────────────────────────────────────────────────
+  recentLabel: { fontSize: 12, fontWeight: "700", color: "#94A3B8", letterSpacing: 0.6, textTransform: "uppercase", marginLeft: 16, marginTop: 20, marginBottom: 8 },
+  recentRow:   { paddingRight: 16, paddingBottom: 4 },
+  recentPill:  {
+    backgroundColor: "rgba(255,255,255,0.9)", borderRadius: 16,
+    paddingHorizontal: 14, paddingVertical: 10, marginRight: 10,
+    borderWidth: 1, borderColor: "#F1F5F9",
+    flexDirection: "row", alignItems: "center", gap: 8,
+    shadowColor: "#B0C4D8", shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08, shadowRadius: 6, elevation: 2,
+  },
+  recentEmoji: { fontSize: 18 },
+  recentName:  { fontSize: 13, fontWeight: "600", color: "#1E293B" },
+  recentPlus:  { fontSize: 16, fontWeight: "700", color: TEAL, marginLeft: 2 },
 
   // ── Quantity sheet ─────────────────────────────────────────────────────────
   qtySheet:      { backgroundColor: "#fff", borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, gap: 20 },
