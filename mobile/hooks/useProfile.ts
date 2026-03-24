@@ -10,7 +10,9 @@ export function useProfile(userId?: string) {
   const loadProfile = useCallback(async (id?: string) => {
     setLoading(true);
     try {
-      const data = id ? await getUserProfile(id) : await getCurrentUserProfile();
+      const data = (!id || id === 'current-user')
+        ? await getCurrentUserProfile()
+        : await getUserProfile(id);
       setProfile(data);
     } finally {
       setLoading(false);
