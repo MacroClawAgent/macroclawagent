@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   RefreshControl,
   ScrollView,
@@ -18,6 +19,7 @@ import { CommunityPostCard } from '@/components/Community/CommunityPostCard';
 import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
 import { consumePendingCommunityPost } from '@/lib/communityStore';
+import { deletePost, deletePostWithFoodLog } from '@/services/communityService';
 import { getFollowingFeedPosts } from '@/services/profileService';
 import { MOCK_PROFILES, setFollowing } from '@/data/profileMockData';
 import type { CommunityFilter, CommunityPost, UserProfile } from '@/types/community';
@@ -57,6 +59,7 @@ export default function CommunityScreen() {
     loading,
     refreshing,
     showCreatePost,
+    currentUserId,
     loadPosts,
     handleLike,
     handleRefresh,
@@ -64,6 +67,7 @@ export default function CommunityScreen() {
     openCreatePost,
     closeCreatePost,
     submitPost,
+    removePost,
   } = useCommunity();
 
   const [activePill, setActivePill] = useState<ActivePill>('all');
@@ -141,6 +145,32 @@ export default function CommunityScreen() {
     } finally {
       setFollowingLoading(false);
     }
+  }
+
+  function handleDeletePost(post: CommunityPost) {
+    const logDate = post.createdAt.split('T')[0];
+    Alert.alert(
+      'Delete post',
+      'Do you also want to delete this meal from your food log?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Post only',
+          onPress: async () => {
+            await deletePost(post.id);
+            removePost(post.id);
+          },
+        },
+        {
+          text: 'Post + food log',
+          style: 'destructive',
+          onPress: async () => {
+            await deletePostWithFoodLog(post.id, post.mealName, logDate);
+            removePost(post.id);
+          },
+        },
+      ]
+    );
   }
 
   function handlePillPress(key: ActivePill) {
@@ -326,7 +356,12 @@ export default function CommunityScreen() {
             ListHeaderComponent={<PillRow />}
             ListEmptyComponent={<EmptyState />}
             renderItem={({ item }) => (
-              <CommunityPostCard post={item} onLike={handleLike} />
+              <CommunityPostCard
+                post={item}
+                onLike={handleLike}
+                isOwn={!!currentUserId && item.userId === currentUserId}
+                onDelete={() => handleDeletePost(item)}
+              />
             )}
           />
         )

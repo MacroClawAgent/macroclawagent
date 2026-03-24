@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { CommunityPost, CommunityFilter, CreatePostData } from '@/types/community';
 import { getPosts, toggleLike, createPost } from '@/services/communityService';
+import { supabase } from '@/lib/supabase';
 
 export function useCommunity() {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
@@ -8,6 +9,11 @@ export function useCommunity() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<CommunityFilter>('all');
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUserId(user?.id ?? null));
+  }, []);
 
   const loadPosts = useCallback(async (filter?: CommunityFilter) => {
     setLoading(true);
@@ -60,12 +66,17 @@ export function useCommunity() {
     setShowCreatePost(false);
   }, []);
 
+  const removePost = useCallback((postId: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }, []);
+
   return {
     posts,
     loading,
     refreshing,
     activeFilter,
     showCreatePost,
+    currentUserId,
     loadPosts,
     handleLike,
     handleRefresh,
@@ -73,5 +84,6 @@ export function useCommunity() {
     openCreatePost,
     closeCreatePost,
     submitPost,
+    removePost,
   };
 }

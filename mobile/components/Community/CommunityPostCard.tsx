@@ -47,9 +47,11 @@ function postTypeLabel(postType: CommunityPost['postType']): string {
 interface Props {
   post: CommunityPost;
   onLike: (id: string) => void;
+  isOwn?: boolean;
+  onDelete?: () => void;
 }
 
-export function CommunityPostCard({ post, onLike }: Props) {
+export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
   const likeScale = useRef(new Animated.Value(1)).current;
   const router = useRouter();
 
@@ -91,9 +93,11 @@ export function CommunityPostCard({ post, onLike }: Props) {
             </View>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={s.menuBtn} activeOpacity={0.7}>
-          <Text style={s.menuDots}>···</Text>
-        </TouchableOpacity>
+        {isOwn && onDelete && (
+          <TouchableOpacity style={s.menuBtn} onPress={onDelete} activeOpacity={0.7}>
+            <Text style={s.menuDots}>···</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Image */}

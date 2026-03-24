@@ -22,7 +22,7 @@ import { EditProfileSheet } from '@/components/Profile/EditProfileSheet';
 import { useProfile } from '@/hooks/useProfile';
 import { MOCK_PROFILES } from '@/data/profileMockData';
 import { getPostImage } from '@/data/communityMockData';
-import type { UserProfile, UserGoal } from '@/types/community';
+import type { CommunityPost, UserProfile, UserGoal } from '@/types/community';
 import { updateAvatar } from '@/services/profileService';
 import { deletePost, deletePostWithFoodLog } from '@/services/communityService';
 

@@ -105,8 +105,8 @@ export async function getPosts(filter?: CommunityFilter): Promise<CommunityPost[
   const { data, error } = await query;
   const realPosts = (!error && data) ? data.map((row) => mapRow(row, uid)) : [];
 
-  // Seed the feed with mock posts when the DB is empty (new app / no real posts yet)
-  const mockFallback = realPosts.length === 0 ? applyMockFilter(MOCK_POSTS, filter) : [];
+  // Always include mock posts so the feed has community content from day one
+  const mockFallback = applyMockFilter(MOCK_POSTS, filter);
   return [...realPosts, ...mockFallback];
 }
 
