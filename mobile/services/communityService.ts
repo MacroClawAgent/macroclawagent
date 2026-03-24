@@ -77,7 +77,7 @@ export async function getPosts(filter?: CommunityFilter): Promise<CommunityPost[
 
   let query = supabase
     .from('community_posts')
-    .select('*, author:users(id, full_name, avatar_url), likes:community_likes(user_id)')
+    .select('*, author:users!community_posts_user_id_fkey(id, full_name, avatar_url), likes:community_likes(user_id)')
     .order('created_at', { ascending: false })
     .limit(60);
 
@@ -110,7 +110,7 @@ export async function getUserPosts(userId: string): Promise<CommunityPost[]> {
   const uid = await getCurrentUserId();
   const { data, error } = await supabase
     .from('community_posts')
-    .select('*, author:users(id, full_name, avatar_url), likes:community_likes(user_id)')
+    .select('*, author:users!community_posts_user_id_fkey(id, full_name, avatar_url), likes:community_likes(user_id)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error || !data) return [];
@@ -162,7 +162,7 @@ export async function createPost(data: CreatePostData): Promise<CommunityPost> {
       fat_g:           data.nutrition.fat,
       ingredients:     data.ingredients ?? [],
     })
-    .select('*, author:users(id, full_name, avatar_url), likes:community_likes(user_id)')
+    .select('*, author:users!community_posts_user_id_fkey(id, full_name, avatar_url), likes:community_likes(user_id)')
     .single();
 
   if (error || !row) throw new Error(error?.message ?? 'Failed to create post');
