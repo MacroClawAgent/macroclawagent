@@ -24,6 +24,7 @@ import { MOCK_PROFILES } from '@/data/profileMockData';
 import { getPostImage } from '@/data/communityMockData';
 import type { UserProfile, UserGoal } from '@/types/community';
 import { updateAvatar } from '@/services/profileService';
+import { deletePost, deletePostWithFoodLog } from '@/services/communityService';
 
 const TEAL = '#2DD4BF';
 const BLUE = '#3B6FD4';
@@ -142,8 +143,35 @@ export default function UserProfileScreen() {
   const [showFollowing, setShowFollowing] = useState(false);
   const [localProfile, setLocalProfile] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('posts');
+  const [deletedPostIds, setDeletedPostIds] = useState<Set<string>>(new Set());
 
   const displayed = localProfile ?? profile;
+
+  function handleDeletePost(post: CommunityPost) {
+    const logDate = post.createdAt.split('T')[0]; // 'YYYY-MM-DD'
+    Alert.alert(
+      'Delete post',
+      'Do you also want to delete this meal from your food log?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Post only',
+          onPress: async () => {
+            await deletePost(post.id);
+            setDeletedPostIds((prev) => new Set([...prev, post.id]));
+          },
+        },
+        {
+          text: 'Post + food log',
+          style: 'destructive',
+          onPress: async () => {
+            await deletePostWithFoodLog(post.id, post.mealName, logDate);
+            setDeletedPostIds((prev) => new Set([...prev, post.id]));
+          },
+        },
+      ]
+    );
+  }
 
   useEffect(() => {
     loadProfile(userId);
@@ -212,10 +240,11 @@ export default function UserProfileScreen() {
       );
     }
 
+    const visiblePosts = displayed!.posts.filter((p) => !deletedPostIds.has(p.id));
     return (
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={t.gridScroll}>
         <View style={t.grid}>
-          {displayed!.posts.map((post) => {
+          {visiblePosts.map((post) => {
             const img = getPostImage(post.id);
             return (
               <View key={post.id} style={t.gridItem}>
@@ -232,6 +261,11 @@ export default function UserProfileScreen() {
                   <Text style={t.gridMealName} numberOfLines={1}>{post.mealName}</Text>
                   <Text style={t.gridCal}>{post.nutrition.calories} kcal</Text>
                 </View>
+                {isOwn && (
+                  <TouchableOpacity style={t.gridDeleteBtn} onPress={() => handleDeletePost(post)} activeOpacity={0.8}>
+                    <Text style={t.gridDeleteText}>···</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             );
           })}
@@ -587,6 +621,12 @@ const t = StyleSheet.create({
   },
   gridMealName: { fontSize: 11, fontWeight: '600', color: '#fff' },
   gridCal: { fontSize: 10, color: 'rgba(255,255,255,0.75)', marginTop: 1 },
+  gridDeleteBtn: {
+    position: 'absolute', top: 6, right: 6,
+    backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 10,
+    paddingHorizontal: 8, paddingVertical: 2,
+  },
+  gridDeleteText: { fontSize: 14, color: '#fff', letterSpacing: 1 },
 
   emptyState: { flex: 1, alignItems: 'center', paddingTop: 48, gap: 8 },
   emptyEmoji: { fontSize: 48 },

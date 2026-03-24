@@ -182,6 +182,26 @@ export async function createPost(data: CreatePostData): Promise<CommunityPost> {
   return mapRow(row, uid);
 }
 
+export async function deletePost(postId: string): Promise<void> {
+  const uid = await getCurrentUserId();
+  if (!uid) return;
+  await supabase.from('community_posts').delete().eq('id', postId).eq('user_id', uid);
+}
+
+export async function deletePostWithFoodLog(postId: string, mealName: string, logDate: string): Promise<void> {
+  const uid = await getCurrentUserId();
+  if (!uid) return;
+  await Promise.all([
+    supabase.from('community_posts').delete().eq('id', postId).eq('user_id', uid),
+    supabase
+      .from('food_log_items')
+      .delete()
+      .eq('user_id', uid)
+      .eq('dish_name', mealName)
+      .eq('log_date', logDate),
+  ]);
+}
+
 export async function getComments(postId: string): Promise<CommunityComment[]> {
   // TODO: fetch from community_comments table once created
   return [];
