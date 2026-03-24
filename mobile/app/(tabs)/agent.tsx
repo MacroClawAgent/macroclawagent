@@ -1,695 +1,599 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useAgentViewModel } from '@/lib/viewModels/useAgentViewModel';
+import { router } from 'expo-router';
+import { usePreferences } from '@/hooks/usePreferences';
+import { useMealPlan } from '@/hooks/useMealPlan';
+import { getPreferencesSummary } from '@/services/preferencesService';
+import PreferencesSheet from '@/components/Agent/PreferencesSheet';
+import MealPlanCard from '@/components/Agent/MealPlanCard';
+import RecipeSheet from '@/components/Agent/RecipeSheet';
+import GeneratingLoader from '@/components/Agent/GeneratingLoader';
+import type { Meal } from '@/types/mealPlan';
 
-// ── Palette ───────────────────────────────────────────────────────────────────
+// ── Nutrition targets (from user profile — wired to real profile later) ────────
 
-const NAV   = '#0F172A';
-const TEAL  = '#2DD4BF';
-const WHITE = '#FFFFFF';
-
-// ── Mock data ─────────────────────────────────────────────────────────────────
-
-type MealEntry = {
-  name: string; cal: number; protein: number; time: string;
-  ingredients: string; logged: boolean; isCurrent?: boolean;
+const NUTRITION_TARGETS = {
+  calories: 2984,
+  protein:  191,
+  carbs:    250,
+  fat:      70,
+  goal:     'Build Muscle',
 };
-type DayMeals = { breakfast: MealEntry; lunch: MealEntry; snack: MealEntry; dinner: MealEntry };
-
-type WorkoutEntry = {
-  type: 'strength' | 'hiit' | 'cardio' | 'rest';
-  name: string; duration: number; muscles: string[];
-  exercises: string[]; nutritionNote: string;
-};
-
-const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
-type DayKey = typeof DAYS_SHORT[number];
-
-const WEEKLY_MEAL_PLAN: Record<DayKey, DayMeals> = {
-  Mon: {
-    breakfast: { name: 'Greek Yogurt & Granola',    cal: 420, protein: 28, time: '7:30 AM',  ingredients: 'Greek yogurt, granola, banana, honey',              logged: true  },
-    lunch:     { name: 'Grilled Chicken Wrap',       cal: 520, protein: 42, time: '12:00 PM', ingredients: 'Chicken breast, wrap, lettuce, tomato',              logged: false, isCurrent: true },
-    snack:     { name: 'Protein Shake + Almonds',    cal: 280, protein: 30, time: '3:30 PM',  ingredients: 'Whey protein, almond milk, almonds',                logged: false },
-    dinner:    { name: 'Salmon & Sweet Potato',      cal: 580, protein: 44, time: '7:00 PM',  ingredients: 'Atlantic salmon, sweet potato, broccoli',           logged: false },
-  },
-  Tue: {
-    breakfast: { name: 'Oats & Blueberries',         cal: 390, protein: 22, time: '7:30 AM',  ingredients: 'Rolled oats, blueberries, chia seeds, almond milk', logged: true  },
-    lunch:     { name: 'Beef Rice Bowl',              cal: 580, protein: 48, time: '12:00 PM', ingredients: 'Beef mince, jasmine rice, edamame, soy sauce',       logged: true  },
-    snack:     { name: 'Cottage Cheese & Fruit',      cal: 210, protein: 24, time: '3:30 PM',  ingredients: 'Cottage cheese, mixed berries, flaxseeds',           logged: false, isCurrent: true },
-    dinner:    { name: 'Chicken Stir Fry',            cal: 560, protein: 46, time: '7:00 PM',  ingredients: 'Chicken breast, bok choy, capsicum, brown rice',     logged: false },
-  },
-  Wed: {
-    breakfast: { name: 'Eggs & Avocado Toast',        cal: 450, protein: 26, time: '7:30 AM',  ingredients: 'Sourdough, eggs, avocado, cherry tomatoes',          logged: false },
-    lunch:     { name: 'Tuna Salad Bowl',              cal: 480, protein: 44, time: '12:00 PM', ingredients: 'Tuna, mixed greens, cucumber, olive oil, lemon',     logged: false },
-    snack:     { name: 'Greek Yogurt & Nuts',          cal: 230, protein: 18, time: '3:30 PM',  ingredients: 'Greek yogurt, walnuts, honey',                       logged: false },
-    dinner:    { name: 'Lamb & Veggie Bowl',           cal: 610, protein: 50, time: '7:00 PM',  ingredients: 'Lamb mince, roast pumpkin, spinach, quinoa',         logged: false },
-  },
-  Thu: {
-    breakfast: { name: 'Protein Pancakes',             cal: 430, protein: 32, time: '7:30 AM',  ingredients: 'Protein powder, banana, egg, oat flour',             logged: false },
-    lunch:     { name: 'Turkey Sandwich',               cal: 500, protein: 40, time: '12:00 PM', ingredients: 'Turkey breast, wholegrain bread, lettuce, mustard',  logged: false },
-    snack:     { name: 'Boiled Eggs & Rice Cakes',     cal: 200, protein: 18, time: '3:30 PM',  ingredients: 'Boiled eggs, rice cakes, vegemite',                  logged: false },
-    dinner:    { name: 'Barramundi & Greens',           cal: 540, protein: 46, time: '7:00 PM',  ingredients: 'Barramundi fillet, asparagus, lemon, basmati rice',  logged: false },
-  },
-  Fri: {
-    breakfast: { name: 'Smoothie Bowl',                cal: 400, protein: 26, time: '7:30 AM',  ingredients: 'Banana, spinach, protein powder, granola, berries',  logged: false },
-    lunch:     { name: 'Chicken Burrito Bowl',          cal: 560, protein: 44, time: '12:00 PM', ingredients: 'Chicken, brown rice, black beans, salsa, cheese',    logged: false },
-    snack:     { name: 'Protein Bar + Apple',           cal: 250, protein: 20, time: '3:30 PM',  ingredients: 'Quest bar, apple',                                   logged: false },
-    dinner:    { name: 'Beef & Broccoli',               cal: 590, protein: 48, time: '7:00 PM',  ingredients: 'Beef strips, broccoli, garlic, oyster sauce, rice',  logged: false },
-  },
-  Sat: {
-    breakfast: { name: 'Big Brekkie Bowl',              cal: 520, protein: 34, time: '8:00 AM',  ingredients: 'Eggs, bacon, mushrooms, spinach, sourdough',         logged: false },
-    lunch:     { name: 'Sushi Bowl',                    cal: 490, protein: 36, time: '1:00 PM',  ingredients: 'Salmon sashimi, sushi rice, avocado, cucumber',      logged: false },
-    snack:     { name: 'Protein Shake',                 cal: 180, protein: 26, time: '4:00 PM',  ingredients: 'Whey protein, water, ice',                           logged: false },
-    dinner:    { name: 'BBQ Chicken Skewers',            cal: 560, protein: 50, time: '7:00 PM',  ingredients: 'Chicken thigh, capsicum, zucchini, tzatziki, pita', logged: false },
-  },
-  Sun: {
-    breakfast: { name: 'Banana Oat Pancakes',           cal: 410, protein: 22, time: '8:30 AM',  ingredients: 'Banana, oats, eggs, cinnamon, maple syrup',          logged: false },
-    lunch:     { name: 'Chicken & Veggie Pasta',        cal: 570, protein: 44, time: '12:30 PM', ingredients: 'Penne, chicken breast, zucchini, cherry tomatoes',   logged: false },
-    snack:     { name: 'Hummus & Veggie Sticks',        cal: 190, protein: 10, time: '3:30 PM',  ingredients: 'Hummus, carrot, celery, capsicum',                   logged: false },
-    dinner:    { name: 'Roast Chicken & Potato',        cal: 600, protein: 50, time: '6:30 PM',  ingredients: 'Whole chicken, roast potatoes, gravy, greens',       logged: false },
-  },
-};
-
-const WEEKLY_WORKOUT_PLAN: Record<DayKey, WorkoutEntry> = {
-  Mon: { type: 'strength', name: 'Upper Push',    duration: 45, muscles: ['Chest', 'Shoulders', 'Triceps'],   exercises: ['Bench Press 4×8', 'OHP 3×10', 'Incline DB 3×12', 'Lateral Raise 3×15'],      nutritionNote: '+15g protein today for chest recovery' },
-  Tue: { type: 'strength', name: 'Lower Body',    duration: 50, muscles: ['Quads', 'Hamstrings', 'Glutes'],   exercises: ['Squat 4×8', 'Romanian DL 3×10', 'Leg Press 3×12', 'Walking Lunges 3×12'],    nutritionNote: '+25g carbs today for leg day energy' },
-  Wed: { type: 'rest',     name: 'Rest Day',       duration: 0,  muscles: [],                                 exercises: [],                                                                              nutritionNote: 'Normal targets today' },
-  Thu: { type: 'strength', name: 'Upper Pull',    duration: 45, muscles: ['Back', 'Biceps'],                  exercises: ['Pull-ups 4×8', 'Barbell Row 4×8', 'Cable Row 3×12', 'DB Curl 3×12'],         nutritionNote: '+15g protein today for back recovery' },
-  Fri: { type: 'hiit',     name: 'HIIT + Core',   duration: 35, muscles: ['Full Body', 'Core'],               exercises: ['Burpees 4×10', 'Mountain Climbers 3×20', 'Plank 3×45s', 'Jump Squat 3×12'], nutritionNote: '+20g carbs today for HIIT fuel' },
-  Sat: { type: 'cardio',   name: 'Zone 2 Cardio', duration: 40, muscles: ['Cardiovascular'],                  exercises: ['Easy run or bike 40 min'],                                                     nutritionNote: 'Moderate carbs for endurance today' },
-  Sun: { type: 'rest',     name: 'Rest Day',       duration: 0,  muscles: [],                                 exercises: [],                                                                              nutritionNote: 'Normal targets today' },
-};
-
-const WORKOUT_TYPE_LABELS: Record<WorkoutEntry['type'], string> = {
-  strength: '💪 Strength',
-  hiit:     '🤸 HIIT',
-  cardio:   '🏃 Cardio',
-  rest:     'Rest',
-};
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function getThisWeekDates(): number[] {
-  const now  = new Date();
-  const dow  = now.getDay(); // 0=Sun,1=Mon...6=Sat
-  const mon  = new Date(now);
-  // Move back to Monday
-  mon.setDate(now.getDate() - ((dow + 6) % 7));
-  return DAYS_SHORT.map((_, i) => {
-    const d = new Date(mon);
-    d.setDate(mon.getDate() + i);
-    return d.getDate();
-  });
-}
-
-function getTodayIndex(): number {
-  const dow = new Date().getDay(); // 0=Sun
-  return dow === 0 ? 6 : dow - 1; // Mon=0 … Sun=6
-}
-
-// ── Animated pulse dot ────────────────────────────────────────────────────────
-
-function PulseDot() {
-  const opacity = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.25, duration: 900, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1,    duration: 900, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
-  return <Animated.View style={[s.pulseDot, { opacity }]} />;
-}
-
-// ── Day selector ──────────────────────────────────────────────────────────────
-
-function DaySelector({
-  selectedIdx, onSelect, dates, hasPlan,
-}: {
-  selectedIdx: number; onSelect: (i: number) => void;
-  dates: number[]; hasPlan: boolean[];
-}) {
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ gap: 8, paddingVertical: 14, paddingHorizontal: 2 }}
-    >
-      {DAYS_SHORT.map((day, i) => {
-        const active = i === selectedIdx;
-        return (
-          <TouchableOpacity
-            key={day}
-            onPress={() => onSelect(i)}
-            activeOpacity={0.8}
-            style={[ds.pill, active && ds.pillActive]}
-          >
-            <Text style={[ds.dayLetter, active && ds.activeText]}>{day[0]}</Text>
-            <Text style={[ds.dayNum, active && ds.activeText]}>{dates[i]}</Text>
-            {hasPlan[i] && <View style={[ds.dot, active && ds.dotActive]} />}
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
-  );
-}
-
-const ds = StyleSheet.create({
-  pill:       { width: 42, height: 56, borderRadius: 13, alignItems: 'center', justifyContent: 'center', gap: 2, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  pillActive: { backgroundColor: TEAL, borderColor: TEAL },
-  dayLetter:  { fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: '600' },
-  dayNum:     { fontSize: 16, color: WHITE, fontWeight: '700' },
-  activeText: { color: WHITE },
-  dot:        { width: 4, height: 4, borderRadius: 2, backgroundColor: TEAL, marginTop: 2 },
-  dotActive:  { backgroundColor: WHITE },
-});
-
-// ── Meal card ─────────────────────────────────────────────────────────────────
-
-const MEAL_PILL: Record<string, { bg: string; color: string }> = {
-  breakfast: { bg: 'rgba(251,191,36,0.2)',  color: '#FCD34D' },
-  lunch:     { bg: 'rgba(45,212,191,0.2)',  color: '#2DD4BF' },
-  snack:     { bg: 'rgba(34,197,94,0.2)',   color: '#4ADE80' },
-  dinner:    { bg: 'rgba(99,102,241,0.2)',  color: '#818CF8' },
-};
-
-function MealCard({ mealType, meal }: { mealType: string; meal: MealEntry }) {
-  const [logged, setLogged] = useState(meal.logged);
-  const pill = MEAL_PILL[mealType] ?? MEAL_PILL.lunch;
-  const label = mealType.charAt(0).toUpperCase() + mealType.slice(1);
-
-  return (
-    <View style={[mc.card, logged && mc.cardLogged]}>
-      {/* Top row */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-        {/* Left */}
-        <View style={{ flex: 1 }}>
-          <View style={[mc.typePill, { backgroundColor: pill.bg }]}>
-            <Text style={[mc.typePillText, { color: pill.color }]}>{label}</Text>
-          </View>
-          <Text style={mc.mealName} numberOfLines={1}>{meal.name}</Text>
-          <Text style={mc.ingredients} numberOfLines={2}>{meal.ingredients}</Text>
-        </View>
-        {/* Right */}
-        <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
-          {logged
-            ? <Ionicons name="checkmark-circle" size={20} color={TEAL} style={{ marginBottom: 2 }} />
-            : null}
-          <Text style={mc.calories}>{meal.cal}</Text>
-          <Text style={mc.kcalLabel}>kcal</Text>
-          <Text style={mc.protein}>{meal.protein}g pro</Text>
-        </View>
-      </View>
-
-      {/* Bottom row */}
-      <View style={mc.bottomRow}>
-        <Text style={mc.time}>{meal.time}</Text>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <TouchableOpacity
-            style={[mc.logBtn, logged && mc.logBtnLogged]}
-            onPress={() => setLogged((v) => !v)}
-            activeOpacity={0.8}
-          >
-            <Text style={[mc.logBtnText, logged && mc.logBtnTextLogged]}>
-              {logged ? 'Logged ✓' : 'Log'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={mc.cartBtn} activeOpacity={0.8}>
-            <Text style={{ fontSize: 15 }}>🛒</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-const mc = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    padding: 16,
-    marginBottom: 10,
-    gap: 12,
-  },
-  cardLogged: {
-    backgroundColor: 'rgba(45,212,191,0.08)',
-    borderColor: 'rgba(45,212,191,0.2)',
-  },
-  typePill:     { alignSelf: 'flex-start', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
-  typePillText: { fontSize: 11, fontWeight: '700' },
-  mealName:     { fontSize: 16, fontWeight: '700', color: WHITE, marginTop: 6 },
-  ingredients:  { fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 3, lineHeight: 18 },
-  calories:     { fontSize: 17, fontWeight: '700', color: WHITE },
-  kcalLabel:    { fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: '500' },
-  protein:      { fontSize: 13, color: TEAL, fontWeight: '600', marginTop: 2 },
-  bottomRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  time:         { fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: '500' },
-  logBtn:       { backgroundColor: 'rgba(45,212,191,0.15)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(45,212,191,0.3)', paddingHorizontal: 14, paddingVertical: 6 },
-  logBtnText:   { color: TEAL, fontSize: 13, fontWeight: '600' },
-  logBtnLogged: { backgroundColor: 'rgba(45,212,191,0.25)', borderColor: TEAL },
-  logBtnTextLogged: { color: TEAL },
-  cartBtn:      { width: 32, height: 32, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-});
-
-// ── Workout card ──────────────────────────────────────────────────────────────
-
-function WorkoutCard({ workout }: { workout: WorkoutEntry }) {
-  const [showExercises, setShowExercises] = useState(false);
-
-  if (workout.type === 'rest') {
-    return (
-      <View style={wc.restCard}>
-        <Text style={wc.restTitle}>Rest Day</Text>
-        <Text style={wc.restSub}>Active recovery: 20min walk recommended</Text>
-        <View style={wc.noteRow}>
-          <Text style={wc.noteText}>🥗 {workout.nutritionNote}</Text>
-        </View>
-      </View>
-    );
-  }
-
-  const typeLabel = WORKOUT_TYPE_LABELS[workout.type];
-
-  return (
-    <View style={wc.card}>
-      {/* Top */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-        <View style={{ flex: 1 }}>
-          <View style={wc.typePill}>
-            <Text style={wc.typePillText}>{typeLabel}</Text>
-          </View>
-          <Text style={wc.name}>{workout.name}</Text>
-          <Text style={wc.duration}>{workout.duration} min · Moderate intensity</Text>
-        </View>
-        {/* Muscle groups */}
-        <View style={{ gap: 5, alignItems: 'flex-end', marginLeft: 12 }}>
-          {workout.muscles.map((m) => (
-            <View key={m} style={wc.musclePill}>
-              <Text style={wc.muscleText}>{m}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Nutrition note */}
-      <View style={wc.noteRow}>
-        <Text style={wc.noteText}>🥗 Jonno adjusted: {workout.nutritionNote}</Text>
-      </View>
-
-      {/* Exercises toggle */}
-      <TouchableOpacity
-        onPress={() => setShowExercises((v) => !v)}
-        activeOpacity={0.75}
-        style={wc.exercisesToggle}
-      >
-        <Text style={wc.exercisesToggleText}>
-          {showExercises ? 'Hide exercises ↑' : 'See exercises ↓'}
-        </Text>
-      </TouchableOpacity>
-
-      {showExercises && (
-        <View style={{ gap: 6, marginTop: 8 }}>
-          {workout.exercises.map((ex) => (
-            <View key={ex} style={wc.exerciseRow}>
-              <View style={wc.exerciseDot} />
-              <Text style={wc.exerciseText}>{ex}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-}
-
-const wc = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(99,102,241,0.1)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(99,102,241,0.2)',
-    padding: 16,
-    gap: 12,
-  },
-  typePill:     { alignSelf: 'flex-start', backgroundColor: 'rgba(99,102,241,0.2)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
-  typePillText: { fontSize: 12, fontWeight: '700', color: '#818CF8' },
-  name:         { fontSize: 17, fontWeight: '700', color: WHITE, marginTop: 6 },
-  duration:     { fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 2 },
-  musclePill:   { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  muscleText:   { fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
-  noteRow:      { backgroundColor: 'rgba(45,212,191,0.1)', borderRadius: 12, padding: 10 },
-  noteText:     { fontSize: 12, color: TEAL, fontWeight: '500', lineHeight: 18 },
-  exercisesToggle:     { alignSelf: 'flex-start' },
-  exercisesToggleText: { fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: '600' },
-  exerciseRow:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  exerciseDot:  { width: 4, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.3)' },
-  exerciseText: { fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
-
-  restCard: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-    padding: 20,
-    alignItems: 'center',
-    gap: 6,
-  },
-  restTitle: { fontSize: 18, fontWeight: '700', color: 'rgba(255,255,255,0.4)' },
-  restSub:   { fontSize: 13, color: 'rgba(255,255,255,0.3)', textAlign: 'center' },
-});
-
-// ── Weekly split row ──────────────────────────────────────────────────────────
-
-const SPLIT_COLOR: Record<WorkoutEntry['type'], string> = {
-  strength: 'rgba(99,102,241,0.25)',
-  hiit:     'rgba(239,68,68,0.2)',
-  cardio:   'rgba(45,212,191,0.2)',
-  rest:     'rgba(255,255,255,0.06)',
-};
-const SPLIT_TEXT: Record<WorkoutEntry['type'], string> = {
-  strength: '#818CF8',
-  hiit:     '#FCA5A5',
-  cardio:   TEAL,
-  rest:     'rgba(255,255,255,0.3)',
-};
-const SPLIT_LABELS: Record<string, string> = {
-  'Upper Push': 'Upper', 'Lower Body': 'Lower', 'Upper Pull': 'Pull',
-  'HIIT + Core': 'HIIT', 'Zone 2 Cardio': 'Cardio', 'Rest Day': 'Rest',
-};
-
-function WeeklySplitRow() {
-  return (
-    <View style={{ flexDirection: 'row', gap: 4, flexWrap: 'wrap', marginTop: 14 }}>
-      {DAYS_SHORT.map((day) => {
-        const w = WEEKLY_WORKOUT_PLAN[day];
-        return (
-          <View key={day} style={[split.pill, { backgroundColor: SPLIT_COLOR[w.type] }]}>
-            <Text style={[split.day, { color: SPLIT_TEXT[w.type] }]}>{day[0]}</Text>
-            <Text style={[split.label, { color: SPLIT_TEXT[w.type] }]}>
-              {SPLIT_LABELS[w.name] ?? w.name}
-            </Text>
-          </View>
-        );
-      })}
-    </View>
-  );
-}
-
-const split = StyleSheet.create({
-  pill:  { borderRadius: 8, paddingHorizontal: 7, paddingVertical: 4, alignItems: 'center' },
-  day:   { fontSize: 9, fontWeight: '700' },
-  label: { fontSize: 10, fontWeight: '500' },
-});
-
-// ── Section header ────────────────────────────────────────────────────────────
-
-function SectionHeader({ title, loading, onRegen }: { title: string; loading: boolean; onRegen: () => void }) {
-  return (
-    <View style={sh.row}>
-      <Text style={sh.title}>{title}</Text>
-      <TouchableOpacity onPress={onRegen} activeOpacity={0.8} style={sh.btn} disabled={loading}>
-        {loading
-          ? <Text style={sh.btnText}>...</Text>
-          : <Text style={sh.btnText}>Regenerate ↻</Text>}
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-const sh = StyleSheet.create({
-  row:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title:   { fontSize: 16, fontWeight: '700', color: WHITE },
-  btn:     { backgroundColor: 'rgba(45,212,191,0.15)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(45,212,191,0.3)', paddingHorizontal: 14, paddingVertical: 7 },
-  btnText: { color: TEAL, fontSize: 13, fontWeight: '600' },
-});
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function AgentScreen() {
-  const vm = useAgentViewModel();
+  const {
+    preferences,
+    hasAnyPreferences,
+    completeOnboarding,
+  } = usePreferences();
 
-  const todayIdx            = getTodayIndex();
-  const dates               = getThisWeekDates();
-  const [selectedDay, setSelectedDay] = useState(todayIdx);
-  const [inputText, setInputText]     = useState('');
-  const [regenMeals, setRegenMeals]   = useState(false);
-  const [regenWork, setRegenWork]     = useState(false);
+  const {
+    state,
+    planType,
+    days,
+    selectedDayIndex,
+    isRegenerating,
+    error,
+    generate,
+    regenerate,
+    markMealLogged,
+    getAllIngredients,
+    sendToCart,
+    resetPlan,
+    setSelectedDayIndex,
+  } = useMealPlan();
 
-  function handleRegenMeals() {
-    setRegenMeals(true);
-    vm.quickSend(
-      "Generate a 7-day meal plan for someone whose goal is Build Muscle, " +
-      "daily targets: 2984 cal, 191g protein, 250g carbs, 70g fat. " +
-      "Make it realistic with Australian foods. " +
-      "Return as structured JSON with breakfast, lunch, dinner, snack per day."
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [selectedMeal,    setSelectedMeal]    = useState<Meal | null>(null);
+  const [showRecipe,      setShowRecipe]      = useState(false);
+
+  const preferencesTags = getPreferencesSummary(preferences);
+  const selectedDay     = days[selectedDayIndex];
+
+  const handleGenerate = useCallback((type: 'today' | 'week') => {
+    generate(type, preferences, NUTRITION_TARGETS);
+  }, [preferences, generate]);
+
+  const handleSendToCart = useCallback(() => {
+    sendToCart();
+    // TODO: populate smart cart with getAllIngredients() when smart cart service accepts ingredient lists
+  }, [sendToCart]);
+
+  const handleOpenRecipe = useCallback((meal: Meal) => {
+    setSelectedMeal(meal);
+    setShowRecipe(true);
+  }, []);
+
+  // ── GENERATING ───────────────────────────────────────────────────────────────
+
+  if (state === 'generating') {
+    return (
+      <GeneratingLoader type={planType} preferences={preferences} />
     );
-    setTimeout(() => setRegenMeals(false), 3000);
   }
 
-  function handleRegenWorkout() {
-    setRegenWork(true);
-    vm.quickSend(
-      "Generate a weekly workout split for someone whose goal is Build Muscle. " +
-      "They are intermediate level. " +
-      "Return 7 days with: workout type, name, duration, muscle groups, 4-5 exercises with sets and reps. " +
-      "Include 2 rest days. Also note how each training day affects their nutrition needs."
-    );
-    setTimeout(() => setRegenWork(false), 3000);
-  }
+  // ── PLAN READY ───────────────────────────────────────────────────────────────
 
-  function handleSend() {
-    const t = inputText.trim();
-    if (!t || vm.sending) return;
-    setInputText('');
-    vm.quickSend(t);
-  }
+  if (state === 'plan_ready' && selectedDay) {
+    const ingredientCount = getAllIngredients().length;
 
-  const dayKey        = DAYS_SHORT[selectedDay];
-  const dayMeals      = WEEKLY_MEAL_PLAN[dayKey];
-  const dayWorkout    = WEEKLY_WORKOUT_PLAN[dayKey];
-  const hasPlan       = DAYS_SHORT.map(() => true);
-
-  const mealEntries = [
-    { type: 'breakfast', meal: dayMeals.breakfast },
-    { type: 'lunch',     meal: dayMeals.lunch     },
-    { type: 'snack',     meal: dayMeals.snack     },
-    { type: 'dinner',    meal: dayMeals.dinner    },
-  ];
-
-  const totalCal  = mealEntries.reduce((s, e) => s + e.meal.cal,     0);
-  const totalPro  = mealEntries.reduce((s, e) => s + e.meal.protein, 0);
-
-  return (
-    <SafeAreaView style={s.safe} edges={['top']}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={90}
-      >
-
-        {/* ── Minimal header ── */}
-        <View style={s.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.jonnoTitle}>Jonno</Text>
-            <View style={s.statusRow}>
-              <PulseDot />
-              <Text style={s.statusText}>Planning your week</Text>
-            </View>
-          </View>
-          <View style={s.updatedPill}>
-            <Text style={s.updatedText}>Updated now</Text>
-          </View>
-        </View>
-
-        {/* ── Scrollable content ── */}
+    return (
+      <SafeAreaView style={s.safe} edges={['top']}>
         <ScrollView
           contentContainerStyle={s.scroll}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
         >
-
-          {/* ─────────────────── SECTION 1: MEAL PLAN ─────────────────── */}
-          <SectionHeader title="This Week's Meals" loading={regenMeals} onRegen={handleRegenMeals} />
-
-          <DaySelector
-            selectedIdx={selectedDay}
-            onSelect={setSelectedDay}
-            dates={dates}
-            hasPlan={hasPlan}
-          />
-
-          {mealEntries.map(({ type, meal }) => (
-            <MealCard key={type} mealType={type} meal={meal} />
-          ))}
-
-          {/* Daily totals */}
-          <Text style={s.dailyTotals}>
-            Today's plan: {totalCal.toLocaleString()} cal · {totalPro}g protein · 220g carbs · 64g fat
-          </Text>
-
-          {/* ─────────────────── SECTION 2: WORKOUT PLAN ─────────────── */}
-          <View style={s.sectionGap}>
-            <SectionHeader title="This Week's Training" loading={regenWork} onRegen={handleRegenWorkout} />
+          {/* Header */}
+          <View style={s.header}>
+            <View>
+              <Text style={s.title}>
+                {planType === 'today' ? "Today's Plan" : 'This Week'}
+              </Text>
+              <Text style={s.subtitle}>Generated by Jonno ✦</Text>
+            </View>
+            <View style={s.headerActions}>
+              <TouchableOpacity
+                style={s.regenBtn}
+                onPress={() => regenerate(preferences, NUTRITION_TARGETS)}
+                disabled={isRegenerating}
+                activeOpacity={0.8}
+              >
+                {isRegenerating
+                  ? <ActivityIndicator size="small" color="#2DD4BF" />
+                  : <Text style={s.regenBtnText}>↻ Regenerate</Text>}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={resetPlan} style={s.closeBtn} activeOpacity={0.75}>
+                <Ionicons name="close" size={18} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <DaySelector
-            selectedIdx={selectedDay}
-            onSelect={setSelectedDay}
-            dates={dates}
-            hasPlan={hasPlan}
-          />
+          {/* Day selector — week mode only */}
+          {planType === 'week' && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={s.daySelectorContent}
+              style={s.daySelector}
+            >
+              {days.map((day, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={[s.dayPill, i === selectedDayIndex && s.dayPillActive]}
+                  onPress={() => setSelectedDayIndex(i)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[s.dayPillText, i === selectedDayIndex && s.dayPillTextActive]}>
+                    {day.dayLabel.substring(0, 3)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
 
-          <WorkoutCard workout={dayWorkout} />
+          {/* Meal cards */}
+          {(['breakfast', 'lunch', 'snack', 'dinner'] as const).map(mealType => {
+            const meal = selectedDay.meals[mealType];
+            if (!meal) return null;
+            return (
+              <MealPlanCard
+                key={mealType}
+                meal={meal}
+                onLog={() => markMealLogged(selectedDayIndex, mealType)}
+                onRecipe={() => handleOpenRecipe(meal)}
+              />
+            );
+          })}
 
-          <WeeklySplitRow />
+          {/* Daily totals */}
+          <View style={s.totalsCard}>
+            <Text style={s.totalsHeading}>
+              {planType === 'today' ? "Today's totals" : `${selectedDay.dayLabel}`}
+            </Text>
+            <View style={s.totalsRow}>
+              {[
+                { label: 'Cal',     value: String(selectedDay.totalCalories),    color: '#1E293B' },
+                { label: 'Protein', value: `${selectedDay.totalProtein}g`,        color: '#16A34A' },
+                { label: 'Carbs',   value: `${selectedDay.totalCarbs}g`,          color: '#D97706' },
+                { label: 'Fat',     value: `${selectedDay.totalFat}g`,            color: '#7C3AED' },
+              ].map(stat => (
+                <View key={stat.label} style={s.totalStat}>
+                  <Text style={[s.totalValue, { color: stat.color }]}>{stat.value}</Text>
+                  <Text style={s.totalLabel}>{stat.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
 
-          {/* ─────────────────── SECTION 3: INSIGHT ──────────────────── */}
-          <View style={[s.sectionGap, s.insightCard]}>
-            <Text style={s.insightLabel}>✦ Jonno's Insight</Text>
-            <Text style={s.insightMain}>You're strongest on weekdays</Text>
-            <Text style={s.insightDetail}>
-              Your protein intake is consistently higher Mon–Fri. On weekends you drop below
-              target. I've planned higher-protein weekend meals this week to compensate.
+          {/* Send to cart CTA */}
+          <TouchableOpacity
+            style={s.cartBtn}
+            onPress={handleSendToCart}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={['#2DD4BF', '#0EA5E9']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={s.cartBtnGradient}
+            >
+              <View style={s.cartIconCircle}>
+                <Text style={{ fontSize: 26 }}>🛒</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.cartBtnTitle}>Send to Smart Cart</Text>
+                <Text style={s.cartBtnSub}>
+                  {ingredientCount} ingredients · Woolworths or Coles
+                </Text>
+              </View>
+              <View style={s.cartArrow}>
+                <Ionicons name="arrow-forward" size={18} color="white" />
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <View style={{ height: 32 }} />
+        </ScrollView>
+
+        <RecipeSheet
+          meal={selectedMeal}
+          visible={showRecipe}
+          onClose={() => setShowRecipe(false)}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // ── CART SENT ────────────────────────────────────────────────────────────────
+
+  if (state === 'cart_sent') {
+    return (
+      <SafeAreaView style={s.safe} edges={['top']}>
+        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+          <View style={s.header}>
+            <Text style={s.title}>Jonno</Text>
+          </View>
+
+          <View style={s.successCard}>
+            <Text style={s.successEmoji}>✅</Text>
+            <Text style={s.successTitle}>Cart is ready!</Text>
+            <Text style={s.successSub}>
+              Ingredients sent to your Smart Cart.{'\n'}Order from Woolworths or Coles.
             </Text>
             <TouchableOpacity
-              style={s.insightBtn}
+              style={s.openCartBtn}
+              onPress={() => router.push('/(tabs)/cart' as any)}
               activeOpacity={0.85}
-              onPress={() => vm.quickSend('Apply the weekend protein boost to my current meal plan.')}
             >
-              <Text style={s.insightBtnText}>Apply to my plan →</Text>
+              <Text style={s.openCartBtnText}>Open Smart Cart →</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={{ height: 20 }} />
+          {/* Recipes */}
+          <Text style={s.recipesHeader}>Recipes for your meals</Text>
+
+          {days[0] &&
+            (['breakfast', 'lunch', 'snack', 'dinner'] as const).map(mealType => {
+              const meal = days[0].meals[mealType];
+              if (!meal) return null;
+              return (
+                <TouchableOpacity
+                  key={mealType}
+                  style={s.recipeCard}
+                  onPress={() => {
+                    setSelectedMeal(meal);
+                    setShowRecipe(true);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={s.recipeEmoji}>{meal.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.recipeName}>{meal.name}</Text>
+                    <Text style={s.recipeMeta}>⏱ {meal.cookTime} min · {meal.difficulty}</Text>
+                  </View>
+                  <Text style={s.recipeArrow}>Recipe →</Text>
+                </TouchableOpacity>
+              );
+            })}
+
+          <TouchableOpacity style={s.newPlanBtn} onPress={resetPlan} activeOpacity={0.8}>
+            <Text style={s.newPlanText}>↺  Plan new meals</Text>
+          </TouchableOpacity>
+
+          <View style={{ height: 32 }} />
         </ScrollView>
 
-        {/* ── Minimal bottom input ── */}
-        <View style={s.inputBar}>
-          <TextInput
-            style={s.input}
-            placeholder="Ask Jonno to adjust your plan..."
-            placeholderTextColor="rgba(255,255,255,0.25)"
-            value={inputText}
-            onChangeText={setInputText}
-            returnKeyType="send"
-            onSubmitEditing={handleSend}
-          />
+        <RecipeSheet
+          meal={selectedMeal}
+          visible={showRecipe}
+          onClose={() => setShowRecipe(false)}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // ── IDLE ─────────────────────────────────────────────────────────────────────
+
+  return (
+    <SafeAreaView style={s.safe} edges={['top']}>
+      <ScrollView
+        contentContainerStyle={s.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={s.header}>
+          <View>
+            <Text style={s.title}>Jonno</Text>
+            <View style={s.statusRow}>
+              <View style={s.statusDot} />
+              <Text style={s.statusText}>AI Meal Planner</Text>
+            </View>
+          </View>
           <TouchableOpacity
-            style={[s.sendBtn, (!inputText.trim() || vm.sending) && s.sendBtnOff]}
-            onPress={handleSend}
-            disabled={!inputText.trim() || vm.sending}
+            style={[s.filterBtn, hasAnyPreferences && s.filterBtnActive]}
+            onPress={() => setShowPreferences(true)}
             activeOpacity={0.8}
           >
-            <Ionicons name="arrow-up" size={18} color={TEAL} />
+            <Ionicons
+              name="options-outline"
+              size={20}
+              color={hasAnyPreferences ? '#2DD4BF' : '#64748B'}
+            />
+            {hasAnyPreferences && <View style={s.filterDot} />}
           </TouchableOpacity>
         </View>
 
-      </KeyboardAvoidingView>
+        {/* Hero card */}
+        <View style={s.heroCard}>
+          {/* Icon */}
+          <LinearGradient
+            colors={['#2DD4BF', '#0EA5E9']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.heroIcon}
+          >
+            <Text style={s.heroIconText}>✦</Text>
+          </LinearGradient>
+
+          <Text style={s.heroTitle}>What are we{'\n'}eating?</Text>
+          <Text style={s.heroSubtitle}>
+            Jonno builds your meal plan based on your goals and preferences,
+            then sends the ingredients straight to your cart.
+          </Text>
+
+          <View style={s.heroDivider} />
+
+          {/* Active preferences summary */}
+          {hasAnyPreferences && preferencesTags.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={s.prefTagsRow}
+              style={{ marginBottom: 16, width: '100%' }}
+            >
+              {preferencesTags.map((tag, i) => (
+                <View key={i} style={s.prefTag}>
+                  <Text style={s.prefTagText}>{tag}</Text>
+                </View>
+              ))}
+              <TouchableOpacity
+                onPress={() => setShowPreferences(true)}
+                style={{ paddingHorizontal: 8, justifyContent: 'center' }}
+              >
+                <Text style={{ fontSize: 12, color: '#94A3B8' }}>Edit ✏️</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          )}
+
+          {/* Error state */}
+          {error && (
+            <View style={s.errorBox}>
+              <Text style={s.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {/* Plan Today */}
+          <TouchableOpacity
+            style={s.primaryBtn}
+            onPress={() => handleGenerate('today')}
+            activeOpacity={0.85}
+          >
+            <View style={s.btnIcon}>
+              <Text style={{ fontSize: 22 }}>🍽️</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.primaryBtnTitle}>Plan Today's Meals</Text>
+              <Text style={s.primaryBtnSub}>Breakfast, lunch, dinner + snack</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={20} color="white" />
+          </TouchableOpacity>
+
+          {/* Plan Week */}
+          <TouchableOpacity
+            style={s.secondaryBtn}
+            onPress={() => handleGenerate('week')}
+            activeOpacity={0.85}
+          >
+            <View style={s.btnIconOutline}>
+              <Text style={{ fontSize: 22 }}>📅</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.secondaryBtnTitle}>Plan This Week</Text>
+              <Text style={s.secondaryBtnSub}>7 days tailored to your goals</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={20} color="#2DD4BF" />
+          </TouchableOpacity>
+
+          {/* Personalise prompt */}
+          {!hasAnyPreferences && (
+            <TouchableOpacity
+              onPress={() => setShowPreferences(true)}
+              style={s.personaliseRow}
+              activeOpacity={0.75}
+            >
+              <Text style={s.personaliseText}>
+                🎯 Personalise for halal, vegetarian, budget + more →
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Targets label */}
+          <Text style={s.targetsText}>
+            Based on: {NUTRITION_TARGETS.goal} · {NUTRITION_TARGETS.calories} cal · {NUTRITION_TARGETS.protein}g protein
+          </Text>
+        </View>
+
+        {/* How it works */}
+        <View style={s.howCard}>
+          <Text style={s.howTitle}>How Jonno works</Text>
+          {[
+            { n: '1', text: 'Jonno generates a personalised meal plan based on your goals' },
+            { n: '2', text: 'You review the meals and send ingredients to your Smart Cart' },
+            { n: '3', text: 'Order from Woolworths or Coles in a few taps' },
+            { n: '4', text: 'Jonno gives you the step-by-step recipe to cook it' },
+          ].map(step => (
+            <View key={step.n} style={s.howStep}>
+              <View style={s.howNum}>
+                <Text style={s.howNumText}>{step.n}</Text>
+              </View>
+              <Text style={s.howText}>{step.text}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+
+      <PreferencesSheet
+        visible={showPreferences}
+        onClose={() => {
+          setShowPreferences(false);
+          completeOnboarding();
+        }}
+      />
     </SafeAreaView>
   );
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
+const TEAL = '#2DD4BF';
+
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: NAV },
+  safe:   { flex: 1, backgroundColor: '#EEF4FA' },
+  scroll: { paddingBottom: 100 },
 
   // Header
   header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 10,
+    paddingBottom: 8,
   },
-  jonnoTitle: { fontSize: 28, fontWeight: '800', color: WHITE },
-  statusRow:  { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 },
-  pulseDot:   { width: 7, height: 7, borderRadius: 4, backgroundColor: '#4ADE80' },
-  statusText: { fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: '500' },
-  updatedPill: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  updatedText: { fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '500' },
+  title:    { fontSize: 28, fontWeight: '800', color: '#1E293B' },
+  subtitle: { fontSize: 12, color: '#64748B', marginTop: 2 },
+  statusRow:{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 },
+  statusDot:{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' },
+  statusText:{ fontSize: 12, color: '#64748B' },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
-  // Scroll
-  scroll: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 16 },
+  filterBtn: {
+    width: 40, height: 40, borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderWidth: 1, borderColor: '#E2E8F0',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  filterBtnActive: { borderColor: 'rgba(45,212,191,0.4)', backgroundColor: 'rgba(45,212,191,0.06)' },
+  filterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: TEAL },
 
-  // Daily totals
-  dailyTotals: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.4)',
-    fontWeight: '500',
-    paddingVertical: 8,
-    textAlign: 'center',
+  regenBtn: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16,
+    backgroundColor: 'rgba(45,212,191,0.12)', borderWidth: 1, borderColor: 'rgba(45,212,191,0.3)',
+    minWidth: 100, alignItems: 'center',
   },
+  regenBtnText: { fontSize: 13, fontWeight: '600', color: TEAL },
+  closeBtn:     { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.8)', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' },
 
-  // Section gap
-  sectionGap: { marginTop: 28 },
+  // Day selector
+  daySelector: { marginBottom: 6 },
+  daySelectorContent: { paddingHorizontal: 16, gap: 8 },
+  dayPill:      { paddingHorizontal: 18, paddingVertical: 9, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.75)', borderWidth: 1, borderColor: '#E2E8F0' },
+  dayPillActive:{ backgroundColor: TEAL, borderColor: TEAL },
+  dayPillText:  { fontSize: 13, fontWeight: '600', color: '#64748B' },
+  dayPillTextActive: { color: 'white' },
 
-  // Insight card
-  insightCard: {
-    backgroundColor: 'rgba(45,212,191,0.08)',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(45,212,191,0.2)',
-    padding: 20,
-    marginTop: 28,
-    gap: 10,
+  // Totals
+  totalsCard: {
+    marginHorizontal: 16, marginTop: 4, marginBottom: 16,
+    backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 20, borderWidth: 1,
+    borderColor: 'rgba(226,232,240,0.9)', padding: 16,
+    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3,
   },
-  insightLabel:  { fontSize: 12, color: TEAL, fontWeight: '600' },
-  insightMain:   { fontSize: 18, fontWeight: '700', color: WHITE, lineHeight: 26 },
-  insightDetail: { fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 22 },
-  insightBtn: {
-    backgroundColor: TEAL,
-    borderRadius: 20,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  insightBtnText: { fontSize: 15, fontWeight: '600', color: WHITE },
+  totalsHeading: { fontSize: 12, fontWeight: '600', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
+  totalsRow:     { flexDirection: 'row', justifyContent: 'space-around' },
+  totalStat:     { alignItems: 'center' },
+  totalValue:    { fontSize: 20, fontWeight: '800' },
+  totalLabel:    { fontSize: 11, color: '#94A3B8', marginTop: 2 },
 
-  // Bottom input
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
+  // Cart CTA
+  cartBtn:         { marginHorizontal: 16, borderRadius: 26, overflow: 'hidden', shadowColor: TEAL, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 },
+  cartBtnGradient: { flexDirection: 'row', alignItems: 'center', paddingVertical: 20, paddingHorizontal: 20, gap: 14 },
+  cartIconCircle:  { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  cartBtnTitle:    { fontSize: 18, fontWeight: '800', color: 'white' },
+  cartBtnSub:      { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
+  cartArrow:       { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+
+  // Success / Cart Sent
+  successCard: {
+    marginHorizontal: 16, marginTop: 8,
+    backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 28, borderWidth: 1, borderColor: 'rgba(45,212,191,0.2)',
+    padding: 28, alignItems: 'center', gap: 8,
+    shadowColor: TEAL, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 14, elevation: 4,
   },
-  input: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === 'ios' ? 11 : 9,
-    fontSize: 14,
-    fontWeight: '500',
-    color: WHITE,
+  successEmoji:   { fontSize: 48 },
+  successTitle:   { fontSize: 24, fontWeight: '800', color: '#1E293B' },
+  successSub:     { fontSize: 15, color: '#64748B', textAlign: 'center', lineHeight: 22 },
+  openCartBtn:    { marginTop: 10, backgroundColor: TEAL, borderRadius: 20, paddingHorizontal: 28, paddingVertical: 14 },
+  openCartBtnText:{ fontSize: 16, fontWeight: '700', color: 'white' },
+
+  recipesHeader: { fontSize: 18, fontWeight: '800', color: '#1E293B', paddingHorizontal: 20, marginTop: 24, marginBottom: 10 },
+  recipeCard:    { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0', padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  recipeEmoji:   { fontSize: 28 },
+  recipeName:    { fontSize: 15, fontWeight: '700', color: '#1E293B' },
+  recipeMeta:    { fontSize: 12, color: '#94A3B8', marginTop: 2 },
+  recipeArrow:   { fontSize: 13, fontWeight: '600', color: TEAL },
+
+  newPlanBtn:    { marginHorizontal: 16, marginTop: 20, paddingVertical: 14, borderRadius: 18, borderWidth: 1.5, borderColor: '#E2E8F0', backgroundColor: 'rgba(255,255,255,0.7)', alignItems: 'center' },
+  newPlanText:   { fontSize: 15, fontWeight: '600', color: '#64748B' },
+
+  // Hero card (idle)
+  heroCard: {
+    marginHorizontal: 16, marginTop: 8,
+    backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)',
+    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 8,
+    padding: 24, alignItems: 'center',
   },
-  sendBtn:    { width: 40, height: 40, backgroundColor: 'rgba(45,212,191,0.2)', borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  sendBtnOff: { opacity: 0.35 },
+  heroIcon:     { width: 68, height: 68, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 16, shadowColor: TEAL, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6 },
+  heroIconText: { fontSize: 32, color: 'white' },
+  heroTitle:    { fontSize: 30, fontWeight: '800', color: '#1E293B', textAlign: 'center', lineHeight: 36 },
+  heroSubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22, marginTop: 10, marginHorizontal: 8 },
+  heroDivider:  { width: '100%', height: 1, backgroundColor: '#F1F5F9', marginVertical: 20 },
+
+  prefTagsRow:   { gap: 6, paddingVertical: 2 },
+  prefTag:       { backgroundColor: 'rgba(45,212,191,0.1)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(45,212,191,0.25)', paddingHorizontal: 10, paddingVertical: 4 },
+  prefTagText:   { fontSize: 12, color: TEAL, fontWeight: '500' },
+
+  errorBox:  { backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, width: '100%', marginBottom: 12 },
+  errorText: { fontSize: 13, color: '#DC2626', textAlign: 'center' },
+
+  primaryBtn: {
+    width: '100%', backgroundColor: TEAL, borderRadius: 22,
+    paddingVertical: 16, paddingHorizontal: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    shadowColor: TEAL, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
+  },
+  btnIcon:       { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  primaryBtnTitle: { fontSize: 16, fontWeight: '700', color: 'white' },
+  primaryBtnSub:   { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
+
+  secondaryBtn: {
+    width: '100%', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 22,
+    paddingVertical: 16, paddingHorizontal: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 10,
+    borderWidth: 1.5, borderColor: 'rgba(45,212,191,0.3)',
+  },
+  btnIconOutline:    { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(45,212,191,0.1)', alignItems: 'center', justifyContent: 'center' },
+  secondaryBtnTitle: { fontSize: 16, fontWeight: '700', color: '#1E293B' },
+  secondaryBtnSub:   { fontSize: 12, color: '#94A3B8', marginTop: 2 },
+
+  personaliseRow:  { marginTop: 16, paddingVertical: 8 },
+  personaliseText: { fontSize: 13, color: TEAL, textAlign: 'center' },
+  targetsText:     { fontSize: 11, color: '#94A3B8', textAlign: 'center', marginTop: 12 },
+
+  // How it works
+  howCard: {
+    marginHorizontal: 16, marginTop: 14,
+    backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(226,232,240,0.8)',
+    padding: 20, gap: 14,
+    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 10, elevation: 2,
+  },
+  howTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 2 },
+  howStep:  { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  howNum:   { width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(45,212,191,0.15)', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 },
+  howNumText: { fontSize: 12, fontWeight: '800', color: TEAL },
+  howText:  { flex: 1, fontSize: 14, color: '#64748B', lineHeight: 20 },
 });
