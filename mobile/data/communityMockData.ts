@@ -51,6 +51,7 @@ export const MOCK_POSTS: CommunityPost[] = [
     imageUri: null,
     nutrition: { calories: 380, protein: 34, carbs: 18, fat: 16 },
     goalHit: true,
+    ingredients: ['Lean beef patty', 'Lettuce wrap', 'Tomato', 'Mustard'],
     likes: 31,
     comments: 8,
     hasLiked: true,

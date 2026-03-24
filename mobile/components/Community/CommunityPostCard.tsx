@@ -171,8 +171,8 @@ export function CommunityPostCard({ post, onLike }: Props) {
           <Text style={[s.actionCount, post.hasLiked && { color: '#F43F5E' }]}>{post.likes}</Text>
         </TouchableOpacity>
 
-        {/* Cart — only for home cooked / meal prep with ingredients */}
-        {post.postType !== 'eating_out' && post.ingredients && post.ingredients.length > 0 && (
+        {/* Cart — any post that has ingredients */}
+        {post.ingredients && post.ingredients.length > 0 && (
           <TouchableOpacity style={s.cartBtn} onPress={handleAddToCart} activeOpacity={0.8}>
             <Text style={s.cartBtnText}>🛒 Add to Cart</Text>
           </TouchableOpacity>
@@ -267,11 +267,11 @@ const s = StyleSheet.create({
   actionCount: { fontSize: 14, color: '#94A3B8', fontWeight: '500' },
   cartBtn: {
     marginLeft: 'auto' as const,
-    backgroundColor: TEAL,
+    backgroundColor: '#3B6FD4',
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 7,
-    shadowColor: TEAL,
+    shadowColor: '#3B6FD4',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
