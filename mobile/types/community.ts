@@ -73,6 +73,7 @@ export interface CreatePostData {
   caption: string;
   restaurantName?: string;
   imageUri?: string | null;
+  imageBase64?: string | null;
   nutrition: {
     calories: number;
     protein: number;

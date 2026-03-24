@@ -9,6 +9,7 @@ export interface CommunityMealPost {
   fat: number;
   ingredients: Array<{ name: string; grams: number; calories: number }>;
   imageUri?: string | null;
+  imageBase64?: string | null;
   postedAt: number; // Date.now()
 }
 

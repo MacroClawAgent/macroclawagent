@@ -69,6 +69,7 @@ export default function PhotoConfirmScreen() {
   const [gramInputs, setGramInputs] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState<MealTag>(getMealTagForTime());
   const [pickedImageUri, setPickedImageUri] = useState<string | null>(null);
+  const [pickedImageBase64, setPickedImageBase64] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const savedDishRef = useRef<{ dishName: string; totals: ReturnType<typeof sumTotals> } | null>(null);
   const launched = useRef(false);
@@ -122,6 +123,7 @@ export default function PhotoConfirmScreen() {
 
     const { base64, mimeType, uri } = result.assets[0];
     setPickedImageUri(uri ?? null);
+    setPickedImageBase64(base64 ?? null);
     setStage("analyzing");
 
     try {
@@ -228,6 +230,7 @@ export default function PhotoConfirmScreen() {
       fat: saved.totals.fat_g,
       ingredients: foods.map((f) => ({ name: f.name, grams: f.grams, calories: f.calories })),
       imageUri: pickedImageUri,
+      imageBase64: pickedImageBase64,
       postedAt: Date.now(),
     });
     router.replace("/(tabs)/community" as any);

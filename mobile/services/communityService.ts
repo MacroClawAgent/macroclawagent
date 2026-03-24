@@ -21,14 +21,28 @@ async function getCurrentUserId(): Promise<string | null> {
   return user?.id ?? null;
 }
 
-async function uploadPostImage(uri: string, userId: string): Promise<string | null> {
+async function uploadPostImage(uri: string, userId: string, base64?: string | null): Promise<string | null> {
   try {
     const ext = uri.split('.').pop()?.split('?')[0] ?? 'jpg';
     const path = `${userId}/${Date.now()}.${ext}`;
-    const res  = await fetch(uri);
-    const blob = await res.blob();
-    const { error } = await supabase.storage.from('community-images').upload(path, blob, {
-      contentType: blob.type || `image/${ext}`,
+    const contentType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+
+    let uploadBody: Uint8Array | Blob;
+    if (base64) {
+      // Decode base64 directly — avoids fetch() failing on local iOS file:// URIs
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      uploadBody = bytes;
+    } else {
+      const res = await fetch(uri);
+      uploadBody = await res.blob();
+    }
+
+    const { error } = await supabase.storage.from('community-images').upload(path, uploadBody, {
+      contentType,
       upsert: false,
     });
     if (error) return null;
@@ -142,9 +156,8 @@ export async function createPost(data: CreatePostData): Promise<CommunityPost> {
   // Upload image to Supabase Storage if present
   let storedImageUri: string | null = null;
   if (data.imageUri) {
-    storedImageUri = await uploadPostImage(data.imageUri, uid);
-    // Fall back to local URI if upload fails (works within same device session)
-    if (!storedImageUri) storedImageUri = data.imageUri;
+    storedImageUri = await uploadPostImage(data.imageUri, uid, data.imageBase64);
+    // No local URI fallback — file:// paths don't persist across sessions
   }
 
   const { data: row, error } = await supabase

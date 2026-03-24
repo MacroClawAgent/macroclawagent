@@ -87,7 +87,7 @@ export default function CommunityScreen() {
       submitPost({
         postType: 'home_cooked',
         mealName: pending.dishName,
-        caption: `${pending.mealEmoji} ${pending.dishName} — ${pending.calories} kcal · ${pending.protein}g protein`,
+        caption: `${pending.mealEmoji} ${pending.dishName}`,
         nutrition: {
           calories: pending.calories,
           protein: pending.protein,
@@ -96,6 +96,7 @@ export default function CommunityScreen() {
         },
         ingredients: pending.ingredients.map((i) => i.name),
         imageUri: pending.imageUri ?? null,
+        imageBase64: pending.imageBase64 ?? null,
       });
     }, [submitPost])
   );
