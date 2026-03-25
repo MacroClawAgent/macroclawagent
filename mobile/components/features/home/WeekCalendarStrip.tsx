@@ -329,7 +329,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                 <View style={[
                   styles.dayPill,
                   isToday && styles.dayPillToday,
-                  isToday && isDark && { backgroundColor: '#F5C842', shadowColor: '#F5C842' },
+                  isToday && isDark && { backgroundColor: '#E07B54', shadowColor: '#E07B54' },
                 ]}>
                   <Text style={[
                     styles.dayNum,
@@ -339,7 +339,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                     {date.getDate()}
                   </Text>
                   {status === "goal_met"  && <View style={[styles.statusDot, styles.dotGreen, isDark && { backgroundColor: '#F5C842', shadowColor: '#F5C842' }]} />}
-                  {status === "logged"    && <View style={[styles.statusDot, styles.dotBlue,  isDark && { backgroundColor: '#E07B54' }]} />}
+                  {status === "logged"    && <View style={[styles.statusDot, styles.dotBlue]} />}
                   {status === "missed"    && <View style={[styles.statusDot, styles.dotEmpty, isDark && { backgroundColor: 'rgba(232,224,208,0.15)', borderColor: 'rgba(232,224,208,0.25)' }]} />}
                   {status === "future"    && <View style={[styles.statusDot, styles.dotFuture,isDark && { backgroundColor: 'rgba(232,224,208,0.15)', borderColor: 'rgba(232,224,208,0.25)' }]} />}
                 </View>
@@ -369,7 +369,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
               <Text style={styles.legendText}>Goal met</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: 'rgba(255,255,255,0.4)' }]} />
+              <View style={[styles.legendDot, { backgroundColor: '#F5C842' }]} />
               <Text style={styles.legendText}>Logged</Text>
             </View>
             <View style={styles.legendItem}>
@@ -711,7 +711,11 @@ const styles = StyleSheet.create({
     backgroundColor: AMBER,
   },
   dotBlue: {
-    backgroundColor: "rgba(255,255,255,0.4)",
+    backgroundColor: "#F5C842",
+    shadowColor: "#F5C842",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 4,
   },
   dotEmpty: {
     backgroundColor: "rgba(255,255,255,0.2)",
