@@ -22,7 +22,7 @@ interface NutritionWidgetProps {
   goalLabel: string;
 }
 
-const BAR_HEIGHT = 76;
+// BAR_HEIGHT removed — bars now fill dynamically via flex
 
 interface MacroBarProps {
   label: string;
@@ -35,12 +35,12 @@ interface MacroBarProps {
 function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps) {
   const { isDark } = useTheme();
   const pct = target > 0 ? Math.min(1, consumed / target) : 0;
-  const fillHeight = Math.round(pct * BAR_HEIGHT);
   return (
     <View style={mb.col}>
       <Text style={[mb.grams, { color }]}>{Math.round(consumed)}g</Text>
       <View style={[mb.track, { backgroundColor: trackColor }]}>
-        <View style={[mb.fill, { height: fillHeight, backgroundColor: color }]} />
+        <View style={{ flex: Math.max(0.001, 1 - pct) }} />
+        {pct > 0 && <View style={[mb.fill, { flex: pct, backgroundColor: color }]} />}
       </View>
       <Text style={[mb.label, isDark && { color: '#E8E0D0' }]}>{label}</Text>
       <Text style={[mb.target, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{target}g</Text>
@@ -94,14 +94,14 @@ const mb = StyleSheet.create({
   },
   track: {
     width: 36,
-    height: BAR_HEIGHT,
+    flex: 1,
     borderRadius: 10,
     overflow: "hidden",
-    justifyContent: "flex-end",
   },
   fill: {
     width: "100%",
-    borderRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
   label: {
     fontSize: 14,
@@ -291,11 +291,12 @@ const styles = StyleSheet.create({
 
   // Macro bar chart
   macroRow: {
+    flex: 1,
     flexDirection: "row",
     justifyContent: "space-around",
-    alignItems: "flex-end",
+    alignItems: "stretch",
     paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 10,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
 });
