@@ -1,8 +1,9 @@
 import React from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 const TEAL   = "#2BB6A6";
 const TEAL2  = "rgba(43,182,166,0.12)";
@@ -52,6 +53,7 @@ const LEGAL_ITEMS = [
 
 export default function ProfileScreen() {
   const { userProfile, session } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const router = useRouter();
 
   const name     = userProfile?.full_name ?? "Athlete";
@@ -126,6 +128,26 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </React.Fragment>
           ))}
+        </View>
+
+        {/* Appearance */}
+        <Text style={s.sectionLabel}>Appearance</Text>
+        <View style={s.menuCard}>
+          <View style={s.menuRow}>
+            <View style={[s.menuIcon, { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
+              <Text style={s.menuEmoji}>{isDark ? '🌙' : '☀️'}</Text>
+            </View>
+            <View style={s.menuMid}>
+              <Text style={s.menuLabel}>Dark Mode</Text>
+              <Text style={s.menuSub}>{isDark ? 'Warm dark theme' : 'Light theme'}</Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#E5E7EB', true: 'rgba(245,200,66,0.35)' }}
+              thumbColor={isDark ? '#F5C842' : '#FFFFFF'}
+            />
+          </View>
         </View>
 
         {/* Legal */}

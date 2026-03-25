@@ -127,7 +127,7 @@ interface Props {
 }
 
 export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const [showLegend, setShowLegend] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isFutureSelected, setIsFutureSelected] = useState(false);
@@ -283,7 +283,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
         onPress={() => setShowLegend((v) => !v)}
       >
       <LinearGradient
-        colors={['#5DD6C8', '#4BBFCC', '#5BA8D4', '#6B9FD4']}
+        colors={isDark ? ['#2A1F10', '#2E2215', '#33261A', '#2E2215'] : ['#5DD6C8', '#4BBFCC', '#5BA8D4', '#6B9FD4']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.card}
@@ -331,7 +331,11 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                 <Text style={[styles.dayLetter, isFuture ? styles.textDim : styles.textMid]}>
                   {DAY_LETTERS[idx]}
                 </Text>
-                <View style={[styles.dayPill, isToday && styles.dayPillToday]}>
+                <View style={[
+                  styles.dayPill,
+                  isToday && styles.dayPillToday,
+                  isToday && isDark && { backgroundColor: '#F5C842', shadowColor: '#F5C842' },
+                ]}>
                   {/* Date number */}
                   <Text style={[
                     styles.dayNum,

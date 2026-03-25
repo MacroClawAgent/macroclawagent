@@ -41,7 +41,7 @@ function SkeletonCard() {
 }
 
 export default function HomeScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { userProfile } = useAuth();
   const router = useRouter();
   const vm = useHomeViewModel();
@@ -58,10 +58,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <Screen style={{ backgroundColor: "#DDE6F0" }}>
-      {/* Full-screen cool blue-white gradient backdrop */}
+    <Screen style={{ backgroundColor: isDark ? "#1C1612" : "#DDE6F0" }}>
+      {/* Full-screen gradient backdrop */}
       <LinearGradient
-        colors={['#F0F5FA', '#E4ECF4', '#DDE6F0']}
+        colors={isDark ? ['#1C1612', '#1E1A13', '#221C15'] : ['#F0F5FA', '#E4ECF4', '#DDE6F0']}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
@@ -70,10 +70,10 @@ export default function HomeScreen() {
       {/* Top header: greeting left, avatar + goal right */}
       <View style={styles.topHeader}>
         <View style={styles.greetingBlock}>
-          <Text style={styles.greetingWord}>
+          <Text style={[styles.greetingWord, isDark && { color: 'rgba(232,224,208,0.55)' }]}>
             {vm.greeting}
           </Text>
-          <Text style={styles.greetingName}>
+          <Text style={[styles.greetingName, isDark && { color: '#E8E0D0' }]}>
             {vm.userName}
           </Text>
         </View>
@@ -81,7 +81,7 @@ export default function HomeScreen() {
           name={userProfile?.full_name ?? ""}
           onPress={() => router.push("/profile")}
           size={44}
-          color="#3B6FD4"
+          color={isDark ? "#F5C842" : "#3B6FD4"}
           style={{ borderWidth: 3, borderColor: vm.goalRingColor }}
         />
       </View>
@@ -92,7 +92,7 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={vm.refreshing}
             onRefresh={vm.refresh}
-            tintColor="#35C7B8"
+            tintColor={isDark ? "#F5C842" : "#35C7B8"}
           />
         }
       >
@@ -146,7 +146,12 @@ export default function HomeScreen() {
           {/* Dot indicators */}
           <View style={styles.dots}>
             {Array.from({ length: CARD_COUNT }).map((_, i) => (
-              <View key={i} style={[styles.dot, carouselIdx === i && styles.dotActive]} />
+              <View key={i} style={[
+                styles.dot,
+                isDark && { backgroundColor: 'rgba(255,220,150,0.12)' },
+                carouselIdx === i && styles.dotActive,
+                carouselIdx === i && isDark && { backgroundColor: '#F5C842' },
+              ]} />
             ))}
           </View>
         </View>
@@ -161,7 +166,7 @@ export default function HomeScreen() {
 
         {/* Discover */}
         <View style={styles.discoverSection}>
-          <Text style={styles.discoverHeading}>Discover</Text>
+          <Text style={[styles.discoverHeading, isDark && { color: '#E8E0D0' }]}>Discover</Text>
           <View style={styles.discoverGrid}>
             {DISCOVER_ITEMS.map((item) => (
               <TouchableOpacity
@@ -169,7 +174,7 @@ export default function HomeScreen() {
                 activeOpacity={0.82}
                 onPress={() => router.push(item.route as any)}
               >
-                <BlurView intensity={22} tint="light" style={styles.discoverCard}>
+                <BlurView intensity={isDark ? 0 : 22} tint={isDark ? "dark" : "light"} style={[styles.discoverCard, isDark && styles.discoverCardDark]}>
                   <View style={styles.discoverHighlight} pointerEvents="none" />
                   <View style={[styles.discoverIconWrap, { backgroundColor: item.iconBg }]}>
                     <SymbolView
@@ -178,7 +183,7 @@ export default function HomeScreen() {
                       size={24}
                     />
                   </View>
-                  <Text style={styles.discoverLabel}>{item.label}</Text>
+                  <Text style={[styles.discoverLabel, isDark && { color: '#E8E0D0' }]}>{item.label}</Text>
                 </BlurView>
               </TouchableOpacity>
             ))}
@@ -285,4 +290,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   discoverLabel: { fontSize: 13, fontWeight: "600", color: "#1A1A1A", letterSpacing: -0.1 },
+  discoverCardDark: {
+    backgroundColor: "#252018",
+    borderColor: "rgba(255,220,150,0.12)",
+  },
 });

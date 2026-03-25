@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { DimensionValue } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
+import { useTheme } from "@/context/ThemeContext";
 
 interface MacroStat {
   consumed: number;
@@ -31,6 +32,7 @@ interface MacroBarProps {
 }
 
 function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps) {
+  const { isDark } = useTheme();
   const pct = target > 0 ? Math.min(1, consumed / target) : 0;
   const fillHeight = Math.round(pct * BAR_HEIGHT);
   return (
@@ -46,8 +48,8 @@ function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps)
           />
         </View>
       </View>
-      <Text style={mb.label}>{label}</Text>
-      <Text style={mb.target}>{target}g</Text>
+      <Text style={[mb.label, isDark && { color: '#E8E0D0' }]}>{label}</Text>
+      <Text style={[mb.target, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{target}g</Text>
     </View>
   );
 }
@@ -92,26 +94,30 @@ const mb = StyleSheet.create({
 });
 
 export function NutritionWidget({ calorieProgress, macros, goalLabel }: NutritionWidgetProps) {
+  const { isDark } = useTheme();
   const calPct = Math.round(calorieProgress.ratio * 100);
 
   return (
-    <View style={styles.outerCard}>
+    <View style={[
+      styles.outerCard,
+      isDark && { backgroundColor: '#252018', borderColor: 'rgba(255,220,150,0.12)' },
+    ]}>
       {/* Inner glow at top of card */}
-      <View style={styles.innerGlow} pointerEvents="none" />
+      <View style={[styles.innerGlow, isDark && { backgroundColor: 'rgba(245,200,66,0.05)' }]} pointerEvents="none" />
 
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={styles.iconBadge}>
+          <View style={[styles.iconBadge, isDark && { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
             <SymbolView
               name={{ ios: "fork.knife", android: "restaurant", web: "restaurant" }}
-              tintColor="#1FA79E"
+              tintColor={isDark ? "#F5C842" : "#1FA79E"}
               size={16}
             />
           </View>
           <View>
-            <Text style={styles.widgetTitle}>Nutrition</Text>
-            <Text style={styles.widgetSub}>{goalLabel}</Text>
+            <Text style={[styles.widgetTitle, isDark && { color: '#E8E0D0' }]}>Nutrition</Text>
+            <Text style={[styles.widgetSub, isDark && { color: 'rgba(232,224,208,0.55)' }]}>{goalLabel}</Text>
           </View>
         </View>
       </View>
@@ -119,25 +125,28 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
       {/* Calorie summary row */}
       <View style={styles.calRow}>
         <View style={styles.calLeft}>
-          <Text style={styles.calBig}>
+          <Text style={[styles.calBig, isDark && { color: '#E8E0D0' }]}>
             {calorieProgress.consumed.toLocaleString()}
           </Text>
-          <Text style={styles.calOf}>
+          <Text style={[styles.calOf, isDark && { color: 'rgba(232,224,208,0.35)' }]}>
             {" / "}{calorieProgress.target.toLocaleString()} kcal
           </Text>
         </View>
-        <View style={styles.calBadge}>
-          <Text style={styles.calBadgePct}>{calPct}%</Text>
-          <Text style={styles.calBadgeRem}>
+        <View style={[
+          styles.calBadge,
+          isDark && { backgroundColor: '#2E2822', borderColor: 'rgba(255,220,150,0.15)', shadowColor: '#F5C842' },
+        ]}>
+          <Text style={[styles.calBadgePct, isDark && { color: '#F5C842' }]}>{calPct}%</Text>
+          <Text style={[styles.calBadgeRem, isDark && { color: 'rgba(232,224,208,0.4)' }]}>
             {calorieProgress.remaining.toLocaleString()} left
           </Text>
         </View>
       </View>
 
       {/* Progress bar */}
-      <View style={styles.calBar}>
+      <View style={[styles.calBar, isDark && { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
         <LinearGradient
-          colors={["#2DD4BF", "#38BDF8"]}
+          colors={isDark ? ["#F5C842", "#F7D580"] : ["#2DD4BF", "#38BDF8"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.calBarFill, { width: `${calPct}%` as DimensionValue }]}
@@ -146,9 +155,18 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
 
       {/* Macro bar chart */}
       <View style={styles.macroRow}>
-        <MacroBar label="Protein" color="#34D399" trackColor="rgba(52,211,153,0.15)" consumed={macros.protein.consumed} target={macros.protein.target} />
-        <MacroBar label="Carbs"   color="#F59E0B" trackColor="rgba(245,158,11,0.15)"  consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
-        <MacroBar label="Fat"     color="#A78BFA" trackColor="rgba(167,139,250,0.15)" consumed={macros.fat.consumed}     target={macros.fat.target}     />
+        <MacroBar label="Protein"
+          color={isDark ? "#F5C842" : "#34D399"}
+          trackColor={isDark ? "rgba(245,200,66,0.15)" : "rgba(52,211,153,0.15)"}
+          consumed={macros.protein.consumed} target={macros.protein.target} />
+        <MacroBar label="Carbs"
+          color={isDark ? "#E8E0D0" : "#F59E0B"}
+          trackColor={isDark ? "rgba(232,224,208,0.12)" : "rgba(245,158,11,0.15)"}
+          consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
+        <MacroBar label="Fat"
+          color={isDark ? "#4CAF7D" : "#A78BFA"}
+          trackColor={isDark ? "rgba(76,175,125,0.15)" : "rgba(167,139,250,0.15)"}
+          consumed={macros.fat.consumed}     target={macros.fat.target}     />
       </View>
     </View>
   );
