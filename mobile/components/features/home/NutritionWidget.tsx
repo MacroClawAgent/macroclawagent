@@ -82,8 +82,8 @@ function MacroTablet({ label, color1, color2, shadowColor: sc, labelColor, consu
           <View style={{ position: 'absolute', top: 12, left: 14, width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.45)' }} />
         </LinearGradient>
       </View>
-      <Text style={{ fontSize: 13, fontWeight: '700', color: labelColor }}>{remaining}g left</Text>
-      <Text style={{ fontSize: 10, fontWeight: '600', color: 'rgba(232,224,208,0.45)' }}>{label}</Text>
+      <Text style={{ fontSize: 15, fontFamily: 'BebasNeue_400Regular', letterSpacing: 1, color: labelColor }}>{remaining}g left</Text>
+      <Text style={{ fontSize: 13, fontFamily: 'BebasNeue_400Regular', letterSpacing: 1, color: 'rgba(232,224,208,0.45)' }}>{label}</Text>
     </View>
   );
 }
@@ -95,9 +95,9 @@ const mb = StyleSheet.create({
     gap: 4,
   },
   grams: {
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: -0.2,
+    fontSize: 15,
+    fontFamily: "BebasNeue_400Regular",
+    letterSpacing: 0.8,
   },
   track: {
     width: 36,
@@ -116,13 +116,15 @@ const mb = StyleSheet.create({
     borderRadius: 10,
   },
   label: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 14,
+    fontFamily: "BebasNeue_400Regular",
+    letterSpacing: 1,
     color: "#1E293B",
   },
   target: {
-    fontSize: 11,
-    fontWeight: "400",
+    fontSize: 13,
+    fontFamily: "BebasNeue_400Regular",
+    letterSpacing: 0.5,
     color: "#94A3B8",
   },
 });
@@ -283,8 +285,8 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
     backgroundColor: "rgba(43,182,166,0.18)",
   },
-  widgetTitle: { fontSize: 16, fontWeight: "700", letterSpacing: -0.3, color: "#1A1A1A" },
-  widgetSub: { fontSize: 11, fontWeight: "500", marginTop: 1, color: "#6B7280" },
+  widgetTitle: { fontSize: 20, fontFamily: "BebasNeue_400Regular", letterSpacing: 1.5, color: "#1A1A1A" },
+  widgetSub: { fontSize: 13, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, marginTop: 1, color: "#6B7280" },
 
   // Calorie summary
   calRow: {
@@ -295,10 +297,11 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   calLeft: { flexDirection: "row", alignItems: "baseline", gap: 4 },
-  calBig: { fontSize: 46, fontWeight: "800", letterSpacing: -2, color: "#0F172A" },
+  calBig: { fontSize: 52, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, color: "#0F172A" },
   calOf: {
-    fontSize: 16,
-    fontWeight: "400",
+    fontSize: 18,
+    fontFamily: "BebasNeue_400Regular",
+    letterSpacing: 0.5,
     color: "#94A3B8",
     alignSelf: "flex-end",
     marginBottom: 8,
@@ -317,8 +320,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  calBadgePct: { fontSize: 24, fontWeight: "800", letterSpacing: -0.5, color: "#2DD4BF" },
-  calBadgeRem: { fontSize: 12, fontWeight: "500", marginTop: 1, color: "#94A3B8" },
+  calBadgePct: { fontSize: 28, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, color: "#2DD4BF" },
+  calBadgeRem: { fontSize: 13, fontFamily: "BebasNeue_400Regular", letterSpacing: 0.8, marginTop: 1, color: "#94A3B8" },
 
   // Progress bar
   calBar: {
