@@ -62,7 +62,7 @@ export default function HomeScreen() {
       {/* Full-screen gradient backdrop */}
       <LinearGradient
         colors={isDark
-          ? ['#0D0A07', '#1C1612', '#2A1C0E']
+          ? ['#000000', '#080603', '#120D08', '#1C1410', '#2E1A0A']
           : ['#E8F2F8', '#D4E7F3', '#C8DFF0']}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0.5, y: 0 }}

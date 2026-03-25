@@ -137,22 +137,24 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
       tint={isDark ? "dark" : "light"}
       style={[styles.outerCard, isDark ? styles.outerCardDark : styles.outerCardLight]}
     >
-      {/* Specular top-edge highlight */}
-      <LinearGradient
-        colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.specular}
-        pointerEvents="none"
-      />
-      {/* Left-edge shimmer */}
-      <LinearGradient
-        colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.leftShimmer}
-        pointerEvents="none"
-      />
+      {!isDark && (
+        <>
+          <LinearGradient
+            colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={styles.specular}
+            pointerEvents="none"
+          />
+          <LinearGradient
+            colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.leftShimmer}
+            pointerEvents="none"
+          />
+        </>
+      )}
 
       {/* Header */}
       <View style={styles.header}>
@@ -239,8 +241,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   outerCardDark: {
-    backgroundColor: "rgba(28,22,18,0.38)",
-    borderColor: "rgba(255,220,150,0.18)",
+    backgroundColor: "#1C1410",
+    borderColor: "rgba(255,220,150,0.12)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,

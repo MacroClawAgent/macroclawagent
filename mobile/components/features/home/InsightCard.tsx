@@ -23,22 +23,24 @@ export function InsightCard({ insight }: InsightCardProps) {
       tint={isDark ? "dark" : "light"}
       style={[s.card, isDark ? s.cardDark : s.cardLight]}
     >
-      {/* Specular top-edge highlight */}
-      <LinearGradient
-        colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={s.specular}
-        pointerEvents="none"
-      />
-      {/* Left-edge shimmer */}
-      <LinearGradient
-        colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={s.leftShimmer}
-        pointerEvents="none"
-      />
+      {!isDark && (
+        <>
+          <LinearGradient
+            colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={s.specular}
+            pointerEvents="none"
+          />
+          <LinearGradient
+            colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={s.leftShimmer}
+            pointerEvents="none"
+          />
+        </>
+      )}
 
       {/* Top row: badge + live */}
       <View style={s.topRow}>
@@ -100,8 +102,8 @@ const s = StyleSheet.create({
     elevation: 8,
   },
   cardDark: {
-    backgroundColor: "rgba(28,22,18,0.38)",
-    borderColor: "rgba(255,220,150,0.18)",
+    backgroundColor: "#1C1410",
+    borderColor: "rgba(255,220,150,0.12)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,
