@@ -61,7 +61,7 @@ const fabStyles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "flex-end",
-    marginBottom: Platform.OS === "ios" ? 10 : 4,
+    marginBottom: Platform.OS === "ios" ? 2 : 0,
   },
   circle: {
     width: 58,
@@ -69,7 +69,7 @@ const fabStyles = StyleSheet.create({
     borderRadius: 29,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -22,
+    marginTop: -10,
     shadowColor: "#20C7B7",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
