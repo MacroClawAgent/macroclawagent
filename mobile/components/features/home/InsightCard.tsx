@@ -68,13 +68,13 @@ export function InsightCard({ insight }: InsightCardProps) {
         onPress={() => router.push("/(tabs)/agent" as any)}
       >
         <LinearGradient
-          colors={isDark ? ['#5C6E3A', '#8B9E6E'] : ['#3B6FD4', '#5B8FE8']}
+          colors={isDark ? ['#C4682A', '#E07B54'] : ['#3B6FD4', '#5B8FE8']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={s.cta}
         >
-          <Text style={[s.ctaText, isDark && { color: '#F0EDE6' }]}>Generate meal suggestion</Text>
-          <Text style={[s.ctaArrow, isDark && { color: 'rgba(240,237,230,0.7)' }]}>→</Text>
+          <Text style={[s.ctaText, isDark && { color: '#F8EDE0' }]}>Generate meal suggestion</Text>
+          <Text style={[s.ctaArrow, isDark && { color: 'rgba(248,237,224,0.7)' }]}>→</Text>
         </LinearGradient>
       </TouchableOpacity>
     </BlurView>
