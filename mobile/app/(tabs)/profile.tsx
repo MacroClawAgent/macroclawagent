@@ -106,6 +106,26 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* Appearance */}
+        <Text style={s.sectionLabel}>Appearance</Text>
+        <View style={s.menuCard}>
+          <View style={s.menuRow}>
+            <View style={[s.menuIcon, { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
+              <Text style={s.menuEmoji}>{isDark ? '🌙' : '☀️'}</Text>
+            </View>
+            <View style={s.menuMid}>
+              <Text style={s.menuLabel}>Dark Mode</Text>
+              <Text style={s.menuSub}>{isDark ? 'Warm dark theme' : 'Light theme'}</Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#E5E7EB', true: 'rgba(245,200,66,0.35)' }}
+              thumbColor={isDark ? '#F5C842' : '#FFFFFF'}
+            />
+          </View>
+        </View>
+
         {/* Main menu */}
         <Text style={s.sectionLabel}>Account</Text>
         <View style={s.menuCard}>
@@ -128,26 +148,6 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </React.Fragment>
           ))}
-        </View>
-
-        {/* Appearance */}
-        <Text style={s.sectionLabel}>Appearance</Text>
-        <View style={s.menuCard}>
-          <View style={s.menuRow}>
-            <View style={[s.menuIcon, { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
-              <Text style={s.menuEmoji}>{isDark ? '🌙' : '☀️'}</Text>
-            </View>
-            <View style={s.menuMid}>
-              <Text style={s.menuLabel}>Dark Mode</Text>
-              <Text style={s.menuSub}>{isDark ? 'Warm dark theme' : 'Light theme'}</Text>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={toggleTheme}
-              trackColor={{ false: '#E5E7EB', true: 'rgba(245,200,66,0.35)' }}
-              thumbColor={isDark ? '#F5C842' : '#FFFFFF'}
-            />
-          </View>
         </View>
 
         {/* Legal */}
