@@ -7,10 +7,11 @@ interface AvatarButtonProps {
   onPress: () => void;
   size?: number;
   color?: string;
+  textColor?: string;
   style?: ViewStyle;
 }
 
-export function AvatarButton({ name, onPress, size = 36, color = "#20C7B7", style }: AvatarButtonProps) {
+export function AvatarButton({ name, onPress, size = 36, color = "#20C7B7", textColor = "#FFFFFF", style }: AvatarButtonProps) {
   const fontSize = Math.round(size * 0.36);
   return (
     <TouchableOpacity
@@ -22,7 +23,7 @@ export function AvatarButton({ name, onPress, size = 36, color = "#20C7B7", styl
         style,
       ]}
     >
-      <Text style={[styles.initials, { fontSize }]}>{getInitials(name || "?")}</Text>
+      <Text style={[styles.initials, { fontSize, color: textColor }]}>{getInitials(name || "?")}</Text>
     </TouchableOpacity>
   );
 }
