@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView } from 'expo-symbols';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Screen } from '@/components/ui/Screen';
+import { useTheme } from '@/context/ThemeContext';
 import { CommunityPostCard } from '@/components/Community/CommunityPostCard';
 import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
@@ -54,6 +55,7 @@ function searchProfiles(query: string): UserProfile[] {
 
 export default function CommunityScreen() {
   const router = useRouter();
+  const { isDark } = useTheme();
   const {
     posts,
     loading,
@@ -191,23 +193,23 @@ export default function CommunityScreen() {
     const following = followStates[profile.id] ?? profile.isFollowing;
     return (
       <TouchableOpacity
-        style={sr.row}
+        style={[sr.row, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)', shadowColor: '#000' }]}
         activeOpacity={0.75}
         onPress={() => { closeSearch(); router.push(`/profile/${profile.id}` as any); }}
       >
-        <View style={sr.avatar}>
+        <View style={[sr.avatar, isDark && { backgroundColor: '#E07B54' }]}>
           <Text style={sr.avatarText}>{profile.initial}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={sr.name}>{profile.name}</Text>
-          <Text style={sr.username}>{profile.username}</Text>
+          <Text style={[sr.name, isDark && { color: '#E8E0D0' }]}>{profile.name}</Text>
+          <Text style={[sr.username, isDark && { color: 'rgba(232,224,208,0.45)' }]}>{profile.username}</Text>
         </View>
         <TouchableOpacity
-          style={[sr.followBtn, following && sr.followBtnActive]}
+          style={[sr.followBtn, isDark && { borderColor: '#F5C842' }, following && sr.followBtnActive, following && isDark && { backgroundColor: '#F5C842', borderColor: '#F5C842' }]}
           activeOpacity={0.8}
           onPress={(e) => { e.stopPropagation?.(); handleToggleFollow(profile.id); }}
         >
-          <Text style={[sr.followBtnText, following && sr.followBtnTextActive]}>
+          <Text style={[sr.followBtnText, isDark && { color: '#F5C842' }, following && sr.followBtnTextActive, following && isDark && { color: '#1C1410' }]}>
             {following ? 'Following ✓' : 'Follow'}
           </Text>
         </TouchableOpacity>
@@ -224,11 +226,11 @@ export default function CommunityScreen() {
           return (
             <TouchableOpacity
               key={p.key}
-              style={[s.pill, active && s.pillActive]}
+              style={[s.pill, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }, active && s.pillActive, active && isDark && { backgroundColor: '#F5C842', borderColor: '#F5C842' }]}
               activeOpacity={0.75}
               onPress={() => handlePillPress(p.key)}
             >
-              <Text style={[s.pillText, active && s.pillTextActive]}>{p.label}</Text>
+              <Text style={[s.pillText, isDark && { color: 'rgba(232,224,208,0.55)' }, active && s.pillTextActive, active && isDark && { color: '#1C1410' }]}>{p.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -241,10 +243,10 @@ export default function CommunityScreen() {
       return (
         <View style={s.empty}>
           <Text style={s.emptyEmoji}>👥</Text>
-          <Text style={s.emptyTitle}>No posts yet</Text>
-          <Text style={s.emptySub}>Follow people to see their meals here</Text>
-          <TouchableOpacity style={s.emptyBtn} onPress={() => handlePillPress('all')} activeOpacity={0.8}>
-            <Text style={s.emptyBtnText}>Browse All →</Text>
+          <Text style={[s.emptyTitle, isDark && { color: '#E8E0D0' }]}>No posts yet</Text>
+          <Text style={[s.emptySub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Follow people to see their meals here</Text>
+          <TouchableOpacity style={[s.emptyBtn, isDark && { backgroundColor: '#F5C842' }]} onPress={() => handlePillPress('all')} activeOpacity={0.8}>
+            <Text style={[s.emptyBtnText, isDark && { color: '#1C1410' }]}>Browse All →</Text>
           </TouchableOpacity>
         </View>
       );
@@ -252,33 +254,35 @@ export default function CommunityScreen() {
     return (
       <View style={s.empty}>
         <Text style={s.emptyEmoji}>🍽️</Text>
-        <Text style={s.emptyTitle}>No posts yet</Text>
-        <Text style={s.emptySub}>Be the first to share a meal with the community</Text>
-        <TouchableOpacity style={s.emptyBtn} onPress={openCreatePost} activeOpacity={0.8}>
-          <Text style={s.emptyBtnText}>Share a Meal</Text>
+        <Text style={[s.emptyTitle, isDark && { color: '#E8E0D0' }]}>No posts yet</Text>
+        <Text style={[s.emptySub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Be the first to share a meal with the community</Text>
+        <TouchableOpacity style={[s.emptyBtn, isDark && { backgroundColor: '#F5C842' }]} onPress={openCreatePost} activeOpacity={0.8}>
+          <Text style={[s.emptyBtnText, isDark && { color: '#1C1410' }]}>Share a Meal</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <Screen style={{ backgroundColor: BG }}>
-      <LinearGradient colors={[BG, '#F5F8FC']} style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} pointerEvents="none" />
+    <Screen style={{ backgroundColor: isDark ? '#0D0A07' : BG }}>
+      <LinearGradient
+        colors={isDark ? ['#000000', '#080603', '#120D08', '#1C1410', '#2E1A0A'] : [BG, '#F5F8FC']}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} pointerEvents="none" />
 
       {/* Header */}
       <View style={s.header}>
         {searchActive ? (
           // ── Search mode header ──
           <>
-            <View style={s.searchBar}>
+            <View style={[s.searchBar, isDark && { backgroundColor: '#1C1410', borderColor: '#F5C842' }]}>
               <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-                tintColor="#94A3B8" size={16} />
+                tintColor={isDark ? 'rgba(232,224,208,0.4)' : '#94A3B8'} size={16} />
               <TextInput
                 ref={searchRef}
-                style={s.searchInput}
+                style={[s.searchInput, isDark && { color: '#E8E0D0' }]}
                 placeholder="Search by username…"
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={isDark ? 'rgba(232,224,208,0.35)' : '#94A3B8'}
                 value={searchQuery}
                 onChangeText={handleSearchChange}
                 autoCapitalize="none"
@@ -287,27 +291,27 @@ export default function CommunityScreen() {
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
-                  <Text style={s.clearBtn}>✕</Text>
+                  <Text style={[s.clearBtn, isDark && { color: 'rgba(232,224,208,0.4)' }]}>✕</Text>
                 </TouchableOpacity>
               )}
             </View>
             <TouchableOpacity onPress={closeSearch} style={s.cancelBtn}>
-              <Text style={s.cancelText}>Cancel</Text>
+              <Text style={[s.cancelText, isDark && { color: '#F5C842' }]}>Cancel</Text>
             </TouchableOpacity>
           </>
         ) : (
           // ── Normal header ──
           <>
-            <Text style={s.headerTitle}>Community</Text>
+            <Text style={[s.headerTitle, isDark && { color: '#E8E0D0' }]}>Community</Text>
             <View style={s.headerRight}>
-              <TouchableOpacity style={s.iconBtn} activeOpacity={0.7} onPress={openSearch}>
+              <TouchableOpacity style={[s.iconBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]} activeOpacity={0.7} onPress={openSearch}>
                 <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-                  tintColor="#374151" size={20} />
+                  tintColor={isDark ? '#E8E0D0' : '#374151'} size={20} />
               </TouchableOpacity>
-              <TouchableOpacity style={s.iconBtn} activeOpacity={0.7}
+              <TouchableOpacity style={[s.iconBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]} activeOpacity={0.7}
                 onPress={() => router.push('/profile/current-user' as any)}>
                 <SymbolView name={{ ios: 'person.circle', android: 'account_circle', web: 'account_circle' }}
-                  tintColor="#374151" size={22} />
+                  tintColor={isDark ? '#E8E0D0' : '#374151'} size={22} />
               </TouchableOpacity>
             </View>
           </>
@@ -319,11 +323,11 @@ export default function CommunityScreen() {
         <View style={{ flex: 1 }}>
           {searchQuery.length === 0 ? (
             <View style={s.searchHint}>
-              <Text style={s.searchHintText}>Search by name or @username</Text>
+              <Text style={[s.searchHintText, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Search by name or @username</Text>
             </View>
           ) : searchResults.length === 0 ? (
             <View style={s.searchHint}>
-              <Text style={s.searchHintText}>No users found for "{searchQuery}"</Text>
+              <Text style={[s.searchHintText, isDark && { color: 'rgba(232,224,208,0.45)' }]}>No users found for "{searchQuery}"</Text>
             </View>
           ) : (
             <FlatList
@@ -339,7 +343,7 @@ export default function CommunityScreen() {
       ) : (
         // ── Normal feed ──
         isLoading ? (
-          <ActivityIndicator color={TEAL} size="large" style={{ marginTop: 60 }} />
+          <ActivityIndicator color={isDark ? '#F5C842' : TEAL} size="large" style={{ marginTop: 60 }} />
         ) : (
           <FlatList
             data={displayedPosts}
@@ -350,7 +354,7 @@ export default function CommunityScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={isFollowingMode ? loadFollowingPosts : handleRefresh}
-                tintColor={TEAL}
+                tintColor={isDark ? '#F5C842' : TEAL}
               />
             }
             ListHeaderComponent={<PillRow />}
