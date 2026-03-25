@@ -307,31 +307,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
         )}
         <View style={styles.cardContent}>
 
-        {/* Header row */}
-        <View style={styles.cardHeader}>
-          <View style={styles.cardHeaderLeft}>
-            <Text style={styles.cardTitle}>This Week</Text>
-            <Text style={styles.cardSub}>{weekLabel}</Text>
-          </View>
-          <View style={styles.cardHeaderRight}>
-            {streak > 0 && (
-              <View style={[styles.streakBadge, isDark && {
-                backgroundColor: 'rgba(248,213,97,0.15)',
-                borderWidth: 1,
-                borderColor: 'rgba(248,213,97,0.3)',
-              }]}>
-                <SymbolView
-                  name={{ ios: "flame.fill", android: "local_fire_department", web: "local_fire_department" }}
-                  tintColor={isDark ? '#F5C842' : '#FFD580'}
-                  size={12}
-                />
-                <Text style={[styles.streakCount, isDark && { color: '#F5C842' }]}>{streak}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Day pills row */}
+        {/* Day pills row with inline streak badge */}
         <View style={styles.daysRow}>
           {weekDays.map((date, idx) => {
             const dateStr = toLocalDateStr(date);
@@ -347,7 +323,6 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                 style={styles.dayWrapper}
                 activeOpacity={0.7}
               >
-                {/* Day letter */}
                 <Text style={[styles.dayLetter, isFuture ? styles.textDim : styles.textMid]}>
                   {DAY_LETTERS[idx]}
                 </Text>
@@ -356,7 +331,6 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                   isToday && styles.dayPillToday,
                   isToday && isDark && { backgroundColor: '#F5C842', shadowColor: '#F5C842' },
                 ]}>
-                  {/* Date number */}
                   <Text style={[
                     styles.dayNum,
                     isFuture ? styles.textDim : styles.textBright,
@@ -364,8 +338,6 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                   ]}>
                     {date.getDate()}
                   </Text>
-
-                  {/* Status dot */}
                   {status === "goal_met"  && <View style={[styles.statusDot, styles.dotGreen, isDark && { backgroundColor: '#F5C842', shadowColor: '#F5C842' }]} />}
                   {status === "logged"    && <View style={[styles.statusDot, styles.dotBlue,  isDark && { backgroundColor: '#E07B54' }]} />}
                   {status === "missed"    && <View style={[styles.statusDot, styles.dotEmpty, isDark && { backgroundColor: 'rgba(232,224,208,0.15)', borderColor: 'rgba(232,224,208,0.25)' }]} />}
@@ -374,6 +346,19 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
               </TouchableOpacity>
             );
           })}
+          {/* Streak badge inline at end of row */}
+          {streak > 0 && (
+            <View style={styles.streakWrapper}>
+              <View style={[styles.streakBadge, isDark && { backgroundColor: 'rgba(248,213,97,0.15)', borderWidth: 1, borderColor: 'rgba(248,213,97,0.3)' }]}>
+                <SymbolView
+                  name={{ ios: "flame.fill", android: "local_fire_department", web: "local_fire_department" }}
+                  tintColor={isDark ? '#F5C842' : '#FFD580'}
+                  size={12}
+                />
+                <Text style={[styles.streakCount, isDark && { color: '#F5C842' }]}>{streak}</Text>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Tap-to-reveal legend */}
@@ -610,9 +595,14 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   cardContent: {
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 6,
+    paddingBottom: 6,
     paddingHorizontal: 14,
+  },
+  streakWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: 4,
   },
   specular: {
     position: "absolute",

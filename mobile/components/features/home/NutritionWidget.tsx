@@ -22,7 +22,7 @@ interface NutritionWidgetProps {
   goalLabel: string;
 }
 
-const BAR_HEIGHT = 96;
+const BAR_HEIGHT = 76;
 
 interface MacroBarProps {
   label: string;
@@ -40,14 +40,7 @@ function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps)
     <View style={mb.col}>
       <Text style={[mb.grams, { color }]}>{Math.round(consumed)}g</Text>
       <View style={[mb.track, { backgroundColor: trackColor }]}>
-        <View style={mb.trackInner}>
-          <LinearGradient
-            colors={[color, color]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={[mb.fill, { height: fillHeight }]}
-          />
-        </View>
+        <View style={[mb.fill, { height: fillHeight, backgroundColor: color }]} />
       </View>
       <Text style={[mb.label, isDark && { color: '#E8E0D0' }]}>{label}</Text>
       <Text style={[mb.target, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{target}g</Text>
@@ -106,11 +99,6 @@ const mb = StyleSheet.create({
     overflow: "hidden",
     justifyContent: "flex-end",
   },
-  trackInner: {
-    width: "100%",
-    justifyContent: "flex-end",
-    height: "100%",
-  },
   fill: {
     width: "100%",
     borderRadius: 10,
@@ -158,7 +146,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
         </>
       )}
 
-      {/* Header */}
+      {/* Header row — icon + title left, calorie summary right */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={[styles.iconBadge, isDark && { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
@@ -173,25 +161,17 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
             <Text style={[styles.widgetSub, isDark && { color: 'rgba(232,224,208,0.55)' }]}>{goalLabel}</Text>
           </View>
         </View>
-      </View>
-
-      {/* Calorie summary row */}
-      <View style={styles.calRow}>
-        <View style={styles.calLeft}>
-          <Text style={[styles.calBig, isDark && { color: '#E8E0D0' }]}>
-            {calorieProgress.consumed.toLocaleString()}
-          </Text>
-          <Text style={[styles.calOf, isDark && { color: 'rgba(232,224,208,0.35)' }]}>
-            {" / "}{calorieProgress.target.toLocaleString()} kcal
-          </Text>
-        </View>
-        <View style={[
-          styles.calBadge,
-          isDark && { backgroundColor: '#2E2822', borderColor: 'rgba(255,220,150,0.15)', shadowColor: '#F5C842' },
-        ]}>
-          <Text style={[styles.calBadgePct, isDark && { color: '#F5C842' }]}>{calPct}%</Text>
-          <Text style={[styles.calBadgeRem, isDark && { color: 'rgba(232,224,208,0.4)' }]}>
-            {calorieProgress.remaining.toLocaleString()} left
+        <View style={styles.calRight}>
+          <View style={styles.calRow}>
+            <Text style={[styles.calBig, isDark && { color: '#E8E0D0' }]}>
+              {calorieProgress.consumed.toLocaleString()}
+            </Text>
+            <Text style={[styles.calOf, isDark && { color: 'rgba(232,224,208,0.35)' }]}>
+              /{calorieProgress.target.toLocaleString()}
+            </Text>
+          </View>
+          <Text style={[styles.calSub, isDark && { color: isDark ? '#F5C842' : '#2DD4BF' }]}>
+            {calPct}% · {calorieProgress.remaining.toLocaleString()} kcal left
           </Text>
         </View>
       </View>
@@ -202,24 +182,26 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
           colors={isDark ? ["#E07B54", "#F5C842"] : ["#2DD4BF", "#38BDF8"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={[styles.calBarFill, { width: `${calPct}%` as DimensionValue }]}
+          style={[styles.calBarFill, { width: `${Math.max(2, calPct)}%` as DimensionValue }]}
         />
       </View>
 
-      {/* Macro section */}
-      {isDark ? (
-        <View style={[styles.macroRow, { alignItems: 'center' }]}>
-          <MacroTablet label="Protein" color1="#C4682A" color2="#E07B54" shadowColor="#E07B54" labelColor="#E07B54" consumed={macros.protein.consumed} target={macros.protein.target} />
-          <MacroTablet label="Carbs"   color1="#C49A1A" color2="#F5C842" shadowColor="#F5C842" labelColor="#F5C842" consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
-          <MacroTablet label="Fat"     color1="#5C6E3A" color2="#8B9E6E" shadowColor="#8B9E6E" labelColor="#8B9E6E" consumed={macros.fat.consumed}     target={macros.fat.target}     />
-        </View>
-      ) : (
-        <View style={styles.macroRow}>
-          <MacroBar label="Protein" color="#34D399" trackColor="rgba(52,211,153,0.15)"   consumed={macros.protein.consumed} target={macros.protein.target} />
-          <MacroBar label="Carbs"   color="#F59E0B" trackColor="rgba(245,158,11,0.15)"   consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
-          <MacroBar label="Fat"     color="#A78BFA" trackColor="rgba(167,139,250,0.15)"  consumed={macros.fat.consumed}     target={macros.fat.target}     />
-        </View>
-      )}
+      {/* Macro bar chart — unified for light + dark */}
+      <View style={styles.macroRow}>
+        {isDark ? (
+          <>
+            <MacroBar label="Protein" color="#E07B54" trackColor="rgba(224,123,84,0.18)"  consumed={macros.protein.consumed} target={macros.protein.target} />
+            <MacroBar label="Carbs"   color="#F5C842" trackColor="rgba(245,200,66,0.18)"  consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
+            <MacroBar label="Fat"     color="#8B9E6E" trackColor="rgba(139,158,110,0.18)" consumed={macros.fat.consumed}     target={macros.fat.target}     />
+          </>
+        ) : (
+          <>
+            <MacroBar label="Protein" color="#34D399" trackColor="rgba(52,211,153,0.15)"  consumed={macros.protein.consumed} target={macros.protein.target} />
+            <MacroBar label="Carbs"   color="#F59E0B" trackColor="rgba(245,158,11,0.15)"  consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
+            <MacroBar label="Fat"     color="#A78BFA" trackColor="rgba(167,139,250,0.15)" consumed={macros.fat.consumed}     target={macros.fat.target}     />
+          </>
+        )}
+      </View>
     </BlurView>
   );
 }
@@ -276,7 +258,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 14,
     paddingBottom: 2,
   },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -288,51 +270,24 @@ const styles = StyleSheet.create({
   widgetTitle: { fontSize: 20, fontFamily: "BebasNeue_400Regular", letterSpacing: 1.5, color: "#1A1A1A" },
   widgetSub: { fontSize: 13, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, marginTop: 1, color: "#6B7280" },
 
-  // Calorie summary
-  calRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 4,
-  },
-  calLeft: { flexDirection: "row", alignItems: "baseline", gap: 4 },
-  calBig: { fontSize: 52, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, color: "#0F172A" },
-  calOf: {
-    fontSize: 18,
-    fontFamily: "BebasNeue_400Regular",
-    letterSpacing: 0.5,
-    color: "#94A3B8",
-    alignSelf: "flex-end",
-    marginBottom: 8,
-  },
-  calBadge: {
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.95)",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "rgba(45,212,191,0.25)",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    shadowColor: "#2DD4BF",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  calBadgePct: { fontSize: 28, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, color: "#2DD4BF" },
-  calBadgeRem: { fontSize: 13, fontFamily: "BebasNeue_400Regular", letterSpacing: 0.8, marginTop: 1, color: "#94A3B8" },
+  // Calorie summary (right side of header)
+  calRight: { alignItems: "flex-end", gap: 2 },
+  calRow: { flexDirection: "row", alignItems: "baseline", gap: 3 },
+  calBig: { fontSize: 38, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, color: "#0F172A" },
+  calOf: { fontSize: 15, fontFamily: "BebasNeue_400Regular", letterSpacing: 0.5, color: "#94A3B8" },
+  calSub: { fontSize: 13, fontFamily: "BebasNeue_400Regular", letterSpacing: 0.8, color: "#2DD4BF" },
 
   // Progress bar
   calBar: {
-    height: 5,
+    height: 6,
     borderRadius: 3,
     overflow: "hidden",
     backgroundColor: "rgba(45,212,191,0.15)",
     marginHorizontal: 20,
-    marginVertical: 6,
+    marginTop: 8,
+    marginBottom: 4,
   },
-  calBarFill: { height: 5, borderRadius: 3 },
+  calBarFill: { height: 6, borderRadius: 3 },
 
   // Macro bar chart
   macroRow: {
