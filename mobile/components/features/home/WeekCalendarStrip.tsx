@@ -282,14 +282,42 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
         activeOpacity={1}
         onPress={() => setShowLegend((v) => !v)}
       >
-      <LinearGradient
-        colors={isDark ? ['#2A1F10', '#2E2215', '#33261A', '#2E2215'] : ['#5DD6C8', '#4BBFCC', '#5BA8D4', '#6B9FD4']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.card}
+      <BlurView
+        intensity={isDark ? 52 : 72}
+        tint={isDark ? "dark" : "light"}
+        style={[styles.card, isDark ? styles.cardDark : styles.cardLight]}
       >
-        <View style={styles.glassOverlay}>
-        <View style={styles.cardHighlight} pointerEvents="none" />
+        {/* Teal-blue tint layer in light mode */}
+        {!isDark && (
+          <LinearGradient
+            colors={['rgba(43,182,166,0.45)', 'rgba(59,111,212,0.40)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+            pointerEvents="none"
+          />
+        )}
+        {/* Specular top-edge highlight */}
+        <LinearGradient
+          colors={isDark
+            ? ['rgba(255,220,150,0.22)', 'rgba(255,220,150,0.0)']
+            : ['rgba(255,255,255,0.65)', 'rgba(255,255,255,0.0)']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={styles.specular}
+          pointerEvents="none"
+        />
+        {/* Left-edge shimmer */}
+        <LinearGradient
+          colors={isDark
+            ? ['rgba(255,220,150,0.10)', 'rgba(255,220,150,0.0)']
+            : ['rgba(255,255,255,0.45)', 'rgba(255,255,255,0.0)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.leftShimmer}
+          pointerEvents="none"
+        />
+        <View style={styles.cardContent}>
 
         {/* Header row */}
         <View style={styles.cardHeader}>
@@ -379,7 +407,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
         )}
 
         </View>
-      </LinearGradient>
+      </BlurView>
       </TouchableOpacity>
 
       {/* ══ Bottom sheet modal ══ */}
@@ -571,29 +599,46 @@ const styles = StyleSheet.create({
   // ── Card ──────────────────────────────────────────────────────────
   card: {
     marginHorizontal: 16,
-    borderRadius: 24,
+    borderRadius: 28,
     overflow: "hidden",
+    borderWidth: 1,
+  },
+  cardLight: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(255,255,255,0.45)',
     shadowColor: "#4A90B8",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
     shadowRadius: 24,
     elevation: 8,
   },
-  glassOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 24,
+  cardDark: {
+    backgroundColor: 'rgba(28,22,18,0.55)',
+    borderColor: 'rgba(255,220,150,0.14)',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  cardContent: {
     paddingTop: 10,
     paddingBottom: 10,
     paddingHorizontal: 14,
   },
-  cardHighlight: {
+  specular: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: "rgba(255,255,255,0.35)",
+    top: 0, left: 0, right: 0,
+    height: 68,
+    borderTopLeftRadius: 27,
+    borderTopRightRadius: 27,
+  },
+  leftShimmer: {
+    position: "absolute",
+    top: 0, left: 0, bottom: 0,
+    width: 56,
+    borderTopLeftRadius: 27,
+    borderBottomLeftRadius: 27,
   },
   cardHeader: {
     flexDirection: "row",

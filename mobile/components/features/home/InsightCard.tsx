@@ -19,22 +19,31 @@ export function InsightCard({ insight }: InsightCardProps) {
 
   return (
     <BlurView
-      intensity={isDark ? 0 : 60}
+      intensity={isDark ? 52 : 72}
       tint={isDark ? "dark" : "light"}
-      style={[s.card, isDark && {
-        backgroundColor: '#252018',
-        borderColor: 'rgba(255,220,150,0.12)',
-        shadowColor: '#F5C842',
-      }]}
+      style={[s.card, isDark ? s.cardDark : s.cardLight]}
     >
-      {/* Top accent strip */}
+      {/* Specular top-edge highlight */}
       <LinearGradient
-        colors={isDark ? ["rgba(245,200,66,0.08)", "transparent"] : ["rgba(43,182,166,0.12)", "transparent"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
+        colors={isDark
+          ? ['rgba(255,220,150,0.22)', 'rgba(255,220,150,0.0)']
+          : ['rgba(255,255,255,0.92)', 'rgba(255,255,255,0.0)']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={s.specular}
         pointerEvents="none"
       />
+      {/* Left-edge shimmer */}
+      <LinearGradient
+        colors={isDark
+          ? ['rgba(255,220,150,0.10)', 'rgba(255,220,150,0.0)']
+          : ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={s.leftShimmer}
+        pointerEvents="none"
+      />
+
       {/* Top row: badge + live */}
       <View style={s.topRow}>
         <View style={[s.badge, isDark && {
@@ -59,13 +68,13 @@ export function InsightCard({ insight }: InsightCardProps) {
         onPress={() => router.push("/(tabs)/agent" as any)}
       >
         <LinearGradient
-          colors={isDark ? ["#C8A020", "#F5C842"] : ["#3B6FD4", "#5B8FE8"]}
+          colors={isDark ? ['#5C6E3A', '#8B9E6E'] : ['#3B6FD4', '#5B8FE8']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={s.cta}
         >
-          <Text style={[s.ctaText, isDark && { color: '#1C1612' }]}>Generate meal suggestion</Text>
-          <Text style={[s.ctaArrow, isDark && { color: 'rgba(28,22,18,0.7)' }]}>→</Text>
+          <Text style={[s.ctaText, isDark && { color: '#F0EDE6' }]}>Generate meal suggestion</Text>
+          <Text style={[s.ctaArrow, isDark && { color: 'rgba(240,237,230,0.7)' }]}>→</Text>
         </LinearGradient>
       </TouchableOpacity>
     </BlurView>
@@ -77,20 +86,45 @@ const TEAL = "#20C7B7";
 const s = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    borderRadius: 24,
+    borderRadius: 28,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.75)",
     paddingHorizontal: 16,
-    paddingTop: 11,
-    paddingBottom: 10,
+    paddingTop: 12,
+    paddingBottom: 12,
     gap: 8,
     borderWidth: 1,
-    borderColor: "rgba(43,182,166,0.2)",
-    shadowColor: "#2BB6A6",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
+  },
+  cardLight: {
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderColor: "rgba(255,255,255,0.62)",
+    shadowColor: "#7BAAC8",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.22,
+    shadowRadius: 28,
+    elevation: 8,
+  },
+  cardDark: {
+    backgroundColor: "rgba(28,22,18,0.55)",
+    borderColor: "rgba(255,220,150,0.14)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
     shadowRadius: 20,
-    elevation: 4,
+    elevation: 10,
+  },
+  specular: {
+    position: "absolute",
+    top: 0, left: 0, right: 0,
+    height: 68,
+    borderTopLeftRadius: 27,
+    borderTopRightRadius: 27,
+  },
+  leftShimmer: {
+    position: "absolute",
+    top: 0, left: 0, bottom: 0,
+    width: 56,
+    borderTopLeftRadius: 27,
+    borderBottomLeftRadius: 27,
   },
 
   // Top row
