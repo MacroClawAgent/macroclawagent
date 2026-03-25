@@ -1,6 +1,10 @@
 // Dynamic config — reads secrets from .env (never commit .env)
 export default ({ config }) => ({
   ...config,
+  plugins: [
+    ...(config.plugins ?? []),
+    "expo-font",
+  ],
   extra: {
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,

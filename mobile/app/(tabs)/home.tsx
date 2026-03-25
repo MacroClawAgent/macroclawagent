@@ -216,18 +216,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   greetingWord: {
-    fontSize: 14,
-    fontWeight: "500",
-    fontFamily: "Helvetica-Bold",
-    letterSpacing: 0.2,
+    fontSize: 16,
+    fontFamily: "BebasNeue_400Regular",
+    letterSpacing: 1.5,
     color: "#6B7280",
   },
   greetingName: {
-    fontSize: 30,
-    fontWeight: "800",
-    fontFamily: "Helvetica-Bold",
-    letterSpacing: -0.8,
-    lineHeight: 35,
+    fontSize: 42,
+    fontFamily: "BebasNeue_400Regular",
+    letterSpacing: 1,
+    lineHeight: 44,
     color: "#111827",
   },
 
@@ -260,7 +258,7 @@ const styles = StyleSheet.create({
   bottomSpacer: { height: 24 },
 
   discoverSection: { paddingHorizontal: 20, gap: 12 },
-  discoverHeading: { fontSize: 18, fontWeight: "700", fontFamily: "Helvetica-Bold", letterSpacing: -0.3, color: "#111827" },
+  discoverHeading: { fontSize: 26, fontFamily: "BebasNeue_400Regular", letterSpacing: 1.5, color: "#111827" },
   discoverGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   discoverCard: {
     width: (SCREEN_W - 40 - 12) / 2,
@@ -293,7 +291,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  discoverLabel: { fontSize: 13, fontWeight: "600", fontFamily: "Helvetica-Bold", color: "#1A1A1A", letterSpacing: -0.1 },
+  discoverLabel: { fontSize: 15, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, color: "#1A1A1A" },
   discoverCardDark: {
     backgroundColor: "#252018",
     borderColor: "rgba(255,220,150,0.12)",
