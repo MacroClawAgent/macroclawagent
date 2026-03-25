@@ -287,21 +287,9 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
         tint={isDark ? "dark" : "light"}
         style={[styles.card, isDark ? styles.cardDark : styles.cardLight]}
       >
-        {/* Teal-blue tint layer in light mode */}
-        {!isDark && (
-          <LinearGradient
-            colors={['rgba(43,182,166,0.45)', 'rgba(59,111,212,0.40)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFillObject}
-            pointerEvents="none"
-          />
-        )}
         {/* Specular top-edge highlight */}
         <LinearGradient
-          colors={isDark
-            ? ['rgba(255,220,150,0.22)', 'rgba(255,220,150,0.0)']
-            : ['rgba(255,255,255,0.65)', 'rgba(255,255,255,0.0)']}
+          colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           style={styles.specular}
@@ -309,9 +297,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
         />
         {/* Left-edge shimmer */}
         <LinearGradient
-          colors={isDark
-            ? ['rgba(255,220,150,0.10)', 'rgba(255,220,150,0.0)']
-            : ['rgba(255,255,255,0.45)', 'rgba(255,255,255,0.0)']}
+          colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.leftShimmer}

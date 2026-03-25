@@ -25,9 +25,7 @@ export function InsightCard({ insight }: InsightCardProps) {
     >
       {/* Specular top-edge highlight */}
       <LinearGradient
-        colors={isDark
-          ? ['rgba(255,220,150,0.22)', 'rgba(255,220,150,0.0)']
-          : ['rgba(255,255,255,0.92)', 'rgba(255,255,255,0.0)']}
+        colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
         style={s.specular}
@@ -35,9 +33,7 @@ export function InsightCard({ insight }: InsightCardProps) {
       />
       {/* Left-edge shimmer */}
       <LinearGradient
-        colors={isDark
-          ? ['rgba(255,220,150,0.10)', 'rgba(255,220,150,0.0)']
-          : ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
+        colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={s.leftShimmer}

@@ -20,9 +20,7 @@ export function Card({ children, style, padding = 20 }: CardProps) {
     >
       {/* Specular top-edge highlight — light refracting off top of glass */}
       <LinearGradient
-        colors={isDark
-          ? ['rgba(255,220,150,0.22)', 'rgba(255,220,150,0.0)']
-          : ['rgba(255,255,255,0.92)', 'rgba(255,255,255,0.0)']}
+        colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
         style={styles.specular}
@@ -30,9 +28,7 @@ export function Card({ children, style, padding = 20 }: CardProps) {
       />
       {/* Left-edge shimmer — thickness illusion */}
       <LinearGradient
-        colors={isDark
-          ? ['rgba(255,220,150,0.10)', 'rgba(255,220,150,0.0)']
-          : ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
+        colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.leftShimmer}
