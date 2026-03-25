@@ -23,6 +23,7 @@ export interface HomeViewModel {
     protein: { consumed: number; target: number; ratio: number };
     carbs: { consumed: number; target: number; ratio: number };
     fat: { consumed: number; target: number; ratio: number };
+    fiber: { consumed: number; target: number; ratio: number };
   };
   latestActivity?: {
     type: string;
@@ -171,6 +172,8 @@ export function useHomeViewModel(): HomeViewModel {
   const carbTarget = profile?.carbs_goal ?? 250;
   const fat = nutrition?.fat_g ?? 0;
   const fatTarget = profile?.fat_goal ?? 70;
+  const fiber = nutrition?.fiber_g ?? 0;
+  const fiberTarget = 30;
 
   const act = latestActivity
     ? {
@@ -203,6 +206,7 @@ export function useHomeViewModel(): HomeViewModel {
       protein: { consumed: prot, target: protTarget, ratio: protTarget > 0 ? Math.min(1, prot / protTarget) : 0 },
       carbs: { consumed: carbs, target: carbTarget, ratio: carbTarget > 0 ? Math.min(1, carbs / carbTarget) : 0 },
       fat: { consumed: fat, target: fatTarget, ratio: fatTarget > 0 ? Math.min(1, fat / fatTarget) : 0 },
+      fiber: { consumed: fiber, target: fiberTarget, ratio: fiberTarget > 0 ? Math.min(1, fiber / fiberTarget) : 0 },
     },
     latestActivity: act,
     todayActivities,

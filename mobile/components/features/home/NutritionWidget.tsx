@@ -18,6 +18,7 @@ interface NutritionWidgetProps {
     protein: MacroStat;
     carbs: MacroStat;
     fat: MacroStat;
+    fiber: MacroStat;
   };
   goalLabel: string;
 }
@@ -192,13 +193,15 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
           <>
             <MacroBar label="Protein" color="#E07B54" trackColor="rgba(224,123,84,0.18)"  consumed={macros.protein.consumed} target={macros.protein.target} />
             <MacroBar label="Carbs"   color="#F5C842" trackColor="rgba(245,200,66,0.18)"  consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
-            <MacroBar label="Fat"     color="#8B9E6E" trackColor="rgba(139,158,110,0.18)" consumed={macros.fat.consumed}     target={macros.fat.target}     />
+            <MacroBar label="Fat"     color="#3C3028" trackColor="rgba(60,48,40,0.5)"     consumed={macros.fat.consumed}     target={macros.fat.target}     />
+            <MacroBar label="Fiber"   color="#8B9E6E" trackColor="rgba(139,158,110,0.18)" consumed={macros.fiber.consumed}   target={macros.fiber.target}   />
           </>
         ) : (
           <>
             <MacroBar label="Protein" color="#34D399" trackColor="rgba(52,211,153,0.15)"  consumed={macros.protein.consumed} target={macros.protein.target} />
             <MacroBar label="Carbs"   color="#F59E0B" trackColor="rgba(245,158,11,0.15)"  consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
-            <MacroBar label="Fat"     color="#A78BFA" trackColor="rgba(167,139,250,0.15)" consumed={macros.fat.consumed}     target={macros.fat.target}     />
+            <MacroBar label="Fat"     color="#374151" trackColor="rgba(55,65,81,0.18)"    consumed={macros.fat.consumed}     target={macros.fat.target}     />
+            <MacroBar label="Fiber"   color="#22C55E" trackColor="rgba(34,197,94,0.15)"   consumed={macros.fiber.consumed}   target={macros.fiber.target}   />
           </>
         )}
       </View>
