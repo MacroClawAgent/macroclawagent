@@ -1,6 +1,8 @@
 import type { UserPreferences } from '@/types/preferences';
 import type { Meal, DayPlan, MealType } from '@/types/mealPlan';
 import { buildConstraintString } from './preferencesService';
+import { getPantryString } from './pantryService';
+import type { PantryItem } from './pantryService';
 import { apiPost } from '@/lib/api';
 
 interface NutritionTargets {
@@ -9,32 +11,51 @@ interface NutritionTargets {
   carbs: number;
   fat: number;
   goal: string;
+  consumed?: { calories: number; protein: number; carbs: number; fat: number };
 }
 
 // ── Prompt builders ────────────────────────────────────────────────────────────
 
-function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets): string {
+const MEAL_JSON_SPEC = `{"type":"breakfast","name":"meal name (max 5 words)","ingredients":"Ingredient 1 (150g), Ingredient 2 (100g)","ingredientsList":["ingredient 1","ingredient 2"],"calories":520,"protein":42,"carbs":48,"fat":14,"time":"7:30 AM","emoji":"🍗","cookTime":20,"difficulty":"Easy","reason":"One sentence max 15 words explaining why this meal is right for this user right now. Be specific — reference their goal, remaining macros, or pantry items.","recipeSteps":["Step 1.","Step 2.","Step 3.","Step 4.","Step 5."]}`;
+
+function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets, pantryItems?: PantryItem[]): string {
   const constraints = buildConstraintString(prefs);
+  const pantryContext = pantryItems && pantryItems.length > 0 ? `\n${getPantryString(pantryItems)}\n` : '';
+  const consumedCtx = targets.consumed
+    ? `\nALREADY EATEN TODAY: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein, ${targets.consumed.carbs}g carbs, ${targets.consumed.fat}g fat.\nRemaining: ${targets.calories - targets.consumed.calories} kcal, ${targets.protein - targets.consumed.protein}g protein.\n`
+    : '';
   return (
     `You are a professional nutritionist creating a personalised meal plan for an Australian user.\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
     `USER NUTRITION TARGETS:\nGoal: ${targets.goal}\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
-    `Servings: ${prefs.servings} person(s)\n\n` +
+    `Servings: ${prefs.servings} person(s)\n` +
+    consumedCtx + pantryContext + `\n` +
     `Generate exactly 4 meals for today: breakfast, lunch, snack, dinner.\n\n` +
-    `Each meal MUST hit these approximate targets:\n` +
-    `Breakfast: ~25% of daily calories, good protein\n` +
-    `Lunch: ~30% of daily calories, highest protein meal\n` +
-    `Snack: ~15% of daily calories, moderate protein\n` +
-    `Dinner: ~30% of daily calories, balanced macros\n\n` +
-    `For EACH meal return this exact JSON structure:\n` +
-    `{"type":"breakfast","name":"meal name (max 5 words)","ingredients":"Ingredient 1 (150g), Ingredient 2 (100g)",` +
-    `"ingredientsList":["ingredient 1","ingredient 2"],"calories":520,"protein":42,"carbs":48,"fat":14,` +
-    `"time":"7:30 AM","emoji":"🍗","cookTime":20,"difficulty":"Easy",` +
-    `"recipeSteps":["Step 1.","Step 2.","Step 3.","Step 4.","Step 5."]}\n\n` +
+    `For EACH meal return this exact JSON structure:\n${MEAL_JSON_SPEC}\n\n` +
     `Return a JSON array of exactly 4 meal objects.\n` +
     `Use realistic Australian supermarket ingredients. Include quantities in grams.\n` +
     `Recipe steps: 5-6 steps, each max 2 sentences. JSON only — no other text.`
+  );
+}
+
+function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targets: NutritionTargets, pantryItems?: PantryItem[]): string {
+  const constraints = buildConstraintString(prefs);
+  const pantryContext = pantryItems && pantryItems.length > 0 ? `\n${getPantryString(pantryItems)}\n` : '';
+  const consumedCtx = targets.consumed
+    ? `\nALREADY EATEN TODAY: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein.\nRemaining today: ${targets.calories - targets.consumed.calories} kcal, ${targets.protein - targets.consumed.protein}g protein.\n`
+    : '';
+  const calTarget = mealType === 'breakfast' ? Math.round(targets.calories * 0.25)
+    : mealType === 'lunch' ? Math.round(targets.calories * 0.30)
+    : mealType === 'dinner' ? Math.round(targets.calories * 0.30)
+    : Math.round(targets.calories * 0.15);
+  return (
+    `You are a professional nutritionist. Suggest ONE ${mealType} meal for an Australian user.\n\n` +
+    (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
+    `USER GOAL: ${targets.goal}\nTarget for this meal: ~${calTarget} kcal, ${Math.round(targets.protein * (calTarget / targets.calories))}g protein\n` +
+    consumedCtx + pantryContext + `\n` +
+    `Return a single JSON object (not an array) with this structure:\n${MEAL_JSON_SPEC}\n\n` +
+    `JSON only — no other text.`
   );
 }
 
@@ -101,14 +122,33 @@ async function callAgent(prompt: string): Promise<string> {
 
 // ── Public API ─────────────────────────────────────────────────────────────────
 
+export async function generateSingleMeal(
+  mealType: MealType,
+  preferences: UserPreferences,
+  targets: NutritionTargets,
+  pantryItems?: PantryItem[],
+): Promise<Meal> {
+  try {
+    const prompt = buildSingleMealPrompt(mealType, preferences, targets, pantryItems);
+    const responseText = await callAgent(prompt);
+    const clean = responseText.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    return { ...parsed, id: `${mealType}-${Date.now()}`, isLogged: false, status: 'upcoming' as const };
+  } catch {
+    const mockPlan = getMockMealPlan('today', preferences);
+    return mockPlan[0].meals[mealType];
+  }
+}
+
 export async function generateMealPlan(
   type: 'today' | 'week',
   preferences: UserPreferences,
   targets: NutritionTargets,
+  pantryItems?: PantryItem[],
 ): Promise<DayPlan[]> {
   try {
     const prompt = type === 'today'
-      ? buildTodayPrompt(preferences, targets)
+      ? buildTodayPrompt(preferences, targets, pantryItems)
       : buildWeekPrompt(preferences, targets);
 
     const responseText = await callAgent(prompt);
@@ -161,6 +201,7 @@ function getMockMealPlan(type: 'today' | 'week', prefs: UserPreferences): DayPla
 
   const mockBreakfast: Meal = {
     id: 'b1', type: 'breakfast',
+    reason: 'High-protein start sets your metabolism up for the day ahead.',
     name: isVeg ? 'Overnight Oats & Berries' : 'Greek Yogurt Parfait',
     ingredients: isVeg || noDairy
       ? 'Rolled oats (80g), almond milk (200ml), mixed berries (100g), chia seeds (15g), maple syrup (10ml)'
@@ -182,6 +223,7 @@ function getMockMealPlan(type: 'today' | 'week', prefs: UserPreferences): DayPla
 
   const mockLunch: Meal = {
     id: 'l1', type: 'lunch',
+    reason: 'Hits your highest protein target for the day in one meal.',
     name: isVeg ? 'Chickpea Buddha Bowl' : 'Chicken & Rice Bowl',
     ingredients: isVeg
       ? 'Chickpeas (200g), brown rice (150g), cucumber (100g), cherry tomatoes (100g), tahini (30g), lemon juice (15ml)'
@@ -211,6 +253,7 @@ function getMockMealPlan(type: 'today' | 'week', prefs: UserPreferences): DayPla
 
   const mockSnack: Meal = {
     id: 's1', type: 'snack',
+    reason: 'Keeps protein consistent between meals without spiking calories.',
     name: isVegan ? 'Plant Protein Shake' : 'Protein Shake & Apple',
     ingredients: isVegan || noDairy
       ? 'Plant protein powder (30g), oat milk (250ml), apple (1 medium)'
@@ -228,6 +271,7 @@ function getMockMealPlan(type: 'today' | 'week', prefs: UserPreferences): DayPla
 
   const mockDinner: Meal = {
     id: 'd1', type: 'dinner',
+    reason: 'Closes your protein gap for the day with anti-inflammatory omega-3.',
     name: isVeg ? 'Lentil & Vegetable Curry' : 'Salmon & Sweet Potato',
     ingredients: isVeg
       ? 'Red lentils (180g), coconut milk (200ml), sweet potato (200g), spinach (100g), curry paste (30g), onion (1 medium)'

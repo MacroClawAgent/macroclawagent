@@ -33,6 +33,12 @@ export default function MealPlanCard({ meal, onLog, onRecipe }: Props) {
           </View>
           <Text style={s.mealName} numberOfLines={1}>{meal.emoji} {meal.name}</Text>
           <Text style={s.ingredients} numberOfLines={2}>{meal.ingredients}</Text>
+          {!!meal.reason && (
+            <View style={s.reasonRow}>
+              <Text style={s.reasonIcon}>✦</Text>
+              <Text style={s.reasonText} numberOfLines={2}>{meal.reason}</Text>
+            </View>
+          )}
         </View>
 
         {/* Right — macros */}
@@ -114,6 +120,9 @@ const s = StyleSheet.create({
 
   mealName:   { fontSize: 16, fontWeight: '700', color: '#1E293B', marginBottom: 4 },
   ingredients:{ fontSize: 12, color: '#64748B', lineHeight: 18 },
+  reasonRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 5, marginTop: 6, backgroundColor: 'rgba(45,212,191,0.07)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
+  reasonIcon: { fontSize: 10, color: TEAL, marginTop: 1 },
+  reasonText: { flex: 1, fontSize: 11, color: '#0D7066', fontWeight: '500', lineHeight: 16 },
 
   macroColumn:{ alignItems: 'flex-end', gap: 2, minWidth: 70 },
   loggedBadge:{ backgroundColor: 'rgba(45,212,191,0.15)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2, marginBottom: 4 },

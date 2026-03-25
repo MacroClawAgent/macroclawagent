@@ -23,13 +23,20 @@ const STEPS_WEEK = [
   'Finalising your weekly plan…',
 ];
 
+const STEPS_SINGLE = [
+  'Checking your remaining macros…',
+  'Picking the best option right now…',
+  'Matching your pantry items…',
+  'Crafting the perfect meal…',
+];
+
 interface Props {
-  type: 'today' | 'week';
+  type: 'today' | 'week' | 'single';
   preferences: UserPreferences;
 }
 
 export default function GeneratingLoader({ type, preferences }: Props) {
-  const steps   = type === 'today' ? STEPS_TODAY : STEPS_WEEK;
+  const steps   = type === 'week' ? STEPS_WEEK : type === 'single' ? STEPS_SINGLE : STEPS_TODAY;
   const spinAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [stepIndex, setStepIndex] = React.useState(0);

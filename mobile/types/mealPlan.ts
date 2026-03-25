@@ -1,7 +1,7 @@
 import type { UserPreferences } from './preferences';
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
-export type PlanType = 'today' | 'week';
+export type PlanType = 'today' | 'week' | 'single';
 export type MealStatus = 'upcoming' | 'current' | 'logged';
 
 export interface Meal {
@@ -21,6 +21,7 @@ export interface Meal {
   status: MealStatus;
   isLogged: boolean;
   recipeSteps?: string[];
+  reason?: string;
 }
 
 export interface DayPlan {

@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { DayPlan, AgentScreenState } from '@/types/mealPlan';
+import type { DayPlan, Meal, MealType, AgentScreenState } from '@/types/mealPlan';
 import type { UserPreferences } from '@/types/preferences';
-import { generateMealPlan } from '@/services/mealGenerationService';
+import type { PantryItem } from '@/services/pantryService';
+import { generateMealPlan, generateSingleMeal } from '@/services/mealGenerationService';
 
 const PLAN_STORAGE_KEY = 'jonno_meal_plan';
 
@@ -16,26 +17,34 @@ interface NutritionTargets {
 
 export const useMealPlan = () => {
   const [state, setState]                     = useState<AgentScreenState>('idle');
-  const [planType, setPlanType]               = useState<'today' | 'week'>('today');
+  const [planType, setPlanType]               = useState<'today' | 'week' | 'single'>('today');
   const [days, setDays]                       = useState<DayPlan[]>([]);
+  const [singleMeal, setSingleMeal]           = useState<Meal | null>(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [isRegenerating, setIsRegenerating]   = useState(false);
   const [error, setError]                     = useState<string | null>(null);
 
   const generate = useCallback(async (
-    type: 'today' | 'week',
+    type: 'today' | 'week' | 'single',
     preferences: UserPreferences,
     targets: NutritionTargets,
+    opts?: { mealType?: MealType; pantryItems?: PantryItem[] },
   ) => {
     setState('generating');
     setPlanType(type);
     setError(null);
     setSelectedDayIndex(0);
     try {
-      const generated = await generateMealPlan(type, preferences, targets);
-      setDays(generated);
-      setState('plan_ready');
-      await AsyncStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify({ type, days: generated }));
+      if (type === 'single') {
+        const meal = await generateSingleMeal(opts?.mealType ?? 'lunch', preferences, targets, opts?.pantryItems);
+        setSingleMeal(meal);
+        setState('plan_ready');
+      } else {
+        const generated = await generateMealPlan(type, preferences, targets, opts?.pantryItems);
+        setDays(generated);
+        setState('plan_ready');
+        await AsyncStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify({ type, days: generated }));
+      }
     } catch {
       setError('Could not generate plan. Please try again.');
       setState('idle');
@@ -45,11 +54,17 @@ export const useMealPlan = () => {
   const regenerate = useCallback(async (
     preferences: UserPreferences,
     targets: NutritionTargets,
+    opts?: { mealType?: MealType; pantryItems?: PantryItem[] },
   ) => {
     setIsRegenerating(true);
     try {
-      const generated = await generateMealPlan(planType, preferences, targets);
-      setDays(generated);
+      if (planType === 'single') {
+        const meal = await generateSingleMeal(opts?.mealType ?? 'lunch', preferences, targets, opts?.pantryItems);
+        setSingleMeal(meal);
+      } else {
+        const generated = await generateMealPlan(planType, preferences, targets, opts?.pantryItems);
+        setDays(generated);
+      }
     } finally {
       setIsRegenerating(false);
     }
@@ -82,6 +97,7 @@ export const useMealPlan = () => {
   const resetPlan = useCallback(() => {
     setState('idle');
     setDays([]);
+    setSingleMeal(null);
     setError(null);
   }, []);
 
@@ -89,6 +105,7 @@ export const useMealPlan = () => {
     state,
     planType,
     days,
+    singleMeal,
     selectedDayIndex,
     isRegenerating,
     error,
