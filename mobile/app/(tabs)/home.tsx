@@ -82,7 +82,7 @@ export default function HomeScreen() {
           onPress={() => router.push("/profile")}
           size={44}
           color={isDark ? "#F5C842" : "#3B6FD4"}
-          style={{ borderWidth: 3, borderColor: vm.goalRingColor }}
+          style={{ borderWidth: 3, borderColor: isDark ? '#F5C842' : vm.goalRingColor }}
         />
       </View>
       <ScrollView
