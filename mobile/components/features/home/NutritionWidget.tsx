@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import type { DimensionValue } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -131,12 +132,31 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
   const calPct = Math.round(calorieProgress.ratio * 100);
 
   return (
-    <View style={[
-      styles.outerCard,
-      isDark && { backgroundColor: '#252018', borderColor: 'rgba(255,220,150,0.12)' },
-    ]}>
-      {/* Inner glow at top of card */}
-      <View style={[styles.innerGlow, isDark && { backgroundColor: 'rgba(245,200,66,0.05)' }]} pointerEvents="none" />
+    <BlurView
+      intensity={isDark ? 52 : 72}
+      tint={isDark ? "dark" : "light"}
+      style={[styles.outerCard, isDark ? styles.outerCardDark : styles.outerCardLight]}
+    >
+      {/* Specular top-edge highlight */}
+      <LinearGradient
+        colors={isDark
+          ? ['rgba(255,220,150,0.22)', 'rgba(255,220,150,0.0)']
+          : ['rgba(255,255,255,0.92)', 'rgba(255,255,255,0.0)']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={styles.specular}
+        pointerEvents="none"
+      />
+      {/* Left-edge shimmer */}
+      <LinearGradient
+        colors={isDark
+          ? ['rgba(255,220,150,0.10)', 'rgba(255,220,150,0.0)']
+          : ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.leftShimmer}
+        pointerEvents="none"
+      />
 
       {/* Header */}
       <View style={styles.header}>
@@ -200,7 +220,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
           <MacroBar label="Fat"     color="#A78BFA" trackColor="rgba(167,139,250,0.15)"  consumed={macros.fat.consumed}     target={macros.fat.target}     />
         </View>
       )}
-    </View>
+    </BlurView>
   );
 }
 
@@ -210,26 +230,44 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     flex: 1,
     borderRadius: 28,
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.85)",
-    backgroundColor: "rgba(255,255,255,0.72)",
-    shadowColor: "#7DB9D8",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.35,
-    shadowRadius: 28,
-    elevation: 16,
+    borderWidth: 1,
     overflow: "hidden",
   },
-
-  innerGlow: {
+  outerCardLight: {
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderColor: "rgba(255,255,255,0.62)",
+    shadowColor: "#7BAAC8",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.22,
+    shadowRadius: 28,
+    elevation: 8,
+  },
+  outerCardDark: {
+    backgroundColor: "rgba(28,22,18,0.55)",
+    borderColor: "rgba(255,220,150,0.14)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  specular: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: 80,
-    backgroundColor: "rgba(255,255,255,0.45)",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    height: 72,
+    borderTopLeftRadius: 27,
+    borderTopRightRadius: 27,
+  },
+  leftShimmer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: 56,
+    borderTopLeftRadius: 27,
+    borderBottomLeftRadius: 27,
   },
 
   // Header
