@@ -613,8 +613,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cardDark: {
-    backgroundColor: 'rgba(28,22,18,0.55)',
-    borderColor: 'rgba(255,220,150,0.14)',
+    backgroundColor: 'rgba(28,22,18,0.38)',
+    borderColor: 'rgba(255,220,150,0.18)',
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,

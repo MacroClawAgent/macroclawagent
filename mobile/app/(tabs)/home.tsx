@@ -58,10 +58,12 @@ export default function HomeScreen() {
   );
 
   return (
-    <Screen style={{ backgroundColor: isDark ? "#1C1612" : "#DDE6F0" }}>
+    <Screen style={{ backgroundColor: isDark ? "#0D0A07" : "#C8DFF0" }}>
       {/* Full-screen gradient backdrop */}
       <LinearGradient
-        colors={isDark ? ['#1C1612', '#1E1A13', '#221C15'] : ['#F0F5FA', '#E4ECF4', '#DDE6F0']}
+        colors={isDark
+          ? ['#0D0A07', '#1C1612', '#2A1C0E']
+          : ['#E8F2F8', '#D4E7F3', '#C8DFF0']}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
@@ -81,8 +83,8 @@ export default function HomeScreen() {
           name={userProfile?.full_name ?? ""}
           onPress={() => router.push("/profile")}
           size={44}
-          color={isDark ? "#8B9E6E" : "#3B6FD4"}
-          style={{ borderWidth: 3, borderColor: isDark ? '#8B9E6E' : vm.goalRingColor }}
+          color={isDark ? "#E07B54" : "#3B6FD4"}
+          style={{ borderWidth: 3, borderColor: isDark ? '#E07B54' : vm.goalRingColor }}
         />
       </View>
       <ScrollView
