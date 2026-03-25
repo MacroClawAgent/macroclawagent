@@ -173,7 +173,7 @@ export function useHomeViewModel(): HomeViewModel {
   const fat = nutrition?.fat_g ?? 0;
   const fatTarget = profile?.fat_goal ?? 70;
   const fiber = nutrition?.fiber_g ?? 0;
-  const fiberTarget = 30;
+  const fiberTarget = 20;
 
   const act = latestActivity
     ? {
