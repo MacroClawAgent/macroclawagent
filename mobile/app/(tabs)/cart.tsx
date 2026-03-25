@@ -334,8 +334,8 @@ export default function CartScreen() {
           <Text style={[s.emptySub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>
             Generate a meal plan first, or we'll build a cart from your macro targets
           </Text>
-          <TouchableOpacity onPress={sc.initializeCart} style={s.buildBtn} activeOpacity={0.85}>
-            <Text style={s.buildBtnLabel}>Build My Cart</Text>
+          <TouchableOpacity onPress={sc.initializeCart} style={[s.buildBtn, isDark && { backgroundColor: '#F5C842' }]} activeOpacity={0.85}>
+            <Text style={[s.buildBtnLabel, isDark && { color: '#1C1410' }]}>Build My Cart</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -377,9 +377,9 @@ export default function CartScreen() {
               onPress={sc.openInStore}
               disabled={!sc.cart.selectedStore}
               activeOpacity={0.85}
-              style={[s.shopBtn, !sc.cart.selectedStore && s.shopBtnDisabled]}
+              style={[s.shopBtn, !sc.cart.selectedStore && s.shopBtnDisabled, isDark && { backgroundColor: '#F5C842' }]}
             >
-              <Text style={s.shopBtnLabel}>
+              <Text style={[s.shopBtnLabel, isDark && { color: '#1C1410' }]}>
                 {sc.cart.selectedNearbyStore
                   ? `Shop at ${sc.cart.selectedNearbyStore.store === 'woolworths' ? 'Woolworths' : 'Coles'} →`
                   : 'Select a store first'}

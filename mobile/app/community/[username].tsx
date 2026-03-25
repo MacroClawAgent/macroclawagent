@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppHeader } from "@/components/ui/AppHeader";
+import { useTheme } from "@/context/ThemeContext";
 import { apiPost, apiDelete } from "@/lib/api";
 
 const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB";
@@ -26,6 +27,7 @@ interface UserProfile {
 export default function CommunityUserProfile() {
   const { username } = useLocalSearchParams<{ username: string }>();
   const router = useRouter();
+  const { isDark } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
@@ -69,42 +71,50 @@ export default function CommunityUserProfile() {
     : (profile?.username?.[0] ?? "?").toUpperCase();
 
   return (
-    <SafeAreaView style={s.safe} edges={["top"]}>
+    <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={["top"]}>
       <AppHeader title={username ? `@${username}` : "Profile"} showBack />
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {loading ? (
-          <ActivityIndicator color={TEAL} size="large" style={{ marginTop: 60 }} />
+          <ActivityIndicator color={isDark ? '#F5C842' : TEAL} size="large" style={{ marginTop: 60 }} />
         ) : error || !profile ? (
           <View style={s.emptyState}>
             <Text style={s.emptyEmoji}>😕</Text>
-            <Text style={s.emptyTitle}>{error ?? "User not found"}</Text>
+            <Text style={[s.emptyTitle, isDark && { color: '#E8E0D0' }]}>{error ?? "User not found"}</Text>
           </View>
         ) : (
           <>
             {/* Avatar + name */}
             <View style={s.hero}>
-              <View style={s.avatarCircle}>
-                <Text style={s.avatarInitials}>{initials}</Text>
+              <View style={[s.avatarCircle, isDark && { backgroundColor: 'rgba(224,123,84,0.15)', borderColor: '#E07B54' }]}>
+                <Text style={[s.avatarInitials, isDark && { color: '#F5C842' }]}>{initials}</Text>
               </View>
-              <Text style={s.name}>{profile.full_name || `@${profile.username}`}</Text>
-              <Text style={s.handle}>@{profile.username}</Text>
+              <Text style={[s.name, isDark && { color: '#E8E0D0' }]}>{profile.full_name || `@${profile.username}`}</Text>
+              <Text style={[s.handle, isDark && { color: 'rgba(232,224,208,0.4)' }]}>@{profile.username}</Text>
               {profile.fitness_goal && (
-                <View style={s.goalPill}>
-                  <Text style={s.goalText}>{GOAL_LABEL[profile.fitness_goal] ?? profile.fitness_goal}</Text>
+                <View style={[s.goalPill, isDark && { backgroundColor: 'rgba(245,200,66,0.10)' }]}>
+                  <Text style={[s.goalText, isDark && { color: '#F5C842' }]}>{GOAL_LABEL[profile.fitness_goal] ?? profile.fitness_goal}</Text>
                 </View>
               )}
-              {profile.bio ? <Text style={s.bio}>{profile.bio}</Text> : null}
+              {profile.bio ? <Text style={[s.bio, isDark && { color: 'rgba(232,224,208,0.6)' }]}>{profile.bio}</Text> : null}
 
               {/* Follow button */}
               <TouchableOpacity
-                style={[s.followBtn, following && s.followBtnActive]}
+                style={[
+                  s.followBtn,
+                  isDark && { borderColor: '#F5C842' },
+                  following && (isDark ? { backgroundColor: '#F5C842', borderColor: '#F5C842' } : s.followBtnActive),
+                ]}
                 onPress={toggleFollow}
                 disabled={toggling}
                 activeOpacity={0.85}
               >
                 {toggling
-                  ? <ActivityIndicator size="small" color={following ? WHITE : TEAL} />
-                  : <Text style={[s.followBtnText, following && s.followBtnTextActive]}>
+                  ? <ActivityIndicator size="small" color={following ? (isDark ? '#1C1410' : WHITE) : (isDark ? '#F5C842' : TEAL)} />
+                  : <Text style={[
+                      s.followBtnText,
+                      isDark && { color: '#F5C842' },
+                      following && (isDark ? { color: '#1C1410' } : s.followBtnTextActive),
+                    ]}>
                       {following ? "Following ✓" : "Follow"}
                     </Text>
                 }
@@ -113,9 +123,9 @@ export default function CommunityUserProfile() {
 
             {/* Private account notice */}
             {profile.is_public === false && (
-              <View style={s.privateCard}>
+              <View style={[s.privateCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
                 <Text style={s.privateEmoji}>🔒</Text>
-                <Text style={s.privateText}>This account is private</Text>
+                <Text style={[s.privateText, isDark && { color: 'rgba(232,224,208,0.55)' }]}>This account is private</Text>
               </View>
             )}
           </>

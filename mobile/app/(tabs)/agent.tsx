@@ -247,7 +247,7 @@ export default function AgentScreen() {
             activeOpacity={0.85}
           >
             <LinearGradient
-              colors={['#2DD4BF', '#0EA5E9']}
+              colors={isDark ? ['#E07B54', '#F5C842'] : ['#2DD4BF', '#0EA5E9']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={s.cartBtnGradient}
@@ -296,11 +296,11 @@ export default function AgentScreen() {
               Ingredients sent to your Smart Cart.{'\n'}Order from Woolworths or Coles.
             </Text>
             <TouchableOpacity
-              style={s.openCartBtn}
+              style={[s.openCartBtn, isDark && { backgroundColor: '#F5C842' }]}
               onPress={() => router.push('/(tabs)/cart' as any)}
               activeOpacity={0.85}
             >
-              <Text style={s.openCartBtnText}>Open Smart Cart →</Text>
+              <Text style={[s.openCartBtnText, isDark && { color: '#1C1410' }]}>Open Smart Cart →</Text>
             </TouchableOpacity>
           </View>
 
@@ -428,7 +428,7 @@ export default function AgentScreen() {
 
           {/* Primary contextual button */}
           <TouchableOpacity style={s.primaryBtn} onPress={() => handleGenerate('single')} activeOpacity={0.85}>
-            <LinearGradient colors={['#2DD4BF', '#0EA5E9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.primaryBtnGradient}>
+            <LinearGradient colors={isDark ? ['#E07B54', '#F5C842'] : ['#2DD4BF', '#0EA5E9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.primaryBtnGradient}>
               <View style={s.btnIcon}>
                 <Text style={{ fontSize: 22 }}>{
                   mealCtx.mealType === 'breakfast' ? '🥣'

@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -109,6 +110,7 @@ const MOCK_HISTORY = [
 // ── Main screen ───────────────────────────────────────────────────────────────
 export default function LogFoodScreen() {
   const { userProfile } = useAuth();
+  const { isDark } = useTheme();
   const router = useRouter();
 
   // data state (unchanged logic)
@@ -330,14 +332,14 @@ export default function LogFoodScreen() {
 
   // ── header right ──────────────────────────────────────────────────────────
   const ClockBtn = (
-    <TouchableOpacity style={s.iconBtn} activeOpacity={0.7} onPress={() => setShowHistory(h => !h)}>
-      <Ionicons name="time-outline" size={20} color={showHistory ? TEAL : "#374151"} />
+    <TouchableOpacity style={[s.iconBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]} activeOpacity={0.7} onPress={() => setShowHistory(h => !h)}>
+      <Ionicons name="time-outline" size={20} color={showHistory ? (isDark ? '#F5C842' : TEAL) : (isDark ? 'rgba(232,224,208,0.55)' : '#374151')} />
     </TouchableOpacity>
   );
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]}>
       <AppHeader title="Log Food" showBack rightElement={ClockBtn} />
 
       {showHistory ? (
@@ -347,10 +349,10 @@ export default function LogFoodScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={TEAL} />}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={s.histHeading}>Today's Log</Text>
+          <Text style={[s.histHeading, isDark && { color: '#E8E0D0' }]}>Today's Log</Text>
           {sections.length === 0 ? (
             <View style={s.histEmpty}>
-              <Text style={s.histEmptyText}>Nothing logged today yet</Text>
+              <Text style={[s.histEmptyText, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Nothing logged today yet</Text>
             </View>
           ) : sections.map(section => {
             const tc = TAG_COLORS[section.tag] ?? { color: TEAL, bg: "" };
@@ -365,11 +367,11 @@ export default function LogFoodScreen() {
                   const expanded = expandedDishes.has(dish.key);
                   const multi    = dish.items.length > 1;
                   return (
-                    <View key={dish.key} style={[s.dishCard, { borderLeftColor: tc.color }]}>
+                    <View key={dish.key} style={[s.dishCard, { borderLeftColor: tc.color }, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)', borderLeftColor: tc.color }]}>
                       <View style={s.dishRow}>
                         <View style={s.dishMid}>
-                          <Text style={s.dishName}>{dish.dishName}</Text>
-                          <Text style={s.dishMeta}>{+dish.totalCals.toFixed(0)} kcal{multi ? ` · ${dish.items.length} ingredients` : ""}</Text>
+                          <Text style={[s.dishName, isDark && { color: '#E8E0D0' }]}>{dish.dishName}</Text>
+                          <Text style={[s.dishMeta, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{+dish.totalCals.toFixed(0)} kcal{multi ? ` · ${dish.items.length} ingredients` : ""}</Text>
                         </View>
                         <View style={s.dishActions}>
                           {multi && (
@@ -387,8 +389,8 @@ export default function LogFoodScreen() {
                           {dish.items.map((item, idx) => (
                             <View key={item.id} style={[s.ingredientRow, idx === dish.items.length - 1 && { borderBottomWidth: 0 }]}>
                               <View style={{ flex: 1 }}>
-                                <Text style={s.ingredientName}>{item.name}</Text>
-                                <Text style={s.ingredientMacros}>{+item.calories.toFixed(0)} kcal · P {+item.protein_g.toFixed(1)}g · C {+item.carbs_g.toFixed(1)}g · F {+item.fat_g.toFixed(1)}g</Text>
+                                <Text style={[s.ingredientName, isDark && { color: '#E8E0D0' }]}>{item.name}</Text>
+                                <Text style={[s.ingredientMacros, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{+item.calories.toFixed(0)} kcal · P {+item.protein_g.toFixed(1)}g · C {+item.carbs_g.toFixed(1)}g · F {+item.fat_g.toFixed(1)}g</Text>
                               </View>
                               <TouchableOpacity onPress={() => handleDelete(item.id)} style={s.deleteBtn}>
                                 <Text style={s.deleteText}>×</Text>
@@ -404,25 +406,28 @@ export default function LogFoodScreen() {
             );
           })}
 
-          <Text style={[s.histHeading, { marginTop: 24 }]}>Past Days</Text>
+          <Text style={[s.histHeading, { marginTop: 24 }, isDark && { color: '#E8E0D0' }]}>Past Days</Text>
           {MOCK_HISTORY.map(day => {
             const total = (day.protein + day.carbs + day.fat) || 1;
+            const pColor = isDark ? '#E07B54' : '#22C55E';
+            const cColor = isDark ? '#F5C842' : '#F59E0B';
+            const fColor = isDark ? '#8B9E6E' : '#8B5CF6';
             return (
-              <View key={day.date} style={s.histDayCard}>
+              <View key={day.date} style={[s.histDayCard, isDark && { backgroundColor: '#1C1410' }]}>
                 <View style={s.histDayTop}>
-                  <Text style={s.histDayDate}>{day.date}</Text>
-                  <Text style={s.histDayCal}>{day.calories.toLocaleString()} kcal</Text>
-                  <Text style={s.histChevron}>›</Text>
+                  <Text style={[s.histDayDate, isDark && { color: '#E8E0D0' }]}>{day.date}</Text>
+                  <Text style={[s.histDayCal, isDark && { color: '#E8E0D0' }]}>{day.calories.toLocaleString()} kcal</Text>
+                  <Text style={[s.histChevron, isDark && { color: 'rgba(232,224,208,0.35)' }]}>›</Text>
                 </View>
                 <View style={s.histMacroBar}>
-                  <View style={[s.histMacroSeg, { flex: day.protein / total, backgroundColor: "#22C55E" }]} />
-                  <View style={[s.histMacroSeg, { flex: day.carbs   / total, backgroundColor: "#F59E0B" }]} />
-                  <View style={[s.histMacroSeg, { flex: day.fat     / total, backgroundColor: "#8B5CF6" }]} />
+                  <View style={[s.histMacroSeg, { flex: day.protein / total, backgroundColor: pColor }]} />
+                  <View style={[s.histMacroSeg, { flex: day.carbs   / total, backgroundColor: cColor }]} />
+                  <View style={[s.histMacroSeg, { flex: day.fat     / total, backgroundColor: fColor }]} />
                 </View>
                 <View style={s.histMacroLbls}>
-                  <Text style={[s.histMacroLbl, { color: "#22C55E" }]}>P {day.protein}g</Text>
-                  <Text style={[s.histMacroLbl, { color: "#F59E0B" }]}>C {day.carbs}g</Text>
-                  <Text style={[s.histMacroLbl, { color: "#8B5CF6" }]}>F {day.fat}g</Text>
+                  <Text style={[s.histMacroLbl, { color: pColor }]}>P {day.protein}g</Text>
+                  <Text style={[s.histMacroLbl, { color: cColor }]}>C {day.carbs}g</Text>
+                  <Text style={[s.histMacroLbl, { color: fColor }]}>F {day.fat}g</Text>
                 </View>
               </View>
             );
@@ -435,13 +440,13 @@ export default function LogFoodScreen() {
 
           {/* ── Search + barcode ── */}
           <View style={s.searchRow}>
-            <View style={s.searchBox}>
-              <Ionicons name="search" size={20} color={TEAL} />
+            <View style={[s.searchBox, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.15)' }]}>
+              <Ionicons name="search" size={20} color={isDark ? '#F5C842' : TEAL} />
               <TextInput
                 ref={searchRef}
-                style={s.searchInput}
+                style={[s.searchInput, isDark && { color: '#E8E0D0' }]}
                 placeholder="Search food..."
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#94A3B8'}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoCapitalize="none"
@@ -456,7 +461,7 @@ export default function LogFoodScreen() {
               )}
             </View>
             <TouchableOpacity
-              style={s.barcodeBtn}
+              style={[s.barcodeBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}
               activeOpacity={0.8}
               onPress={() => Alert.alert("Coming Soon", "Barcode scanner — TODO: integrate Open Food Facts API")}
             >
@@ -474,24 +479,24 @@ export default function LogFoodScreen() {
             {/* ── 3. Scan card (hidden while typing) ── */}
             {!isSearching && (
               <TouchableOpacity
-                style={s.scanCard}
+                style={[s.scanCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.15)' }]}
                 activeOpacity={0.9}
                 onPress={handleTakePhoto}
               >
                 <LinearGradient
-                  colors={["#CCFBF1", "#99F6E4"]}
+                  colors={isDark ? ['rgba(224,123,84,0.25)', 'rgba(245,200,66,0.15)'] : ["#CCFBF1", "#99F6E4"]}
                   style={s.scanCardIcon}
                 >
-                  <Ionicons name="camera-outline" size={28} color="#0D9488" />
+                  <Ionicons name="camera-outline" size={28} color={isDark ? '#E07B54' : '#0D9488'} />
                 </LinearGradient>
 
                 <View style={{ flex: 1 }}>
-                  <Text style={s.scanCardTitle}>Scan Meal with AI</Text>
-                  <Text style={s.scanCardSub}>Photo → macros detected instantly</Text>
+                  <Text style={[s.scanCardTitle, isDark && { color: '#E8E0D0' }]}>Scan Meal with AI</Text>
+                  <Text style={[s.scanCardSub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Photo → macros detected instantly</Text>
                 </View>
 
                 <TouchableOpacity
-                  style={s.scanBtnCamera}
+                  style={[s.scanBtnCamera, isDark && { backgroundColor: '#F5C842', shadowColor: '#F5C842' }]}
                   activeOpacity={0.8}
                   onPress={handleTakePhoto}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -500,7 +505,7 @@ export default function LogFoodScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={s.scanBtnLibrary}
+                  style={[s.scanBtnLibrary, isDark && { backgroundColor: 'rgba(245,200,66,0.10)', borderColor: 'rgba(245,200,66,0.3)' }]}
                   activeOpacity={0.8}
                   onPress={handleUploadPhoto}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -513,7 +518,7 @@ export default function LogFoodScreen() {
             {/* ── 4. Recent meals (hidden while typing) ── */}
             {!isSearching && (
               <>
-                <Text style={s.recentLabel}>Recent</Text>
+                <Text style={[s.recentLabel, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Recent</Text>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -523,13 +528,13 @@ export default function LogFoodScreen() {
                   {RECENT_MEALS.map((meal, idx) => (
                     <TouchableOpacity
                       key={meal.name}
-                      style={[s.recentPill, idx === 0 && { marginLeft: 16 }]}
+                      style={[s.recentPill, idx === 0 && { marginLeft: 16 }, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}
                       activeOpacity={0.8}
                       onPress={() => openQty(meal.food)}
                     >
                       <Text style={s.recentEmoji}>{meal.emoji}</Text>
-                      <Text style={s.recentName}>{meal.name}</Text>
-                      <Text style={s.recentPlus}>+</Text>
+                      <Text style={[s.recentName, isDark && { color: '#E8E0D0' }]}>{meal.name}</Text>
+                      <Text style={[s.recentPlus, isDark && { color: '#F5C842' }]}>+</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -538,7 +543,7 @@ export default function LogFoodScreen() {
 
             {/* ── 5. Popular foods / search results ── */}
             {!isSearching && (
-              <Text style={s.listLabel}>Popular Foods</Text>
+              <Text style={[s.listLabel, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Popular Foods</Text>
             )}
 
             {displayedFoods.length === 0 ? (
@@ -555,13 +560,13 @@ export default function LogFoodScreen() {
               displayedFoods.map((food, idx) => (
                 <View
                   key={food.name}
-                  style={[s.resultRow, idx === displayedFoods.length - 1 && { borderBottomWidth: 0 }]}
+                  style={[s.resultRow, idx === displayedFoods.length - 1 && { borderBottomWidth: 0 }, isDark && { borderBottomColor: 'rgba(255,220,150,0.08)' }]}
                 >
                   <View style={s.resultLeft}>
-                    <Text style={s.resultName}>{food.name}</Text>
-                    <Text style={s.resultMeta}>{food.calories} cal · {food.protein}g protein</Text>
+                    <Text style={[s.resultName, isDark && { color: '#E8E0D0' }]}>{food.name}</Text>
+                    <Text style={[s.resultMeta, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{food.calories} cal · {food.protein}g protein</Text>
                   </View>
-                  <TouchableOpacity style={s.addBtn} onPress={() => openQty(food)} activeOpacity={0.8}>
+                  <TouchableOpacity style={[s.addBtn, isDark && { backgroundColor: '#F5C842' }]} onPress={() => openQty(food)} activeOpacity={0.8}>
                     <Ionicons name="add" size={20} color="#fff" />
                   </TouchableOpacity>
                 </View>
@@ -584,69 +589,69 @@ export default function LogFoodScreen() {
       {/* ════════ QUANTITY SHEET ════════ */}
       <Modal visible={showQty} transparent animationType="slide" onRequestClose={() => setShowQty(false)}>
         <KeyboardAvoidingView style={s.overlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={s.qtySheet}>
-            <View style={s.handle} />
+          <View style={[s.qtySheet, isDark && { backgroundColor: '#1C1410' }]}>
+            <View style={[s.handle, isDark && { backgroundColor: 'rgba(255,220,150,0.12)' }]} />
 
-            <Text style={s.qtyFoodName} numberOfLines={2}>{selectedFood?.name}</Text>
+            <Text style={[s.qtyFoodName, isDark && { color: '#E8E0D0' }]} numberOfLines={2}>{selectedFood?.name}</Text>
 
             {/* Quantity controls */}
             <View style={s.qtyControls}>
-              <TouchableOpacity style={s.qtyMinus} onPress={() => adjustQty(-10)} activeOpacity={0.75}>
-                <Text style={s.qtyMinusText}>−</Text>
+              <TouchableOpacity style={[s.qtyMinus, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} onPress={() => adjustQty(-10)} activeOpacity={0.75}>
+                <Text style={[s.qtyMinusText, isDark && { color: '#E8E0D0' }]}>−</Text>
               </TouchableOpacity>
 
               <TextInput
-                style={s.qtyNumInput}
+                style={[s.qtyNumInput, isDark && { color: '#E8E0D0', borderBottomColor: '#F5C842' }]}
                 value={qtyStr}
                 onChangeText={handleQtyTextChange}
                 keyboardType="decimal-pad"
                 selectTextOnFocus
               />
 
-              <TouchableOpacity style={s.qtyPlus} onPress={() => adjustQty(10)} activeOpacity={0.75}>
-                <Ionicons name="add" size={22} color="#fff" />
+              <TouchableOpacity style={[s.qtyPlus, isDark && { backgroundColor: '#F5C842' }]} onPress={() => adjustQty(10)} activeOpacity={0.75}>
+                <Ionicons name="add" size={22} color={isDark ? '#1C1410' : '#fff'} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={s.unitPill} onPress={cycleUnit} activeOpacity={0.75}>
-                <Text style={s.unitText}>{unit} ▾</Text>
+              <TouchableOpacity style={[s.unitPill, isDark && { backgroundColor: 'rgba(255,220,150,0.06)', borderColor: 'rgba(255,220,150,0.2)' }]} onPress={cycleUnit} activeOpacity={0.75}>
+                <Text style={[s.unitText, isDark && { color: '#E8E0D0' }]}>{unit} ▾</Text>
               </TouchableOpacity>
             </View>
 
             {/* Live macro preview */}
-            <View style={s.preview}>
+            <View style={[s.preview, isDark && { backgroundColor: 'rgba(255,220,150,0.04)' }]}>
               <View style={s.previewItem}>
-                <Text style={s.previewVal}>{previewCal}</Text>
-                <Text style={s.previewLbl}>kcal</Text>
+                <Text style={[s.previewVal, isDark && { color: '#E8E0D0' }]}>{previewCal}</Text>
+                <Text style={[s.previewLbl, isDark && { color: 'rgba(232,224,208,0.4)' }]}>kcal</Text>
               </View>
-              <View style={s.previewDivider} />
+              <View style={[s.previewDivider, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} />
               <View style={s.previewItem}>
-                <Text style={[s.previewVal, { color: "#22C55E" }]}>{previewProtein}g</Text>
-                <Text style={s.previewLbl}>protein</Text>
+                <Text style={[s.previewVal, { color: isDark ? '#E07B54' : '#22C55E' }]}>{previewProtein}g</Text>
+                <Text style={[s.previewLbl, isDark && { color: 'rgba(232,224,208,0.4)' }]}>protein</Text>
               </View>
-              <View style={s.previewDivider} />
+              <View style={[s.previewDivider, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} />
               <View style={s.previewItem}>
-                <Text style={[s.previewVal, { color: "#F59E0B" }]}>{previewCarbs}g</Text>
-                <Text style={s.previewLbl}>carbs</Text>
+                <Text style={[s.previewVal, { color: isDark ? '#F5C842' : '#F59E0B' }]}>{previewCarbs}g</Text>
+                <Text style={[s.previewLbl, isDark && { color: 'rgba(232,224,208,0.4)' }]}>carbs</Text>
               </View>
-              <View style={s.previewDivider} />
+              <View style={[s.previewDivider, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} />
               <View style={s.previewItem}>
-                <Text style={[s.previewVal, { color: "#8B5CF6" }]}>{previewFat}g</Text>
-                <Text style={s.previewLbl}>fat</Text>
+                <Text style={[s.previewVal, { color: isDark ? '#8B9E6E' : '#8B5CF6' }]}>{previewFat}g</Text>
+                <Text style={[s.previewLbl, isDark && { color: 'rgba(232,224,208,0.4)' }]}>fat</Text>
               </View>
             </View>
 
             {/* Add button */}
             <TouchableOpacity
-              style={[s.addToLogBtn, saving && { opacity: 0.6 }]}
+              style={[s.addToLogBtn, saving && { opacity: 0.6 }, isDark && { backgroundColor: '#F5C842' }]}
               onPress={handleAddFoodFromSearch}
               disabled={saving}
               activeOpacity={0.85}
             >
-              <Text style={s.addToLogText}>{saving ? "Adding…" : `Add to ${mealTag}`}</Text>
+              <Text style={[s.addToLogText, isDark && { color: '#1C1410' }]}>{saving ? "Adding…" : `Add to ${mealTag}`}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setShowQty(false)} style={s.cancelBtn} activeOpacity={0.7}>
-              <Text style={s.cancelText}>Cancel</Text>
+              <Text style={[s.cancelText, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -655,9 +660,9 @@ export default function LogFoodScreen() {
       {/* ════════ CUSTOM FOOD SHEET ════════ */}
       <Modal visible={showAdd} transparent animationType="slide" onRequestClose={() => setShowAdd(false)}>
         <KeyboardAvoidingView style={s.overlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={s.sheet}>
-            <View style={s.handle} />
-            <Text style={s.sheetTitle}>Custom Food</Text>
+          <View style={[s.sheet, isDark && { backgroundColor: '#1C1410' }]}>
+            <View style={[s.handle, isDark && { backgroundColor: 'rgba(255,220,150,0.12)' }]} />
+            <Text style={[s.sheetTitle, isDark && { color: '#E8E0D0' }]}>Custom Food</Text>
             <View style={s.tagRow}>
               {TAGS.map(t => {
                 const tc = TAG_COLORS[t];
@@ -672,22 +677,22 @@ export default function LogFoodScreen() {
                 );
               })}
             </View>
-            <TextInput style={s.input} placeholder="Food name" placeholderTextColor="#9CA3AF" value={addName} onChangeText={setAddName} autoFocus />
-            <TextInput style={s.input} placeholder="Calories" placeholderTextColor="#9CA3AF" value={addCals} onChangeText={setAddCals} keyboardType="numeric" />
+            <TextInput style={[s.input, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Food name" placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addName} onChangeText={setAddName} autoFocus />
+            <TextInput style={[s.input, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Calories" placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addCals} onChangeText={setAddCals} keyboardType="numeric" />
             <View style={s.twoCol}>
-              <TextInput style={[s.input, { flex: 1 }]} placeholder="Protein g" placeholderTextColor="#9CA3AF" value={addProtein} onChangeText={setAddProtein} keyboardType="decimal-pad" />
-              <TextInput style={[s.input, { flex: 1 }]} placeholder="Carbs g"   placeholderTextColor="#9CA3AF" value={addCarbs}   onChangeText={setAddCarbs}   keyboardType="decimal-pad" />
-              <TextInput style={[s.input, { flex: 1 }]} placeholder="Fat g"     placeholderTextColor="#9CA3AF" value={addFat}     onChangeText={setAddFat}     keyboardType="decimal-pad" />
+              <TextInput style={[s.input, { flex: 1 }, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Protein g" placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addProtein} onChangeText={setAddProtein} keyboardType="decimal-pad" />
+              <TextInput style={[s.input, { flex: 1 }, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Carbs g"   placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addCarbs}   onChangeText={setAddCarbs}   keyboardType="decimal-pad" />
+              <TextInput style={[s.input, { flex: 1 }, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Fat g"     placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addFat}     onChangeText={setAddFat}     keyboardType="decimal-pad" />
             </View>
             <TouchableOpacity
               onPress={handleAdd}
               disabled={!addName || !addCals || saving}
-              style={[s.addToLogBtn, { opacity: !addName || !addCals ? 0.5 : 1 }]}
+              style={[s.addToLogBtn, { opacity: !addName || !addCals ? 0.5 : 1 }, isDark && { backgroundColor: '#F5C842' }]}
             >
-              <Text style={s.addToLogText}>{saving ? "Saving…" : "Save"}</Text>
+              <Text style={[s.addToLogText, isDark && { color: '#1C1410' }]}>{saving ? "Saving…" : "Save"}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowAdd(false)} style={s.cancelBtn}>
-              <Text style={s.cancelText}>Cancel</Text>
+              <Text style={[s.cancelText, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>

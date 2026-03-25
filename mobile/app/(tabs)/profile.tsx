@@ -65,25 +65,25 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={s.safe} edges={["top"]}>
+    <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={["top"]}>
       <View style={s.pageHeader}>
-        <Text style={s.pageTitle}>Profile</Text>
+        <Text style={[s.pageTitle, isDark && { color: '#E8E0D0' }]}>Profile</Text>
       </View>
 
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {/* Avatar hero */}
-        <View style={s.hero}>
-          <View style={s.avatarRing}>
-            <View style={s.avatar}>
+        <View style={[s.hero, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
+          <View style={[s.avatarRing, isDark && { borderColor: '#E07B54' }]}>
+            <View style={[s.avatar, isDark && { backgroundColor: '#E07B54' }]}>
               <Text style={s.avatarText}>{initials}</Text>
             </View>
           </View>
           <View style={s.heroInfo}>
-            <Text style={s.heroName}>{name}</Text>
-            <Text style={s.heroEmail}>{email}</Text>
+            <Text style={[s.heroName, isDark && { color: '#E8E0D0' }]}>{name}</Text>
+            <Text style={[s.heroEmail, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{email}</Text>
             {userProfile?.fitness_goal && (
-              <View style={s.goalPill}>
-                <Text style={s.goalPillText}>
+              <View style={[s.goalPill, isDark && { backgroundColor: 'rgba(245,200,66,0.10)' }]}>
+                <Text style={[s.goalPillText, isDark && { color: '#F5C842' }]}>
                   {goalLabel[userProfile.fitness_goal] ?? userProfile.fitness_goal}
                 </Text>
               </View>
@@ -98,24 +98,27 @@ export default function ProfileScreen() {
             { label: "Protein",  value: String(userProfile?.protein_goal ?? 120),  unit: "g" },
             { label: "Carbs",    value: String(userProfile?.carbs_goal ?? 250),    unit: "g" },
             { label: "Fat",      value: String(userProfile?.fat_goal ?? 70),       unit: "g" },
-          ].map((s2) => (
-            <View key={s2.label} style={s.statCard}>
-              <Text style={s.statValue}>{s2.value}<Text style={s.statUnit}>{s2.unit}</Text></Text>
-              <Text style={s.statLabel}>{s2.label}</Text>
+          ].map((s2, i) => {
+            const accentColors = ['#E8E0D0', '#E07B54', '#F5C842', '#8B9E6E'];
+            return (
+            <View key={s2.label} style={[s.statCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
+              <Text style={[s.statValue, isDark && { color: accentColors[i] }]}>{s2.value}<Text style={[s.statUnit, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{s2.unit}</Text></Text>
+              <Text style={[s.statLabel, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{s2.label}</Text>
             </View>
-          ))}
+            );
+          })}
         </View>
 
         {/* Appearance */}
-        <Text style={s.sectionLabel}>Appearance</Text>
-        <View style={s.menuCard}>
+        <Text style={[s.sectionLabel, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Appearance</Text>
+        <View style={[s.menuCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
           <View style={s.menuRow}>
             <View style={[s.menuIcon, { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
               <Text style={s.menuEmoji}>{isDark ? '🌙' : '☀️'}</Text>
             </View>
             <View style={s.menuMid}>
-              <Text style={s.menuLabel}>Dark Mode</Text>
-              <Text style={s.menuSub}>{isDark ? 'Warm dark theme' : 'Light theme'}</Text>
+              <Text style={[s.menuLabel, isDark && { color: '#E8E0D0' }]}>Dark Mode</Text>
+              <Text style={[s.menuSub, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{isDark ? 'Warm dark theme' : 'Light theme'}</Text>
             </View>
             <Switch
               value={isDark}
@@ -127,11 +130,11 @@ export default function ProfileScreen() {
         </View>
 
         {/* Main menu */}
-        <Text style={s.sectionLabel}>Account</Text>
-        <View style={s.menuCard}>
+        <Text style={[s.sectionLabel, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Account</Text>
+        <View style={[s.menuCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
           {MENU_ITEMS.map((item, i) => (
             <React.Fragment key={item.key}>
-              {i > 0 && <View style={s.divider} />}
+              {i > 0 && <View style={[s.divider, isDark && { backgroundColor: 'rgba(255,220,150,0.06)' }]} />}
               <TouchableOpacity
                 style={s.menuRow}
                 onPress={() => router.push(item.route as any)}
@@ -141,36 +144,36 @@ export default function ProfileScreen() {
                   <Text style={s.menuEmoji}>{item.emoji}</Text>
                 </View>
                 <View style={s.menuMid}>
-                  <Text style={s.menuLabel}>{item.label}</Text>
-                  <Text style={s.menuSub}>{item.sub}</Text>
+                  <Text style={[s.menuLabel, isDark && { color: '#E8E0D0' }]}>{item.label}</Text>
+                  <Text style={[s.menuSub, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{item.sub}</Text>
                 </View>
-                <Text style={s.chevron}>›</Text>
+                <Text style={[s.chevron, isDark && { color: 'rgba(232,224,208,0.25)' }]}>›</Text>
               </TouchableOpacity>
             </React.Fragment>
           ))}
         </View>
 
         {/* Legal */}
-        <Text style={s.sectionLabel}>Legal</Text>
-        <View style={s.menuCard}>
+        <Text style={[s.sectionLabel, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Legal</Text>
+        <View style={[s.menuCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
           {LEGAL_ITEMS.map((item, i) => (
             <React.Fragment key={item.key}>
-              {i > 0 && <View style={s.divider} />}
+              {i > 0 && <View style={[s.divider, isDark && { backgroundColor: 'rgba(255,220,150,0.06)' }]} />}
               <TouchableOpacity
                 style={s.menuRow}
                 onPress={() => router.push(item.route as any)}
                 activeOpacity={0.7}
               >
                 <View style={s.menuMid}>
-                  <Text style={s.menuLabel}>{item.label}</Text>
+                  <Text style={[s.menuLabel, isDark && { color: '#E8E0D0' }]}>{item.label}</Text>
                 </View>
-                <Text style={s.chevron}>›</Text>
+                <Text style={[s.chevron, isDark && { color: 'rgba(232,224,208,0.25)' }]}>›</Text>
               </TouchableOpacity>
             </React.Fragment>
           ))}
         </View>
 
-        <Text style={s.version}>MacroClaw v1.0.0</Text>
+        <Text style={[s.version, isDark && { color: 'rgba(232,224,208,0.2)' }]}>MacroClaw v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
