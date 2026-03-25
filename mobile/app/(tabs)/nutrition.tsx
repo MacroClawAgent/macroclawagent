@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { apiGet, apiPatch } from "@/lib/api";
 
 interface NutritionData {
@@ -26,14 +27,15 @@ interface Goals {
 function MacroBar({
   label, value, goal, color,
 }: { label: string; value: number; goal: number; color: string }) {
+  const { isDark } = useTheme();
   const pct = Math.min(1, goal > 0 ? value / goal : 0);
   return (
     <View style={bar.row}>
       <View style={bar.labelRow}>
-        <Text style={bar.label}>{label}</Text>
-        <Text style={bar.value}>{value} <Text style={bar.goal}>/ {goal}</Text></Text>
+        <Text style={[bar.label, isDark && { color: 'rgba(232,224,208,0.55)' }]}>{label}</Text>
+        <Text style={[bar.value, isDark && { color: '#E8E0D0' }]}>{value} <Text style={[bar.goal, isDark && { color: 'rgba(232,224,208,0.35)' }]}>/ {goal}</Text></Text>
       </View>
-      <View style={bar.track}>
+      <View style={[bar.track, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]}>
         <View style={[bar.fill, { width: `${Math.round(pct * 100)}%`, backgroundColor: color }]} />
       </View>
     </View>
@@ -54,6 +56,7 @@ const HYDRATION_STEPS = [250, 500, 750, 1000, 1500, 2000, 2500, 3000];
 
 export default function NutritionScreen() {
   const { userProfile } = useAuth();
+  const { isDark } = useTheme();
   const [nutrition, setNutrition] = useState<NutritionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -100,50 +103,50 @@ export default function NutritionScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator color="#0066EE" size="large" />
+      <SafeAreaView style={[styles.loadingContainer, isDark && { backgroundColor: '#0D0A07' }]}>
+        <ActivityIndicator color={isDark ? '#F5C842' : '#0066EE'} size="large" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
+    <SafeAreaView style={[styles.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={["top"]}>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0066EE" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? '#F5C842' : '#0066EE'} />}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.heading}>Nutrition</Text>
-        <Text style={styles.date}>
+        <Text style={[styles.heading, isDark && { color: '#E8E0D0' }]}>Nutrition</Text>
+        <Text style={[styles.date, isDark && { color: 'rgba(232,224,208,0.45)' }]}>
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
         </Text>
 
         {/* Calorie summary */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Calories</Text>
+        <View style={[styles.card, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
+          <Text style={[styles.cardTitle, isDark && { color: '#E8E0D0' }]}>Calories</Text>
           <View style={styles.calorieRow}>
             <View style={styles.calorieStat}>
-              <Text style={styles.calorieBig}>{consumed.calories}</Text>
-              <Text style={styles.calorieLabel}>eaten</Text>
+              <Text style={[styles.calorieBig, isDark && { color: '#E8E0D0' }]}>{consumed.calories}</Text>
+              <Text style={[styles.calorieLabel, isDark && { color: 'rgba(232,224,208,0.35)' }]}>eaten</Text>
             </View>
-            <View style={styles.calorieDivider} />
+            <View style={[styles.calorieDivider, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} />
             <View style={styles.calorieStat}>
               <Text style={[styles.calorieBig, { color: "#10B981" }]}>
                 {Math.max(0, goals.calorie_goal - consumed.calories)}
               </Text>
-              <Text style={styles.calorieLabel}>remaining</Text>
+              <Text style={[styles.calorieLabel, isDark && { color: 'rgba(232,224,208,0.35)' }]}>remaining</Text>
             </View>
-            <View style={styles.calorieDivider} />
+            <View style={[styles.calorieDivider, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} />
             <View style={styles.calorieStat}>
-              <Text style={styles.calorieBig}>{goals.calorie_goal}</Text>
-              <Text style={styles.calorieLabel}>goal</Text>
+              <Text style={[styles.calorieBig, isDark && { color: '#E8E0D0' }]}>{goals.calorie_goal}</Text>
+              <Text style={[styles.calorieLabel, isDark && { color: 'rgba(232,224,208,0.35)' }]}>goal</Text>
             </View>
           </View>
         </View>
 
         {/* Macro bars */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Macros</Text>
+        <View style={[styles.card, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
+          <Text style={[styles.cardTitle, isDark && { color: '#E8E0D0' }]}>Macros</Text>
           <View style={{ gap: 16 }}>
             <MacroBar label="Protein" value={consumed.protein} goal={goals.protein_goal} color="#10B981" />
             <MacroBar label="Carbs" value={consumed.carbs} goal={goals.carbs_goal} color="#F59E0B" />
@@ -152,29 +155,29 @@ export default function NutritionScreen() {
         </View>
 
         {/* Hydration */}
-        <View style={styles.card}>
+        <View style={[styles.card, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
           <View style={styles.hydrationHeader}>
-            <Text style={styles.cardTitle}>Hydration</Text>
-            <Text style={styles.hydrationValue}>{consumed.hydration} ml</Text>
+            <Text style={[styles.cardTitle, isDark && { color: '#E8E0D0' }]}>Hydration</Text>
+            <Text style={[styles.hydrationValue, isDark && { color: '#F5C842' }]}>{consumed.hydration} ml</Text>
           </View>
-          <Text style={styles.hydrationSub}>Log your water intake</Text>
+          <Text style={[styles.hydrationSub, isDark && { color: 'rgba(232,224,208,0.35)' }]}>Log your water intake</Text>
           <View style={styles.hydrationButtons}>
             {[250, 500].map((ml) => (
               <TouchableOpacity
                 key={ml}
-                style={styles.hydrationBtn}
+                style={[styles.hydrationBtn, isDark && { backgroundColor: 'rgba(245,200,66,0.10)' }]}
                 onPress={() => addHydration(ml)}
                 disabled={hydrationLoading}
                 activeOpacity={0.8}
               >
-                <Text style={styles.hydrationBtnText}>+{ml}ml</Text>
+                <Text style={[styles.hydrationBtnText, isDark && { color: '#F5C842' }]}>+{ml}ml</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         {!nutrition && (
-          <Text style={styles.emptyHint}>No nutrition data logged today. Meals will appear here once synced.</Text>
+          <Text style={[styles.emptyHint, isDark && { color: 'rgba(232,224,208,0.35)' }]}>No nutrition data logged today. Meals will appear here once synced.</Text>
         )}
       </ScrollView>
     </SafeAreaView>

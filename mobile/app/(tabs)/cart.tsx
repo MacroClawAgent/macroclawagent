@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
+import { useTheme } from '@/context/ThemeContext';
 import { useSmartCart } from '@/hooks/useSmartCart';
 import { searchBothStores } from '@/services/supermarketApi';
 import { StoreSelector } from '@/components/SmartCart/StoreSelector';
@@ -75,6 +76,7 @@ function IngredientRow({
   onDelete: () => void;
   onSwap: () => void;
 }) {
+  const { isDark } = useTheme();
   const products =
     selectedStore === 'woolworths'
       ? ingredient.woolworthsProducts
@@ -92,7 +94,7 @@ function IngredientRow({
   const isChecked = ingredient.isChecked;
 
   return (
-    <View style={[s.row, isChecked && s.rowChecked]}>
+    <View style={[s.row, isChecked && s.rowChecked, isDark && { borderBottomColor: 'rgba(255,220,150,0.08)' }]}>
       {/* Checkbox */}
       <TouchableOpacity onPress={onToggle} style={s.checkbox} activeOpacity={0.7}>
         {isChecked ? (
@@ -100,19 +102,19 @@ function IngredientRow({
             <SymbolView name={'checkmark' as any} size={10} tintColor={WHITE} style={{ width: 10, height: 10 }} />
           </View>
         ) : (
-          <View style={s.checkboxEmpty} />
+          <View style={[s.checkboxEmpty, isDark && { borderColor: 'rgba(255,220,150,0.25)' }]} />
         )}
       </TouchableOpacity>
 
       {/* Info */}
       <View style={{ flex: 1 }}>
         <Text
-          style={[s.rowName, isChecked && s.rowNameChecked]}
+          style={[s.rowName, isChecked && s.rowNameChecked, isDark && { color: '#E8E0D0' }]}
           numberOfLines={1}
         >
           {ingredient.name}
         </Text>
-        <Text style={s.rowQty}>
+        <Text style={[s.rowQty, isDark && { color: 'rgba(232,224,208,0.4)' }]}>
           {ingredient.quantity}{ingredient.unit}
         </Text>
 
@@ -120,11 +122,11 @@ function IngredientRow({
         {ingredient.isLoadingProducts ? (
           <Skeleton width="70%" height={9} />
         ) : selectedProduct ? (
-          <Text style={s.rowProduct} numberOfLines={2}>
+          <Text style={[s.rowProduct, isDark && { color: 'rgba(232,224,208,0.4)' }]} numberOfLines={2}>
             {selectedProduct.name}
           </Text>
         ) : selectedStore ? (
-          <Text style={s.rowNoMatch}>No match found</Text>
+          <Text style={[s.rowNoMatch, isDark && { color: 'rgba(232,224,208,0.3)' }]}>No match found</Text>
         ) : null}
       </View>
 
@@ -134,8 +136,8 @@ function IngredientRow({
       ) : null}
 
       {/* Actions */}
-      <TouchableOpacity onPress={onSwap} style={s.actionBtn} activeOpacity={0.7}>
-        <Text style={s.actionTxt}>⇅</Text>
+      <TouchableOpacity onPress={onSwap} style={[s.actionBtn, isDark && { backgroundColor: 'rgba(255,220,150,0.06)' }]} activeOpacity={0.7}>
+        <Text style={[s.actionTxt, isDark && { color: 'rgba(232,224,208,0.5)' }]}>⇅</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={onDelete} style={[s.actionBtn, s.deleteBtn]} activeOpacity={0.7}>
         <Text style={s.deleteTxt}>×</Text>
@@ -156,6 +158,7 @@ function ProductPickerModal({
   onSelect: (productId: string) => void;
   onClose: () => void;
 }) {
+  const { isDark } = useTheme();
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState<{ woolworths: SupermarketProduct[]; coles: SupermarketProduct[] } | null>(null);
   const [searching, setSearching] = useState(false);
@@ -204,18 +207,18 @@ function ProductPickerModal({
         style={s.pickerOverlay}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={s.pickerSheet}>
-          <View style={s.pickerHandle} />
-          <Text style={s.pickerTitle}>
+        <View style={[s.pickerSheet, isDark && { backgroundColor: '#1C1410' }]}>
+          <View style={[s.pickerHandle, isDark && { backgroundColor: 'rgba(255,220,150,0.12)' }]} />
+          <Text style={[s.pickerTitle, isDark && { color: '#E8E0D0' }]}>
             {ingredient ? `Choose product for ${ingredient.name}` : 'Choose product'}
           </Text>
 
           {/* Search */}
-          <View style={s.pickerSearchRow}>
+          <View style={[s.pickerSearchRow, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)' }]}>
             <TextInput
-              style={s.pickerSearchInput}
+              style={[s.pickerSearchInput, isDark && { color: '#E8E0D0' }]}
               placeholder="Search manually..."
-              placeholderTextColor={MUTED}
+              placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : MUTED}
               value={search}
               onChangeText={setSearch}
               returnKeyType="search"
@@ -264,6 +267,7 @@ function ProductPickerModal({
 
 // ── Main Screen ────────────────────────────────────────────────────────────────
 export default function CartScreen() {
+  const { isDark } = useTheme();
   const sc = useSmartCart();
   const [collapsed, setCollapsed] = useState<Set<IngredientCategory>>(new Set());
   const [addText, setAddText] = useState('');
@@ -286,13 +290,13 @@ export default function CartScreen() {
   })).filter((g) => g.items.length > 0);
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={['top']}>
       {/* ── Header ── */}
       <View style={s.header}>
-        <Text style={s.title}>Smart Cart</Text>
+        <Text style={[s.title, isDark && { color: '#E8E0D0' }]}>Smart Cart</Text>
         <TouchableOpacity
           onPress={sc.initializeCart}
-          style={s.refreshBtn}
+          style={[s.refreshBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}
           activeOpacity={0.7}
         >
           <SymbolView
@@ -318,7 +322,7 @@ export default function CartScreen() {
       {sc.initializing ? (
         <View style={s.centred}>
           <ActivityIndicator size="large" color={TEAL} />
-          <Text style={s.loadingText}>Building your cart...</Text>
+          <Text style={[s.loadingText, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Building your cart...</Text>
         </View>
       ) : !sc.cart || sc.cart.ingredients.length === 0 ? (
         /* ── Empty state ── */
@@ -326,8 +330,8 @@ export default function CartScreen() {
           <View style={s.emptyIcon}>
             <SymbolView name={'cart' as any} size={30} tintColor={TEAL} style={{ width: 30, height: 30 }} />
           </View>
-          <Text style={s.emptyTitle}>Your Smart Cart is empty</Text>
-          <Text style={s.emptySub}>
+          <Text style={[s.emptyTitle, isDark && { color: '#E8E0D0' }]}>Your Smart Cart is empty</Text>
+          <Text style={[s.emptySub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>
             Generate a meal plan first, or we'll build a cart from your macro targets
           </Text>
           <TouchableOpacity onPress={sc.initializeCart} style={s.buildBtn} activeOpacity={0.85}>
@@ -342,7 +346,7 @@ export default function CartScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* ── Store selector card ── */}
-          <View style={s.card}>
+          <View style={[s.card, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
             <StoreSelector
               nearbyStores={sc.cart.nearbyStores}
               selectedNearbyStore={sc.cart.selectedNearbyStore ?? null}
@@ -354,12 +358,12 @@ export default function CartScreen() {
           </View>
 
           {/* ── Estimated total card ── */}
-          <View style={s.card}>
-            <Text style={s.totalNum}>
+          <View style={[s.card, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
+            <Text style={[s.totalNum, isDark && { color: '#E8E0D0' }]}>
               ${total.toFixed(2)}
-              <Text style={s.totalEstLabel}> estimated</Text>
+              <Text style={[s.totalEstLabel, isDark && { color: 'rgba(232,224,208,0.45)' }]}> estimated</Text>
             </Text>
-            <Text style={s.totalSub}>
+            <Text style={[s.totalSub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>
               Based on {checkedCount} item{checkedCount !== 1 ? 's' : ''}
               {sc.cart.selectedNearbyStore ? ` · ${sc.cart.selectedNearbyStore.store === 'woolworths' ? 'Woolworths' : 'Coles'}` : ''}
             </Text>
@@ -390,7 +394,7 @@ export default function CartScreen() {
             const allChecked = checked === total;
             const someChecked = checked > 0 && checked < total;
             return (
-              <View style={s.selectAllRow}>
+              <View style={[s.selectAllRow, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
                 <TouchableOpacity onPress={sc.toggleAll} style={s.checkbox} activeOpacity={0.7}>
                   {allChecked ? (
                     <View style={s.checkboxFilled}>
@@ -401,11 +405,11 @@ export default function CartScreen() {
                       <View style={s.dashMark} />
                     </View>
                   ) : (
-                    <View style={s.checkboxEmpty} />
+                    <View style={[s.checkboxEmpty, isDark && { borderColor: 'rgba(255,220,150,0.25)' }]} />
                   )}
                 </TouchableOpacity>
-                <Text style={s.selectAllLabel}>Select all</Text>
-                <Text style={s.selectAllCount}>{checked}/{total} items</Text>
+                <Text style={[s.selectAllLabel, isDark && { color: '#E8E0D0' }]}>Select all</Text>
+                <Text style={[s.selectAllCount, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{checked}/{total} items</Text>
               </View>
             );
           })()}
@@ -415,20 +419,20 @@ export default function CartScreen() {
             const meta = CATEGORY_META[cat];
             const isCollapsed = collapsed.has(cat);
             return (
-              <View key={cat} style={s.categoryBlock}>
+              <View key={cat} style={[s.categoryBlock, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
                 <TouchableOpacity
                   onPress={() => toggleCollapse(cat)}
-                  style={s.categoryHeader}
+                  style={[s.categoryHeader, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderBottomColor: 'rgba(255,220,150,0.08)' }]}
                   activeOpacity={0.7}
                 >
                   <View style={s.categoryHeaderLeft}>
                     <Text style={{ fontSize: 14 }}>{meta.emoji}</Text>
-                    <Text style={s.categoryLabel}>{meta.label}</Text>
+                    <Text style={[s.categoryLabel, isDark && { color: '#E8E0D0' }]}>{meta.label}</Text>
                     <View style={s.categoryCount}>
                       <Text style={s.categoryCountTxt}>{items.length}</Text>
                     </View>
                   </View>
-                  <Text style={s.collapseChevron}>{isCollapsed ? '›' : '⌄'}</Text>
+                  <Text style={[s.collapseChevron, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{isCollapsed ? '›' : '⌄'}</Text>
                 </TouchableOpacity>
 
                 {!isCollapsed && (
@@ -450,11 +454,11 @@ export default function CartScreen() {
           })}
 
           {/* ── Add item row ── */}
-          <View style={s.addRow}>
+          <View style={[s.addRow, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
             <TextInput
-              style={s.addInput}
+              style={[s.addInput, isDark && { color: '#E8E0D0' }]}
               placeholder="Add an ingredient..."
-              placeholderTextColor={MUTED}
+              placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : MUTED}
               value={addText}
               onChangeText={setAddText}
               returnKeyType="done"

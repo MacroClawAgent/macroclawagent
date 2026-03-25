@@ -4,6 +4,7 @@ import {
   ActivityIndicator, TouchableOpacity, Modal, FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/context/ThemeContext";
 import { apiGet, apiPost } from "@/lib/api";
 
 interface Ingredient { id: string; name: string; grams: number }
@@ -28,15 +29,16 @@ const TAG_COLORS: Record<string, string> = {
 };
 
 function MealCard({ meal, onPress }: { meal: Meal; onPress: () => void }) {
+  const { isDark } = useTheme();
   return (
-    <TouchableOpacity style={mcard.card} onPress={onPress} activeOpacity={0.85}>
+    <TouchableOpacity style={[mcard.card, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]} onPress={onPress} activeOpacity={0.85}>
       <View style={mcard.header}>
         <View style={[mcard.tagBadge, { backgroundColor: TAG_COLORS[meal.tag] + "22" }]}>
           <Text style={[mcard.tagText, { color: TAG_COLORS[meal.tag] }]}>{meal.tag}</Text>
         </View>
-        <Text style={mcard.prep}>{meal.prep_time_min} min</Text>
+        <Text style={[mcard.prep, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{meal.prep_time_min} min</Text>
       </View>
-      <Text style={mcard.name}>{meal.name}</Text>
+      <Text style={[mcard.name, isDark && { color: '#E8E0D0' }]}>{meal.name}</Text>
       <View style={mcard.macros}>
         {[
           { label: "kcal", value: meal.macro_totals.calories, color: "#F97316" },
@@ -66,6 +68,7 @@ const mcard = StyleSheet.create({
 });
 
 export default function MealsScreen() {
+  const { isDark } = useTheme();
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -108,45 +111,45 @@ export default function MealsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator color="#0066EE" size="large" />
+      <SafeAreaView style={[styles.loadingContainer, isDark && { backgroundColor: '#0D0A07' }]}>
+        <ActivityIndicator color={isDark ? '#F5C842' : '#0066EE'} size="large" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
+    <SafeAreaView style={[styles.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={["top"]}>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0066EE" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? '#F5C842' : '#0066EE'} />}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={styles.headerRow}>
-          <Text style={styles.heading}>Meal Plan</Text>
+          <Text style={[styles.heading, isDark && { color: '#E8E0D0' }]}>Meal Plan</Text>
           <TouchableOpacity
-            style={styles.groceryBtn}
+            style={[styles.groceryBtn, isDark && { backgroundColor: 'rgba(245,200,66,0.10)' }]}
             onPress={() => setShowGrocery(true)}
             disabled={!plan}
           >
-            <Text style={styles.groceryBtnText}>Grocery List</Text>
+            <Text style={[styles.groceryBtnText, isDark && { color: '#F5C842' }]}>Grocery List</Text>
           </TouchableOpacity>
         </View>
 
         {/* Generate button */}
         {!plan && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No plan yet</Text>
-            <Text style={styles.emptySub}>Generate a personalised 7-day meal plan based on your training.</Text>
+            <Text style={[styles.emptyTitle, isDark && { color: '#E8E0D0' }]}>No plan yet</Text>
+            <Text style={[styles.emptySub, isDark && { color: 'rgba(232,224,208,0.55)' }]}>Generate a personalised 7-day meal plan based on your training.</Text>
             <TouchableOpacity
-              style={[styles.generateBtn, generating && { opacity: 0.6 }]}
+              style={[styles.generateBtn, generating && { opacity: 0.6 }, isDark && { backgroundColor: '#F5C842' }]}
               onPress={generatePlan}
               disabled={generating}
               activeOpacity={0.85}
             >
               {generating
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.generateBtnText}>Generate Plan ✦</Text>}
+                ? <ActivityIndicator color={isDark ? '#1C1410' : '#fff'} />
+                : <Text style={[styles.generateBtnText, isDark && { color: '#1C1410' }]}>Generate Plan ✦</Text>}
             </TouchableOpacity>
           </View>
         )}
@@ -155,8 +158,8 @@ export default function MealsScreen() {
           <>
             {/* Summary */}
             {plan.summary && (
-              <View style={styles.summaryCard}>
-                <Text style={styles.summaryText}>{plan.summary}</Text>
+              <View style={[styles.summaryCard, isDark && { backgroundColor: 'rgba(245,200,66,0.08)' }]}>
+                <Text style={[styles.summaryText, isDark && { color: '#E8E0D0' }]}>{plan.summary}</Text>
               </View>
             )}
 
@@ -166,10 +169,18 @@ export default function MealsScreen() {
                 {days.map((d, idx) => (
                   <TouchableOpacity
                     key={d}
-                    style={[styles.dayChip, selectedDay === idx && styles.dayChipActive]}
+                    style={[
+                      styles.dayChip,
+                      isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' },
+                      selectedDay === idx && (isDark ? { backgroundColor: '#F5C842', borderColor: '#F5C842' } : styles.dayChipActive),
+                    ]}
                     onPress={() => setSelectedDay(idx)}
                   >
-                    <Text style={[styles.dayChipText, selectedDay === idx && styles.dayChipTextActive]}>
+                    <Text style={[
+                      styles.dayChipText,
+                      isDark && { color: 'rgba(232,224,208,0.55)' },
+                      selectedDay === idx && (isDark ? { color: '#1C1410' } : styles.dayChipTextActive),
+                    ]}>
                       {dayLabel(d, idx)}
                     </Text>
                   </TouchableOpacity>
@@ -184,20 +195,20 @@ export default function MealsScreen() {
                   <MealCard key={meal.id} meal={meal} onPress={() => setSelectedMeal(meal)} />
                 ))
               ) : (
-                <Text style={styles.noMeals}>No meals for this day.</Text>
+                <Text style={[styles.noMeals, isDark && { color: 'rgba(232,224,208,0.35)' }]}>No meals for this day.</Text>
               )}
             </View>
 
             {/* Regenerate */}
             <TouchableOpacity
-              style={[styles.regenBtn, generating && { opacity: 0.6 }]}
+              style={[styles.regenBtn, generating && { opacity: 0.6 }, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}
               onPress={generatePlan}
               disabled={generating}
               activeOpacity={0.85}
             >
               {generating
-                ? <ActivityIndicator color="#0066EE" size="small" />
-                : <Text style={styles.regenBtnText}>Regenerate Plan</Text>}
+                ? <ActivityIndicator color={isDark ? '#F5C842' : '#0066EE'} size="small" />
+                : <Text style={[styles.regenBtnText, isDark && { color: '#F5C842' }]}>Regenerate Plan</Text>}
             </TouchableOpacity>
           </>
         )}
@@ -206,25 +217,25 @@ export default function MealsScreen() {
       {/* Recipe modal */}
       <Modal visible={!!selectedMeal} transparent animationType="slide">
         <View style={modal.overlay}>
-          <View style={modal.sheet}>
-            <View style={modal.handle} />
+          <View style={[modal.sheet, isDark && { backgroundColor: '#1C1410' }]}>
+            <View style={[modal.handle, isDark && { backgroundColor: 'rgba(255,220,150,0.12)' }]} />
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={modal.title}>{selectedMeal?.name}</Text>
-              <Text style={modal.section}>Ingredients</Text>
+              <Text style={[modal.title, isDark && { color: '#E8E0D0' }]}>{selectedMeal?.name}</Text>
+              <Text style={[modal.section, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Ingredients</Text>
               {selectedMeal?.ingredients.map((ing) => (
-                <Text key={ing.id} style={modal.ingredient}>• {ing.name} — {ing.grams}g</Text>
+                <Text key={ing.id} style={[modal.ingredient, isDark && { color: 'rgba(232,224,208,0.8)' }]}>• {ing.name} — {ing.grams}g</Text>
               ))}
               {selectedMeal?.recipe_steps && selectedMeal.recipe_steps.length > 0 && (
                 <>
-                  <Text style={modal.section}>Steps</Text>
+                  <Text style={[modal.section, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Steps</Text>
                   {selectedMeal.recipe_steps.map((step, i) => (
-                    <Text key={i} style={modal.step}>{i + 1}. {step}</Text>
+                    <Text key={i} style={[modal.step, isDark && { color: 'rgba(232,224,208,0.8)' }]}>{i + 1}. {step}</Text>
                   ))}
                 </>
               )}
             </ScrollView>
-            <TouchableOpacity style={modal.closeBtn} onPress={() => setSelectedMeal(null)}>
-              <Text style={modal.closeBtnText}>Close</Text>
+            <TouchableOpacity style={[modal.closeBtn, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} onPress={() => setSelectedMeal(null)}>
+              <Text style={[modal.closeBtnText, isDark && { color: '#E8E0D0' }]}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -233,22 +244,22 @@ export default function MealsScreen() {
       {/* Grocery modal */}
       <Modal visible={showGrocery} transparent animationType="slide">
         <View style={modal.overlay}>
-          <View style={modal.sheet}>
-            <View style={modal.handle} />
-            <Text style={modal.title}>Grocery List</Text>
+          <View style={[modal.sheet, isDark && { backgroundColor: '#1C1410' }]}>
+            <View style={[modal.handle, isDark && { backgroundColor: 'rgba(255,220,150,0.12)' }]} />
+            <Text style={[modal.title, isDark && { color: '#E8E0D0' }]}>Grocery List</Text>
             <FlatList
               data={plan?.grocery_list ?? []}
               keyExtractor={(item) => item.name}
               renderItem={({ item }) => (
                 <View style={grocery.row}>
-                  <Text style={grocery.name}>{item.name}</Text>
-                  <Text style={grocery.qty}>{item.qty}{item.unit}</Text>
+                  <Text style={[grocery.name, isDark && { color: '#E8E0D0' }]}>{item.name}</Text>
+                  <Text style={[grocery.qty, isDark && { color: 'rgba(232,224,208,0.45)' }]}>{item.qty}{item.unit}</Text>
                 </View>
               )}
-              ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: "#F3F4F6" }} />}
+              ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,220,150,0.08)' : '#F3F4F6' }} />}
             />
-            <TouchableOpacity style={modal.closeBtn} onPress={() => setShowGrocery(false)}>
-              <Text style={modal.closeBtnText}>Close</Text>
+            <TouchableOpacity style={[modal.closeBtn, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} onPress={() => setShowGrocery(false)}>
+              <Text style={[modal.closeBtnText, isDark && { color: '#E8E0D0' }]}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
