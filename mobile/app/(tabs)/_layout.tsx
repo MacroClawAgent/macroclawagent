@@ -27,20 +27,31 @@ function TabIcon({
 
 function LogFABButton() {
   const router = useRouter();
+  const { isDark } = useTheme();
   return (
     <TouchableOpacity
       onPress={() => router.push("/nutrition/log-food" as any)}
       activeOpacity={0.82}
       style={fabStyles.wrap}
     >
-      <LinearGradient
-        colors={["#5B8DEF", "#3B6FD4", "#2A5AC2"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={fabStyles.circle}
-      >
-        <Text style={fabStyles.plus}>+</Text>
-      </LinearGradient>
+      {isDark ? (
+        <View style={[fabStyles.circle, {
+          backgroundColor: '#F5C842',
+          shadowColor: '#F5C842',
+          shadowOpacity: 0.4,
+        }]}>
+          <Text style={[fabStyles.plus, { color: '#1C1612' }]}>+</Text>
+        </View>
+      ) : (
+        <LinearGradient
+          colors={["#5B8DEF", "#3B6FD4", "#2A5AC2"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={fabStyles.circle}
+        >
+          <Text style={fabStyles.plus}>+</Text>
+        </LinearGradient>
+      )}
     </TouchableOpacity>
   );
 }
@@ -75,22 +86,22 @@ const fabStyles = StyleSheet.create({
 });
 
 export default function TabLayout() {
-  const { colors } = useTheme();
+  const { isDark } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#35C7B8",
-        tabBarInactiveTintColor: "#9CA3AF",
+        tabBarActiveTintColor: isDark ? '#F5C842' : '#35C7B8',
+        tabBarInactiveTintColor: isDark ? 'rgba(232,224,208,0.4)' : '#9CA3AF',
         tabBarStyle: {
-          backgroundColor: "rgba(255,255,255,0.85)",
-          borderTopColor: "rgba(230,235,242,0.8)",
-          borderTopWidth: StyleSheet.hairlineWidth,
+          backgroundColor: isDark ? '#1C1612' : 'rgba(255,255,255,0.85)',
+          borderTopColor: isDark ? 'rgba(248,213,97,0.15)' : 'rgba(230,235,242,0.8)',
+          borderTopWidth: isDark ? 1 : StyleSheet.hairlineWidth,
           elevation: 0,
-          shadowColor: "#000",
+          shadowColor: isDark ? '#000' : '#000',
           shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.06,
+          shadowOpacity: isDark ? 0 : 0.06,
           shadowRadius: 20,
           height: Platform.OS === "ios" ? 82 : 64,
           paddingTop: 10,

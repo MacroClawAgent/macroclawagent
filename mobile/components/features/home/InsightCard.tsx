@@ -38,8 +38,8 @@ export function InsightCard({ insight }: InsightCardProps) {
       {/* Top row: badge + live */}
       <View style={s.topRow}>
         <View style={[s.badge, isDark && {
-          backgroundColor: 'rgba(245,200,66,0.12)',
-          borderColor: 'rgba(245,200,66,0.25)',
+          backgroundColor: 'rgba(248,213,97,0.12)',
+          borderColor: 'rgba(248,213,97,0.4)',
         }]}>
           <Text style={[s.badgeDot, isDark && { color: '#F5C842' }]}>✦</Text>
           <Text style={[s.badgeText, isDark && { color: '#F5C842' }]}>AI Insight</Text>

@@ -299,13 +299,17 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
           </View>
           <View style={styles.cardHeaderRight}>
             {streak > 0 && (
-              <View style={styles.streakBadge}>
+              <View style={[styles.streakBadge, isDark && {
+                backgroundColor: 'rgba(248,213,97,0.15)',
+                borderWidth: 1,
+                borderColor: 'rgba(248,213,97,0.3)',
+              }]}>
                 <SymbolView
                   name={{ ios: "flame.fill", android: "local_fire_department", web: "local_fire_department" }}
-                  tintColor="#FFD580"
+                  tintColor={isDark ? '#F5C842' : '#FFD580'}
                   size={12}
                 />
-                <Text style={styles.streakCount}>{streak}</Text>
+                <Text style={[styles.streakCount, isDark && { color: '#F5C842' }]}>{streak}</Text>
               </View>
             )}
           </View>
@@ -346,10 +350,10 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                   </Text>
 
                   {/* Status dot */}
-                  {status === "goal_met"  && <View style={[styles.statusDot, styles.dotGreen]} />}
-                  {status === "logged"    && <View style={[styles.statusDot, styles.dotBlue]} />}
-                  {status === "missed"    && <View style={[styles.statusDot, styles.dotEmpty]} />}
-                  {status === "future"    && <View style={[styles.statusDot, styles.dotFuture]} />}
+                  {status === "goal_met"  && <View style={[styles.statusDot, styles.dotGreen, isDark && { backgroundColor: '#F5C842', shadowColor: '#F5C842' }]} />}
+                  {status === "logged"    && <View style={[styles.statusDot, styles.dotBlue,  isDark && { backgroundColor: '#E07B54' }]} />}
+                  {status === "missed"    && <View style={[styles.statusDot, styles.dotEmpty, isDark && { backgroundColor: 'rgba(232,224,208,0.15)', borderColor: 'rgba(232,224,208,0.25)' }]} />}
+                  {status === "future"    && <View style={[styles.statusDot, styles.dotFuture,isDark && { backgroundColor: 'rgba(232,224,208,0.15)', borderColor: 'rgba(232,224,208,0.25)' }]} />}
                 </View>
               </TouchableOpacity>
             );
@@ -425,7 +429,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
             </ScrollView>
           ) : loading ? (
             <View style={styles.loadingWrap}>
-              <ActivityIndicator color={BLUE} size="large" />
+              <ActivityIndicator color={isDark ? '#F5C842' : BLUE} size="large" />
             </View>
           ) : detail ? (
             /* ── Past / today: logged data ── */
@@ -461,7 +465,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                     const dishes = groupIntoDishes(tagItems);
                     return (
                       <View key={tag} style={styles.mealGroup}>
-                        <Text style={[styles.mealTagLabel, { color: BLUE }]}>{tag}</Text>
+                        <Text style={[styles.mealTagLabel, { color: isDark ? '#F5C842' : BLUE }]}>{tag}</Text>
                         {dishes.map((dish) => {
                           const isExpanded = expandedDishes.has(dish.key);
                           const isDeleting = deletingBatch === dish.key;

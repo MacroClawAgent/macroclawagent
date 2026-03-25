@@ -54,6 +54,39 @@ function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps)
   );
 }
 
+interface MacroTabletProps {
+  label: string;
+  color1: string;
+  color2: string;
+  shadowColor: string;
+  labelColor: string;
+  consumed: number;
+  target: number;
+}
+
+function MacroTablet({ label, color1, color2, shadowColor: sc, labelColor, consumed, target }: MacroTabletProps) {
+  const remaining = Math.max(0, target - Math.round(consumed));
+  return (
+    <View style={{ alignItems: 'center', gap: 6 }}>
+      <View style={{ shadowColor: sc, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 8 }}>
+        <LinearGradient
+          colors={[color1, color2, color1]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={{ width: 72, height: 88, borderRadius: 24, overflow: 'hidden' }}
+        >
+          {/* Diagonal highlight slash */}
+          <View style={{ position: 'absolute', top: 8, left: -20, width: 80, height: 28, backgroundColor: 'rgba(255,255,255,0.25)', transform: [{ rotate: '-25deg' }], borderRadius: 14 }} />
+          {/* Dot highlight */}
+          <View style={{ position: 'absolute', top: 12, left: 14, width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.45)' }} />
+        </LinearGradient>
+      </View>
+      <Text style={{ fontSize: 13, fontWeight: '700', color: labelColor }}>{remaining}g left</Text>
+      <Text style={{ fontSize: 10, fontWeight: '600', color: 'rgba(232,224,208,0.45)' }}>{label}</Text>
+    </View>
+  );
+}
+
 const mb = StyleSheet.create({
   col: {
     flex: 1,
@@ -144,30 +177,29 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel }: Nutritio
       </View>
 
       {/* Progress bar */}
-      <View style={[styles.calBar, isDark && { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
+      <View style={[styles.calBar, isDark && { backgroundColor: 'rgba(248,213,97,0.15)' }]}>
         <LinearGradient
-          colors={isDark ? ["#F5C842", "#F7D580"] : ["#2DD4BF", "#38BDF8"]}
+          colors={isDark ? ["#E07B54", "#F5C842"] : ["#2DD4BF", "#38BDF8"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.calBarFill, { width: `${calPct}%` as DimensionValue }]}
         />
       </View>
 
-      {/* Macro bar chart */}
-      <View style={styles.macroRow}>
-        <MacroBar label="Protein"
-          color={isDark ? "#F5C842" : "#34D399"}
-          trackColor={isDark ? "rgba(245,200,66,0.15)" : "rgba(52,211,153,0.15)"}
-          consumed={macros.protein.consumed} target={macros.protein.target} />
-        <MacroBar label="Carbs"
-          color={isDark ? "#E8E0D0" : "#F59E0B"}
-          trackColor={isDark ? "rgba(232,224,208,0.12)" : "rgba(245,158,11,0.15)"}
-          consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
-        <MacroBar label="Fat"
-          color={isDark ? "#4CAF7D" : "#A78BFA"}
-          trackColor={isDark ? "rgba(76,175,125,0.15)" : "rgba(167,139,250,0.15)"}
-          consumed={macros.fat.consumed}     target={macros.fat.target}     />
-      </View>
+      {/* Macro section */}
+      {isDark ? (
+        <View style={[styles.macroRow, { alignItems: 'center' }]}>
+          <MacroTablet label="Protein" color1="#C4682A" color2="#E07B54" shadowColor="#E07B54" labelColor="#E07B54" consumed={macros.protein.consumed} target={macros.protein.target} />
+          <MacroTablet label="Carbs"   color1="#C49A1A" color2="#F5C842" shadowColor="#F5C842" labelColor="#F5C842" consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
+          <MacroTablet label="Fat"     color1="#5C6E3A" color2="#8B9E6E" shadowColor="#8B9E6E" labelColor="#8B9E6E" consumed={macros.fat.consumed}     target={macros.fat.target}     />
+        </View>
+      ) : (
+        <View style={styles.macroRow}>
+          <MacroBar label="Protein" color="#34D399" trackColor="rgba(52,211,153,0.15)"   consumed={macros.protein.consumed} target={macros.protein.target} />
+          <MacroBar label="Carbs"   color="#F59E0B" trackColor="rgba(245,158,11,0.15)"   consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
+          <MacroBar label="Fat"     color="#A78BFA" trackColor="rgba(167,139,250,0.15)"  consumed={macros.fat.consumed}     target={macros.fat.target}     />
+        </View>
+      )}
     </View>
   );
 }
