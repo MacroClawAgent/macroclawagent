@@ -276,8 +276,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 4,
+    paddingTop: 12,
+    paddingBottom: 2,
   },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   iconBadge: {
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 4,
   },
   calLeft: { flexDirection: "row", alignItems: "baseline", gap: 4 },
   calBig: { fontSize: 52, fontFamily: "BebasNeue_400Regular", letterSpacing: 1, color: "#0F172A" },
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "rgba(45,212,191,0.15)",
     marginHorizontal: 20,
-    marginVertical: 10,
+    marginVertical: 6,
   },
   calBarFill: { height: 5, borderRadius: 3 },
 
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "flex-end",
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 20,
+    paddingTop: 4,
+    paddingBottom: 10,
   },
 });
