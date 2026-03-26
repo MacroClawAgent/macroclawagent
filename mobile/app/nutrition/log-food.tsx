@@ -428,11 +428,7 @@ export default function LogFoodScreen() {
         <View style={{ flex: 1 }}>
 
           {/* ── Meal type pills ── */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={s.pillRow}
-          >
+          <View style={s.pillRow}>
             {TAGS.map(tag => (
               <TouchableOpacity
                 key={tag}
@@ -443,7 +439,7 @@ export default function LogFoodScreen() {
                 <Text style={[s.pillText, mealTag === tag && s.pillTextActive]}>{tag}</Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
 
           {/* ── Two photo buttons ── */}
           <View style={s.photoRow}>
@@ -670,8 +666,8 @@ const s = StyleSheet.create({
   headerRight:    { minWidth: 64, alignItems: "flex-end" },
 
   // ── Meal pills ───────────────────────────────────────────────────────────────
-  pillRow:        { paddingHorizontal: 20, gap: 8, paddingBottom: 2 },
-  pill:           { paddingHorizontal: 18, paddingVertical: 9, borderRadius: 20, backgroundColor: "rgba(232,224,208,0.08)", borderWidth: 1, borderColor: "rgba(232,224,208,0.12)" },
+  pillRow:        { flexDirection: "row", marginHorizontal: 16, marginTop: 16, marginBottom: 0, gap: 8, height: 38 },
+  pill:           { flex: 1, height: 38, paddingHorizontal: 20, paddingVertical: 0, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(232,224,208,0.08)", borderWidth: 1, borderColor: "rgba(232,224,208,0.12)" },
   pillActive:     { backgroundColor: GOLD, borderColor: GOLD },
   pillText:       { fontSize: 14, fontWeight: "600", color: "rgba(232,224,208,0.45)" },
   pillTextActive: { color: DARK_TXT },
