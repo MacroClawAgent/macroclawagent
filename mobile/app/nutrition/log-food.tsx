@@ -1,85 +1,81 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert, KeyboardAvoidingView, Modal, Platform,
-  RefreshControl, SafeAreaView, ScrollView, StyleSheet,
+  SafeAreaView, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
-import { useTheme } from "@/context/ThemeContext";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-const BG   = "#EEF4FA";
-const TEAL = "#2DD4BF";
+// ── Theme ──────────────────────────────────────────────────────────────────────
+const BG      = "#1C1612";
+const CARD    = "#252018";
+const BORDER  = "rgba(248,213,97,0.12)";
+const GOLD    = "#F5C842";
+const CORAL   = "#E07B54";
+const CREAM   = "#E8E0D0";
+const MUTED   = "rgba(232,224,208,0.5)";
+const DARK_TXT = "#1C1612";
 
-const TAG_COLORS: Record<string, { color: string; bg: string }> = {
-  Breakfast: { color: "#F59E0B", bg: "rgba(245,158,11,0.10)" },
-  Lunch:     { color: "#10B981", bg: "rgba(16,185,129,0.10)" },
-  Dinner:    { color: "#6366F1", bg: "rgba(99,102,241,0.10)" },
-  Snack:     { color: "#F97316", bg: "rgba(249,115,22,0.10)" },
-};
+// ── Types ──────────────────────────────────────────────────────────────────────
 const TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 type MealTag = typeof TAGS[number];
 
-const MEAL_EMOJIS: Record<string, string> = {
-  Breakfast: "🌅", Lunch: "☀️", Dinner: "🌙", Snack: "🍎",
-};
-
-const UNITS = ["g", "ml", "pieces", "cups", "tbsp"] as const;
-type Unit = typeof UNITS[number];
-
-// ── Food database ─────────────────────────────────────────────────────────────
-interface FoodEntry {
-  name: string; calories: number; protein: number; carbs: number; fat: number;
+function defaultMealTag(): MealTag {
+  const h = new Date().getHours();
+  if (h < 11) return "Breakfast";
+  if (h < 14) return "Lunch";
+  if (h < 18) return "Snack";
+  return "Dinner";
 }
 
-const FOOD_DATABASE: FoodEntry[] = [
-  { name: "Chicken Breast (100g)",          calories: 165, protein: 31,   carbs: 0,    fat: 3.6  },
-  { name: "Brown Rice (100g cooked)",       calories: 112, protein: 2.6,  carbs: 23.5, fat: 0.9  },
-  { name: "Eggs (1 large)",                 calories: 72,  protein: 6.3,  carbs: 0.4,  fat: 5    },
-  { name: "Greek Yogurt (100g)",            calories: 97,  protein: 9,    carbs: 3.6,  fat: 5    },
-  { name: "Oats (100g dry)",                calories: 389, protein: 16.9, carbs: 66,   fat: 6.9  },
-  { name: "Salmon (100g)",                  calories: 208, protein: 20,   carbs: 0,    fat: 13   },
-  { name: "Sweet Potato (100g)",            calories: 86,  protein: 1.6,  carbs: 20,   fat: 0.1  },
-  { name: "Banana (1 medium)",              calories: 105, protein: 1.3,  carbs: 27,   fat: 0.4  },
-  { name: "Almonds (30g)",                  calories: 173, protein: 6.3,  carbs: 6,    fat: 15   },
-  { name: "Avocado (half)",                 calories: 120, protein: 1.5,  carbs: 6.4,  fat: 11   },
-  { name: "White Rice (100g cooked)",       calories: 130, protein: 2.7,  carbs: 28,   fat: 0.3  },
-  { name: "Tuna in Spring Water (95g can)", calories: 96,  protein: 21,   carbs: 0,    fat: 0.9  },
-  { name: "Whey Protein (1 scoop 30g)",     calories: 120, protein: 24,   carbs: 3,    fat: 1.5  },
-  { name: "Whole Milk (250ml)",             calories: 150, protein: 8,    carbs: 12,   fat: 8    },
-  { name: "Broccoli (100g)",                calories: 34,  protein: 2.8,  carbs: 7,    fat: 0.4  },
-  { name: "Bread slice (white)",            calories: 79,  protein: 2.7,  carbs: 15,   fat: 1    },
-  { name: "Cheddar Cheese (30g)",           calories: 120, protein: 7.5,  carbs: 0.1,  fat: 10   },
-  { name: "Olive Oil (1 tbsp)",             calories: 119, protein: 0,    carbs: 0,    fat: 13.5 },
-  { name: "Cottage Cheese (100g)",          calories: 98,  protein: 11.1, carbs: 3.4,  fat: 4.3  },
-  { name: "Spinach (100g)",                 calories: 23,  protein: 2.9,  carbs: 3.6,  fat: 0.4  },
+interface DishEntry {
+  name: string;
+  emoji: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  lastLogged?: string;
+  timesLogged?: number;
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+const INITIAL_PREVIOUS_DISHES: DishEntry[] = [
+  { name: "Chicken Rice Bowl",    emoji: "🍗", calories: 520, protein: 48, carbs: 52, fat: 12, lastLogged: "Yesterday, Lunch",   timesLogged: 8  },
+  { name: "Greek Yogurt Parfait", emoji: "🥣", calories: 420, protein: 22, carbs: 58, fat: 10, lastLogged: "Today, Breakfast",   timesLogged: 12 },
+  { name: "Salmon & Sweet Potato",emoji: "🐟", calories: 580, protein: 44, carbs: 48, fat: 18, lastLogged: "Mon, Dinner",        timesLogged: 5  },
+  { name: "Protein Shake",        emoji: "🥛", calories: 280, protein: 28, carbs: 32, fat: 4,  lastLogged: "Today, Snack",       timesLogged: 24 },
+  { name: "Beef Rice Bowl",       emoji: "🥩", calories: 580, protein: 42, carbs: 55, fat: 16, lastLogged: "Yesterday, Dinner",  timesLogged: 3  },
+  { name: "Avocado Toast & Eggs", emoji: "🥑", calories: 480, protein: 24, carbs: 42, fat: 24, lastLogged: "Sun, Breakfast",     timesLogged: 6  },
 ];
 
-const POPULAR_FOODS = [
-  FOOD_DATABASE[0],  // Chicken Breast
-  FOOD_DATABASE[2],  // Eggs
-  FOOD_DATABASE[3],  // Greek Yogurt
-  FOOD_DATABASE[4],  // Oats
-  FOOD_DATABASE[1],  // Brown Rice
-  FOOD_DATABASE[5],  // Salmon
-  FOOD_DATABASE[7],  // Banana
-  FOOD_DATABASE[6],  // Sweet Potato
+const DISH_DATABASE: DishEntry[] = [
+  { name: "Scrambled Eggs on Toast",  emoji: "🍳", calories: 380, protein: 22, carbs: 38, fat: 16 },
+  { name: "Chicken Caesar Salad",     emoji: "🥗", calories: 420, protein: 36, carbs: 18, fat: 24 },
+  { name: "Beef Burger",              emoji: "🍔", calories: 650, protein: 38, carbs: 52, fat: 28 },
+  { name: "Pasta Bolognese",          emoji: "🍝", calories: 580, protein: 28, carbs: 72, fat: 18 },
+  { name: "Fish & Chips",             emoji: "🐟", calories: 720, protein: 32, carbs: 82, fat: 28 },
+  { name: "Sushi Roll (8 pieces)",    emoji: "🍣", calories: 320, protein: 16, carbs: 58, fat: 4  },
+  { name: "Steak & Vegetables",       emoji: "🥩", calories: 520, protein: 52, carbs: 22, fat: 24 },
+  { name: "Chicken Wrap",             emoji: "🌯", calories: 480, protein: 38, carbs: 48, fat: 14 },
+  { name: "Poke Bowl",                emoji: "🍱", calories: 490, protein: 36, carbs: 58, fat: 12 },
+  { name: "Pad Thai",                 emoji: "🍜", calories: 620, protein: 24, carbs: 78, fat: 22 },
+  { name: "Acai Bowl",                emoji: "🫐", calories: 380, protein: 8,  carbs: 72, fat: 10 },
+  { name: "Omelette",                 emoji: "🍳", calories: 320, protein: 24, carbs: 4,  fat: 22 },
+  { name: "Grilled Chicken Salad",    emoji: "🥗", calories: 360, protein: 42, carbs: 18, fat: 14 },
+  { name: "Overnight Oats",           emoji: "🥣", calories: 380, protein: 16, carbs: 62, fat: 10 },
+  { name: "Smoothie Bowl",            emoji: "🫐", calories: 340, protein: 12, carbs: 64, fat: 8  },
+  { name: "Bacon & Eggs",             emoji: "🥓", calories: 480, protein: 32, carbs: 4,  fat: 36 },
+  { name: "Chicken Schnitzel",        emoji: "🍗", calories: 560, protein: 44, carbs: 38, fat: 22 },
+  { name: "Lamb Souvlaki",            emoji: "🥙", calories: 520, protein: 36, carbs: 48, fat: 18 },
+  { name: "Laksa",                    emoji: "🍜", calories: 580, protein: 28, carbs: 62, fat: 24 },
+  { name: "Nasi Goreng",              emoji: "🍳", calories: 540, protein: 22, carbs: 68, fat: 18 },
 ];
 
-const RECENT_MEALS = [
-  { name: "Chicken Bowl",  emoji: "🍗", food: FOOD_DATABASE[0] },
-  { name: "Oats",          emoji: "🥣", food: FOOD_DATABASE[4] },
-  { name: "Salmon Rice",   emoji: "🐟", food: FOOD_DATABASE[5] },
-  { name: "Eggs",          emoji: "🥚", food: FOOD_DATABASE[2] },
-  { name: "Greek Yogurt",  emoji: "🥛", food: FOOD_DATABASE[3] },
-];
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── History types (for clock view) ────────────────────────────────────────────
 interface FoodItem {
   id: string; meal_tag: string; name: string; calories: number;
   protein_g: number; carbs_g: number; fat_g: number;
@@ -91,68 +87,55 @@ interface NutritionData {
   goals: { calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number };
   foodItems: FoodItem[];
 }
-
-// Helper: auto-select meal tag by time of day
-function defaultMealTag(): MealTag {
-  const h = new Date().getHours();
-  if (h < 11) return "Breakfast";
-  if (h < 14) return "Lunch";
-  if (h < 18) return "Snack";
-  return "Dinner";
-}
-
 const MOCK_HISTORY = [
   { date: "Yesterday",  calories: 2100, protein: 168, carbs: 210, fat: 58 },
   { date: "Sun 16 Mar", calories: 1840, protein: 142, carbs: 195, fat: 52 },
   { date: "Sat 15 Mar", calories: 2450, protein: 185, carbs: 240, fat: 72 },
 ];
+const MEAL_EMOJIS: Record<string, string> = { Breakfast: "🌅", Lunch: "☀️", Dinner: "🌙", Snack: "🍎" };
 
-// ── Main screen ───────────────────────────────────────────────────────────────
+// ── Main Screen ───────────────────────────────────────────────────────────────
 export default function LogFoodScreen() {
   const { userProfile } = useAuth();
-  const { isDark } = useTheme();
   const router = useRouter();
 
-  // data state (unchanged logic)
-  const [data,           setData]           = useState<NutritionData | null>(null);
-  const [loading,        setLoading]        = useState(true);
-  const [refreshing,     setRefreshing]     = useState(false);
-  const [showHistory,    setShowHistory]    = useState(false);
-  const [expandedDishes, setExpandedDishes] = useState<Set<string>>(new Set());
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [mealTag,    setMealTag]    = useState<MealTag>(defaultMealTag);
+  const [query,      setQuery]      = useState("");
+  const [toast,      setToast]      = useState<string | null>(null);
+  const [showHistory,setShowHistory]= useState(false);
 
-  // custom food sheet (kept for "Add as custom")
-  const [showAdd,    setShowAdd]    = useState(false);
-  const [addTag,     setAddTag]     = useState<string>("Breakfast");
-  const [addName,    setAddName]    = useState("");
-  const [addCals,    setAddCals]    = useState("");
-  const [addProtein, setAddProtein] = useState("");
-  const [addCarbs,   setAddCarbs]   = useState("");
-  const [addFat,     setAddFat]     = useState("");
-  const [saving,     setSaving]     = useState(false);
+  // Previous dishes (starts with mock, grows as user adds)
+  const [previousDishes, setPreviousDishes] = useState<DishEntry[]>(INITIAL_PREVIOUS_DISHES);
 
-  // core UI state
-  const [mealTag,     setMealTag]     = useState<MealTag>(defaultMealTag);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // quantity sheet
-  const [selectedFood, setSelectedFood] = useState<FoodEntry | null>(null);
+  // Quantity sheet
+  const [selectedDish, setSelectedDish] = useState<DishEntry | null>(null);
   const [showQty,      setShowQty]      = useState(false);
-  const [qty,          setQty]          = useState(100);
-  const [qtyStr,       setQtyStr]       = useState("100");
-  const [unit,         setUnit]         = useState<Unit>("g");
+  const [servings,     setServings]     = useState<0.5 | 1 | 2>(1);
+  const [saving,       setSaving]       = useState(false);
 
-  // toast
-  const [toast, setToast] = useState<string | null>(null);
+  // Custom dish form
+  const [showCustom,    setShowCustom]    = useState(false);
+  const [customName,    setCustomName]    = useState("");
+  const [customCals,    setCustomCals]    = useState("");
+  const [customProtein, setCustomProtein] = useState("");
+  const [customCarbs,   setCustomCarbs]   = useState("");
+  const [customFat,     setCustomFat]     = useState("");
+  const [savingCustom,  setSavingCustom]  = useState(false);
+
+  // History / today log
+  const [data,           setData]           = useState<NutritionData | null>(null);
+  const [refreshing,     setRefreshing]     = useState(false);
+  const [expandedDishes, setExpandedDishes] = useState<Set<string>>(new Set());
 
   const searchRef = useRef<TextInput>(null);
 
-  // Auto-focus search on mount
   useEffect(() => {
     const t = setTimeout(() => searchRef.current?.focus(), 250);
     return () => clearTimeout(t);
   }, []);
 
-  // ── data fetching (unchanged) ──────────────────────────────────────────────
+  // ── Data fetching (unchanged logic) ────────────────────────────────────────
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
@@ -168,14 +151,13 @@ export default function LogFoodScreen() {
         foodItems: items,
       });
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { if (showHistory) fetchData(); }, [showHistory]);
 
-  // ── existing handlers (unchanged) ─────────────────────────────────────────
+  // ── Delete handlers (unchanged logic) ──────────────────────────────────────
   const handleDelete = (id: string) => {
     Alert.alert("Remove item?", undefined, [
       { text: "Cancel", style: "cancel" },
@@ -204,25 +186,6 @@ export default function LogFoodScreen() {
     ]);
   };
 
-  const handleAdd = async () => {
-    if (!addName || !addCals) return;
-    setSaving(true);
-    try {
-      await apiPost("/api/nutrition/food-items", {
-        meal_tag: addTag, name: addName,
-        calories:  parseInt(addCals),
-        protein_g: parseFloat(addProtein || "0"),
-        carbs_g:   parseFloat(addCarbs   || "0"),
-        fat_g:     parseFloat(addFat     || "0"),
-      });
-      setShowAdd(false);
-      setAddName(""); setAddCals(""); setAddProtein(""); setAddCarbs(""); setAddFat("");
-      await fetchData();
-    } catch (e: unknown) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Failed to add item.");
-    } finally { setSaving(false); }
-  };
-
   const toggleDish = (key: string) => {
     setExpandedDishes(prev => {
       const next = new Set(prev);
@@ -231,85 +194,111 @@ export default function LogFoodScreen() {
     });
   };
 
-  // ── new handlers ───────────────────────────────────────────────────────────
+  // ── Photo handlers (unchanged logic) ────────────────────────────────────────
+  function handleTakePhoto() {
+    router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "camera" } } as any);
+  }
+  function handleUploadPhoto() {
+    router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "library" } } as any);
+  }
+
+  // ── Dish logging ───────────────────────────────────────────────────────────
+  function openDishQty(dish: DishEntry) {
+    setSelectedDish(dish);
+    setServings(1);
+    setShowQty(true);
+  }
+
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(null), 2400);
   }
 
-  function openQty(food: FoodEntry) {
-    setSelectedFood(food);
-    setQty(100);
-    setQtyStr("100");
-    setUnit("g");
-    setShowQty(true);
-  }
-
-  function adjustQty(delta: number) {
-    const next = Math.max(1, qty + delta);
-    setQty(next);
-    setQtyStr(String(next));
-  }
-
-  function handleQtyTextChange(text: string) {
-    setQtyStr(text);
-    const n = parseFloat(text);
-    if (!isNaN(n) && n > 0) setQty(n);
-  }
-
-  function cycleUnit() {
-    const idx = UNITS.indexOf(unit);
-    setUnit(UNITS[(idx + 1) % UNITS.length]);
-  }
-
-  async function handleAddFoodFromSearch() {
-    if (!selectedFood) return;
-    const ratio = qty / 100;
+  async function handleAddDish() {
+    if (!selectedDish) return;
     setSaving(true);
+    const m = servings;
     try {
       await apiPost("/api/nutrition/food-items", {
         meal_tag:  mealTag,
-        name:      selectedFood.name,
-        calories:  Math.round(selectedFood.calories  * ratio),
-        protein_g: Math.round(selectedFood.protein   * ratio * 10) / 10,
-        carbs_g:   Math.round(selectedFood.carbs     * ratio * 10) / 10,
-        fat_g:     Math.round(selectedFood.fat       * ratio * 10) / 10,
+        name:      selectedDish.name,
+        dish_name: selectedDish.name,
+        calories:  Math.round(selectedDish.calories  * m),
+        protein_g: Math.round(selectedDish.protein   * m * 10) / 10,
+        carbs_g:   Math.round(selectedDish.carbs     * m * 10) / 10,
+        fat_g:     Math.round(selectedDish.fat       * m * 10) / 10,
       });
+      // Add to previousDishes if not already there
+      setPreviousDishes(prev =>
+        prev.some(d => d.name === selectedDish.name) ? prev : [
+          { ...selectedDish, lastLogged: `Today, ${mealTag}`, timesLogged: 1 },
+          ...prev,
+        ]
+      );
       setShowQty(false);
-      setSearchQuery("");
-      showToast(`${selectedFood.name} added to ${mealTag} ✓`);
-      await fetchData();
+      showToast(`${selectedDish.name} added to ${mealTag} ✓`);
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed to add.");
     } finally { setSaving(false); }
   }
 
-  // ── photo handlers ────────────────────────────────────────────────────────
-  function handleTakePhoto() {
-    router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "camera" } } as any);
+  // ── Custom dish ────────────────────────────────────────────────────────────
+  function openCustom(prefillName = "") {
+    setCustomName(prefillName);
+    setCustomCals(""); setCustomProtein(""); setCustomCarbs(""); setCustomFat("");
+    setShowCustom(true);
   }
 
-  function handleUploadPhoto() {
-    router.push({ pathname: "/nutrition/photo-confirm", params: { mode: "library" } } as any);
+  async function handleSaveCustom() {
+    if (!customName || !customCals) return;
+    setSavingCustom(true);
+    try {
+      await apiPost("/api/nutrition/food-items", {
+        meal_tag:  mealTag,
+        name:      customName,
+        dish_name: customName,
+        calories:  parseInt(customCals),
+        protein_g: parseFloat(customProtein || "0"),
+        carbs_g:   parseFloat(customCarbs   || "0"),
+        fat_g:     parseFloat(customFat     || "0"),
+      });
+      const newDish: DishEntry = {
+        name: customName, emoji: "🍽️",
+        calories: parseInt(customCals),
+        protein: parseFloat(customProtein || "0"),
+        carbs:   parseFloat(customCarbs   || "0"),
+        fat:     parseFloat(customFat     || "0"),
+        lastLogged: `Today, ${mealTag}`, timesLogged: 1,
+      };
+      setPreviousDishes(prev => [newDish, ...prev]);
+      setShowCustom(false);
+      showToast(`${customName} added to ${mealTag} ✓`);
+    } catch (e: unknown) {
+      Alert.alert("Error", e instanceof Error ? e.message : "Failed to save.");
+    } finally { setSavingCustom(false); }
   }
 
-  // ── derived ───────────────────────────────────────────────────────────────
-  const ratio   = qty / 100;
-  const food    = selectedFood;
-  const previewCal     = food ? Math.round(food.calories  * ratio) : 0;
-  const previewProtein = food ? +(food.protein * ratio).toFixed(1) : 0;
-  const previewCarbs   = food ? +(food.carbs   * ratio).toFixed(1) : 0;
-  const previewFat     = food ? +(food.fat     * ratio).toFixed(1) : 0;
+  // ── Search / filter ────────────────────────────────────────────────────────
+  const trimmed    = query.trim().toLowerCase();
+  const isSearching = trimmed.length > 0;
 
-  const trimmed        = searchQuery.trim();
-  const displayedFoods = trimmed
-    ? FOOD_DATABASE.filter(f => f.name.toLowerCase().includes(trimmed.toLowerCase()))
-    : POPULAR_FOODS;
-  const isSearching    = trimmed.length > 0;
+  const filteredPrev = isSearching
+    ? previousDishes.filter(d => d.name.toLowerCase().includes(trimmed))
+    : previousDishes;
 
+  const filteredDB = isSearching
+    ? DISH_DATABASE.filter(d =>
+        d.name.toLowerCase().includes(trimmed) &&
+        !previousDishes.some(p => p.name === d.name)
+      )
+    : [];
+
+  const combinedResults = [...filteredPrev, ...filteredDB];
+  const noResults = isSearching && combinedResults.length === 0;
+
+  // ── History derived ────────────────────────────────────────────────────────
   const foodItems = data?.foodItems ?? [];
   const todayLabel = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-
   const sections = TAGS.map(tag => {
     const tagItems = foodItems.filter(i => i.meal_tag === tag);
     const batchMap = new Map<string, FoodItem[]>();
@@ -330,375 +319,333 @@ export default function LogFoodScreen() {
     return { tag, dishes };
   }).filter(s => s.dishes.length > 0);
 
-  // ── header right ──────────────────────────────────────────────────────────
-  const ClockBtn = (
-    <TouchableOpacity style={[s.iconBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]} activeOpacity={0.7} onPress={() => setShowHistory(h => !h)}>
-      <Ionicons name="time-outline" size={20} color={showHistory ? (isDark ? '#F5C842' : TEAL) : (isDark ? 'rgba(232,224,208,0.55)' : '#374151')} />
-    </TouchableOpacity>
-  );
+  // ── Quantity sheet derived ──────────────────────────────────────────────────
+  const dish = selectedDish;
+  const qCal     = dish ? Math.round(dish.calories * servings) : 0;
+  const qProtein = dish ? Math.round(dish.protein  * servings * 10) / 10 : 0;
+  const qCarbs   = dish ? Math.round(dish.carbs    * servings * 10) / 10 : 0;
+  const qFat     = dish ? Math.round(dish.fat      * servings * 10) / 10 : 0;
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────────────
   return (
-    <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]}>
-      <AppHeader title="Log Food" showBack rightElement={ClockBtn} />
+    <SafeAreaView style={s.safe}>
+
+      {/* ═══════════════════ HEADER ═══════════════════ */}
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={s.headerBack}>
+          <Ionicons name="chevron-back" size={22} color={CREAM} />
+          <Text style={s.headerBackText}>Back</Text>
+        </TouchableOpacity>
+        <Text style={s.headerTitle}>Log Food</Text>
+        <TouchableOpacity onPress={() => setShowHistory(h => !h)} hitSlop={12} style={s.headerRight}>
+          <Ionicons name="time-outline" size={22} color={showHistory ? GOLD : MUTED} />
+        </TouchableOpacity>
+      </View>
 
       {showHistory ? (
-        /* ════════ HISTORY VIEW ════════ */
-        <ScrollView
-          contentContainerStyle={s.histScroll}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={TEAL} />}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={[s.histHeading, isDark && { color: '#E8E0D0' }]}>Today's Log</Text>
+        /* ═══════════════════ HISTORY VIEW ═══════════════════ */
+        <ScrollView contentContainerStyle={s.histScroll} showsVerticalScrollIndicator={false}>
+          <Text style={s.histHeading}>Today's Log</Text>
           {sections.length === 0 ? (
             <View style={s.histEmpty}>
-              <Text style={[s.histEmptyText, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Nothing logged today yet</Text>
+              <Text style={s.histEmptyText}>Nothing logged today yet</Text>
             </View>
-          ) : sections.map(section => {
-            const tc = TAG_COLORS[section.tag] ?? { color: TEAL, bg: "" };
-            return (
-              <View key={section.tag} style={s.histSection}>
-                <View style={[s.histSectionHead, { borderLeftColor: tc.color }]}>
-                  <Text style={s.histSectionEmoji}>{MEAL_EMOJIS[section.tag]}</Text>
-                  <Text style={[s.histSectionTitle, { color: tc.color }]}>{section.tag}</Text>
-                  <Text style={s.histDate}>{todayLabel}</Text>
-                </View>
-                {section.dishes.map(dish => {
-                  const expanded = expandedDishes.has(dish.key);
-                  const multi    = dish.items.length > 1;
-                  return (
-                    <View key={dish.key} style={[s.dishCard, { borderLeftColor: tc.color }, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)', borderLeftColor: tc.color }]}>
-                      <View style={s.dishRow}>
-                        <View style={s.dishMid}>
-                          <Text style={[s.dishName, isDark && { color: '#E8E0D0' }]}>{dish.dishName}</Text>
-                          <Text style={[s.dishMeta, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{+dish.totalCals.toFixed(0)} kcal{multi ? ` · ${dish.items.length} ingredients` : ""}</Text>
-                        </View>
-                        <View style={s.dishActions}>
-                          {multi && (
-                            <TouchableOpacity onPress={() => toggleDish(dish.key)} style={s.expandBtn}>
-                              <Text style={s.expandText}>{expanded ? "▲" : "▼"}</Text>
-                            </TouchableOpacity>
-                          )}
-                          <TouchableOpacity onPress={() => multi ? handleDeleteDish(dish) : handleDelete(dish.items[0].id)} style={s.deleteBtn}>
-                            <Text style={s.deleteText}>×</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                      {multi && expanded && (
-                        <View style={s.ingredientList}>
-                          {dish.items.map((item, idx) => (
-                            <View key={item.id} style={[s.ingredientRow, idx === dish.items.length - 1 && { borderBottomWidth: 0 }]}>
-                              <View style={{ flex: 1 }}>
-                                <Text style={[s.ingredientName, isDark && { color: '#E8E0D0' }]}>{item.name}</Text>
-                                <Text style={[s.ingredientMacros, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{+item.calories.toFixed(0)} kcal · P {+item.protein_g.toFixed(1)}g · C {+item.carbs_g.toFixed(1)}g · F {+item.fat_g.toFixed(1)}g</Text>
-                              </View>
-                              <TouchableOpacity onPress={() => handleDelete(item.id)} style={s.deleteBtn}>
-                                <Text style={s.deleteText}>×</Text>
-                              </TouchableOpacity>
-                            </View>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-                  );
-                })}
+          ) : sections.map(section => (
+            <View key={section.tag} style={s.histSection}>
+              <View style={s.histSectionHead}>
+                <Text style={s.histSectionEmoji}>{MEAL_EMOJIS[section.tag]}</Text>
+                <Text style={s.histSectionTitle}>{section.tag}</Text>
+                <Text style={s.histDate}>{todayLabel}</Text>
               </View>
-            );
-          })}
-
-          <Text style={[s.histHeading, { marginTop: 24 }, isDark && { color: '#E8E0D0' }]}>Past Days</Text>
+              {section.dishes.map(d => {
+                const expanded = expandedDishes.has(d.key);
+                const multi    = d.items.length > 1;
+                return (
+                  <View key={d.key} style={s.dishCard}>
+                    <View style={s.dishRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.dishName}>{d.dishName}</Text>
+                        <Text style={s.dishMeta}>{+d.totalCals.toFixed(0)} kcal{multi ? ` · ${d.items.length} ingredients` : ""}</Text>
+                      </View>
+                      <View style={s.dishActions}>
+                        {multi && (
+                          <TouchableOpacity onPress={() => toggleDish(d.key)} style={s.expandBtn}>
+                            <Text style={s.expandText}>{expanded ? "▲" : "▼"}</Text>
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity onPress={() => multi ? handleDeleteDish(d) : handleDelete(d.items[0].id)} style={s.deleteBtn}>
+                          <Text style={s.deleteText}>×</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    {multi && expanded && (
+                      <View style={s.ingredientList}>
+                        {d.items.map((item, idx) => (
+                          <View key={item.id} style={[s.ingredientRow, idx === d.items.length - 1 && { borderBottomWidth: 0 }]}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={s.ingredientName}>{item.name}</Text>
+                              <Text style={s.ingredientMacros}>{+item.calories.toFixed(0)} kcal · P {+item.protein_g.toFixed(1)}g</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => handleDelete(item.id)} style={s.deleteBtn}>
+                              <Text style={s.deleteText}>×</Text>
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          ))}
+          <Text style={[s.histHeading, { marginTop: 24 }]}>Past Days</Text>
           {MOCK_HISTORY.map(day => {
             const total = (day.protein + day.carbs + day.fat) || 1;
-            const pColor = isDark ? '#E07B54' : '#22C55E';
-            const cColor = isDark ? '#F5C842' : '#F59E0B';
-            const fColor = isDark ? '#8B9E6E' : '#8B5CF6';
             return (
-              <View key={day.date} style={[s.histDayCard, isDark && { backgroundColor: '#1C1410' }]}>
+              <View key={day.date} style={s.histDayCard}>
                 <View style={s.histDayTop}>
-                  <Text style={[s.histDayDate, isDark && { color: '#E8E0D0' }]}>{day.date}</Text>
-                  <Text style={[s.histDayCal, isDark && { color: '#E8E0D0' }]}>{day.calories.toLocaleString()} kcal</Text>
-                  <Text style={[s.histChevron, isDark && { color: 'rgba(232,224,208,0.35)' }]}>›</Text>
+                  <Text style={s.histDayDate}>{day.date}</Text>
+                  <Text style={s.histDayCal}>{day.calories.toLocaleString()} kcal</Text>
+                  <Text style={s.histChevron}>›</Text>
                 </View>
                 <View style={s.histMacroBar}>
-                  <View style={[s.histMacroSeg, { flex: day.protein / total, backgroundColor: pColor }]} />
-                  <View style={[s.histMacroSeg, { flex: day.carbs   / total, backgroundColor: cColor }]} />
-                  <View style={[s.histMacroSeg, { flex: day.fat     / total, backgroundColor: fColor }]} />
+                  <View style={[s.histMacroSeg, { flex: day.protein / total, backgroundColor: CORAL }]} />
+                  <View style={[s.histMacroSeg, { flex: day.carbs   / total, backgroundColor: GOLD  }]} />
+                  <View style={[s.histMacroSeg, { flex: day.fat     / total, backgroundColor: "rgba(232,224,208,0.3)" }]} />
                 </View>
                 <View style={s.histMacroLbls}>
-                  <Text style={[s.histMacroLbl, { color: pColor }]}>P {day.protein}g</Text>
-                  <Text style={[s.histMacroLbl, { color: cColor }]}>C {day.carbs}g</Text>
-                  <Text style={[s.histMacroLbl, { color: fColor }]}>F {day.fat}g</Text>
+                  <Text style={[s.histMacroLbl, { color: CORAL }]}>P {day.protein}g</Text>
+                  <Text style={[s.histMacroLbl, { color: GOLD  }]}>C {day.carbs}g</Text>
+                  <Text style={[s.histMacroLbl, { color: MUTED }]}>F {day.fat}g</Text>
                 </View>
               </View>
             );
           })}
-          <View style={{ height: 40 }} />
+          <View style={{ height: 60 }} />
         </ScrollView>
       ) : (
-        /* ════════ MAIN VIEW ════════ */
+        /* ═══════════════════ MAIN LOG VIEW ═══════════════════ */
         <View style={{ flex: 1 }}>
 
-          {/* ── Search + barcode ── */}
-          <View style={s.searchRow}>
-            <View style={[s.searchBox, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.15)' }]}>
-              <Ionicons name="search" size={20} color={isDark ? '#F5C842' : TEAL} />
-              <TextInput
-                ref={searchRef}
-                style={[s.searchInput, isDark && { color: '#E8E0D0' }]}
-                placeholder="Search food..."
-                placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#94A3B8'}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="search"
-                cursorColor={TEAL}
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery("")} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                  <Ionicons name="close-circle" size={18} color="#94A3B8" />
-                </TouchableOpacity>
-              )}
-            </View>
-            <TouchableOpacity
-              style={[s.barcodeBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}
-              activeOpacity={0.8}
-              onPress={() => Alert.alert("Coming Soon", "Barcode scanner — TODO: integrate Open Food Facts API")}
-            >
-              <Ionicons name="barcode-outline" size={24} color="#64748B" />
+          {/* ── Meal type pills ── */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={s.pillRow}
+          >
+            {TAGS.map(tag => (
+              <TouchableOpacity
+                key={tag}
+                onPress={() => setMealTag(tag)}
+                style={[s.pill, mealTag === tag && s.pillActive]}
+                activeOpacity={0.75}
+              >
+                <Text style={[s.pillText, mealTag === tag && s.pillTextActive]}>{tag}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* ── Two photo buttons ── */}
+          <View style={s.photoRow}>
+            {/* Take Photo */}
+            <TouchableOpacity style={s.photoBtnCamera} onPress={handleTakePhoto} activeOpacity={0.85}>
+              <Ionicons name="camera" size={28} color={DARK_TXT} />
+              <Text style={s.photoBtnTitle}>Take Photo</Text>
+              <Text style={s.photoBtnSub}>AI detects dish + macros</Text>
+            </TouchableOpacity>
+
+            {/* Upload from Library */}
+            <TouchableOpacity style={s.photoBtnLibrary} onPress={handleUploadPhoto} activeOpacity={0.85}>
+              <Ionicons name="image-outline" size={28} color={GOLD} />
+              <Text style={s.photoBtnTitleLight}>From Library</Text>
+              <Text style={s.photoBtnSubLight}>AI detects dish + macros</Text>
             </TouchableOpacity>
           </View>
 
-          {/* ── Scrollable content below search ── */}
+          {/* ── Search bar ── */}
+          <View style={s.searchBox}>
+            <Ionicons name="search-outline" size={20} color="rgba(248,213,97,0.6)" />
+            <TextInput
+              ref={searchRef}
+              style={s.searchInput}
+              placeholder="Search a dish..."
+              placeholderTextColor="rgba(232,224,208,0.3)"
+              value={query}
+              onChangeText={setQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => setQuery("")} hitSlop={10}>
+                <Ionicons name="close-circle" size={18} color={MUTED} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* ── Dish list ── */}
           <ScrollView
             style={{ flex: 1 }}
-            contentContainerStyle={s.resultsContent}
+            contentContainerStyle={s.listContent}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* ── 3. Scan card (hidden while typing) ── */}
-            {!isSearching && (
-              <TouchableOpacity
-                style={[s.scanCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.15)' }]}
-                activeOpacity={0.9}
-                onPress={handleTakePhoto}
-              >
-                <LinearGradient
-                  colors={isDark ? ['rgba(224,123,84,0.25)', 'rgba(245,200,66,0.15)'] : ["#CCFBF1", "#99F6E4"]}
-                  style={s.scanCardIcon}
-                >
-                  <Ionicons name="camera-outline" size={28} color={isDark ? '#E07B54' : '#0D9488'} />
-                </LinearGradient>
-
-                <View style={{ flex: 1 }}>
-                  <Text style={[s.scanCardTitle, isDark && { color: '#E8E0D0' }]}>Scan Meal with AI</Text>
-                  <Text style={[s.scanCardSub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Photo → macros detected instantly</Text>
-                </View>
-
-                <TouchableOpacity
-                  style={[s.scanBtnCamera, isDark && { backgroundColor: '#F5C842', shadowColor: '#F5C842' }]}
-                  activeOpacity={0.8}
-                  onPress={handleTakePhoto}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Ionicons name="camera" size={20} color="white" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[s.scanBtnLibrary, isDark && { backgroundColor: 'rgba(245,200,66,0.10)', borderColor: 'rgba(245,200,66,0.3)' }]}
-                  activeOpacity={0.8}
-                  onPress={handleUploadPhoto}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Ionicons name="image-outline" size={20} color={TEAL} />
-                </TouchableOpacity>
-              </TouchableOpacity>
-            )}
-
-            {/* ── 4. Recent meals (hidden while typing) ── */}
-            {!isSearching && (
-              <>
-                <Text style={[s.recentLabel, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Recent</Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={s.recentRow}
-                  keyboardShouldPersistTaps="handled"
-                >
-                  {RECENT_MEALS.map((meal, idx) => (
-                    <TouchableOpacity
-                      key={meal.name}
-                      style={[s.recentPill, idx === 0 && { marginLeft: 16 }, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}
-                      activeOpacity={0.8}
-                      onPress={() => openQty(meal.food)}
-                    >
-                      <Text style={s.recentEmoji}>{meal.emoji}</Text>
-                      <Text style={[s.recentName, isDark && { color: '#E8E0D0' }]}>{meal.name}</Text>
-                      <Text style={[s.recentPlus, isDark && { color: '#F5C842' }]}>+</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            )}
-
-            {/* ── 5. Popular foods / search results ── */}
-            {!isSearching && (
-              <Text style={[s.listLabel, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Popular Foods</Text>
-            )}
-
-            {displayedFoods.length === 0 ? (
-              <View style={s.noResults}>
-                <Text style={s.noResultsTitle}>No results for "{trimmed}"</Text>
-                <TouchableOpacity
-                  style={s.addCustomLink}
-                  onPress={() => { setAddTag(mealTag); setAddName(trimmed); setShowAdd(true); }}
-                >
-                  <Text style={s.addCustomText}>+ Add "{trimmed}" as custom food</Text>
+            {noResults ? (
+              <View style={s.emptyState}>
+                <Text style={s.emptyEmoji}>🍽️</Text>
+                <Text style={s.emptyTitle}>No dishes found for "{query.trim()}"</Text>
+                <TouchableOpacity onPress={() => openCustom(query.trim())} style={s.emptyLink}>
+                  <Text style={s.emptyLinkText}>+ Add "{query.trim()}" as custom dish</Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              displayedFoods.map((food, idx) => (
-                <View
-                  key={food.name}
-                  style={[s.resultRow, idx === displayedFoods.length - 1 && { borderBottomWidth: 0 }, isDark && { borderBottomColor: 'rgba(255,220,150,0.08)' }]}
-                >
-                  <View style={s.resultLeft}>
-                    <Text style={[s.resultName, isDark && { color: '#E8E0D0' }]}>{food.name}</Text>
-                    <Text style={[s.resultMeta, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{food.calories} cal · {food.protein}g protein</Text>
-                  </View>
-                  <TouchableOpacity style={[s.addBtn, isDark && { backgroundColor: '#F5C842' }]} onPress={() => openQty(food)} activeOpacity={0.8}>
-                    <Ionicons name="add" size={20} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              ))
-            )}
+              <>
+                <Text style={s.sectionLabel}>{isSearching ? "RESULTS" : "YOUR DISHES"}</Text>
 
-            {displayedFoods.length > 0 && (
-              <TouchableOpacity
-                style={s.createCustom}
-                onPress={() => { setAddTag(mealTag); setAddName(""); setShowAdd(true); }}
-                activeOpacity={0.7}
-              >
-                <Text style={s.createCustomText}>+ Create custom food</Text>
-              </TouchableOpacity>
+                {combinedResults.map((d, idx) => (
+                  <View key={`${d.name}-${idx}`} style={s.dishRow2}>
+                    {/* Emoji circle */}
+                    <View style={s.dishEmoji}>
+                      <Text style={{ fontSize: 22 }}>{d.emoji}</Text>
+                    </View>
+
+                    {/* Info */}
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.dishTitle}>{d.name}</Text>
+                      <View style={s.dishMacroRow}>
+                        <Text style={s.dishCal}>{d.calories} cal</Text>
+                        <Text style={s.dishDot}> · </Text>
+                        <Text style={s.dishProt}>{d.protein}g protein</Text>
+                        {d.lastLogged && (
+                          <Text style={s.dishLastLog} numberOfLines={1}>{d.lastLogged.split(",")[0]}</Text>
+                        )}
+                      </View>
+                    </View>
+
+                    {/* Add button */}
+                    <TouchableOpacity style={s.addCircle} onPress={() => openDishQty(d)} activeOpacity={0.8}>
+                      <Ionicons name="add" size={20} color={DARK_TXT} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+
+                {/* Create custom dish */}
+                <TouchableOpacity style={s.createCustom} onPress={() => openCustom()} activeOpacity={0.7}>
+                  <Text style={s.createCustomText}>+ Create custom dish</Text>
+                </TouchableOpacity>
+              </>
             )}
+            <View style={{ height: 60 }} />
           </ScrollView>
         </View>
       )}
 
-      {/* ════════ QUANTITY SHEET ════════ */}
+      {/* ═══════════════════ QUANTITY SHEET ═══════════════════ */}
       <Modal visible={showQty} transparent animationType="slide" onRequestClose={() => setShowQty(false)}>
-        <KeyboardAvoidingView style={s.overlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={[s.qtySheet, isDark && { backgroundColor: '#1C1410' }]}>
-            <View style={[s.handle, isDark && { backgroundColor: 'rgba(255,220,150,0.12)' }]} />
+        <View style={s.overlay}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => setShowQty(false)} activeOpacity={1} />
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+            <View style={s.qtySheet}>
+              <View style={s.handle} />
 
-            <Text style={[s.qtyFoodName, isDark && { color: '#E8E0D0' }]} numberOfLines={2}>{selectedFood?.name}</Text>
+              {/* Dish name */}
+              <Text style={s.qtyDishName}>{dish?.emoji} {dish?.name}</Text>
+              <Text style={s.qtyServingHint}>How many servings?</Text>
 
-            {/* Quantity controls */}
-            <View style={s.qtyControls}>
-              <TouchableOpacity style={[s.qtyMinus, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} onPress={() => adjustQty(-10)} activeOpacity={0.75}>
-                <Text style={[s.qtyMinusText, isDark && { color: '#E8E0D0' }]}>−</Text>
-              </TouchableOpacity>
-
-              <TextInput
-                style={[s.qtyNumInput, isDark && { color: '#E8E0D0', borderBottomColor: '#F5C842' }]}
-                value={qtyStr}
-                onChangeText={handleQtyTextChange}
-                keyboardType="decimal-pad"
-                selectTextOnFocus
-              />
-
-              <TouchableOpacity style={[s.qtyPlus, isDark && { backgroundColor: '#F5C842' }]} onPress={() => adjustQty(10)} activeOpacity={0.75}>
-                <Ionicons name="add" size={22} color={isDark ? '#1C1410' : '#fff'} />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={[s.unitPill, isDark && { backgroundColor: 'rgba(255,220,150,0.06)', borderColor: 'rgba(255,220,150,0.2)' }]} onPress={cycleUnit} activeOpacity={0.75}>
-                <Text style={[s.unitText, isDark && { color: '#E8E0D0' }]}>{unit} ▾</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Live macro preview */}
-            <View style={[s.preview, isDark && { backgroundColor: 'rgba(255,220,150,0.04)' }]}>
-              <View style={s.previewItem}>
-                <Text style={[s.previewVal, isDark && { color: '#E8E0D0' }]}>{previewCal}</Text>
-                <Text style={[s.previewLbl, isDark && { color: 'rgba(232,224,208,0.4)' }]}>kcal</Text>
-              </View>
-              <View style={[s.previewDivider, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} />
-              <View style={s.previewItem}>
-                <Text style={[s.previewVal, { color: isDark ? '#E07B54' : '#22C55E' }]}>{previewProtein}g</Text>
-                <Text style={[s.previewLbl, isDark && { color: 'rgba(232,224,208,0.4)' }]}>protein</Text>
-              </View>
-              <View style={[s.previewDivider, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} />
-              <View style={s.previewItem}>
-                <Text style={[s.previewVal, { color: isDark ? '#F5C842' : '#F59E0B' }]}>{previewCarbs}g</Text>
-                <Text style={[s.previewLbl, isDark && { color: 'rgba(232,224,208,0.4)' }]}>carbs</Text>
-              </View>
-              <View style={[s.previewDivider, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]} />
-              <View style={s.previewItem}>
-                <Text style={[s.previewVal, { color: isDark ? '#8B9E6E' : '#8B5CF6' }]}>{previewFat}g</Text>
-                <Text style={[s.previewLbl, isDark && { color: 'rgba(232,224,208,0.4)' }]}>fat</Text>
-              </View>
-            </View>
-
-            {/* Add button */}
-            <TouchableOpacity
-              style={[s.addToLogBtn, saving && { opacity: 0.6 }, isDark && { backgroundColor: '#F5C842' }]}
-              onPress={handleAddFoodFromSearch}
-              disabled={saving}
-              activeOpacity={0.85}
-            >
-              <Text style={[s.addToLogText, isDark && { color: '#1C1410' }]}>{saving ? "Adding…" : `Add to ${mealTag}`}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setShowQty(false)} style={s.cancelBtn} activeOpacity={0.7}>
-              <Text style={[s.cancelText, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
-      {/* ════════ CUSTOM FOOD SHEET ════════ */}
-      <Modal visible={showAdd} transparent animationType="slide" onRequestClose={() => setShowAdd(false)}>
-        <KeyboardAvoidingView style={s.overlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={[s.sheet, isDark && { backgroundColor: '#1C1410' }]}>
-            <View style={[s.handle, isDark && { backgroundColor: 'rgba(255,220,150,0.12)' }]} />
-            <Text style={[s.sheetTitle, isDark && { color: '#E8E0D0' }]}>Custom Food</Text>
-            <View style={s.tagRow}>
-              {TAGS.map(t => {
-                const tc = TAG_COLORS[t];
-                return (
+              {/* Serving selector */}
+              <View style={s.servingRow}>
+                {([0.5, 1, 2] as const).map(v => (
                   <TouchableOpacity
-                    key={t}
-                    onPress={() => setAddTag(t)}
-                    style={[s.tagChip, { backgroundColor: addTag === t ? tc.color : tc.bg, borderColor: tc.color + "60" }]}
+                    key={v}
+                    style={[s.servingPill, servings === v && s.servingPillActive]}
+                    onPress={() => setServings(v)}
+                    activeOpacity={0.8}
                   >
-                    <Text style={[s.tagChipLabel, { color: addTag === t ? "#FFF" : tc.color }]}>{t}</Text>
+                    <Text style={[s.servingText, servings === v && s.servingTextActive]}>{v}x</Text>
                   </TouchableOpacity>
-                );
-              })}
+                ))}
+              </View>
+
+              {/* Live macro preview */}
+              <View style={s.qtyPreview}>
+                <View style={s.qtyMacroItem}>
+                  <Text style={[s.qtyMacroVal, { color: CREAM }]}>{qCal}</Text>
+                  <Text style={s.qtyMacroLbl}>cal</Text>
+                </View>
+                <View style={s.qtyMacroDivider} />
+                <View style={s.qtyMacroItem}>
+                  <Text style={[s.qtyMacroVal, { color: CORAL }]}>{qProtein}g</Text>
+                  <Text style={s.qtyMacroLbl}>protein</Text>
+                </View>
+                <View style={s.qtyMacroDivider} />
+                <View style={s.qtyMacroItem}>
+                  <Text style={[s.qtyMacroVal, { color: GOLD }]}>{qCarbs}g</Text>
+                  <Text style={s.qtyMacroLbl}>carbs</Text>
+                </View>
+                <View style={s.qtyMacroDivider} />
+                <View style={s.qtyMacroItem}>
+                  <Text style={[s.qtyMacroVal, { color: MUTED }]}>{qFat}g</Text>
+                  <Text style={s.qtyMacroLbl}>fat</Text>
+                </View>
+              </View>
+
+              {/* Add button */}
+              <TouchableOpacity
+                style={[s.addToLogBtn, saving && { opacity: 0.6 }]}
+                onPress={handleAddDish}
+                disabled={saving}
+                activeOpacity={0.85}
+              >
+                <Text style={s.addToLogText}>{saving ? "Adding…" : `Add to ${mealTag}`}</Text>
+              </TouchableOpacity>
             </View>
-            <TextInput style={[s.input, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Food name" placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addName} onChangeText={setAddName} autoFocus />
-            <TextInput style={[s.input, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Calories" placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addCals} onChangeText={setAddCals} keyboardType="numeric" />
-            <View style={s.twoCol}>
-              <TextInput style={[s.input, { flex: 1 }, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Protein g" placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addProtein} onChangeText={setAddProtein} keyboardType="decimal-pad" />
-              <TextInput style={[s.input, { flex: 1 }, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Carbs g"   placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addCarbs}   onChangeText={setAddCarbs}   keyboardType="decimal-pad" />
-              <TextInput style={[s.input, { flex: 1 }, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]} placeholder="Fat g"     placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#9CA3AF'} value={addFat}     onChangeText={setAddFat}     keyboardType="decimal-pad" />
-            </View>
-            <TouchableOpacity
-              onPress={handleAdd}
-              disabled={!addName || !addCals || saving}
-              style={[s.addToLogBtn, { opacity: !addName || !addCals ? 0.5 : 1 }, isDark && { backgroundColor: '#F5C842' }]}
-            >
-              <Text style={[s.addToLogText, isDark && { color: '#1C1410' }]}>{saving ? "Saving…" : "Save"}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShowAdd(false)} style={s.cancelBtn}>
-              <Text style={[s.cancelText, isDark && { color: 'rgba(232,224,208,0.4)' }]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
 
-      {/* Toast */}
+      {/* ═══════════════════ CUSTOM DISH SHEET ═══════════════════ */}
+      <Modal visible={showCustom} transparent animationType="slide" onRequestClose={() => setShowCustom(false)}>
+        <View style={s.overlay}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => setShowCustom(false)} activeOpacity={1} />
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+            <View style={s.qtySheet}>
+              <View style={s.handle} />
+              <Text style={s.qtyDishName}>New Dish</Text>
+              <TextInput
+                style={s.customInput}
+                placeholder="Dish name"
+                placeholderTextColor="rgba(232,224,208,0.3)"
+                value={customName}
+                onChangeText={setCustomName}
+                autoFocus
+              />
+              <TextInput
+                style={s.customInput}
+                placeholder="Calories"
+                placeholderTextColor="rgba(232,224,208,0.3)"
+                value={customCals}
+                onChangeText={setCustomCals}
+                keyboardType="numeric"
+              />
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <TextInput style={[s.customInput, { flex: 1 }]} placeholder="Protein g" placeholderTextColor="rgba(232,224,208,0.3)" value={customProtein} onChangeText={setCustomProtein} keyboardType="decimal-pad" />
+                <TextInput style={[s.customInput, { flex: 1 }]} placeholder="Carbs g"   placeholderTextColor="rgba(232,224,208,0.3)" value={customCarbs}   onChangeText={setCustomCarbs}   keyboardType="decimal-pad" />
+                <TextInput style={[s.customInput, { flex: 1 }]} placeholder="Fat g"     placeholderTextColor="rgba(232,224,208,0.3)" value={customFat}     onChangeText={setCustomFat}     keyboardType="decimal-pad" />
+              </View>
+              <TouchableOpacity
+                style={[s.addToLogBtn, (!customName || !customCals || savingCustom) && { opacity: 0.5 }]}
+                onPress={handleSaveCustom}
+                disabled={!customName || !customCals || savingCustom}
+                activeOpacity={0.85}
+              >
+                <Text style={s.addToLogText}>{savingCustom ? "Saving…" : "Save Dish"}</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
+
+      {/* ═══════════════════ TOAST ═══════════════════ */}
       {toast ? (
         <View style={s.toast} pointerEvents="none">
           <Text style={s.toastText}>{toast}</Text>
@@ -712,148 +659,163 @@ export default function LogFoodScreen() {
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
 
-  iconBtn: { width: 40, height: 40, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.75)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
+  // ── Header ──────────────────────────────────────────────────────────────────
+  header: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12,
+  },
+  headerBack:     { flexDirection: "row", alignItems: "center", gap: 4, minWidth: 64 },
+  headerBackText: { fontSize: 16, color: CREAM, fontWeight: "500" },
+  headerTitle:    { fontSize: 18, fontWeight: "700", color: CREAM },
+  headerRight:    { minWidth: 64, alignItems: "flex-end" },
 
-  // ── Meal pills ─────────────────────────────────────────────────────────────
-  pillRow:      { paddingHorizontal: 16, paddingVertical: 6, gap: 8 },
-  pill:         { height: 36, paddingHorizontal: 18, borderRadius: 18, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(255,255,255,0.8)", borderWidth: 1, borderColor: "#E2E8F0" },
-  pillActive:   { backgroundColor: TEAL, borderColor: TEAL },
-  pillText:     { fontSize: 14, fontWeight: "500", color: "#94A3B8" },
-  pillTextActive:{ fontSize: 14, fontWeight: "600", color: "#fff" },
+  // ── Meal pills ───────────────────────────────────────────────────────────────
+  pillRow:        { paddingHorizontal: 20, gap: 8, paddingBottom: 2 },
+  pill:           { paddingHorizontal: 18, paddingVertical: 9, borderRadius: 20, backgroundColor: "rgba(232,224,208,0.08)", borderWidth: 1, borderColor: "rgba(232,224,208,0.12)" },
+  pillActive:     { backgroundColor: GOLD, borderColor: GOLD },
+  pillText:       { fontSize: 14, fontWeight: "600", color: "rgba(232,224,208,0.45)" },
+  pillTextActive: { color: DARK_TXT },
 
-  // ── Search row ─────────────────────────────────────────────────────────────
-  searchRow: { flexDirection: "row", marginHorizontal: 16, gap: 10, marginTop: 8, marginBottom: 0 },
+  // ── Photo buttons ────────────────────────────────────────────────────────────
+  photoRow: { flexDirection: "row", marginHorizontal: 16, marginTop: 20, gap: 12 },
+  photoBtnCamera: {
+    flex: 1, backgroundColor: CORAL, borderRadius: 20, paddingVertical: 22,
+    alignItems: "center", justifyContent: "center", gap: 8,
+    shadowColor: CORAL, shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35, shadowRadius: 12, elevation: 8,
+  },
+  photoBtnLibrary: {
+    flex: 1, backgroundColor: "rgba(232,224,208,0.08)", borderRadius: 20, paddingVertical: 22,
+    alignItems: "center", justifyContent: "center", gap: 8,
+    borderWidth: 1.5, borderColor: "rgba(248,213,97,0.25)",
+  },
+  photoBtnTitle:     { fontSize: 15, fontWeight: "700", color: DARK_TXT },
+  photoBtnSub:       { fontSize: 11, color: "rgba(28,22,18,0.65)" },
+  photoBtnTitleLight:{ fontSize: 15, fontWeight: "700", color: CREAM },
+  photoBtnSubLight:  { fontSize: 11, color: "rgba(232,224,208,0.4)" },
+
+  // ── Search bar ───────────────────────────────────────────────────────────────
   searchBox: {
-    flex: 1, flexDirection: "row", alignItems: "center", gap: 10,
-    backgroundColor: "rgba(255,255,255,0.95)",
-    borderRadius: 16, borderWidth: 1.5, borderColor: "rgba(45,212,191,0.3)",
-    paddingHorizontal: 16, paddingVertical: 11,
+    marginHorizontal: 16, marginTop: 20,
+    backgroundColor: CARD, borderRadius: 18,
+    borderWidth: 1.5, borderColor: "rgba(248,213,97,0.2)",
+    paddingHorizontal: 16, paddingVertical: 14,
+    flexDirection: "row", alignItems: "center", gap: 12,
   },
-  searchInput: { flex: 1, fontSize: 16, color: "#1E293B" },
-  barcodeBtn: { width: 52, height: 52, backgroundColor: "rgba(255,255,255,0.95)", borderRadius: 16, borderWidth: 1.5, borderColor: "#E2E8F0", alignItems: "center", justifyContent: "center" },
+  searchInput: { flex: 1, fontSize: 16, color: CREAM, backgroundColor: "transparent" },
 
-  // ── Results list ───────────────────────────────────────────────────────────
-  resultsContent: { paddingBottom: 60 },
-  listLabel:      { fontSize: 12, fontWeight: "700", color: "#94A3B8", letterSpacing: 0.6, textTransform: "uppercase", marginLeft: 16, marginTop: 12, marginBottom: 4 },
-  resultRow:      { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "#F1F5F9", gap: 12 },
-  resultLeft:     { flex: 1 },
-  resultName:     { fontSize: 15, fontWeight: "500", color: "#1E293B" },
-  resultMeta:     { fontSize: 12, color: "#94A3B8", marginTop: 2 },
-  addBtn:         { width: 32, height: 32, borderRadius: 16, backgroundColor: TEAL, alignItems: "center", justifyContent: "center" },
-  noResults:      { alignItems: "center", paddingTop: 48, gap: 10, paddingHorizontal: 32 },
-  noResultsTitle: { fontSize: 15, fontWeight: "600", color: "#1E293B", textAlign: "center" },
-  addCustomLink:  { paddingVertical: 8 },
-  addCustomText:  { fontSize: 14, color: TEAL, fontWeight: "500" },
-  createCustom:   { alignItems: "center", paddingVertical: 18 },
-  createCustomText:{ fontSize: 14, color: TEAL },
-
-  // ── Scan card ──────────────────────────────────────────────────────────────
-  scanCard: {
-    marginHorizontal: 16, marginTop: 6,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    borderRadius: 20, borderWidth: 1.5, borderColor: "rgba(45,212,191,0.25)",
+  // ── Dish list ────────────────────────────────────────────────────────────────
+  listContent:  { paddingBottom: 20 },
+  sectionLabel: {
+    fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)",
+    letterSpacing: 1.2, marginLeft: 20, marginTop: 24, marginBottom: 12,
+  },
+  dishRow2: {
+    backgroundColor: CARD, borderRadius: 16, marginHorizontal: 16, marginBottom: 8,
     padding: 16, flexDirection: "row", alignItems: "center", gap: 14,
-    shadowColor: "#B0C4D8", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15, shadowRadius: 12, elevation: 3,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.06)",
   },
-  scanCardIcon:  { width: 52, height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  scanCardTitle: { fontSize: 15, fontWeight: "700", color: "#1E293B", marginBottom: 2 },
-  scanCardSub:   { fontSize: 12, color: "#94A3B8" },
-  scanBtnCamera: {
-    width: 42, height: 42, backgroundColor: TEAL, borderRadius: 12,
-    alignItems: "center", justifyContent: "center",
-    shadowColor: TEAL, shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3, shadowRadius: 8, elevation: 3,
-  },
-  scanBtnLibrary: {
-    width: 42, height: 42, backgroundColor: "rgba(45,212,191,0.1)", borderRadius: 12,
-    borderWidth: 1.5, borderColor: "rgba(45,212,191,0.3)",
+  dishEmoji: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: "rgba(232,224,208,0.06)",
     alignItems: "center", justifyContent: "center",
   },
+  dishTitle:   { fontSize: 15, fontWeight: "600", color: CREAM },
+  dishMacroRow:{ flexDirection: "row", alignItems: "center", marginTop: 3, flexWrap: "nowrap" },
+  dishCal:     { fontSize: 12, fontWeight: "600", color: GOLD },
+  dishDot:     { fontSize: 12, color: "rgba(232,224,208,0.3)" },
+  dishProt:    { fontSize: 12, color: CORAL },
+  dishLastLog: { fontSize: 11, color: "rgba(232,224,208,0.3)", marginLeft: "auto" as const },
+  addCircle:   { width: 36, height: 36, borderRadius: 18, backgroundColor: GOLD, alignItems: "center", justifyContent: "center" },
 
-  // ── Recent meals ───────────────────────────────────────────────────────────
-  recentLabel: { fontSize: 12, fontWeight: "700", color: "#94A3B8", letterSpacing: 0.6, textTransform: "uppercase", marginLeft: 16, marginTop: 14, marginBottom: 6 },
-  recentRow:   { paddingRight: 16, paddingBottom: 4 },
-  recentPill:  {
-    backgroundColor: "rgba(255,255,255,0.9)", borderRadius: 16,
-    paddingHorizontal: 14, paddingVertical: 10, marginRight: 10,
-    borderWidth: 1, borderColor: "#F1F5F9",
-    flexDirection: "row", alignItems: "center", gap: 8,
-    shadowColor: "#B0C4D8", shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08, shadowRadius: 6, elevation: 2,
+  // ── Empty state ──────────────────────────────────────────────────────────────
+  emptyState: { alignItems: "center", paddingTop: 60, paddingHorizontal: 32, gap: 4 },
+  emptyEmoji: { fontSize: 48 },
+  emptyTitle: { fontSize: 16, fontWeight: "600", color: CREAM, marginTop: 12, textAlign: "center" },
+  emptyLink:  { marginTop: 8 },
+  emptyLinkText: { fontSize: 14, color: GOLD },
+
+  // ── Create custom ────────────────────────────────────────────────────────────
+  createCustom:    { alignItems: "center", paddingVertical: 20 },
+  createCustomText:{ fontSize: 14, color: GOLD },
+
+  // ── Quantity sheet ───────────────────────────────────────────────────────────
+  overlay:     { flex: 1, justifyContent: "flex-end" },
+  qtySheet:    { backgroundColor: CARD, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, gap: 16 },
+  handle:      { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(232,224,208,0.15)", alignSelf: "center", marginBottom: 4 },
+  qtyDishName: { fontSize: 18, fontWeight: "700", color: CREAM },
+  qtyServingHint: { fontSize: 13, color: MUTED },
+  servingRow:  { flexDirection: "row", gap: 12 },
+  servingPill: {
+    paddingHorizontal: 24, paddingVertical: 12, borderRadius: 20,
+    backgroundColor: "rgba(232,224,208,0.08)", borderWidth: 1, borderColor: "rgba(232,224,208,0.15)",
   },
-  recentEmoji: { fontSize: 18 },
-  recentName:  { fontSize: 13, fontWeight: "600", color: "#1E293B" },
-  recentPlus:  { fontSize: 16, fontWeight: "700", color: TEAL, marginLeft: 2 },
+  servingPillActive: { backgroundColor: GOLD, borderColor: GOLD },
+  servingText:       { fontSize: 15, fontWeight: "600", color: CREAM },
+  servingTextActive: { color: DARK_TXT },
 
-  // ── Quantity sheet ─────────────────────────────────────────────────────────
-  qtySheet:      { backgroundColor: "#fff", borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, gap: 20 },
-  qtyFoodName:   { fontSize: 18, fontWeight: "700", color: "#1E293B", lineHeight: 24 },
-  qtyControls:   { flexDirection: "row", alignItems: "center", gap: 10 },
-  qtyMinus:      { width: 40, height: 40, borderRadius: 20, backgroundColor: "#F1F5F9", alignItems: "center", justifyContent: "center" },
-  qtyMinusText:  { fontSize: 22, color: "#64748B", lineHeight: 26 },
-  qtyNumInput:   { width: 80, fontSize: 24, fontWeight: "700", color: "#1E293B", textAlign: "center", borderBottomWidth: 2, borderBottomColor: TEAL, paddingVertical: 4 },
-  qtyPlus:       { width: 40, height: 40, borderRadius: 20, backgroundColor: TEAL, alignItems: "center", justifyContent: "center" },
-  unitPill:      { marginLeft: "auto" as const, backgroundColor: "#F8FAFC", borderRadius: 20, borderWidth: 1, borderColor: "#E2E8F0", paddingHorizontal: 14, paddingVertical: 8 },
-  unitText:      { fontSize: 14, fontWeight: "600", color: "#64748B" },
-  preview:       { flexDirection: "row", backgroundColor: "#F8FAFC", borderRadius: 16, padding: 14 },
-  previewItem:   { flex: 1, alignItems: "center" },
-  previewVal:    { fontSize: 18, fontWeight: "700", color: "#1E293B" },
-  previewLbl:    { fontSize: 10, color: "#94A3B8", marginTop: 2 },
-  previewDivider:{ width: 1, backgroundColor: "#E2E8F0", marginVertical: 4 },
-  addToLogBtn:   { backgroundColor: TEAL, borderRadius: 20, paddingVertical: 16, alignItems: "center" },
-  addToLogText:  { fontSize: 16, fontWeight: "600", color: "#fff" },
+  // Macro preview
+  qtyPreview:     { flexDirection: "row", backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 16, padding: 16 },
+  qtyMacroItem:   { flex: 1, alignItems: "center", gap: 4 },
+  qtyMacroVal:    { fontSize: 20, fontWeight: "700" },
+  qtyMacroLbl:    { fontSize: 11, color: MUTED },
+  qtyMacroDivider:{ width: 1, backgroundColor: "rgba(232,224,208,0.08)", marginVertical: 4 },
 
-  // ── Custom food sheet ──────────────────────────────────────────────────────
-  sheet:        { backgroundColor: "#fff", borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, gap: 12 },
-  sheetTitle:   { fontSize: 20, fontWeight: "800", color: "#1C1C1E" },
-  tagRow:       { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  tagChip:      { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, borderWidth: 1 },
-  tagChipLabel: { fontSize: 12, fontWeight: "700" },
-  input:        { backgroundColor: BG, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15, color: "#1C1C1E", borderWidth: 1, borderColor: "#E5E7EB" },
-  twoCol:       { flexDirection: "row", gap: 8 },
+  addToLogBtn:  { backgroundColor: GOLD, borderRadius: 22, paddingVertical: 16, alignItems: "center" },
+  addToLogText: { fontSize: 16, fontWeight: "700", color: DARK_TXT },
 
-  // ── Shared ─────────────────────────────────────────────────────────────────
-  overlay:       { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" },
-  handle:        { width: 40, height: 4, backgroundColor: "#E5E7EB", borderRadius: 2, alignSelf: "center", marginBottom: 4 },
-  cancelBtn:     { alignItems: "center", paddingVertical: 8 },
-  cancelText:    { color: "#9CA3AF", fontWeight: "600", fontSize: 14 },
+  // ── Custom dish inputs ────────────────────────────────────────────────────────
+  customInput: {
+    backgroundColor: "rgba(232,224,208,0.06)", borderRadius: 12,
+    borderWidth: 1, borderColor: BORDER,
+    paddingHorizontal: 14, paddingVertical: 12,
+    fontSize: 15, color: CREAM,
+  },
 
-  // ── Toast ──────────────────────────────────────────────────────────────────
-  toast:     { position: "absolute", bottom: 48, alignSelf: "center", backgroundColor: "rgba(30,41,59,0.9)", borderRadius: 20, paddingHorizontal: 20, paddingVertical: 12 },
-  toastText: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  // ── Toast ────────────────────────────────────────────────────────────────────
+  toast: {
+    position: "absolute", bottom: 40, left: 20, right: 20,
+    backgroundColor: CARD, borderRadius: 14,
+    borderWidth: 1, borderColor: "rgba(248,213,97,0.3)",
+    paddingVertical: 12, paddingHorizontal: 20, alignItems: "center",
+    shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
+  },
+  toastText: { fontSize: 14, fontWeight: "600", color: CREAM },
 
-  // ── History view ───────────────────────────────────────────────────────────
-  histScroll:       { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 60 },
-  histHeading:      { fontSize: 15, fontWeight: "600", color: "#1E293B", marginBottom: 10 },
-  histEmpty:        { paddingVertical: 32, alignItems: "center" },
-  histEmptyText:    { fontSize: 14, color: "#94A3B8" },
-  histSection:      { gap: 6, marginBottom: 16 },
-  histSectionHead:  { flexDirection: "row", alignItems: "center", gap: 8, borderLeftWidth: 3, paddingLeft: 10, marginBottom: 4 },
-  histSectionEmoji: { fontSize: 14 },
-  histSectionTitle: { fontSize: 13, fontWeight: "800", flex: 1 },
-  histDate:         { fontSize: 11, color: "#9CA3AF" },
-  dishCard:         { borderRadius: 14, borderWidth: 1, borderColor: "#E5E7EB", borderLeftWidth: 3, backgroundColor: "rgba(255,255,255,0.9)", overflow: "hidden", marginBottom: 4 },
-  dishRow:          { flexDirection: "row", alignItems: "center", gap: 10, padding: 14 },
-  dishMid:          { flex: 1 },
-  dishName:         { fontSize: 14, fontWeight: "700", color: "#1C1C1E", marginBottom: 2 },
-  dishMeta:         { fontSize: 11, color: "#9CA3AF" },
-  dishActions:      { flexDirection: "row", alignItems: "center", gap: 4 },
-  expandBtn:        { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
-  expandText:       { fontSize: 10, fontWeight: "700", color: "#9CA3AF" },
-  ingredientList:   { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "#E5E7EB", paddingHorizontal: 14, paddingBottom: 6 },
-  ingredientRow:    { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#E5E7EB" },
-  ingredientName:   { fontSize: 12, fontWeight: "600", color: "#1C1C1E", marginBottom: 1 },
-  ingredientMacros: { fontSize: 11, color: "#9CA3AF" },
-  deleteBtn:        { width: 30, height: 30, borderRadius: 9, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(239,68,68,0.08)" },
-  deleteText:       { fontSize: 18, fontWeight: "700", color: "#EF4444" },
-  histDayCard:      { backgroundColor: "rgba(255,255,255,0.85)", borderRadius: 16, padding: 14, marginBottom: 10, shadowColor: "#B0C4D8", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 2 },
-  histDayTop:       { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  histDayDate:      { flex: 1, fontSize: 14, fontWeight: "600", color: "#1E293B" },
-  histDayCal:       { fontSize: 14, fontWeight: "700", color: "#1E293B", marginRight: 6 },
-  histChevron:      { fontSize: 18, color: "#94A3B8" },
-  histMacroBar:     { flexDirection: "row", height: 5, borderRadius: 3, overflow: "hidden", marginBottom: 6 },
-  histMacroSeg:     { height: 5 },
-  histMacroLbls:    { flexDirection: "row", gap: 12 },
-  histMacroLbl:     { fontSize: 11, fontWeight: "600" },
+  // ── History view ─────────────────────────────────────────────────────────────
+  histScroll:       { padding: 16, paddingBottom: 60 },
+  histHeading:      { fontSize: 18, fontWeight: "700", color: CREAM, marginBottom: 12 },
+  histEmpty:        { alignItems: "center", paddingVertical: 40 },
+  histEmptyText:    { fontSize: 15, color: MUTED },
+  histSection:      { marginBottom: 16 },
+  histSectionHead:  { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8, paddingLeft: 4 },
+  histSectionEmoji: { fontSize: 16 },
+  histSectionTitle: { fontSize: 15, fontWeight: "700", color: GOLD },
+  histDate:         { fontSize: 12, color: MUTED, marginLeft: "auto" as const },
+  dishCard: {
+    backgroundColor: CARD, borderRadius: 14, marginBottom: 6,
+    borderWidth: 1, borderColor: BORDER, overflow: "hidden",
+  },
+  dishRow:     { flexDirection: "row", alignItems: "center", padding: 14, gap: 10 },
+  dishName:    { fontSize: 15, fontWeight: "600", color: CREAM },
+  dishMeta:    { fontSize: 12, color: MUTED, marginTop: 2 },
+  dishActions: { flexDirection: "row", gap: 8 },
+  expandBtn:   { padding: 6 },
+  expandText:  { fontSize: 12, color: MUTED },
+  deleteBtn:   { padding: 6 },
+  deleteText:  { fontSize: 20, color: CORAL, lineHeight: 22 },
+  ingredientList: { borderTopWidth: 1, borderTopColor: "rgba(232,224,208,0.06)", paddingHorizontal: 14, paddingBottom: 8 },
+  ingredientRow:  { flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "rgba(232,224,208,0.04)", gap: 8 },
+  ingredientName: { fontSize: 13, color: CREAM },
+  ingredientMacros:{ fontSize: 11, color: MUTED, marginTop: 1 },
+  histDayCard:  { backgroundColor: CARD, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: BORDER },
+  histDayTop:   { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  histDayDate:  { fontSize: 15, fontWeight: "600", color: CREAM },
+  histDayCal:   { fontSize: 15, color: GOLD, fontWeight: "700", marginLeft: "auto" as const },
+  histChevron:  { fontSize: 22, color: MUTED, marginLeft: 8 },
+  histMacroBar: { height: 5, borderRadius: 3, flexDirection: "row", overflow: "hidden", marginBottom: 8 },
+  histMacroSeg: { height: 5 },
+  histMacroLbls:{ flexDirection: "row", gap: 16 },
+  histMacroLbl: { fontSize: 12, fontWeight: "600" },
 });
