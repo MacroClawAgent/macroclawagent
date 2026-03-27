@@ -25,9 +25,13 @@ import { getFollowingFeedPosts } from '@/services/profileService';
 import { MOCK_PROFILES, setFollowing } from '@/data/profileMockData';
 import type { CommunityFilter, CommunityPost, UserProfile } from '@/types/community';
 
-const TEAL = '#2DD4BF';
-const BLUE = '#3B6FD4';
-const BG = '#EEF4FA';
+const GOLD   = '#F5C842';
+const CORAL  = '#E07B54';
+const CARD   = '#1C1410';
+const BORDER = 'rgba(255,220,150,0.12)';
+const CREAM  = '#E8E0D0';
+const MUTED  = 'rgba(232,224,208,0.4)';
+const BG     = '#0D0A07';
 
 type ActivePill = 'following' | CommunityFilter;
 
@@ -40,6 +44,15 @@ const PILLS: { key: ActivePill; label: string }[] = [
   { key: 'eating_out',   label: 'Eating Out' },
   { key: 'meal_prep',    label: 'Meal Prep' },
 ];
+
+const CHALLENGES = [
+  { id: '1', emoji: '🔥', title: 'High Protein Week',  members: 1240, daysLeft: 3, progress: 0.72, colors: ['#E07B54', '#C4693A'] as [string, string] },
+  { id: '2', emoji: '🥗', title: 'Clean Eating',        members: 843,  daysLeft: 5, progress: 0.45, colors: ['#2BB6A6', '#1E8A7D'] as [string, string] },
+  { id: '3', emoji: '💪', title: 'Muscle Build',        members: 2100, daysLeft: 2, progress: 0.88, colors: ['#C49A1A', '#F5C842'] as [string, string] },
+  { id: '4', emoji: '🏃', title: '10k Steps Daily',     members: 567,  daysLeft: 7, progress: 0.30, colors: ['#8B9E6E', '#6B7E4E'] as [string, string] },
+];
+
+const TRENDING = ['Teriyaki Bowl', 'Overnight Oats', 'Greek Chicken', 'Protein Pancakes', 'Quinoa Salad'];
 
 // Search through mock profiles by name or username
 function searchProfiles(query: string): UserProfile[] {
@@ -193,23 +206,23 @@ export default function CommunityScreen() {
     const following = followStates[profile.id] ?? profile.isFollowing;
     return (
       <TouchableOpacity
-        style={[sr.row, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)', shadowColor: '#000' }]}
+        style={sr.row}
         activeOpacity={0.75}
         onPress={() => { closeSearch(); router.push(`/profile/${profile.id}` as any); }}
       >
-        <View style={[sr.avatar, isDark && { backgroundColor: '#E07B54' }]}>
+        <View style={sr.avatar}>
           <Text style={sr.avatarText}>{profile.initial}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[sr.name, isDark && { color: '#E8E0D0' }]}>{profile.name}</Text>
-          <Text style={[sr.username, isDark && { color: 'rgba(232,224,208,0.45)' }]}>{profile.username}</Text>
+          <Text style={sr.name}>{profile.name}</Text>
+          <Text style={sr.username}>{profile.username}</Text>
         </View>
         <TouchableOpacity
-          style={[sr.followBtn, isDark && { borderColor: '#F5C842' }, following && sr.followBtnActive, following && isDark && { backgroundColor: '#F5C842', borderColor: '#F5C842' }]}
+          style={[sr.followBtn, following && sr.followBtnActive]}
           activeOpacity={0.8}
           onPress={(e) => { e.stopPropagation?.(); handleToggleFollow(profile.id); }}
         >
-          <Text style={[sr.followBtnText, isDark && { color: '#F5C842' }, following && sr.followBtnTextActive, following && isDark && { color: '#1C1410' }]}>
+          <Text style={[sr.followBtnText, following && sr.followBtnTextActive]}>
             {following ? 'Following ✓' : 'Follow'}
           </Text>
         </TouchableOpacity>
@@ -226,11 +239,11 @@ export default function CommunityScreen() {
           return (
             <TouchableOpacity
               key={p.key}
-              style={[s.pill, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }, active && s.pillActive, active && isDark && { backgroundColor: '#F5C842', borderColor: '#F5C842' }]}
+              style={[s.pill, active && s.pillActive]}
               activeOpacity={0.75}
               onPress={() => handlePillPress(p.key)}
             >
-              <Text style={[s.pillText, isDark && { color: 'rgba(232,224,208,0.55)' }, active && s.pillTextActive, active && isDark && { color: '#1C1410' }]}>{p.label}</Text>
+              <Text style={[s.pillText, active && s.pillTextActive]}>{p.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -243,10 +256,10 @@ export default function CommunityScreen() {
       return (
         <View style={s.empty}>
           <Text style={s.emptyEmoji}>👥</Text>
-          <Text style={[s.emptyTitle, isDark && { color: '#E8E0D0' }]}>No posts yet</Text>
-          <Text style={[s.emptySub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Follow people to see their meals here</Text>
-          <TouchableOpacity style={[s.emptyBtn, isDark && { backgroundColor: '#F5C842' }]} onPress={() => handlePillPress('all')} activeOpacity={0.8}>
-            <Text style={[s.emptyBtnText, isDark && { color: '#1C1410' }]}>Browse All →</Text>
+          <Text style={s.emptyTitle}>No posts yet</Text>
+          <Text style={s.emptySub}>Follow people to see their meals here</Text>
+          <TouchableOpacity style={s.emptyBtn} onPress={() => handlePillPress('all')} activeOpacity={0.8}>
+            <Text style={s.emptyBtnText}>Browse All →</Text>
           </TouchableOpacity>
         </View>
       );
@@ -254,19 +267,58 @@ export default function CommunityScreen() {
     return (
       <View style={s.empty}>
         <Text style={s.emptyEmoji}>🍽️</Text>
-        <Text style={[s.emptyTitle, isDark && { color: '#E8E0D0' }]}>No posts yet</Text>
-        <Text style={[s.emptySub, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Be the first to share a meal with the community</Text>
-        <TouchableOpacity style={[s.emptyBtn, isDark && { backgroundColor: '#F5C842' }]} onPress={openCreatePost} activeOpacity={0.8}>
-          <Text style={[s.emptyBtnText, isDark && { color: '#1C1410' }]}>Share a Meal</Text>
+        <Text style={s.emptyTitle}>No posts yet</Text>
+        <Text style={s.emptySub}>Be the first to share a meal with the community</Text>
+        <TouchableOpacity style={s.emptyBtn} onPress={openCreatePost} activeOpacity={0.8}>
+          <Text style={s.emptyBtnText}>Share a Meal</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
+  function ChallengesSection() {
+    return (
+      <View style={{ marginBottom: 4 }}>
+        <Text style={ch.heading}>This Week's Challenges</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ch.row}>
+          {CHALLENGES.map((c) => (
+            <LinearGradient key={c.id} colors={c.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={ch.card}>
+              <Text style={ch.emoji}>{c.emoji}</Text>
+              <Text style={ch.title}>{c.title}</Text>
+              <Text style={ch.meta}>{c.members.toLocaleString()} members · {c.daysLeft}d left</Text>
+              <View style={ch.track}>
+                <View style={[ch.fill, { width: `${Math.round(c.progress * 100)}%` as any }]} />
+              </View>
+              <TouchableOpacity style={ch.joinBtn} activeOpacity={0.8}>
+                <Text style={ch.joinText}>Join</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  function TrendingSection() {
+    return (
+      <View style={{ marginBottom: 4 }}>
+        <Text style={tr.heading}>Trending Today</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tr.row}>
+          {TRENDING.map((dish, i) => (
+            <View key={dish} style={tr.chip}>
+              <Text style={tr.rank}>#{i + 1}</Text>
+              <Text style={tr.name}>{dish}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
+
   return (
-    <Screen style={{ backgroundColor: isDark ? '#0D0A07' : BG }}>
+    <Screen style={{ backgroundColor: BG }}>
       <LinearGradient
-        colors={isDark ? ['#000000', '#080603', '#120D08', '#1C1410', '#2E1A0A'] : [BG, '#F5F8FC']}
+        colors={['#000000', '#080603', '#120D08', '#1C1410', '#2E1A0A']}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} pointerEvents="none" />
 
@@ -275,14 +327,14 @@ export default function CommunityScreen() {
         {searchActive ? (
           // ── Search mode header ──
           <>
-            <View style={[s.searchBar, isDark && { backgroundColor: '#1C1410', borderColor: '#F5C842' }]}>
+            <View style={s.searchBar}>
               <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-                tintColor={isDark ? 'rgba(232,224,208,0.4)' : '#94A3B8'} size={16} />
+                tintColor={MUTED} size={16} />
               <TextInput
                 ref={searchRef}
-                style={[s.searchInput, isDark && { color: '#E8E0D0' }]}
+                style={s.searchInput}
                 placeholder="Search by username…"
-                placeholderTextColor={isDark ? 'rgba(232,224,208,0.35)' : '#94A3B8'}
+                placeholderTextColor="rgba(232,224,208,0.35)"
                 value={searchQuery}
                 onChangeText={handleSearchChange}
                 autoCapitalize="none"
@@ -291,27 +343,26 @@ export default function CommunityScreen() {
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
-                  <Text style={[s.clearBtn, isDark && { color: 'rgba(232,224,208,0.4)' }]}>✕</Text>
+                  <Text style={s.clearBtn}>✕</Text>
                 </TouchableOpacity>
               )}
             </View>
             <TouchableOpacity onPress={closeSearch} style={s.cancelBtn}>
-              <Text style={[s.cancelText, isDark && { color: '#F5C842' }]}>Cancel</Text>
+              <Text style={s.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </>
         ) : (
           // ── Normal header ──
           <>
-            <Text style={[s.headerTitle, isDark && { color: '#E8E0D0' }]}>Community</Text>
+            <Text style={s.headerTitle}>Community</Text>
             <View style={s.headerRight}>
-              <TouchableOpacity style={[s.iconBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]} activeOpacity={0.7} onPress={openSearch}>
+              <TouchableOpacity style={s.iconBtn} activeOpacity={0.7} onPress={openSearch}>
                 <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-                  tintColor={isDark ? '#E8E0D0' : '#374151'} size={20} />
+                  tintColor={CREAM} size={20} />
               </TouchableOpacity>
-              <TouchableOpacity style={[s.iconBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]} activeOpacity={0.7}
-                onPress={() => router.push('/profile/current-user' as any)}>
-                <SymbolView name={{ ios: 'person.circle', android: 'account_circle', web: 'account_circle' }}
-                  tintColor={isDark ? '#E8E0D0' : '#374151'} size={22} />
+              <TouchableOpacity style={s.iconBtn} activeOpacity={0.7}>
+                <SymbolView name={{ ios: 'bell.fill', android: 'notifications', web: 'notifications' }}
+                  tintColor={CREAM} size={20} />
               </TouchableOpacity>
             </View>
           </>
@@ -323,11 +374,11 @@ export default function CommunityScreen() {
         <View style={{ flex: 1 }}>
           {searchQuery.length === 0 ? (
             <View style={s.searchHint}>
-              <Text style={[s.searchHintText, isDark && { color: 'rgba(232,224,208,0.45)' }]}>Search by name or @username</Text>
+              <Text style={s.searchHintText}>Search by name or @username</Text>
             </View>
           ) : searchResults.length === 0 ? (
             <View style={s.searchHint}>
-              <Text style={[s.searchHintText, isDark && { color: 'rgba(232,224,208,0.45)' }]}>No users found for "{searchQuery}"</Text>
+              <Text style={s.searchHintText}>No users found for "{searchQuery}"</Text>
             </View>
           ) : (
             <FlatList
@@ -343,7 +394,7 @@ export default function CommunityScreen() {
       ) : (
         // ── Normal feed ──
         isLoading ? (
-          <ActivityIndicator color={isDark ? '#F5C842' : TEAL} size="large" style={{ marginTop: 60 }} />
+          <ActivityIndicator color={GOLD} size="large" style={{ marginTop: 60 }} />
         ) : (
           <FlatList
             data={displayedPosts}
@@ -354,10 +405,10 @@ export default function CommunityScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={isFollowingMode ? loadFollowingPosts : handleRefresh}
-                tintColor={isDark ? '#F5C842' : TEAL}
+                tintColor={GOLD}
               />
             }
-            ListHeaderComponent={<PillRow />}
+            ListHeaderComponent={<><ChallengesSection /><TrendingSection /><PillRow /></>}
             ListEmptyComponent={<EmptyState />}
             renderItem={({ item }) => (
               <CommunityPostCard
@@ -381,72 +432,93 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, gap: 10,
   },
-  headerTitle: { flex: 1, fontSize: 28, fontWeight: '800', fontFamily: 'BebasNeue_400Regular', letterSpacing: -0.6, color: '#111827' },
+  headerTitle: { flex: 1, fontSize: 28, fontWeight: '800', fontFamily: 'BebasNeue_400Regular', letterSpacing: -0.6, color: CREAM },
   headerRight: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 40, height: 40, borderRadius: 13,
-    backgroundColor: 'rgba(255,255,255,0.75)',
+    backgroundColor: CARD,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
+    borderWidth: 1, borderColor: BORDER,
   },
 
   // Search bar
   searchBar: {
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: CARD,
     borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11,
-    borderWidth: 1.5, borderColor: BLUE,
+    borderWidth: 1.5, borderColor: GOLD,
   },
-  searchInput: { flex: 1, fontSize: 15, color: '#1E293B', fontWeight: '500', fontFamily: 'BebasNeue_400Regular' },
-  clearBtn: { fontSize: 14, color: '#94A3B8', paddingHorizontal: 2, fontFamily: 'BebasNeue_400Regular' },
+  searchInput: { flex: 1, fontSize: 15, color: CREAM, fontWeight: '500', fontFamily: 'BebasNeue_400Regular' },
+  clearBtn: { fontSize: 14, color: MUTED, paddingHorizontal: 2, fontFamily: 'BebasNeue_400Regular' },
   cancelBtn: { paddingHorizontal: 4 },
-  cancelText: { fontSize: 15, color: BLUE, fontWeight: '600', fontFamily: 'BebasNeue_400Regular' },
+  cancelText: { fontSize: 15, color: GOLD, fontWeight: '600', fontFamily: 'BebasNeue_400Regular' },
 
   searchHint: { flex: 1, alignItems: 'center', paddingTop: 60 },
-  searchHintText: { fontSize: 14, color: '#94A3B8', fontFamily: 'BebasNeue_400Regular' },
+  searchHintText: { fontSize: 14, color: MUTED, fontFamily: 'BebasNeue_400Regular' },
 
   pillRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   pill: {
     borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
+    backgroundColor: CARD,
+    borderWidth: 1, borderColor: BORDER,
   },
-  pillActive: { backgroundColor: BLUE, borderColor: BLUE },
-  pillText: { fontSize: 13, fontWeight: '500', color: '#6B7280', fontFamily: 'BebasNeue_400Regular' },
-  pillTextActive: { color: '#fff', fontWeight: '600' },
+  pillActive: { backgroundColor: GOLD, borderColor: GOLD },
+  pillText: { fontSize: 13, fontWeight: '500', color: MUTED, fontFamily: 'BebasNeue_400Regular' },
+  pillTextActive: { color: '#1C1410', fontWeight: '600' },
 
   empty: { alignItems: 'center', paddingVertical: 80, gap: 10 },
   emptyEmoji: { fontSize: 48 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#111827', fontFamily: 'BebasNeue_400Regular' },
-  emptySub: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', paddingHorizontal: 24, fontFamily: 'BebasNeue_400Regular' },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
+  emptySub: { fontSize: 14, color: MUTED, textAlign: 'center', paddingHorizontal: 24, fontFamily: 'BebasNeue_400Regular' },
   emptyBtn: {
-    marginTop: 8, backgroundColor: BLUE,
+    marginTop: 8, backgroundColor: GOLD,
     borderRadius: 28, paddingHorizontal: 28, paddingVertical: 14,
   },
-  emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'BebasNeue_400Regular' },
+  emptyBtnText: { color: '#1C1410', fontSize: 15, fontWeight: '700', fontFamily: 'BebasNeue_400Regular' },
 });
 
 const sr = StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: CARD,
     borderRadius: 18, padding: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1, shadowRadius: 8, elevation: 2,
+    borderWidth: 1, borderColor: BORDER,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 2,
   },
   avatar: {
     width: 46, height: 46, borderRadius: 23,
-    backgroundColor: TEAL, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: CORAL, alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: { fontSize: 18, fontWeight: '700', color: '#fff', fontFamily: 'BebasNeue_400Regular' },
-  name: { fontSize: 15, fontWeight: '700', color: '#1E293B', fontFamily: 'BebasNeue_400Regular' },
-  username: { fontSize: 12, color: '#94A3B8', marginTop: 1, fontFamily: 'BebasNeue_400Regular' },
+  avatarText: { fontSize: 18, fontWeight: '700', color: '#1C1410', fontFamily: 'BebasNeue_400Regular' },
+  name: { fontSize: 15, fontWeight: '700', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
+  username: { fontSize: 12, color: MUTED, marginTop: 1, fontFamily: 'BebasNeue_400Regular' },
   followBtn: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5, borderColor: BLUE,
+    borderWidth: 1.5, borderColor: GOLD,
   },
-  followBtnActive: { backgroundColor: BLUE },
-  followBtnText: { fontSize: 13, fontWeight: '700', color: BLUE, fontFamily: 'BebasNeue_400Regular' },
-  followBtnTextActive: { color: '#fff' },
+  followBtnActive: { backgroundColor: GOLD },
+  followBtnText: { fontSize: 13, fontWeight: '700', color: GOLD, fontFamily: 'BebasNeue_400Regular' },
+  followBtnTextActive: { color: '#1C1410' },
+});
+
+const ch = StyleSheet.create({
+  heading: { fontSize: 16, fontWeight: '700', color: CREAM, paddingHorizontal: 16, marginBottom: 10, marginTop: 16, fontFamily: 'BebasNeue_400Regular' },
+  row: { paddingHorizontal: 16, gap: 12, paddingBottom: 4 },
+  card: { width: 180, borderRadius: 20, padding: 16, gap: 6 },
+  emoji: { fontSize: 28 },
+  title: { fontSize: 15, fontWeight: '700', color: '#fff', fontFamily: 'BebasNeue_400Regular' },
+  meta: { fontSize: 11, color: 'rgba(255,255,255,0.75)', fontFamily: 'BebasNeue_400Regular' },
+  track: { height: 4, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 2, marginTop: 2 },
+  fill: { height: 4, backgroundColor: '#fff', borderRadius: 2 },
+  joinBtn: { marginTop: 4, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, alignSelf: 'flex-start' },
+  joinText: { fontSize: 13, fontWeight: '700', color: '#fff', fontFamily: 'BebasNeue_400Regular' },
+});
+
+const tr = StyleSheet.create({
+  heading: { fontSize: 16, fontWeight: '700', color: CREAM, paddingHorizontal: 16, marginBottom: 10, marginTop: 16, fontFamily: 'BebasNeue_400Regular' },
+  row: { paddingHorizontal: 16, gap: 8, paddingBottom: 4 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: CARD, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: BORDER },
+  rank: { fontSize: 13, fontWeight: '800', color: GOLD, fontFamily: 'BebasNeue_400Regular' },
+  name: { fontSize: 13, fontWeight: '600', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
 });
