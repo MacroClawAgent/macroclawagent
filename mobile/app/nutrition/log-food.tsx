@@ -38,41 +38,42 @@ interface DishEntry {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number;
   lastLogged?: string;
   timesLogged?: number;
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const INITIAL_PREVIOUS_DISHES: DishEntry[] = [
-  { name: "Chicken Rice Bowl",    emoji: "🍗", calories: 520, protein: 48, carbs: 52, fat: 12, lastLogged: "Yesterday, Lunch",   timesLogged: 8  },
-  { name: "Greek Yogurt Parfait", emoji: "🥣", calories: 420, protein: 22, carbs: 58, fat: 10, lastLogged: "Today, Breakfast",   timesLogged: 12 },
-  { name: "Salmon & Sweet Potato",emoji: "🐟", calories: 580, protein: 44, carbs: 48, fat: 18, lastLogged: "Mon, Dinner",        timesLogged: 5  },
-  { name: "Protein Shake",        emoji: "🥛", calories: 280, protein: 28, carbs: 32, fat: 4,  lastLogged: "Today, Snack",       timesLogged: 24 },
-  { name: "Beef Rice Bowl",       emoji: "🥩", calories: 580, protein: 42, carbs: 55, fat: 16, lastLogged: "Yesterday, Dinner",  timesLogged: 3  },
-  { name: "Avocado Toast & Eggs", emoji: "🥑", calories: 480, protein: 24, carbs: 42, fat: 24, lastLogged: "Sun, Breakfast",     timesLogged: 6  },
+  { name: "Chicken Rice Bowl",    emoji: "🍗", calories: 520, protein: 48, carbs: 52, fat: 12, fiber: 3,  lastLogged: "Yesterday, Lunch",   timesLogged: 8  },
+  { name: "Greek Yogurt Parfait", emoji: "🥣", calories: 420, protein: 22, carbs: 58, fat: 10, fiber: 4,  lastLogged: "Today, Breakfast",   timesLogged: 12 },
+  { name: "Salmon & Sweet Potato",emoji: "🐟", calories: 580, protein: 44, carbs: 48, fat: 18, fiber: 6,  lastLogged: "Mon, Dinner",        timesLogged: 5  },
+  { name: "Protein Shake",        emoji: "🥛", calories: 280, protein: 28, carbs: 32, fat: 4,  fiber: 1,  lastLogged: "Today, Snack",       timesLogged: 24 },
+  { name: "Beef Rice Bowl",       emoji: "🥩", calories: 580, protein: 42, carbs: 55, fat: 16, fiber: 2,  lastLogged: "Yesterday, Dinner",  timesLogged: 3  },
+  { name: "Avocado Toast & Eggs", emoji: "🥑", calories: 480, protein: 24, carbs: 42, fat: 24, fiber: 7,  lastLogged: "Sun, Breakfast",     timesLogged: 6  },
 ];
 
 const DISH_DATABASE: DishEntry[] = [
-  { name: "Scrambled Eggs on Toast",  emoji: "🍳", calories: 380, protein: 22, carbs: 38, fat: 16 },
-  { name: "Chicken Caesar Salad",     emoji: "🥗", calories: 420, protein: 36, carbs: 18, fat: 24 },
-  { name: "Beef Burger",              emoji: "🍔", calories: 650, protein: 38, carbs: 52, fat: 28 },
-  { name: "Pasta Bolognese",          emoji: "🍝", calories: 580, protein: 28, carbs: 72, fat: 18 },
-  { name: "Fish & Chips",             emoji: "🐟", calories: 720, protein: 32, carbs: 82, fat: 28 },
-  { name: "Sushi Roll (8 pieces)",    emoji: "🍣", calories: 320, protein: 16, carbs: 58, fat: 4  },
-  { name: "Steak & Vegetables",       emoji: "🥩", calories: 520, protein: 52, carbs: 22, fat: 24 },
-  { name: "Chicken Wrap",             emoji: "🌯", calories: 480, protein: 38, carbs: 48, fat: 14 },
-  { name: "Poke Bowl",                emoji: "🍱", calories: 490, protein: 36, carbs: 58, fat: 12 },
-  { name: "Pad Thai",                 emoji: "🍜", calories: 620, protein: 24, carbs: 78, fat: 22 },
-  { name: "Acai Bowl",                emoji: "🫐", calories: 380, protein: 8,  carbs: 72, fat: 10 },
-  { name: "Omelette",                 emoji: "🍳", calories: 320, protein: 24, carbs: 4,  fat: 22 },
-  { name: "Grilled Chicken Salad",    emoji: "🥗", calories: 360, protein: 42, carbs: 18, fat: 14 },
-  { name: "Overnight Oats",           emoji: "🥣", calories: 380, protein: 16, carbs: 62, fat: 10 },
-  { name: "Smoothie Bowl",            emoji: "🫐", calories: 340, protein: 12, carbs: 64, fat: 8  },
-  { name: "Bacon & Eggs",             emoji: "🥓", calories: 480, protein: 32, carbs: 4,  fat: 36 },
-  { name: "Chicken Schnitzel",        emoji: "🍗", calories: 560, protein: 44, carbs: 38, fat: 22 },
-  { name: "Lamb Souvlaki",            emoji: "🥙", calories: 520, protein: 36, carbs: 48, fat: 18 },
-  { name: "Laksa",                    emoji: "🍜", calories: 580, protein: 28, carbs: 62, fat: 24 },
-  { name: "Nasi Goreng",              emoji: "🍳", calories: 540, protein: 22, carbs: 68, fat: 18 },
+  { name: "Scrambled Eggs on Toast",  emoji: "🍳", calories: 380, protein: 22, carbs: 38, fat: 16, fiber: 3  },
+  { name: "Chicken Caesar Salad",     emoji: "🥗", calories: 420, protein: 36, carbs: 18, fat: 24, fiber: 4  },
+  { name: "Beef Burger",              emoji: "🍔", calories: 650, protein: 38, carbs: 52, fat: 28, fiber: 2  },
+  { name: "Pasta Bolognese",          emoji: "🍝", calories: 580, protein: 28, carbs: 72, fat: 18, fiber: 5  },
+  { name: "Fish & Chips",             emoji: "🐟", calories: 720, protein: 32, carbs: 82, fat: 28, fiber: 3  },
+  { name: "Sushi Roll (8 pieces)",    emoji: "🍣", calories: 320, protein: 16, carbs: 58, fat: 4,  fiber: 2  },
+  { name: "Steak & Vegetables",       emoji: "🥩", calories: 520, protein: 52, carbs: 22, fat: 24, fiber: 6  },
+  { name: "Chicken Wrap",             emoji: "🌯", calories: 480, protein: 38, carbs: 48, fat: 14, fiber: 4  },
+  { name: "Poke Bowl",                emoji: "🍱", calories: 490, protein: 36, carbs: 58, fat: 12, fiber: 5  },
+  { name: "Pad Thai",                 emoji: "🍜", calories: 620, protein: 24, carbs: 78, fat: 22, fiber: 3  },
+  { name: "Acai Bowl",                emoji: "🫐", calories: 380, protein: 8,  carbs: 72, fat: 10, fiber: 8  },
+  { name: "Omelette",                 emoji: "🍳", calories: 320, protein: 24, carbs: 4,  fat: 22, fiber: 1  },
+  { name: "Grilled Chicken Salad",    emoji: "🥗", calories: 360, protein: 42, carbs: 18, fat: 14, fiber: 5  },
+  { name: "Overnight Oats",           emoji: "🥣", calories: 380, protein: 16, carbs: 62, fat: 10, fiber: 7  },
+  { name: "Smoothie Bowl",            emoji: "🫐", calories: 340, protein: 12, carbs: 64, fat: 8,  fiber: 6  },
+  { name: "Bacon & Eggs",             emoji: "🥓", calories: 480, protein: 32, carbs: 4,  fat: 36, fiber: 0  },
+  { name: "Chicken Schnitzel",        emoji: "🍗", calories: 560, protein: 44, carbs: 38, fat: 22, fiber: 2  },
+  { name: "Lamb Souvlaki",            emoji: "🥙", calories: 520, protein: 36, carbs: 48, fat: 18, fiber: 3  },
+  { name: "Laksa",                    emoji: "🍜", calories: 580, protein: 28, carbs: 62, fat: 24, fiber: 4  },
+  { name: "Nasi Goreng",              emoji: "🍳", calories: 540, protein: 22, carbs: 68, fat: 18, fiber: 2  },
 ];
 
 // ── History types (for clock view) ────────────────────────────────────────────
@@ -121,6 +122,7 @@ export default function LogFoodScreen() {
   const [customProtein, setCustomProtein] = useState("");
   const [customCarbs,   setCustomCarbs]   = useState("");
   const [customFat,     setCustomFat]     = useState("");
+  const [customFiber,   setCustomFiber]   = useState("");
   const [savingCustom,  setSavingCustom]  = useState(false);
 
   // History / today log
@@ -227,6 +229,7 @@ export default function LogFoodScreen() {
         protein_g: Math.round(selectedDish.protein   * m * 10) / 10,
         carbs_g:   Math.round(selectedDish.carbs     * m * 10) / 10,
         fat_g:     Math.round(selectedDish.fat       * m * 10) / 10,
+        fiber_g:   Math.round((selectedDish.fiber ?? 0) * m * 10) / 10,
       });
       // Add to previousDishes if not already there
       setPreviousDishes(prev =>
@@ -245,7 +248,7 @@ export default function LogFoodScreen() {
   // ── Custom dish ────────────────────────────────────────────────────────────
   function openCustom(prefillName = "") {
     setCustomName(prefillName);
-    setCustomCals(""); setCustomProtein(""); setCustomCarbs(""); setCustomFat("");
+    setCustomCals(""); setCustomProtein(""); setCustomCarbs(""); setCustomFat(""); setCustomFiber("");
     setShowCustom(true);
   }
 
@@ -261,6 +264,7 @@ export default function LogFoodScreen() {
         protein_g: parseFloat(customProtein || "0"),
         carbs_g:   parseFloat(customCarbs   || "0"),
         fat_g:     parseFloat(customFat     || "0"),
+        fiber_g:   parseFloat(customFiber   || "0"),
       });
       const newDish: DishEntry = {
         name: customName, emoji: "🍽️",
@@ -268,6 +272,7 @@ export default function LogFoodScreen() {
         protein: parseFloat(customProtein || "0"),
         carbs:   parseFloat(customCarbs   || "0"),
         fat:     parseFloat(customFat     || "0"),
+        fiber:   parseFloat(customFiber   || "0"),
         lastLogged: `Today, ${mealTag}`, timesLogged: 1,
       };
       setPreviousDishes(prev => [newDish, ...prev]);
@@ -325,6 +330,7 @@ export default function LogFoodScreen() {
   const qProtein = dish ? Math.round(dish.protein  * servings * 10) / 10 : 0;
   const qCarbs   = dish ? Math.round(dish.carbs    * servings * 10) / 10 : 0;
   const qFat     = dish ? Math.round(dish.fat      * servings * 10) / 10 : 0;
+  const qFiber   = dish ? Math.round((dish.fiber ?? 0) * servings * 10) / 10 : 0;
 
   // ──────────────────────────────────────────────────────────────────────────
   return (
@@ -585,6 +591,11 @@ export default function LogFoodScreen() {
                   <Text style={[s.qtyMacroVal, { color: MUTED }]}>{qFat}g</Text>
                   <Text style={s.qtyMacroLbl}>fat</Text>
                 </View>
+                <View style={s.qtyMacroDivider} />
+                <View style={s.qtyMacroItem}>
+                  <Text style={[s.qtyMacroVal, { color: '#8B9E6E' }]}>{qFiber}g</Text>
+                  <Text style={s.qtyMacroLbl}>fiber</Text>
+                </View>
               </View>
 
               {/* Add button */}
@@ -629,6 +640,7 @@ export default function LogFoodScreen() {
                 <TextInput style={[s.customInput, { flex: 1 }]} placeholder="Protein g" placeholderTextColor="rgba(232,224,208,0.3)" value={customProtein} onChangeText={setCustomProtein} keyboardType="decimal-pad" />
                 <TextInput style={[s.customInput, { flex: 1 }]} placeholder="Carbs g"   placeholderTextColor="rgba(232,224,208,0.3)" value={customCarbs}   onChangeText={setCustomCarbs}   keyboardType="decimal-pad" />
                 <TextInput style={[s.customInput, { flex: 1 }]} placeholder="Fat g"     placeholderTextColor="rgba(232,224,208,0.3)" value={customFat}     onChangeText={setCustomFat}     keyboardType="decimal-pad" />
+                <TextInput style={[s.customInput, { flex: 1 }]} placeholder="Fiber g"   placeholderTextColor="rgba(232,224,208,0.3)" value={customFiber}   onChangeText={setCustomFiber}   keyboardType="decimal-pad" />
               </View>
               <TouchableOpacity
                 style={[s.addToLogBtn, (!customName || !customCals || savingCustom) && { opacity: 0.5 }]}

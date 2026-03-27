@@ -19,6 +19,7 @@ export interface CommunityPost {
     protein: number;
     carbs: number;
     fat: number;
+    fiber?: number;
   };
   goalHit: boolean;
   ingredients?: string[];
@@ -79,6 +80,7 @@ export interface CreatePostData {
     protein: number;
     carbs: number;
     fat: number;
+    fiber?: number;
   };
   ingredients?: string[];
 }

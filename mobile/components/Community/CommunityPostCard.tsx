@@ -146,10 +146,11 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
       {/* Nutrition strip */}
       <View style={s.nutritionStrip}>
         {[
-          { label: 'Cal',     value: String(post.nutrition.calories), color: '#E8E0D0' },
-          { label: 'Protein', value: `${post.nutrition.protein}g`,    color: '#E07B54' },
-          { label: 'Carbs',   value: `${post.nutrition.carbs}g`,      color: '#F5C842' },
-          { label: 'Fat',     value: `${post.nutrition.fat}g`,        color: '#8B9E6E' },
+          { label: 'Cal',     value: String(post.nutrition.calories),                    color: '#E8E0D0' },
+          { label: 'Protein', value: `${post.nutrition.protein}g`,                       color: '#E07B54' },
+          { label: 'Carbs',   value: `${post.nutrition.carbs}g`,                         color: '#F5C842' },
+          { label: 'Fat',     value: `${post.nutrition.fat}g`,                           color: '#8B9E6E' },
+          ...(post.nutrition.fiber != null ? [{ label: 'Fiber', value: `${post.nutrition.fiber}g`, color: '#6EAF8B' }] : []),
         ].map((m) => (
           <View key={m.label} style={s.nutritionPill}>
             <Text style={[s.nutritionVal, { color: m.color }]}>{m.value}</Text>
