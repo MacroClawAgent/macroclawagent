@@ -46,10 +46,10 @@ const PILLS: { key: ActivePill; label: string }[] = [
 ];
 
 const CHALLENGES = [
-  { id: '1', emoji: '🔥', title: 'High Protein Week',  members: 1240, daysLeft: 3, progress: 0.72, colors: ['#E07B54', '#C4693A'] as [string, string] },
-  { id: '2', emoji: '🥗', title: 'Clean Eating',        members: 843,  daysLeft: 5, progress: 0.45, colors: ['#2BB6A6', '#1E8A7D'] as [string, string] },
-  { id: '3', emoji: '💪', title: 'Muscle Build',        members: 2100, daysLeft: 2, progress: 0.88, colors: ['#C49A1A', '#F5C842'] as [string, string] },
-  { id: '4', emoji: '🏃', title: '10k Steps Daily',     members: 567,  daysLeft: 7, progress: 0.30, colors: ['#8B9E6E', '#6B7E4E'] as [string, string] },
+  { id: '1', emoji: '🔥', title: 'High Protein Week',  members: 1240, daysLeft: 3, progress: 0.72, accent: '#E07B54' },
+  { id: '2', emoji: '🥗', title: 'Clean Eating',        members: 843,  daysLeft: 5, progress: 0.45, accent: '#8B9E6E' },
+  { id: '3', emoji: '💪', title: 'Muscle Build',        members: 2100, daysLeft: 2, progress: 0.88, accent: '#F5C842' },
+  { id: '4', emoji: '🏃', title: '10k Steps Daily',     members: 567,  daysLeft: 7, progress: 0.30, accent: '#E8E0D0' },
 ];
 
 const TRENDING = ['Teriyaki Bowl', 'Overnight Oats', 'Greek Chicken', 'Protein Pancakes', 'Quinoa Salad'];
@@ -88,6 +88,7 @@ export default function CommunityScreen() {
   const [activePill, setActivePill] = useState<ActivePill>('all');
   const [followingPosts, setFollowingPosts] = useState<CommunityPost[]>([]);
   const [followingLoading, setFollowingLoading] = useState(false);
+  const [challengesOpen, setChallengesOpen] = useState(true);
 
   // Search
   const [searchActive, setSearchActive] = useState(false);
@@ -278,23 +279,31 @@ export default function CommunityScreen() {
 
   function ChallengesSection() {
     return (
-      <View style={{ marginBottom: 4 }}>
-        <Text style={ch.heading}>This Week's Challenges</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ch.row}>
-          {CHALLENGES.map((c) => (
-            <LinearGradient key={c.id} colors={c.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={ch.card}>
-              <Text style={ch.emoji}>{c.emoji}</Text>
-              <Text style={ch.title}>{c.title}</Text>
-              <Text style={ch.meta}>{c.members.toLocaleString()} members · {c.daysLeft}d left</Text>
-              <View style={ch.track}>
-                <View style={[ch.fill, { width: `${Math.round(c.progress * 100)}%` as any }]} />
+      <View>
+        <TouchableOpacity style={ch.headerRow} onPress={() => setChallengesOpen(o => !o)} activeOpacity={0.7}>
+          <Text style={ch.heading}>This Week's Challenges</Text>
+          <Text style={ch.chevron}>{challengesOpen ? '▾' : '▸'}</Text>
+        </TouchableOpacity>
+        {challengesOpen && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ch.row}>
+            {CHALLENGES.map((c) => (
+              <View key={c.id} style={[ch.card, { borderLeftColor: c.accent }]}>
+                <View style={ch.cardTop}>
+                  <Text style={ch.emoji}>{c.emoji}</Text>
+                  <Text style={[ch.daysLeft, { color: c.accent }]}>{c.daysLeft}d left</Text>
+                </View>
+                <Text style={ch.title}>{c.title}</Text>
+                <Text style={ch.meta}>{c.members.toLocaleString()} members</Text>
+                <View style={ch.track}>
+                  <View style={[ch.fill, { width: `${Math.round(c.progress * 100)}%` as any, backgroundColor: c.accent }]} />
+                </View>
+                <TouchableOpacity style={[ch.joinBtn, { borderColor: c.accent }]} activeOpacity={0.8}>
+                  <Text style={[ch.joinText, { color: c.accent }]}>Join</Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity style={ch.joinBtn} activeOpacity={0.8}>
-                <Text style={ch.joinText}>Join</Text>
-              </TouchableOpacity>
-            </LinearGradient>
-          ))}
-        </ScrollView>
+            ))}
+          </ScrollView>
+        )}
       </View>
     );
   }
@@ -503,16 +512,25 @@ const sr = StyleSheet.create({
 });
 
 const ch = StyleSheet.create({
-  heading: { fontSize: 16, fontWeight: '700', color: CREAM, paddingHorizontal: 16, marginBottom: 10, marginTop: 16, fontFamily: 'BebasNeue_400Regular' },
-  row: { paddingHorizontal: 16, gap: 12, paddingBottom: 4 },
-  card: { width: 180, borderRadius: 20, padding: 16, gap: 6 },
-  emoji: { fontSize: 28 },
-  title: { fontSize: 15, fontWeight: '700', color: '#fff', fontFamily: 'BebasNeue_400Regular' },
-  meta: { fontSize: 11, color: 'rgba(255,255,255,0.75)', fontFamily: 'BebasNeue_400Regular' },
-  track: { height: 4, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 2, marginTop: 2 },
-  fill: { height: 4, backgroundColor: '#fff', borderRadius: 2 },
-  joinBtn: { marginTop: 4, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, alignSelf: 'flex-start' },
-  joinText: { fontSize: 13, fontWeight: '700', color: '#fff', fontFamily: 'BebasNeue_400Regular' },
+  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8, marginTop: 14 },
+  heading: { flex: 1, fontSize: 13, fontWeight: '700', color: CREAM, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.4 },
+  chevron: { fontSize: 14, color: MUTED },
+  row: { paddingHorizontal: 16, gap: 10, paddingBottom: 8 },
+  card: {
+    width: 130, backgroundColor: CARD,
+    borderRadius: 12, padding: 10, gap: 3,
+    borderWidth: 1, borderColor: BORDER,
+    borderLeftWidth: 3,
+  },
+  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
+  emoji: { fontSize: 18 },
+  daysLeft: { fontSize: 10, fontWeight: '700', fontFamily: 'BebasNeue_400Regular' },
+  title: { fontSize: 12, fontWeight: '700', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
+  meta: { fontSize: 10, color: MUTED, fontFamily: 'BebasNeue_400Regular' },
+  track: { height: 3, backgroundColor: 'rgba(232,224,208,0.1)', borderRadius: 2, marginTop: 3 },
+  fill: { height: 3, borderRadius: 2 },
+  joinBtn: { marginTop: 6, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start', borderWidth: 1 },
+  joinText: { fontSize: 10, fontWeight: '700', fontFamily: 'BebasNeue_400Regular' },
 });
 
 const tr = StyleSheet.create({
