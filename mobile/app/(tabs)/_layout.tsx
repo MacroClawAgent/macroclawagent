@@ -79,6 +79,7 @@ const fabStyles = StyleSheet.create({
   plus: {
     fontSize: 30,
     fontWeight: "300",
+    fontFamily: "BebasNeue_400Regular",
     color: "#FFFFFF",
     lineHeight: 34,
     marginTop: -1,
@@ -109,6 +110,7 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
+          fontFamily: "BebasNeue_400Regular",
           marginTop: 2,
         },
         tabBarItemStyle: {

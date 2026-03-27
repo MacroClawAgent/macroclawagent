@@ -663,15 +663,15 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12,
   },
   headerBack:     { flexDirection: "row", alignItems: "center", gap: 4, minWidth: 64 },
-  headerBackText: { fontSize: 16, color: CREAM, fontWeight: "500" },
-  headerTitle:    { fontSize: 18, fontWeight: "700", color: CREAM },
+  headerBackText: { fontSize: 16, color: CREAM, fontWeight: "500", fontFamily: "BebasNeue_400Regular" },
+  headerTitle:    { fontSize: 18, fontWeight: "700", color: CREAM, fontFamily: "BebasNeue_400Regular" },
   headerRight:    { minWidth: 64, alignItems: "flex-end" },
 
   // ── Meal pills ───────────────────────────────────────────────────────────────
   pillRow:        { flexDirection: "row", marginHorizontal: 16, marginTop: 16, marginBottom: 0, gap: 8, height: 38 },
   pill:           { flex: 1, height: 38, paddingHorizontal: 20, paddingVertical: 0, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(232,224,208,0.08)", borderWidth: 1, borderColor: "rgba(232,224,208,0.12)" },
   pillActive:     { backgroundColor: GOLD, borderColor: GOLD },
-  pillText:       { fontSize: 14, fontWeight: "600", color: "rgba(232,224,208,0.45)" },
+  pillText:       { fontSize: 14, fontWeight: "600", color: "rgba(232,224,208,0.45)", fontFamily: "BebasNeue_400Regular" },
   pillTextActive: { color: DARK_TXT },
 
   // ── Photo buttons ────────────────────────────────────────────────────────────
@@ -687,10 +687,10 @@ const s = StyleSheet.create({
     alignItems: "center", justifyContent: "center", gap: 8,
     borderWidth: 1.5, borderColor: "rgba(248,213,97,0.25)",
   },
-  photoBtnTitle:     { fontSize: 15, fontWeight: "700", color: DARK_TXT },
-  photoBtnSub:       { fontSize: 11, color: "rgba(28,22,18,0.65)" },
-  photoBtnTitleLight:{ fontSize: 15, fontWeight: "700", color: CREAM },
-  photoBtnSubLight:  { fontSize: 11, color: "rgba(232,224,208,0.4)" },
+  photoBtnTitle:     { fontSize: 15, fontWeight: "700", color: DARK_TXT, fontFamily: "BebasNeue_400Regular" },
+  photoBtnSub:       { fontSize: 11, color: "rgba(28,22,18,0.65)", fontFamily: "BebasNeue_400Regular" },
+  photoBtnTitleLight:{ fontSize: 15, fontWeight: "700", color: CREAM, fontFamily: "BebasNeue_400Regular" },
+  photoBtnSubLight:  { fontSize: 11, color: "rgba(232,224,208,0.4)", fontFamily: "BebasNeue_400Regular" },
 
   // ── Search bar ───────────────────────────────────────────────────────────────
   searchBox: {
@@ -700,13 +700,14 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14,
     flexDirection: "row", alignItems: "center", gap: 12,
   },
-  searchInput: { flex: 1, fontSize: 16, color: CREAM, backgroundColor: "transparent" },
+  searchInput: { flex: 1, fontSize: 16, color: CREAM, backgroundColor: "transparent", fontFamily: "BebasNeue_400Regular" },
 
   // ── Dish list ────────────────────────────────────────────────────────────────
   listContent:  { paddingBottom: 20 },
   sectionLabel: {
     fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)",
     letterSpacing: 1.2, marginLeft: 20, marginTop: 24, marginBottom: 12,
+    fontFamily: "BebasNeue_400Regular",
   },
   dishRow2: {
     backgroundColor: CARD, borderRadius: 16, marginHorizontal: 16, marginBottom: 8,
@@ -718,49 +719,49 @@ const s = StyleSheet.create({
     backgroundColor: "rgba(232,224,208,0.06)",
     alignItems: "center", justifyContent: "center",
   },
-  dishTitle:   { fontSize: 15, fontWeight: "600", color: CREAM },
+  dishTitle:   { fontSize: 15, fontWeight: "600", color: CREAM, fontFamily: "BebasNeue_400Regular" },
   dishMacroRow:{ flexDirection: "row", alignItems: "center", marginTop: 3, flexWrap: "nowrap" },
-  dishCal:     { fontSize: 12, fontWeight: "600", color: GOLD },
-  dishDot:     { fontSize: 12, color: "rgba(232,224,208,0.3)" },
-  dishProt:    { fontSize: 12, color: CORAL },
-  dishLastLog: { fontSize: 11, color: "rgba(232,224,208,0.3)", marginLeft: "auto" as const },
+  dishCal:     { fontSize: 12, fontWeight: "600", color: GOLD, fontFamily: "BebasNeue_400Regular" },
+  dishDot:     { fontSize: 12, color: "rgba(232,224,208,0.3)", fontFamily: "BebasNeue_400Regular" },
+  dishProt:    { fontSize: 12, color: CORAL, fontFamily: "BebasNeue_400Regular" },
+  dishLastLog: { fontSize: 11, color: "rgba(232,224,208,0.3)", marginLeft: "auto" as const, fontFamily: "BebasNeue_400Regular" },
   addCircle:   { width: 36, height: 36, borderRadius: 18, backgroundColor: GOLD, alignItems: "center", justifyContent: "center" },
 
   // ── Empty state ──────────────────────────────────────────────────────────────
   emptyState: { alignItems: "center", paddingTop: 60, paddingHorizontal: 32, gap: 4 },
   emptyEmoji: { fontSize: 48 },
-  emptyTitle: { fontSize: 16, fontWeight: "600", color: CREAM, marginTop: 12, textAlign: "center" },
+  emptyTitle: { fontSize: 16, fontWeight: "600", color: CREAM, marginTop: 12, textAlign: "center", fontFamily: "BebasNeue_400Regular" },
   emptyLink:  { marginTop: 8 },
-  emptyLinkText: { fontSize: 14, color: GOLD },
+  emptyLinkText: { fontSize: 14, color: GOLD, fontFamily: "BebasNeue_400Regular" },
 
   // ── Create custom ────────────────────────────────────────────────────────────
   createCustom:    { alignItems: "center", paddingVertical: 20 },
-  createCustomText:{ fontSize: 14, color: GOLD },
+  createCustomText:{ fontSize: 14, color: GOLD, fontFamily: "BebasNeue_400Regular" },
 
   // ── Quantity sheet ───────────────────────────────────────────────────────────
   overlay:     { flex: 1, justifyContent: "flex-end" },
   qtySheet:    { backgroundColor: CARD, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, gap: 16 },
   handle:      { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(232,224,208,0.15)", alignSelf: "center", marginBottom: 4 },
-  qtyDishName: { fontSize: 18, fontWeight: "700", color: CREAM },
-  qtyServingHint: { fontSize: 13, color: MUTED },
+  qtyDishName: { fontSize: 18, fontWeight: "700", color: CREAM, fontFamily: "BebasNeue_400Regular" },
+  qtyServingHint: { fontSize: 13, color: MUTED, fontFamily: "BebasNeue_400Regular" },
   servingRow:  { flexDirection: "row", gap: 12 },
   servingPill: {
     paddingHorizontal: 24, paddingVertical: 12, borderRadius: 20,
     backgroundColor: "rgba(232,224,208,0.08)", borderWidth: 1, borderColor: "rgba(232,224,208,0.15)",
   },
   servingPillActive: { backgroundColor: GOLD, borderColor: GOLD },
-  servingText:       { fontSize: 15, fontWeight: "600", color: CREAM },
+  servingText:       { fontSize: 15, fontWeight: "600", color: CREAM, fontFamily: "BebasNeue_400Regular" },
   servingTextActive: { color: DARK_TXT },
 
   // Macro preview
   qtyPreview:     { flexDirection: "row", backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 16, padding: 16 },
   qtyMacroItem:   { flex: 1, alignItems: "center", gap: 4 },
-  qtyMacroVal:    { fontSize: 20, fontWeight: "700" },
-  qtyMacroLbl:    { fontSize: 11, color: MUTED },
+  qtyMacroVal:    { fontSize: 20, fontWeight: "700", fontFamily: "BebasNeue_400Regular" },
+  qtyMacroLbl:    { fontSize: 11, color: MUTED, fontFamily: "BebasNeue_400Regular" },
   qtyMacroDivider:{ width: 1, backgroundColor: "rgba(232,224,208,0.08)", marginVertical: 4 },
 
   addToLogBtn:  { backgroundColor: GOLD, borderRadius: 22, paddingVertical: 16, alignItems: "center" },
-  addToLogText: { fontSize: 16, fontWeight: "700", color: DARK_TXT },
+  addToLogText: { fontSize: 16, fontWeight: "700", color: DARK_TXT, fontFamily: "BebasNeue_400Regular" },
 
   // ── Custom dish inputs ────────────────────────────────────────────────────────
   customInput: {
@@ -768,6 +769,7 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: BORDER,
     paddingHorizontal: 14, paddingVertical: 12,
     fontSize: 15, color: CREAM,
+    fontFamily: "BebasNeue_400Regular",
   },
 
   // ── Toast ────────────────────────────────────────────────────────────────────
@@ -779,41 +781,41 @@ const s = StyleSheet.create({
     shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
   },
-  toastText: { fontSize: 14, fontWeight: "600", color: CREAM },
+  toastText: { fontSize: 14, fontWeight: "600", color: CREAM, fontFamily: "BebasNeue_400Regular" },
 
   // ── History view ─────────────────────────────────────────────────────────────
   histScroll:       { padding: 16, paddingBottom: 60 },
-  histHeading:      { fontSize: 18, fontWeight: "700", color: CREAM, marginBottom: 12 },
+  histHeading:      { fontSize: 18, fontWeight: "700", color: CREAM, marginBottom: 12, fontFamily: "BebasNeue_400Regular" },
   histEmpty:        { alignItems: "center", paddingVertical: 40 },
-  histEmptyText:    { fontSize: 15, color: MUTED },
+  histEmptyText:    { fontSize: 15, color: MUTED, fontFamily: "BebasNeue_400Regular" },
   histSection:      { marginBottom: 16 },
   histSectionHead:  { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8, paddingLeft: 4 },
   histSectionEmoji: { fontSize: 16 },
-  histSectionTitle: { fontSize: 15, fontWeight: "700", color: GOLD },
-  histDate:         { fontSize: 12, color: MUTED, marginLeft: "auto" as const },
+  histSectionTitle: { fontSize: 15, fontWeight: "700", color: GOLD, fontFamily: "BebasNeue_400Regular" },
+  histDate:         { fontSize: 12, color: MUTED, marginLeft: "auto" as const, fontFamily: "BebasNeue_400Regular" },
   dishCard: {
     backgroundColor: CARD, borderRadius: 14, marginBottom: 6,
     borderWidth: 1, borderColor: BORDER, overflow: "hidden",
   },
   dishRow:     { flexDirection: "row", alignItems: "center", padding: 14, gap: 10 },
-  dishName:    { fontSize: 15, fontWeight: "600", color: CREAM },
-  dishMeta:    { fontSize: 12, color: MUTED, marginTop: 2 },
+  dishName:    { fontSize: 15, fontWeight: "600", color: CREAM, fontFamily: "BebasNeue_400Regular" },
+  dishMeta:    { fontSize: 12, color: MUTED, marginTop: 2, fontFamily: "BebasNeue_400Regular" },
   dishActions: { flexDirection: "row", gap: 8 },
   expandBtn:   { padding: 6 },
-  expandText:  { fontSize: 12, color: MUTED },
+  expandText:  { fontSize: 12, color: MUTED, fontFamily: "BebasNeue_400Regular" },
   deleteBtn:   { padding: 6 },
-  deleteText:  { fontSize: 20, color: CORAL, lineHeight: 22 },
+  deleteText:  { fontSize: 20, color: CORAL, lineHeight: 22, fontFamily: "BebasNeue_400Regular" },
   ingredientList: { borderTopWidth: 1, borderTopColor: "rgba(232,224,208,0.06)", paddingHorizontal: 14, paddingBottom: 8 },
   ingredientRow:  { flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "rgba(232,224,208,0.04)", gap: 8 },
-  ingredientName: { fontSize: 13, color: CREAM },
-  ingredientMacros:{ fontSize: 11, color: MUTED, marginTop: 1 },
+  ingredientName: { fontSize: 13, color: CREAM, fontFamily: "BebasNeue_400Regular" },
+  ingredientMacros:{ fontSize: 11, color: MUTED, marginTop: 1, fontFamily: "BebasNeue_400Regular" },
   histDayCard:  { backgroundColor: CARD, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: BORDER },
   histDayTop:   { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  histDayDate:  { fontSize: 15, fontWeight: "600", color: CREAM },
-  histDayCal:   { fontSize: 15, color: GOLD, fontWeight: "700", marginLeft: "auto" as const },
+  histDayDate:  { fontSize: 15, fontWeight: "600", color: CREAM, fontFamily: "BebasNeue_400Regular" },
+  histDayCal:   { fontSize: 15, color: GOLD, fontWeight: "700", marginLeft: "auto" as const, fontFamily: "BebasNeue_400Regular" },
   histChevron:  { fontSize: 22, color: MUTED, marginLeft: 8 },
   histMacroBar: { height: 5, borderRadius: 3, flexDirection: "row", overflow: "hidden", marginBottom: 8 },
   histMacroSeg: { height: 5 },
   histMacroLbls:{ flexDirection: "row", gap: 16 },
-  histMacroLbl: { fontSize: 12, fontWeight: "600" },
+  histMacroLbl: { fontSize: 12, fontWeight: "600", fontFamily: "BebasNeue_400Regular" },
 });

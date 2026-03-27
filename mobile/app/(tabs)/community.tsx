@@ -381,7 +381,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, gap: 10,
   },
-  headerTitle: { flex: 1, fontSize: 28, fontWeight: '800', letterSpacing: -0.6, color: '#111827' },
+  headerTitle: { flex: 1, fontSize: 28, fontWeight: '800', fontFamily: 'BebasNeue_400Regular', letterSpacing: -0.6, color: '#111827' },
   headerRight: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 40, height: 40, borderRadius: 13,
@@ -397,13 +397,13 @@ const s = StyleSheet.create({
     borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11,
     borderWidth: 1.5, borderColor: BLUE,
   },
-  searchInput: { flex: 1, fontSize: 15, color: '#1E293B', fontWeight: '500' },
-  clearBtn: { fontSize: 14, color: '#94A3B8', paddingHorizontal: 2 },
+  searchInput: { flex: 1, fontSize: 15, color: '#1E293B', fontWeight: '500', fontFamily: 'BebasNeue_400Regular' },
+  clearBtn: { fontSize: 14, color: '#94A3B8', paddingHorizontal: 2, fontFamily: 'BebasNeue_400Regular' },
   cancelBtn: { paddingHorizontal: 4 },
-  cancelText: { fontSize: 15, color: BLUE, fontWeight: '600' },
+  cancelText: { fontSize: 15, color: BLUE, fontWeight: '600', fontFamily: 'BebasNeue_400Regular' },
 
   searchHint: { flex: 1, alignItems: 'center', paddingTop: 60 },
-  searchHintText: { fontSize: 14, color: '#94A3B8' },
+  searchHintText: { fontSize: 14, color: '#94A3B8', fontFamily: 'BebasNeue_400Regular' },
 
   pillRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   pill: {
@@ -412,18 +412,18 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
   },
   pillActive: { backgroundColor: BLUE, borderColor: BLUE },
-  pillText: { fontSize: 13, fontWeight: '500', color: '#6B7280' },
+  pillText: { fontSize: 13, fontWeight: '500', color: '#6B7280', fontFamily: 'BebasNeue_400Regular' },
   pillTextActive: { color: '#fff', fontWeight: '600' },
 
   empty: { alignItems: 'center', paddingVertical: 80, gap: 10 },
   emptyEmoji: { fontSize: 48 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  emptySub: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', paddingHorizontal: 24 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#111827', fontFamily: 'BebasNeue_400Regular' },
+  emptySub: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', paddingHorizontal: 24, fontFamily: 'BebasNeue_400Regular' },
   emptyBtn: {
     marginTop: 8, backgroundColor: BLUE,
     borderRadius: 28, paddingHorizontal: 28, paddingVertical: 14,
   },
-  emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'BebasNeue_400Regular' },
 });
 
 const sr = StyleSheet.create({
@@ -439,14 +439,14 @@ const sr = StyleSheet.create({
     width: 46, height: 46, borderRadius: 23,
     backgroundColor: TEAL, alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: { fontSize: 18, fontWeight: '700', color: '#fff' },
-  name: { fontSize: 15, fontWeight: '700', color: '#1E293B' },
-  username: { fontSize: 12, color: '#94A3B8', marginTop: 1 },
+  avatarText: { fontSize: 18, fontWeight: '700', color: '#fff', fontFamily: 'BebasNeue_400Regular' },
+  name: { fontSize: 15, fontWeight: '700', color: '#1E293B', fontFamily: 'BebasNeue_400Regular' },
+  username: { fontSize: 12, color: '#94A3B8', marginTop: 1, fontFamily: 'BebasNeue_400Regular' },
   followBtn: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
     borderWidth: 1.5, borderColor: BLUE,
   },
   followBtnActive: { backgroundColor: BLUE },
-  followBtnText: { fontSize: 13, fontWeight: '700', color: BLUE },
+  followBtnText: { fontSize: 13, fontWeight: '700', color: BLUE, fontFamily: 'BebasNeue_400Regular' },
   followBtnTextActive: { color: '#fff' },
 });
