@@ -5,11 +5,11 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 
-const TEAL   = "#2BB6A6";
-const TEAL2  = "rgba(43,182,166,0.12)";
-const BG     = "#F4F5F7";
-const WHITE  = "#FFFFFF";
-const BORDER = "#E5E7EB";
+const TEAL   = "#F5C842";
+const TEAL2  = "rgba(245,200,66,0.10)";
+const BG     = "#0D0A07";
+const WHITE  = "#1C1410";
+const BORDER = "rgba(255,220,150,0.12)";
 
 const MENU_ITEMS = [
   {
@@ -198,8 +198,8 @@ const s = StyleSheet.create({
   safe:    { flex: 1, backgroundColor: BG },
   pageHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4, gap: 10 },
   backBtn:  { padding: 4 },
-  backArrow:{ fontSize: 24, color: "#1C1C1E", fontWeight: "400" },
-  pageTitle:  { fontSize: 28, fontWeight: "900", color: "#1C1C1E", letterSpacing: -0.5 },
+  backArrow:{ fontSize: 24, color: "#E8E0D0", fontWeight: "400" },
+  pageTitle:  { fontSize: 28, fontWeight: "900", color: "#E8E0D0", letterSpacing: -0.5 },
   content: { padding: 16, gap: 10, paddingBottom: 60 },
 
   hero: {
@@ -210,26 +210,26 @@ const s = StyleSheet.create({
   avatarWrap: { width: 88, height: 88, position: "relative" },
   avatarRing: {
     width: 88, height: 88, borderRadius: 44,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    borderWidth: 3, borderColor: "rgba(255,255,255,0.95)",
+    backgroundColor: "rgba(255,220,150,0.06)",
+    borderWidth: 3, borderColor: "#F5C842",
     justifyContent: "center", alignItems: "center",
-    shadowColor: "#000", shadowOpacity: 0.10, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    shadowColor: "#F5C842", shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
     elevation: 4,
   },
-  avatar:     { width: 78, height: 78, borderRadius: 39, backgroundColor: TEAL, justifyContent: "center", alignItems: "center" },
-  avatarText: { fontSize: 26, fontWeight: "900", color: WHITE },
+  avatar:     { width: 78, height: 78, borderRadius: 39, backgroundColor: "#F5C842", justifyContent: "center", alignItems: "center" },
+  avatarText: { fontSize: 26, fontWeight: "900", color: "#1C1410" },
   badge: {
     position: "absolute", width: 28, height: 28, borderRadius: 14,
-    backgroundColor: WHITE,
+    backgroundColor: "#252018",
     justifyContent: "center", alignItems: "center",
-    borderWidth: 2, borderColor: "rgba(255,255,255,0.9)",
-    shadowColor: "#000", shadowOpacity: 0.10, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+    borderWidth: 2, borderColor: "rgba(255,220,150,0.2)",
+    shadowColor: "#000", shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     elevation: 4,
   },
   badgeEmoji: { fontSize: 13 },
   heroInfo:   { flex: 1, gap: 2 },
-  heroName:   { fontSize: 18, fontWeight: "800", color: "#1C1C1E" },
-  heroEmail:  { fontSize: 12, color: "#9CA3AF" },
+  heroName:   { fontSize: 18, fontWeight: "800", color: "#E8E0D0" },
+  heroEmail:  { fontSize: 12, color: "rgba(232,224,208,0.4)" },
   goalPill: {
     marginTop: 6, alignSelf: "flex-start",
     backgroundColor: TEAL2, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5,
@@ -237,7 +237,7 @@ const s = StyleSheet.create({
   goalPillText: { fontSize: 13, fontWeight: "700", color: TEAL },
 
   sectionLabel: {
-    fontSize: 11, fontWeight: "700", color: "#9CA3AF",
+    fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)",
     textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4,
   },
 
@@ -246,10 +246,10 @@ const s = StyleSheet.create({
   menuIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   menuEmoji:{ fontSize: 18 },
   menuMid:  { flex: 1, gap: 1 },
-  menuLabel:{ fontSize: 15, fontWeight: "700", color: "#1C1C1E" },
-  menuSub:  { fontSize: 12, color: "#9CA3AF" },
-  chevron:  { fontSize: 22, color: "#C4C4C4", fontWeight: "300" },
-  divider:  { height: 1, backgroundColor: BG, marginHorizontal: 16 },
+  menuLabel:{ fontSize: 15, fontWeight: "700", color: "#E8E0D0" },
+  menuSub:  { fontSize: 12, color: "rgba(232,224,208,0.4)" },
+  chevron:  { fontSize: 22, color: "rgba(232,224,208,0.25)", fontWeight: "300" },
+  divider:  { height: 1, backgroundColor: "rgba(255,220,150,0.06)", marginHorizontal: 16 },
 
-  version: { textAlign: "center", fontSize: 11, color: "#C4C4C4", marginTop: 8 },
+  version: { textAlign: "center", fontSize: 11, color: "rgba(232,224,208,0.2)", marginTop: 8 },
 });
