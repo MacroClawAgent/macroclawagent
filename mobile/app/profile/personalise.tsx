@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { apiPost } from "@/lib/api";
 
-const TEAL = "#2BB6A6"; const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB";
+const TEAL = "#F5C842"; const BG = "#0D0A07"; const WHITE = "#1C1410"; const BORDER = "rgba(255,220,150,0.12)";
 const ASYNC_KEY = "macroClaw:personalise";
 
 const GOAL_OPTIONS = [
@@ -44,7 +44,7 @@ function EditModal({ visible, title, fields, initial, onCancel, onSave, saving }
             <View key={f.key} style={em.field}>
               <Text style={em.label}>{f.label}</Text>
               <TextInput style={em.input} value={values[f.key] ?? ""} onChangeText={(v) => setValues((p) => ({ ...p, [f.key]: v }))}
-                placeholder={f.placeholder} placeholderTextColor="#C4C4C4" keyboardType={f.keyboard ?? "default"} />
+                placeholder={f.placeholder} placeholderTextColor="rgba(232,224,208,0.3)" keyboardType={f.keyboard ?? "default"} />
             </View>
           ))}
           <View style={em.actions}>
@@ -62,13 +62,13 @@ const em = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "flex-end" },
   sheet: { backgroundColor: WHITE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, gap: 16 },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: BORDER, alignSelf: "center", marginBottom: 4 },
-  title: { fontSize: 18, fontWeight: "800", color: "#1C1C1E" },
+  title: { fontSize: 18, fontWeight: "800", color: "#E8E0D0" },
   field: { gap: 6 },
-  label: { fontSize: 12, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.4 },
-  input: { backgroundColor: BG, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, color: "#1C1C1E" },
+  label: { fontSize: 12, fontWeight: "700", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.4 },
+  input: { backgroundColor: BG, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, color: "#E8E0D0" },
   actions: { flexDirection: "row", gap: 10, marginTop: 4 },
   cancel: { flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: BG, alignItems: "center" },
-  cancelTxt: { fontSize: 15, fontWeight: "700", color: "#6B7280" },
+  cancelTxt: { fontSize: 15, fontWeight: "700", color: "rgba(232,224,208,0.55)" },
   save: { flex: 2, paddingVertical: 15, borderRadius: 14, backgroundColor: TEAL, alignItems: "center" },
   saveTxt: { fontSize: 15, fontWeight: "800", color: WHITE },
 });
@@ -222,27 +222,27 @@ export default function PersonaliseScreen() {
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   content: { padding: 16, gap: 10, paddingBottom: 60 },
-  sectionLabel: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4 },
+  sectionLabel: { fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4 },
   goalGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   goalCard: { width: "47%", backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 16, alignItems: "center", gap: 6 },
-  goalCardActive: { borderColor: TEAL, backgroundColor: "rgba(43,182,166,0.08)" },
+  goalCardActive: { borderColor: TEAL, backgroundColor: "rgba(245,200,66,0.08)" },
   goalEmoji: { fontSize: 28 },
-  goalLabel: { fontSize: 13, fontWeight: "700", color: "#6B7280", textAlign: "center" },
+  goalLabel: { fontSize: 13, fontWeight: "700", color: "rgba(232,224,208,0.55)", textAlign: "center" },
   goalLabelActive: { color: TEAL },
   goalDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: TEAL },
   card: { backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, overflow: "hidden" },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14 },
   rowRight: { flexDirection: "row", alignItems: "center", gap: 4 },
-  rowLabel: { fontSize: 14, color: "#6B7280", fontWeight: "500" },
-  rowValue: { fontSize: 14, color: "#1C1C1E", fontWeight: "700" },
-  chevron:  { fontSize: 20, color: "#C4C4C4" },
+  rowLabel: { fontSize: 14, color: "rgba(232,224,208,0.55)", fontWeight: "500" },
+  rowValue: { fontSize: 14, color: "#E8E0D0", fontWeight: "700" },
+  chevron:  { fontSize: 20, color: "rgba(232,224,208,0.25)" },
   divider:  { height: 1, backgroundColor: BG, marginHorizontal: 16 },
   chipRow:  { gap: 8, paddingVertical: 2 },
   chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, backgroundColor: WHITE, borderWidth: 1, borderColor: BORDER },
-  chipActive: { backgroundColor: "rgba(43,182,166,0.12)", borderColor: TEAL },
+  chipActive: { backgroundColor: "rgba(245,200,66,0.10)", borderColor: TEAL },
   chipDanger: { backgroundColor: "rgba(239,68,68,0.10)", borderColor: "#EF4444" },
-  chipTxt:       { fontSize: 13, fontWeight: "600", color: "#6B7280" },
+  chipTxt:       { fontSize: 13, fontWeight: "600", color: "rgba(232,224,208,0.55)" },
   chipTxtActive: { color: TEAL },
   chipTxtDanger: { color: "#EF4444" },
 });

@@ -3,10 +3,10 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/ui/AppHeader";
 
-const BG    = "#F4F5F7";
-const WHITE = "#FFFFFF";
-const TEAL  = "#2BB6A6";
-const BORDER= "#E5E7EB";
+const BG    = "#0D0A07";
+const WHITE = "#1C1410";
+const TEAL  = "#F5C842";
+const BORDER= "rgba(255,220,150,0.12)";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -198,10 +198,10 @@ const s = StyleSheet.create({
     marginBottom: 20,
   },
   heroEmoji: { fontSize: 36 },
-  heroTitle: { fontSize: 22, fontWeight: "900", color: "#1C1C1E", letterSpacing: -0.4 },
-  heroSub:   { fontSize: 12, color: "#9CA3AF", fontWeight: "500" },
+  heroTitle: { fontSize: 22, fontWeight: "900", color: "#E8E0D0", letterSpacing: -0.4 },
+  heroSub:   { fontSize: 12, color: "rgba(232,224,208,0.4)", fontWeight: "500" },
   heroPill: {
-    marginTop: 4, backgroundColor: "rgba(43,182,166,0.12)", borderRadius: 20,
+    marginTop: 4, backgroundColor: "rgba(245,200,66,0.10)", borderRadius: 20,
     paddingHorizontal: 16, paddingVertical: 6,
   },
   heroPillText: { fontSize: 13, fontWeight: "700", color: TEAL },
@@ -216,16 +216,16 @@ const s = StyleSheet.create({
     backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER,
     padding: 16, gap: 10,
   },
-  para: { fontSize: 14, color: "#4B5563", lineHeight: 22 },
+  para: { fontSize: 14, color: "rgba(232,224,208,0.7)", lineHeight: 22 },
 
   bulletRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
   bulletDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: TEAL, marginTop: 6 },
-  bulletLabel:  { fontSize: 13, fontWeight: "700", color: "#1C1C1E" },
+  bulletLabel:  { fontSize: 13, fontWeight: "700", color: "#E8E0D0" },
   bulletDetail: { fontSize: 13, color: "#6B7280", lineHeight: 20 },
 
   dataRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   dataEmoji:  { fontSize: 20, marginTop: 1 },
-  dataLabel:  { fontSize: 13, fontWeight: "700", color: "#1C1C1E" },
+  dataLabel:  { fontSize: 13, fontWeight: "700", color: "#E8E0D0" },
   dataDetail: { fontSize: 13, color: "#6B7280", lineHeight: 20, marginTop: 1 },
 
   separator: { height: 1, backgroundColor: BG },

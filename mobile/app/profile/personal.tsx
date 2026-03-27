@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { apiPost } from "@/lib/api";
 
-const TEAL = "#2BB6A6"; const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB";
+const TEAL = "#F5C842"; const BG = "#0D0A07"; const WHITE = "#1C1410"; const BORDER = "rgba(255,220,150,0.12)";
 
 function Divider() { return <View style={s.divider} />; }
 function SectionLabel({ title }: { title: string }) { return <Text style={s.sectionLabel}>{title}</Text>; }
@@ -30,7 +30,7 @@ function EditModal({ visible, title, fields, initial, onCancel, onSave, saving }
               <TextInput
                 style={em.input} value={values[f.key] ?? ""}
                 onChangeText={(v) => setValues((p) => ({ ...p, [f.key]: v }))}
-                placeholder={f.placeholder} placeholderTextColor="#C4C4C4"
+                placeholder={f.placeholder} placeholderTextColor="rgba(232,224,208,0.3)"
                 keyboardType={f.keyboard ?? "default"} autoCapitalize="words"
               />
             </View>
@@ -52,13 +52,13 @@ const em = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "flex-end" },
   sheet: { backgroundColor: WHITE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, gap: 16 },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: BORDER, alignSelf: "center", marginBottom: 4 },
-  title: { fontSize: 18, fontWeight: "800", color: "#1C1C1E" },
+  title: { fontSize: 18, fontWeight: "800", color: "#E8E0D0" },
   field: { gap: 6 },
-  label: { fontSize: 12, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.4 },
-  input: { backgroundColor: BG, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, color: "#1C1C1E" },
+  label: { fontSize: 12, fontWeight: "700", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.4 },
+  input: { backgroundColor: BG, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, color: "#E8E0D0" },
   actions: { flexDirection: "row", gap: 10, marginTop: 4 },
   cancel: { flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: BG, alignItems: "center" },
-  cancelTxt: { fontSize: 15, fontWeight: "700", color: "#6B7280" },
+  cancelTxt: { fontSize: 15, fontWeight: "700", color: "rgba(232,224,208,0.55)" },
   save: { flex: 2, paddingVertical: 15, borderRadius: 14, backgroundColor: TEAL, alignItems: "center" },
   saveTxt: { fontSize: 15, fontWeight: "800", color: WHITE },
 });
@@ -155,20 +155,20 @@ const s = StyleSheet.create({
   avatarRing: { width: 84, height: 84, borderRadius: 42, borderWidth: 2.5, borderColor: TEAL, justifyContent: "center", alignItems: "center" },
   avatar: { width: 74, height: 74, borderRadius: 37, backgroundColor: TEAL, justifyContent: "center", alignItems: "center" },
   avatarTxt: { fontSize: 28, fontWeight: "900", color: WHITE },
-  name: { fontSize: 20, fontWeight: "800", color: "#1C1C1E" },
-  editBtn: { backgroundColor: "rgba(43,182,166,0.12)", borderRadius: 20, paddingHorizontal: 18, paddingVertical: 7 },
+  name: { fontSize: 20, fontWeight: "800", color: "#E8E0D0" },
+  editBtn: { backgroundColor: "rgba(245,200,66,0.10)", borderRadius: 20, paddingHorizontal: 18, paddingVertical: 7 },
   editBtnTxt: { fontSize: 13, fontWeight: "700", color: TEAL },
-  sectionLabel: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4 },
+  sectionLabel: { fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4 },
   card: { backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, overflow: "hidden" },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14 },
   rowRight: { flexDirection: "row", alignItems: "center", gap: 4 },
-  rowLabel: { fontSize: 14, color: "#6B7280", fontWeight: "500" },
-  rowValue: { fontSize: 14, color: "#1C1C1E", fontWeight: "700" },
-  chevron:  { fontSize: 20, color: "#C4C4C4" },
+  rowLabel: { fontSize: 14, color: "rgba(232,224,208,0.55)", fontWeight: "500" },
+  rowValue: { fontSize: 14, color: "#E8E0D0", fontWeight: "700" },
+  chevron:  { fontSize: 20, color: "rgba(232,224,208,0.25)" },
   divider:  { height: 1, backgroundColor: BG, marginHorizontal: 16 },
   statsRow: { flexDirection: "row", gap: 8 },
   statCard: { flex: 1, backgroundColor: WHITE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, paddingVertical: 12, alignItems: "center", gap: 2 },
-  statVal:  { fontSize: 15, fontWeight: "800", color: "#1C1C1E", letterSpacing: -0.3 },
-  statUnit: { fontSize: 10, fontWeight: "600", color: "#9CA3AF" },
-  statLbl:  { fontSize: 10, fontWeight: "600", color: "#9CA3AF" },
+  statVal:  { fontSize: 15, fontWeight: "800", color: "#E8E0D0", letterSpacing: -0.3 },
+  statUnit: { fontSize: 10, fontWeight: "600", color: "rgba(232,224,208,0.4)" },
+  statLbl:  { fontSize: 10, fontWeight: "600", color: "rgba(232,224,208,0.4)" },
 });

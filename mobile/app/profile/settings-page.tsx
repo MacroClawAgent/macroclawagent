@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { apiPost } from "@/lib/api";
 
-const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB"; const TEAL = "#2BB6A6";
+const BG = "#0D0A07"; const WHITE = "#1C1410"; const BORDER = "rgba(255,220,150,0.12)"; const TEAL = "#F5C842";
 
 function Divider() { return <View style={s.divider} />; }
 function SectionLabel({ title }: { title: string }) { return <Text style={s.sectionLabel}>{title}</Text>; }
@@ -100,18 +100,18 @@ export default function SettingsPageScreen() {
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   content: { padding: 16, gap: 10, paddingBottom: 60 },
-  sectionLabel: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4 },
+  sectionLabel: { fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4 },
   card: { backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, overflow: "hidden" },
   row:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14 },
-  rowLabel: { fontSize: 14, color: "#6B7280", fontWeight: "500" },
-  rowValue: { fontSize: 14, color: "#1C1C1E", fontWeight: "700" },
-  chevron:  { fontSize: 20, color: "#C4C4C4" },
+  rowLabel: { fontSize: 14, color: "rgba(232,224,208,0.55)", fontWeight: "500" },
+  rowValue: { fontSize: 14, color: "#E8E0D0", fontWeight: "700" },
+  chevron:  { fontSize: 20, color: "rgba(232,224,208,0.25)" },
   divider:  { height: 1, backgroundColor: BG, marginHorizontal: 16 },
   toggleWrap: { flexDirection: "row", backgroundColor: BG, borderRadius: 20, padding: 2 },
   toggleOpt:  { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 18 },
   toggleOptActive: { backgroundColor: WHITE, shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2 },
-  toggleTxt:       { fontSize: 13, fontWeight: "600", color: "#9CA3AF" },
-  toggleTxtActive: { color: "#1C1C1E", fontWeight: "700" },
+  toggleTxt:       { fontSize: 13, fontWeight: "600", color: "rgba(232,224,208,0.4)" },
+  toggleTxtActive: { color: "#E8E0D0", fontWeight: "700" },
   signOutBtn: { backgroundColor: WHITE, borderRadius: 14, paddingVertical: 16, alignItems: "center", borderWidth: 1, borderColor: "#FCA5A5", marginTop: 6 },
   signOutTxt: { color: "#EF4444", fontWeight: "700", fontSize: 15 },
 });

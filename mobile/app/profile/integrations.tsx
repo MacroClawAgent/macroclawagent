@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useHealthKit } from "@/hooks/useHealthKit";
 import { useHevyWorkouts } from "@/hooks/useHevyWorkouts";
 
-const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB"; const TEAL = "#2BB6A6";
+const BG = "#0D0A07"; const WHITE = "#1C1410"; const BORDER = "rgba(255,220,150,0.12)"; const TEAL = "#F5C842";
 
 const ITEMS = [
   { key: "strava",        name: "Strava",          sub: "Sync training & activities",          emoji: "🏃", bg: "rgba(252,82,0,0.10)",    connectUrl: "https://jonnoai.com",          live: true },
@@ -93,18 +93,18 @@ export default function IntegrationsScreen() {
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   content: { padding: 16, gap: 10, paddingBottom: 60 },
-  sectionLabel: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4 },
+  sectionLabel: { fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginTop: 4 },
   card: { backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, overflow: "hidden" },
   row:  { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 16, paddingVertical: 14 },
   icon: { width: 44, height: 44, borderRadius: 13, alignItems: "center", justifyContent: "center" },
   emoji: { fontSize: 20 },
-  name: { fontSize: 15, fontWeight: "700", color: "#1C1C1E" },
-  sub:  { fontSize: 12, color: "#9CA3AF", marginTop: 1 },
+  name: { fontSize: 15, fontWeight: "700", color: "#E8E0D0" },
+  sub:  { fontSize: 12, color: "rgba(232,224,208,0.4)", marginTop: 1 },
   divider: { height: 1, backgroundColor: BG, marginHorizontal: 16 },
   badgeOn:     { backgroundColor: "rgba(16,185,129,0.12)", borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
   badgeOnTxt:  { fontSize: 12, fontWeight: "700", color: "#10B981" },
   badgeSoon:   { backgroundColor: BG, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  badgeSoonTxt:{ fontSize: 12, fontWeight: "600", color: "#9CA3AF" },
+  badgeSoonTxt:{ fontSize: 12, fontWeight: "600", color: "rgba(232,224,208,0.4)" },
   connectBtn:  { backgroundColor: TEAL, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 },
   connectTxt:  { fontSize: 12, fontWeight: "700", color: WHITE },
 });

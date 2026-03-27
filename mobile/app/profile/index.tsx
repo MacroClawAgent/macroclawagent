@@ -1,9 +1,12 @@
-import React from "react";
-import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Alert, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useCommunity } from "@/hooks/useCommunity";
+import { deletePost, deletePostWithFoodLog } from "@/services/communityService";
+import { getPostImage } from "@/data/communityMockData";
 
 const TEAL   = "#F5C842";
 const TEAL2  = "rgba(245,200,66,0.10)";
@@ -63,6 +66,12 @@ export default function ProfileScreen() {
   const { userProfile, session } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const router = useRouter();
+  const { posts, currentUserId, loadPosts, removePost } = useCommunity();
+
+  useEffect(() => { loadPosts(); }, []);
+
+  const myPosts = posts.filter(p => p.userId === currentUserId);
+  const totalLikes = myPosts.reduce((sum, p) => sum + p.likes, 0);
 
   const name     = userProfile?.full_name ?? "Athlete";
   const email    = session?.user?.email ?? userProfile?.email ?? "";
@@ -83,6 +92,15 @@ export default function ProfileScreen() {
     { emoji: userProfile?.strava_athlete_id ? "🏃" : "🥗",  pos: { top: -5, right: -5 } },
     { emoji: "📊",                                           pos: { top: -5, left: -5 } },
   ];
+
+  function handleDeletePost(post: typeof myPosts[0]) {
+    const logDate = post.createdAt.split("T")[0];
+    Alert.alert("Delete post", "Also delete this meal from your food log?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Post only", onPress: async () => { await deletePost(post.id); removePost(post.id); } },
+      { text: "Post + log", style: "destructive", onPress: async () => { await deletePostWithFoodLog(post.id, post.mealName, logDate); removePost(post.id); } },
+    ]);
+  }
 
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
@@ -188,6 +206,64 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* My Community Posts */}
+        <Text style={s.sectionLabel}>My Community Posts</Text>
+        {/* Stats row */}
+        <View style={s.menuCard}>
+          <View style={[s.menuRow, { paddingVertical: 16 }]}>
+            {[
+              { label: "Posts",  value: String(myPosts.length) },
+              { label: "Likes",  value: String(totalLikes) },
+              { label: "Streak", value: "—" },
+            ].map((stat, i) => (
+              <View key={stat.label} style={[cp.statCell, i > 0 && cp.statCellBorder]}>
+                <Text style={cp.statVal}>{stat.value}</Text>
+                <Text style={cp.statLbl}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {myPosts.length === 0 ? (
+          <View style={cp.empty}>
+            <Text style={cp.emptyEmoji}>🍽️</Text>
+            <Text style={cp.emptyText}>No community posts yet</Text>
+            <Text style={cp.emptySub}>Share a meal in the Community tab</Text>
+          </View>
+        ) : (
+          myPosts.map((post) => {
+            const localImg = getPostImage(post.id);
+            return (
+              <View key={post.id} style={cp.postCard}>
+                {/* Thumbnail */}
+                <View style={cp.thumb}>
+                  {localImg ? (
+                    <Image source={localImg} style={cp.thumbImg} resizeMode="cover" />
+                  ) : post.imageUri ? (
+                    <Image source={{ uri: post.imageUri }} style={cp.thumbImg} resizeMode="cover" />
+                  ) : (
+                    <View style={cp.thumbPlaceholder}><Text style={{ fontSize: 28 }}>🥗</Text></View>
+                  )}
+                </View>
+                {/* Info */}
+                <View style={{ flex: 1, gap: 3 }}>
+                  <Text style={cp.postName} numberOfLines={1}>{post.mealName}</Text>
+                  <Text style={cp.postMeta}>{post.timeAgo} · {post.nutrition.calories} cal · ♥ {post.likes}</Text>
+                  <View style={cp.macroRow}>
+                    <Text style={cp.macroChip}>P {post.nutrition.protein}g</Text>
+                    <Text style={cp.macroChip}>C {post.nutrition.carbs}g</Text>
+                    <Text style={cp.macroChip}>F {post.nutrition.fat}g</Text>
+                  </View>
+                </View>
+                {/* Delete */}
+                <TouchableOpacity style={cp.deleteBtn} onPress={() => handleDeletePost(post)} activeOpacity={0.7}>
+                  <Text style={cp.deleteTxt}>🗑</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })
+        )}
+
         <Text style={s.version}>MacroClaw v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
@@ -252,4 +328,29 @@ const s = StyleSheet.create({
   divider:  { height: 1, backgroundColor: "rgba(255,220,150,0.06)", marginHorizontal: 16 },
 
   version: { textAlign: "center", fontSize: 11, color: "rgba(232,224,208,0.2)", marginTop: 8 },
+});
+
+const cp = StyleSheet.create({
+  statCell:       { flex: 1, alignItems: "center", gap: 2 },
+  statCellBorder: { borderLeftWidth: 1, borderLeftColor: "rgba(255,220,150,0.08)" },
+  statVal:        { fontSize: 20, fontWeight: "800", color: "#E8E0D0" },
+  statLbl:        { fontSize: 11, fontWeight: "600", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.4 },
+  empty: { alignItems: "center", paddingVertical: 32, gap: 6 },
+  emptyEmoji: { fontSize: 36 },
+  emptyText: { fontSize: 15, fontWeight: "700", color: "#E8E0D0" },
+  emptySub:  { fontSize: 12, color: "rgba(232,224,208,0.4)" },
+  postCard: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    backgroundColor: "#1C1410", borderRadius: 16, padding: 12,
+    borderWidth: 1, borderColor: "rgba(255,220,150,0.12)",
+  },
+  thumb:        { width: 60, height: 60, borderRadius: 12, overflow: "hidden", backgroundColor: "#252018" },
+  thumbImg:     { width: 60, height: 60 },
+  thumbPlaceholder: { width: 60, height: 60, alignItems: "center", justifyContent: "center", backgroundColor: "#252018" },
+  postName: { fontSize: 14, fontWeight: "700", color: "#E8E0D0" },
+  postMeta: { fontSize: 11, color: "rgba(232,224,208,0.4)" },
+  macroRow: { flexDirection: "row", gap: 6, marginTop: 2 },
+  macroChip: { fontSize: 10, fontWeight: "600", color: "#F5C842", backgroundColor: "rgba(245,200,66,0.10)", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
+  deleteBtn: { padding: 8 },
+  deleteTxt: { fontSize: 18 },
 });

@@ -3,10 +3,10 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/ui/AppHeader";
 
-const BG    = "#F4F5F7";
-const WHITE = "#FFFFFF";
-const TEAL  = "#2BB6A6";
-const BORDER= "#E5E7EB";
+const BG    = "#0D0A07";
+const WHITE = "#1C1410";
+const TEAL  = "#F5C842";
+const BORDER= "rgba(255,220,150,0.12)";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -182,8 +182,8 @@ const s = StyleSheet.create({
     marginBottom: 20,
   },
   heroEmoji: { fontSize: 36 },
-  heroTitle: { fontSize: 22, fontWeight: "900", color: "#1C1C1E", letterSpacing: -0.4 },
-  heroSub:   { fontSize: 12, color: "#9CA3AF", fontWeight: "500" },
+  heroTitle: { fontSize: 22, fontWeight: "900", color: "#E8E0D0", letterSpacing: -0.4 },
+  heroSub:   { fontSize: 12, color: "rgba(232,224,208,0.4)", fontWeight: "500" },
 
   section: { marginBottom: 16 },
   sectionTitle: {
@@ -195,11 +195,11 @@ const s = StyleSheet.create({
     backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER,
     padding: 16, gap: 10,
   },
-  para: { fontSize: 14, color: "#4B5563", lineHeight: 22, fontWeight: "400" },
+  para: { fontSize: 14, color: "rgba(232,224,208,0.7)", lineHeight: 22, fontWeight: "400" },
   bulletRow: { flexDirection: "row", gap: 8, alignItems: "flex-start" },
   bulletDot:  { fontSize: 14, color: TEAL, fontWeight: "800", lineHeight: 22 },
-  bulletText: { fontSize: 14, color: "#4B5563", lineHeight: 22, flex: 1 },
+  bulletText: { fontSize: 14, color: "rgba(232,224,208,0.7)", lineHeight: 22, flex: 1 },
 
   footer: { alignItems: "center", paddingTop: 8 },
-  footerText: { fontSize: 11, color: "#C4C4C4" },
+  footerText: { fontSize: 11, color: "rgba(232,224,208,0.25)" },
 });

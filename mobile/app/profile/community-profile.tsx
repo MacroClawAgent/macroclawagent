@@ -8,8 +8,8 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { apiPost } from "@/lib/api";
 
-const BG = "#F4F5F7"; const WHITE = "#FFFFFF"; const BORDER = "#E5E7EB";
-const TEAL = "#2BB6A6"; const RED = "#FF453A";
+const BG = "#0D0A07"; const WHITE = "#1C1410"; const BORDER = "rgba(255,220,150,0.12)";
+const TEAL = "#F5C842"; const RED = "#FF453A";
 
 const BASE_URL: string = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://jonnoai.com");
 
@@ -52,7 +52,7 @@ export default function CommunityProfileScreen() {
   function getStatus() {
     if (!username || !usernameChanged) return null;
     if (validationError) return { text: validationError, color: RED };
-    if (checking) return { text: "Checking...", color: "#9CA3AF" };
+    if (checking) return { text: "Checking...", color: "rgba(232,224,208,0.4)" };
     if (available === true) return { text: `@${username} is available ✓`, color: TEAL };
     if (available === false) return { text: "Username already taken", color: RED };
     return null;
@@ -96,7 +96,7 @@ export default function CommunityProfileScreen() {
               value={username}
               onChangeText={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
               placeholder="your_handle"
-              placeholderTextColor="#C0BAB8"
+              placeholderTextColor="rgba(232,224,208,0.3)"
               autoCapitalize="none"
               autoCorrect={false}
               maxLength={20}
@@ -115,7 +115,7 @@ export default function CommunityProfileScreen() {
             value={bio}
             onChangeText={setBio}
             placeholder="Tell the community about yourself..."
-            placeholderTextColor="#C0BAB8"
+            placeholderTextColor="rgba(232,224,208,0.3)"
             multiline
             maxLength={150}
             numberOfLines={4}
@@ -138,8 +138,8 @@ export default function CommunityProfileScreen() {
             <Switch
               value={isPublic}
               onValueChange={setIsPublic}
-              trackColor={{ false: "#D1D5DB", true: TEAL }}
-              thumbColor={WHITE}
+              trackColor={{ false: "rgba(232,224,208,0.15)", true: "rgba(245,200,66,0.4)" }}
+              thumbColor={TEAL}
             />
           </View>
         </View>
@@ -163,18 +163,18 @@ export default function CommunityProfileScreen() {
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   content: { padding: 16, paddingBottom: 60, gap: 4 },
-  sectionLabel: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginBottom: 6 },
+  sectionLabel: { fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.6, paddingLeft: 4, marginBottom: 6 },
   card: { backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER },
   atRow: { flexDirection: "row", alignItems: "center" },
   atSign: { paddingLeft: 16, fontSize: 16, fontWeight: "700", color: TEAL },
-  atInput: { flex: 1, paddingHorizontal: 8, paddingVertical: 14, fontSize: 16, fontWeight: "600", color: "#1C1C1E" },
-  bioInput: { paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: "#1C1C1E", minHeight: 90, textAlignVertical: "top" },
-  charCount: { textAlign: "right", paddingRight: 12, paddingBottom: 8, fontSize: 11, color: "#9CA3AF" },
+  atInput: { flex: 1, paddingHorizontal: 8, paddingVertical: 14, fontSize: 16, fontWeight: "600", color: "#E8E0D0" },
+  bioInput: { paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: "#E8E0D0", minHeight: 90, textAlignVertical: "top" },
+  charCount: { textAlign: "right", paddingRight: 12, paddingBottom: 8, fontSize: 11, color: "rgba(232,224,208,0.4)" },
   statusText: { fontSize: 13, fontWeight: "600", paddingLeft: 4, marginTop: 4 },
-  hint: { fontSize: 11, color: "#9CA3AF", paddingLeft: 4 },
+  hint: { fontSize: 11, color: "rgba(232,224,208,0.4)", paddingLeft: 4 },
   switchRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
-  switchLabel: { fontSize: 15, fontWeight: "700", color: "#1C1C1E" },
-  switchSub: { fontSize: 12, color: "#9CA3AF", marginTop: 2, lineHeight: 16 },
+  switchLabel: { fontSize: 15, fontWeight: "700", color: "#E8E0D0" },
+  switchSub: { fontSize: 12, color: "rgba(232,224,208,0.4)", marginTop: 2, lineHeight: 16 },
   saveBtn: { backgroundColor: TEAL, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 24 },
   saveBtnText: { color: WHITE, fontWeight: "800", fontSize: 16 },
 });
