@@ -483,7 +483,7 @@ export default function CommunityScreen() {
               data={displayedPosts}
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 100 }}
+              contentContainerStyle={{ paddingBottom: 100, paddingTop: 12 }}
               refreshControl={
                 <RefreshControl
                   refreshing={refreshing}
@@ -517,7 +517,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, gap: 10,
   },
-  headerTitle: { flex: 1, fontSize: 28, fontWeight: '800', fontFamily: 'BebasNeue_400Regular', letterSpacing: -0.6, color: CREAM },
+  headerTitle: { flex: 1, fontSize: 36, fontWeight: '800', fontFamily: 'BebasNeue_400Regular', letterSpacing: -0.6, color: CREAM },
   headerRight: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 40, height: 40, borderRadius: 13,
@@ -576,7 +576,7 @@ const tb = StyleSheet.create({
     borderBottomColor: 'rgba(255,220,150,0.1)',
   },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 10, position: 'relative' },
-  tabText: { fontSize: 15, fontWeight: '600', color: MUTED, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.3 },
+  tabText: { fontSize: 18, fontWeight: '600', color: MUTED, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.3 },
   tabTextActive: { color: CREAM },
   indicator: {
     position: 'absolute', bottom: 0, left: '20%', right: '20%',
