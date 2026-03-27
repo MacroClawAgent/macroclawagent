@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Modal,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView } from 'expo-symbols';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -33,16 +35,16 @@ const CREAM  = '#E8E0D0';
 const MUTED  = 'rgba(232,224,208,0.4)';
 const BG     = '#0D0A07';
 
-type ActivePill = 'following' | CommunityFilter;
+type ActiveTab = 'foryou' | 'following' | 'challenges';
 
-const PILLS: { key: ActivePill; label: string }[] = [
-  { key: 'following',    label: 'Following' },
-  { key: 'all',          label: 'All' },
-  { key: 'build_muscle', label: 'Muscle' },
-  { key: 'fat_loss',     label: 'Fat Loss' },
-  { key: 'home_cooked',  label: 'Home Cooked' },
-  { key: 'eating_out',   label: 'Eating Out' },
-  { key: 'meal_prep',    label: 'Meal Prep' },
+const TAB_LABELS: Record<ActiveTab, string> = { foryou: 'For You', following: 'Following', challenges: 'Challenges' };
+
+const FILTER_OPTIONS: { key: CommunityFilter; label: string; emoji: string }[] = [
+  { key: 'build_muscle', label: 'Muscle',      emoji: '💪' },
+  { key: 'fat_loss',     label: 'Fat Loss',    emoji: '🔥' },
+  { key: 'home_cooked',  label: 'Home Cooked', emoji: '🏠' },
+  { key: 'eating_out',   label: 'Restaurant',  emoji: '🍽️' },
+  { key: 'meal_prep',    label: 'Meal Prep',   emoji: '📦' },
 ];
 
 const CHALLENGES = [
@@ -85,10 +87,13 @@ export default function CommunityScreen() {
     removePost,
   } = useCommunity();
 
-  const [activePill, setActivePill] = useState<ActivePill>('all');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('foryou');
   const [followingPosts, setFollowingPosts] = useState<CommunityPost[]>([]);
   const [followingLoading, setFollowingLoading] = useState(false);
-  const [challengesOpen, setChallengesOpen] = useState(true);
+  const [trendingVisible, setTrendingVisible] = useState(true);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<CommunityFilter[]>([]);
+  const [joinedChallenges, setJoinedChallenges] = useState<Record<string, boolean>>({});
 
   // Search
   const [searchActive, setSearchActive] = useState(false);
@@ -97,7 +102,10 @@ export default function CommunityScreen() {
   const [followStates, setFollowStates] = useState<Record<string, boolean>>({});
   const searchRef = useRef<TextInput>(null);
 
-  useEffect(() => { loadPosts(); }, []);
+  useEffect(() => {
+    loadPosts();
+    AsyncStorage.getItem('trending_dismissed').then(v => { if (v === '1') setTrendingVisible(false); });
+  }, []);
 
   // Auto-post any meal shared from the photo-confirm scan flow
   useFocusEffect(
@@ -189,18 +197,14 @@ export default function CommunityScreen() {
     );
   }
 
-  function handlePillPress(key: ActivePill) {
-    setActivePill(key);
-    if (key === 'following') {
-      loadFollowingPosts();
-    } else {
-      setFilter(key as CommunityFilter);
-    }
-  }
-
-  const isFollowingMode = activePill === 'following';
-  const displayedPosts = isFollowingMode ? followingPosts : posts;
-  const isLoading = isFollowingMode ? followingLoading : (loading && posts.length === 0);
+  const filteredPosts = activeFilters.length > 0
+    ? posts.filter(p => activeFilters.some(f => {
+        if (f === 'home_cooked' || f === 'eating_out' || f === 'meal_prep') return p.postType === f;
+        return (p as any).fitnessGoal === f;
+      }))
+    : posts;
+  const displayedPosts = activeTab === 'following' ? followingPosts : filteredPosts;
+  const isLoading = activeTab === 'following' ? followingLoading : (loading && posts.length === 0);
 
   // ── Search result row ────────────────────────────────────────────────────────
   function SearchResultRow({ profile }: { profile: UserProfile }) {
@@ -231,35 +235,73 @@ export default function CommunityScreen() {
     );
   }
 
-  // ── Filter pills ─────────────────────────────────────────────────────────────
-  function PillRow() {
+  // ── Tab bar ──────────────────────────────────────────────────────────────────
+  function TabBar() {
     return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pillRow}>
-        {PILLS.map((p) => {
-          const active = activePill === p.key;
-          return (
-            <TouchableOpacity
-              key={p.key}
-              style={[s.pill, active && s.pillActive]}
-              activeOpacity={0.75}
-              onPress={() => handlePillPress(p.key)}
-            >
-              <Text style={[s.pillText, active && s.pillTextActive]}>{p.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      <View style={tb.row}>
+        {(Object.keys(TAB_LABELS) as ActiveTab[]).map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={tb.tab}
+            activeOpacity={0.75}
+            onPress={() => {
+              setActiveTab(tab);
+              if (tab === 'following') loadFollowingPosts();
+            }}
+          >
+            <Text style={[tb.tabText, activeTab === tab && tb.tabTextActive]}>
+              {TAB_LABELS[tab]}
+            </Text>
+            {activeTab === tab && <View style={tb.indicator} />}
+          </TouchableOpacity>
+        ))}
+        <TouchableOpacity style={tb.filterBtn} onPress={() => setFilterSheetOpen(true)} activeOpacity={0.7}>
+          <SymbolView
+            name={{ ios: 'line.3.horizontal.decrease', android: 'filter_list', web: 'filter_list' }}
+            tintColor={activeFilters.length > 0 ? GOLD : MUTED}
+            size={18}
+          />
+          {activeFilters.length > 0 && <View style={tb.filterDot} />}
+        </TouchableOpacity>
+      </View>
     );
   }
 
+  // ── Trending strip ────────────────────────────────────────────────────────────
+  function TrendingStrip() {
+    if (!trendingVisible) return null;
+    return (
+      <View style={ts.strip}>
+        <Text style={ts.fireLabel}>🔥</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, gap: 0 }}>
+            {TRENDING.map((dish, i) => (
+              <View key={dish} style={ts.chip}>
+                <Text style={ts.rank}>#{i + 1}</Text>
+                <Text style={ts.name}>{dish}</Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+        <TouchableOpacity
+          onPress={() => { setTrendingVisible(false); AsyncStorage.setItem('trending_dismissed', '1'); }}
+          style={ts.dismiss}
+        >
+          <Text style={ts.dismissText}>✕</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // ── Empty state ───────────────────────────────────────────────────────────────
   function EmptyState() {
-    if (isFollowingMode) {
+    if (activeTab === 'following') {
       return (
         <View style={s.empty}>
           <Text style={s.emptyEmoji}>👥</Text>
           <Text style={s.emptyTitle}>No posts yet</Text>
           <Text style={s.emptySub}>Follow people to see their meals here</Text>
-          <TouchableOpacity style={s.emptyBtn} onPress={() => handlePillPress('all')} activeOpacity={0.8}>
+          <TouchableOpacity style={s.emptyBtn} onPress={() => setActiveTab('foryou')} activeOpacity={0.8}>
             <Text style={s.emptyBtnText}>Browse All →</Text>
           </TouchableOpacity>
         </View>
@@ -277,50 +319,82 @@ export default function CommunityScreen() {
     );
   }
 
-  function ChallengesSection() {
+  // ── Challenges tab ────────────────────────────────────────────────────────────
+  function ChallengesTab() {
     return (
-      <View>
-        <TouchableOpacity style={ch.headerRow} onPress={() => setChallengesOpen(o => !o)} activeOpacity={0.7}>
-          <Text style={ch.heading}>This Week's Challenges</Text>
-          <Text style={ch.chevron}>{challengesOpen ? '▾' : '▸'}</Text>
-        </TouchableOpacity>
-        {challengesOpen && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ch.row}>
-            {CHALLENGES.map((c) => (
-              <View key={c.id} style={[ch.card, { borderLeftColor: c.accent }]}>
-                <View style={ch.cardTop}>
-                  <Text style={ch.emoji}>{c.emoji}</Text>
-                  <Text style={[ch.daysLeft, { color: c.accent }]}>{c.daysLeft}d left</Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, gap: 12, paddingTop: 12 }}
+      >
+        {CHALLENGES.map((c) => {
+          const joined = joinedChallenges[c.id] ?? false;
+          return (
+            <View key={c.id} style={[chal.card, { borderLeftColor: c.accent }]}>
+              <View style={chal.top}>
+                <Text style={chal.emoji}>{c.emoji}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={chal.title}>{c.title}</Text>
+                  <Text style={chal.meta}>{c.members.toLocaleString()} members · {c.daysLeft}d left</Text>
                 </View>
-                <Text style={ch.title}>{c.title}</Text>
-                <Text style={ch.meta}>{c.members.toLocaleString()} members</Text>
-                <View style={ch.track}>
-                  <View style={[ch.fill, { width: `${Math.round(c.progress * 100)}%` as any, backgroundColor: c.accent }]} />
-                </View>
-                <TouchableOpacity style={[ch.joinBtn, { borderColor: c.accent }]} activeOpacity={0.8}>
-                  <Text style={[ch.joinText, { color: c.accent }]}>Join</Text>
+                <Text style={[chal.daysTag, { color: c.accent }]}>{c.daysLeft}d</Text>
+              </View>
+              <View style={chal.track}>
+                <View style={[chal.fill, { width: `${Math.round(c.progress * 100)}%` as any, backgroundColor: c.accent }]} />
+              </View>
+              <View style={chal.bottom}>
+                <Text style={chal.progressText}>{Math.round(c.progress * 100)}% complete</Text>
+                <TouchableOpacity
+                  style={[chal.joinBtn, joined && { backgroundColor: c.accent, borderColor: c.accent }]}
+                  activeOpacity={0.8}
+                  onPress={() => setJoinedChallenges(prev => ({ ...prev, [c.id]: !joined }))}
+                >
+                  <Text style={[chal.joinText, joined && { color: '#1C1410' }]}>{joined ? '✓ Joined' : 'Join'}</Text>
                 </TouchableOpacity>
               </View>
-            ))}
-          </ScrollView>
-        )}
-      </View>
+            </View>
+          );
+        })}
+      </ScrollView>
     );
   }
 
-  function TrendingSection() {
+  // ── Filter sheet ──────────────────────────────────────────────────────────────
+  function FilterSheet() {
     return (
-      <View style={{ marginBottom: 4 }}>
-        <Text style={tr.heading}>Trending Today</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tr.row}>
-          {TRENDING.map((dish, i) => (
-            <View key={dish} style={tr.chip}>
-              <Text style={tr.rank}>#{i + 1}</Text>
-              <Text style={tr.name}>{dish}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
+      <Modal visible={filterSheetOpen} transparent animationType="slide" onRequestClose={() => setFilterSheetOpen(false)}>
+        <TouchableOpacity style={fs.backdrop} activeOpacity={1} onPress={() => setFilterSheetOpen(false)} />
+        <View style={fs.sheet}>
+          <View style={fs.handle} />
+          <Text style={fs.title}>Filter Feed</Text>
+          <View style={fs.options}>
+            {FILTER_OPTIONS.map((opt) => {
+              const active = activeFilters.includes(opt.key);
+              return (
+                <TouchableOpacity
+                  key={opt.key}
+                  style={[fs.option, active && fs.optionActive]}
+                  activeOpacity={0.75}
+                  onPress={() =>
+                    setActiveFilters(prev => active ? prev.filter(k => k !== opt.key) : [...prev, opt.key])
+                  }
+                >
+                  <Text style={fs.optionEmoji}>{opt.emoji}</Text>
+                  <Text style={[fs.optionLabel, active && fs.optionLabelActive]}>{opt.label}</Text>
+                  {active && <Text style={fs.optionCheck}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <View style={{ flexDirection: 'row', gap: 12, paddingTop: 8 }}>
+            <TouchableOpacity style={fs.clearBtn} onPress={() => setActiveFilters([])} activeOpacity={0.8}>
+              <Text style={fs.clearBtnText}>Clear</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={fs.applyBtn} onPress={() => setFilterSheetOpen(false)} activeOpacity={0.8}>
+              <Text style={fs.applyBtnText}>Apply</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     );
   }
 
@@ -334,7 +408,6 @@ export default function CommunityScreen() {
       {/* Header */}
       <View style={s.header}>
         {searchActive ? (
-          // ── Search mode header ──
           <>
             <View style={s.searchBar}>
               <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
@@ -361,7 +434,6 @@ export default function CommunityScreen() {
             </TouchableOpacity>
           </>
         ) : (
-          // ── Normal header ──
           <>
             <Text style={s.headerTitle}>Community</Text>
             <View style={s.headerRight}>
@@ -378,7 +450,6 @@ export default function CommunityScreen() {
         )}
       </View>
 
-      {/* Search results */}
       {searchActive ? (
         <View style={{ flex: 1 }}>
           {searchQuery.length === 0 ? (
@@ -401,34 +472,39 @@ export default function CommunityScreen() {
           )}
         </View>
       ) : (
-        // ── Normal feed ──
-        isLoading ? (
-          <ActivityIndicator color={GOLD} size="large" style={{ marginTop: 60 }} />
-        ) : (
-          <FlatList
-            data={displayedPosts}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 100 }}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={isFollowingMode ? loadFollowingPosts : handleRefresh}
-                tintColor={GOLD}
-              />
-            }
-            ListHeaderComponent={<><ChallengesSection /><TrendingSection /><PillRow /></>}
-            ListEmptyComponent={<EmptyState />}
-            renderItem={({ item }) => (
-              <CommunityPostCard
-                post={item}
-                onLike={handleLike}
-                isOwn={!!currentUserId && item.userId === currentUserId}
-                onDelete={() => handleDeletePost(item)}
-              />
-            )}
-          />
-        )
+        <>
+          <TabBar />
+          {activeTab === 'challenges' ? (
+            <ChallengesTab />
+          ) : isLoading ? (
+            <ActivityIndicator color={GOLD} size="large" style={{ marginTop: 60 }} />
+          ) : (
+            <FlatList
+              data={displayedPosts}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={activeTab === 'following' ? loadFollowingPosts : handleRefresh}
+                  tintColor={GOLD}
+                />
+              }
+              ListHeaderComponent={<TrendingStrip />}
+              ListEmptyComponent={<EmptyState />}
+              renderItem={({ item }) => (
+                <CommunityPostCard
+                  post={item}
+                  onLike={handleLike}
+                  isOwn={!!currentUserId && item.userId === currentUserId}
+                  onDelete={() => handleDeletePost(item)}
+                />
+              )}
+            />
+          )}
+          <FilterSheet />
+        </>
       )}
 
       <CreatePostSheet visible={showCreatePost} onClose={closeCreatePost} onSubmit={submitPost} />
@@ -449,8 +525,6 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: BORDER,
   },
-
-  // Search bar
   searchBar: {
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: CARD,
@@ -461,28 +535,13 @@ const s = StyleSheet.create({
   clearBtn: { fontSize: 14, color: MUTED, paddingHorizontal: 2, fontFamily: 'BebasNeue_400Regular' },
   cancelBtn: { paddingHorizontal: 4 },
   cancelText: { fontSize: 15, color: GOLD, fontWeight: '600', fontFamily: 'BebasNeue_400Regular' },
-
   searchHint: { flex: 1, alignItems: 'center', paddingTop: 60 },
   searchHintText: { fontSize: 14, color: MUTED, fontFamily: 'BebasNeue_400Regular' },
-
-  pillRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-  pill: {
-    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8,
-    backgroundColor: CARD,
-    borderWidth: 1, borderColor: BORDER,
-  },
-  pillActive: { backgroundColor: GOLD, borderColor: GOLD },
-  pillText: { fontSize: 13, fontWeight: '500', color: MUTED, fontFamily: 'BebasNeue_400Regular' },
-  pillTextActive: { color: '#1C1410', fontWeight: '600' },
-
   empty: { alignItems: 'center', paddingVertical: 80, gap: 10 },
   emptyEmoji: { fontSize: 48 },
   emptyTitle: { fontSize: 18, fontWeight: '700', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
   emptySub: { fontSize: 14, color: MUTED, textAlign: 'center', paddingHorizontal: 24, fontFamily: 'BebasNeue_400Regular' },
-  emptyBtn: {
-    marginTop: 8, backgroundColor: GOLD,
-    borderRadius: 28, paddingHorizontal: 28, paddingVertical: 14,
-  },
+  emptyBtn: { marginTop: 8, backgroundColor: GOLD, borderRadius: 28, paddingHorizontal: 28, paddingVertical: 14 },
   emptyBtnText: { color: '#1C1410', fontSize: 15, fontWeight: '700', fontFamily: 'BebasNeue_400Regular' },
 });
 
@@ -502,41 +561,99 @@ const sr = StyleSheet.create({
   avatarText: { fontSize: 18, fontWeight: '700', color: '#1C1410', fontFamily: 'BebasNeue_400Regular' },
   name: { fontSize: 15, fontWeight: '700', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
   username: { fontSize: 12, color: MUTED, marginTop: 1, fontFamily: 'BebasNeue_400Regular' },
-  followBtn: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5, borderColor: GOLD,
-  },
+  followBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: GOLD },
   followBtnActive: { backgroundColor: GOLD },
   followBtnText: { fontSize: 13, fontWeight: '700', color: GOLD, fontFamily: 'BebasNeue_400Regular' },
   followBtnTextActive: { color: '#1C1410' },
 });
 
-const ch = StyleSheet.create({
-  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8, marginTop: 14 },
-  heading: { flex: 1, fontSize: 13, fontWeight: '700', color: CREAM, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.4 },
-  chevron: { fontSize: 14, color: MUTED },
-  row: { paddingHorizontal: 16, gap: 10, paddingBottom: 8 },
-  card: {
-    width: 130, backgroundColor: CARD,
-    borderRadius: 12, padding: 10, gap: 3,
-    borderWidth: 1, borderColor: BORDER,
-    borderLeftWidth: 3,
+// Tab bar
+const tb = StyleSheet.create({
+  row: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingTop: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,220,150,0.1)',
   },
-  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
-  emoji: { fontSize: 18 },
-  daysLeft: { fontSize: 10, fontWeight: '700', fontFamily: 'BebasNeue_400Regular' },
-  title: { fontSize: 12, fontWeight: '700', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
-  meta: { fontSize: 10, color: MUTED, fontFamily: 'BebasNeue_400Regular' },
-  track: { height: 3, backgroundColor: 'rgba(232,224,208,0.1)', borderRadius: 2, marginTop: 3 },
-  fill: { height: 3, borderRadius: 2 },
-  joinBtn: { marginTop: 6, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start', borderWidth: 1 },
-  joinText: { fontSize: 10, fontWeight: '700', fontFamily: 'BebasNeue_400Regular' },
+  tab: { flex: 1, alignItems: 'center', paddingVertical: 10, position: 'relative' },
+  tabText: { fontSize: 15, fontWeight: '600', color: MUTED, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.3 },
+  tabTextActive: { color: CREAM },
+  indicator: {
+    position: 'absolute', bottom: 0, left: '20%', right: '20%',
+    height: 2, backgroundColor: GOLD, borderRadius: 1,
+  },
+  filterBtn: {
+    width: 36, height: 36, borderRadius: 10,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: CARD, borderWidth: 1, borderColor: BORDER,
+    position: 'relative',
+  },
+  filterDot: {
+    position: 'absolute', top: 6, right: 6,
+    width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD,
+  },
 });
 
-const tr = StyleSheet.create({
-  heading: { fontSize: 16, fontWeight: '700', color: CREAM, paddingHorizontal: 16, marginBottom: 10, marginTop: 16, fontFamily: 'BebasNeue_400Regular' },
-  row: { paddingHorizontal: 16, gap: 8, paddingBottom: 4 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: CARD, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: BORDER },
-  rank: { fontSize: 13, fontWeight: '800', color: GOLD, fontFamily: 'BebasNeue_400Regular' },
-  name: { fontSize: 13, fontWeight: '600', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
+// Trending strip
+const ts = StyleSheet.create({
+  strip: {
+    flexDirection: 'row', alignItems: 'center',
+    marginHorizontal: 16, marginTop: 10, marginBottom: 4,
+    backgroundColor: 'rgba(245,200,66,0.06)',
+    borderRadius: 12, paddingVertical: 8, paddingHorizontal: 10,
+    borderWidth: 1, borderColor: 'rgba(245,200,66,0.12)',
+  },
+  fireLabel: { fontSize: 14, marginRight: 2 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  rank: { fontSize: 12, fontWeight: '800', color: GOLD, fontFamily: 'BebasNeue_400Regular' },
+  name: { fontSize: 12, fontWeight: '600', color: CREAM, fontFamily: 'BebasNeue_400Regular', marginRight: 10 },
+  dismiss: { paddingHorizontal: 6, paddingVertical: 4 },
+  dismissText: { fontSize: 12, color: MUTED },
+});
+
+// Filter sheet
+const fs = StyleSheet.create({
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' },
+  sheet: {
+    backgroundColor: '#1C1410',
+    borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    paddingHorizontal: 20, paddingBottom: 40, paddingTop: 16,
+    borderTopWidth: 1, borderTopColor: BORDER,
+  },
+  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(232,224,208,0.2)', alignSelf: 'center', marginBottom: 16 },
+  title: { fontSize: 18, fontWeight: '800', color: CREAM, fontFamily: 'BebasNeue_400Regular', marginBottom: 16 },
+  options: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
+  option: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20,
+    backgroundColor: CARD, borderWidth: 1, borderColor: BORDER,
+  },
+  optionActive: { backgroundColor: 'rgba(245,200,66,0.12)', borderColor: GOLD },
+  optionEmoji: { fontSize: 16 },
+  optionLabel: { fontSize: 14, fontWeight: '600', color: MUTED, fontFamily: 'BebasNeue_400Regular' },
+  optionLabelActive: { color: GOLD },
+  optionCheck: { fontSize: 12, color: GOLD, fontWeight: '700' },
+  clearBtn: { flex: 1, paddingVertical: 14, borderRadius: 20, alignItems: 'center', borderWidth: 1, borderColor: BORDER },
+  clearBtnText: { fontSize: 15, fontWeight: '700', color: MUTED, fontFamily: 'BebasNeue_400Regular' },
+  applyBtn: { flex: 2, paddingVertical: 14, borderRadius: 20, alignItems: 'center', backgroundColor: GOLD },
+  applyBtnText: { fontSize: 15, fontWeight: '700', color: '#1C1410', fontFamily: 'BebasNeue_400Regular' },
+});
+
+// Challenge cards (Challenges tab)
+const chal = StyleSheet.create({
+  card: {
+    backgroundColor: CARD, borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: BORDER, borderLeftWidth: 3,
+  },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
+  emoji: { fontSize: 28 },
+  title: { fontSize: 17, fontWeight: '800', color: CREAM, fontFamily: 'BebasNeue_400Regular' },
+  meta: { fontSize: 12, color: MUTED, marginTop: 2, fontFamily: 'BebasNeue_400Regular' },
+  daysTag: { fontSize: 13, fontWeight: '800', fontFamily: 'BebasNeue_400Regular' },
+  track: { height: 4, backgroundColor: 'rgba(232,224,208,0.08)', borderRadius: 2, marginBottom: 12 },
+  fill: { height: 4, borderRadius: 2 },
+  bottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  progressText: { fontSize: 12, color: MUTED, fontFamily: 'BebasNeue_400Regular' },
+  joinBtn: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: GOLD },
+  joinText: { fontSize: 14, fontWeight: '700', color: GOLD, fontFamily: 'BebasNeue_400Regular' },
 });

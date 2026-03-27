@@ -114,6 +114,9 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
           return (
             <View style={s.imageContainer}>
               <Image source={localImg} style={s.image} resizeMode="cover" />
+              <LinearGradient colors={['transparent', 'rgba(0,0,0,0.65)']} style={s.imageOverlay}>
+                <Text style={s.imageDishName} numberOfLines={1}>{post.mealName}</Text>
+              </LinearGradient>
               {restaurantPill}
             </View>
           );
@@ -122,6 +125,9 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
           return (
             <View style={s.imageContainer}>
               <Image source={{ uri: post.imageUri }} style={s.image} resizeMode="cover" />
+              <LinearGradient colors={['transparent', 'rgba(0,0,0,0.65)']} style={s.imageOverlay}>
+                <Text style={s.imageDishName} numberOfLines={1}>{post.mealName}</Text>
+              </LinearGradient>
               {restaurantPill}
             </View>
           );
@@ -241,6 +247,12 @@ const s = StyleSheet.create({
   // Image
   imageContainer: { height: 200, width: '100%' },
   image: { height: 200, width: '100%' },
+  imageOverlay: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    height: 70, justifyContent: 'flex-end',
+    paddingHorizontal: 14, paddingBottom: 10,
+  },
+  imageDishName: { fontSize: 17, fontWeight: '800', color: '#FFFFFF', fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.2 },
   imagePlaceholder: { height: 200, width: '100%', alignItems: 'center', justifyContent: 'center' },
   imageEmoji: { fontSize: 64 },
   restaurantPill: {
