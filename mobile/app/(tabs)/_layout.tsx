@@ -107,12 +107,7 @@ export default function TabLayout() {
           height: Platform.OS === "ios" ? 82 : 64,
           paddingTop: 10,
         },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "600",
-          fontFamily: "BebasNeue_400Regular",
-          marginTop: 2,
-        },
+        tabBarShowLabel: false,
         tabBarItemStyle: {
           paddingBottom: Platform.OS === "ios" ? 0 : 6,
         },
@@ -124,7 +119,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <TabIcon iosName="house.fill" androidName="home" color={color} />
+            <TabIcon iosName="house.fill" androidName="home" color={color} size={28} />
           ),
         }}
       />
@@ -135,7 +130,7 @@ export default function TabLayout() {
         options={{
           title: "Community",
           tabBarIcon: ({ color }) => (
-            <TabIcon iosName="person.2.fill" androidName="group" color={color} />
+            <TabIcon iosName="person.2.fill" androidName="group" color={color} size={28} />
           ),
         }}
       />
@@ -155,7 +150,7 @@ export default function TabLayout() {
         options={{
           title: "Agent",
           tabBarIcon: ({ color }) => (
-            <TabIcon iosName="sparkles" androidName="auto_awesome" color={color} />
+            <TabIcon iosName="sparkles" androidName="auto_awesome" color={color} size={28} />
           ),
         }}
       />
@@ -166,7 +161,7 @@ export default function TabLayout() {
         options={{
           title: "Smart Cart",
           tabBarIcon: ({ color }) => (
-            <TabIcon iosName="cart.fill" androidName="shopping_cart" color={color} />
+            <TabIcon iosName="cart.fill" androidName="shopping_cart" color={color} size={28} />
           ),
         }}
       />
