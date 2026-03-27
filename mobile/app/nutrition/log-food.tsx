@@ -427,20 +427,6 @@ export default function LogFoodScreen() {
         /* ═══════════════════ MAIN LOG VIEW ═══════════════════ */
         <View style={{ flex: 1 }}>
 
-          {/* ── Meal type pills ── */}
-          <View style={s.pillRow}>
-            {TAGS.map(tag => (
-              <TouchableOpacity
-                key={tag}
-                onPress={() => setMealTag(tag)}
-                style={[s.pill, mealTag === tag && s.pillActive]}
-                activeOpacity={0.75}
-              >
-                <Text style={[s.pillText, mealTag === tag && s.pillTextActive]}>{tag}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
           {/* ── Two photo buttons ── */}
           <View style={s.photoRow}>
             {/* Take Photo */}
@@ -546,6 +532,22 @@ export default function LogFoodScreen() {
 
               {/* Dish name */}
               <Text style={s.qtyDishName}>{dish?.emoji} {dish?.name}</Text>
+
+              {/* Meal type selector */}
+              <Text style={s.qtyServingHint}>Add to which meal?</Text>
+              <View style={s.pillRow}>
+                {TAGS.map(tag => (
+                  <TouchableOpacity
+                    key={tag}
+                    onPress={() => setMealTag(tag)}
+                    style={[s.pill, mealTag === tag && s.pillActive]}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[s.pillText, mealTag === tag && s.pillTextActive]}>{tag}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
               <Text style={s.qtyServingHint}>How many servings?</Text>
 
               {/* Serving selector */}
