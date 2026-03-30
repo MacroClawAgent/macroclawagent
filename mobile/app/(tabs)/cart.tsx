@@ -385,7 +385,7 @@ export default function CartScreen() {
               <Text style={s.planBannerIcon}>✦</Text>
               <View style={{ flex: 1 }}>
                 <Text style={s.planBannerTitle}>
-                  From Jonno's {sc.cartMeta.planType === 'week' ? 'This Week's' : 'Today's'} Plan
+                  {`From Jonno's ${sc.cartMeta.planType === 'week' ? "This Week's" : "Today's"} Plan`}
                 </Text>
                 <Text style={s.planBannerSub}>
                   {sc.cartMeta.mealCount} meals · {ingredientCount} ingredients
