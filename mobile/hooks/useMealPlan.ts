@@ -1,9 +1,13 @@
 import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import Toast from 'react-native-toast-message';
 import type { DayPlan, Meal, MealType, AgentScreenState } from '@/types/mealPlan';
 import type { UserPreferences } from '@/types/preferences';
 import type { PantryItem } from '@/services/pantryService';
 import { generateMealPlan, generateSingleMeal } from '@/services/mealGenerationService';
+import { consolidateIngredients } from '@/services/ingredientConsolidationService';
+import { loadPantryItems } from '@/services/pantryService';
 
 const PLAN_STORAGE_KEY = 'jonno_meal_plan';
 
@@ -16,6 +20,7 @@ interface NutritionTargets {
 }
 
 export const useMealPlan = () => {
+  const router = useRouter();
   const [state, setState]                     = useState<AgentScreenState>('idle');
   const [planType, setPlanType]               = useState<'today' | 'week' | 'single'>('today');
   const [days, setDays]                       = useState<DayPlan[]>([]);
@@ -90,9 +95,37 @@ export const useMealPlan = () => {
     return [...new Set(days.flatMap(d => d.allIngredients))];
   }, [days]);
 
-  const sendToCart = useCallback(() => {
+  const getAllIngredientsCount = useCallback((): number => {
+    return [...new Set(days.flatMap(d => d.allIngredients))].length;
+  }, [days]);
+
+  const sendToCart = useCallback(async () => {
+    try {
+      const pantryItems = await loadPantryItems();
+      const consolidated = consolidateIngredients(days, pantryItems);
+      const payload = {
+        ingredients: consolidated,
+        planType,
+        mealCount: days.reduce(
+          (n, d) => n + Object.values(d.meals).filter(Boolean).length,
+          0,
+        ),
+        generatedAt: new Date().toISOString(),
+      };
+      await AsyncStorage.setItem('jonno_agent_cart', JSON.stringify(payload));
+      const toBuy = consolidated.filter(i => !i.isInPantry).length;
+      Toast.show({
+        type: 'success',
+        text1: 'Building your cart... 🛒',
+        text2: `${toBuy} ingredient${toBuy !== 1 ? 's' : ''} added`,
+        visibilityTime: 2000,
+      });
+    } catch {
+      // If consolidation fails, still navigate — cart will fallback to existing logic
+    }
     setState('cart_sent');
-  }, []);
+    router.push('/(tabs)/cart' as never);
+  }, [days, planType, router]);
 
   const resetPlan = useCallback(() => {
     setState('idle');
@@ -113,6 +146,7 @@ export const useMealPlan = () => {
     regenerate,
     markMealLogged,
     getAllIngredients,
+    getAllIngredientsCount,
     sendToCart,
     resetPlan,
     setSelectedDayIndex,

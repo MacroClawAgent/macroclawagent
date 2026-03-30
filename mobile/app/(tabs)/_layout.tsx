@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Tabs, useRouter } from "expo-router";
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/context/ThemeContext";
 
 function TabIcon({
@@ -56,6 +57,27 @@ function LogFABButton() {
   );
 }
 
+const badgeStyles = StyleSheet.create({
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -6,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#F5C842',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  badgeText: {
+    color: '#1C1612',
+    fontSize: 10,
+    fontWeight: '800',
+    lineHeight: 12,
+  },
+});
+
 const fabStyles = StyleSheet.create({
   wrap: {
     flex: 1,
@@ -86,11 +108,34 @@ const fabStyles = StyleSheet.create({
   },
 });
 
+function useCartBadgeCount() {
+  const [count, setCount] = useState(0);
+
+  const refresh = useCallback(() => {
+    AsyncStorage.getItem('jonno_agent_cart')
+      .then(raw => {
+        if (!raw) { setCount(0); return; }
+        const data = JSON.parse(raw);
+        const n = (data.ingredients || []).filter(
+          (i: { isInPantry?: boolean; isChecked?: boolean }) => !i.isInPantry && !i.isChecked
+        ).length;
+        setCount(n);
+      })
+      .catch(() => setCount(0));
+  }, []);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  return { count, refresh };
+}
+
 export default function TabLayout() {
   const { isDark } = useTheme();
+  const cartBadge = useCartBadgeCount();
 
   return (
     <Tabs
+      screenListeners={{ focus: () => cartBadge.refresh() }}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: isDark ? '#F5C842' : '#35C7B8',
@@ -161,7 +206,16 @@ export default function TabLayout() {
         options={{
           title: "Smart Cart",
           tabBarIcon: ({ color }) => (
-            <TabIcon iosName="cart.fill" androidName="shopping_cart" color={color} size={28} />
+            <View>
+              <TabIcon iosName="cart.fill" androidName="shopping_cart" color={color} size={28} />
+              {cartBadge.count > 0 && (
+                <View style={badgeStyles.badge}>
+                  <Text style={badgeStyles.badgeText}>
+                    {cartBadge.count > 9 ? '9+' : cartBadge.count}
+                  </Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />

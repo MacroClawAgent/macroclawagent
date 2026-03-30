@@ -58,6 +58,7 @@ export default function AgentScreen() {
     regenerate,
     markMealLogged,
     getAllIngredients,
+    getAllIngredientsCount,
     sendToCart,
     resetPlan,
     setSelectedDayIndex,
@@ -100,8 +101,8 @@ export default function AgentScreen() {
     });
   }, [preferences, generate, targetsWithConsumed, mealCtx.mealType, pantryItems]);
 
-  const handleSendToCart = useCallback(() => {
-    sendToCart();
+  const handleSendToCart = useCallback(async () => {
+    await sendToCart();
   }, [sendToCart]);
 
   const handleOpenRecipe = useCallback((meal: Meal) => {
@@ -150,7 +151,7 @@ export default function AgentScreen() {
   // ── PLAN READY — full day / week ─────────────────────────────────────────────
 
   if (state === 'plan_ready' && selectedDay) {
-    const ingredientCount = getAllIngredients().length;
+    const ingredientCount = getAllIngredientsCount();
 
     return (
       <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={['top']}>
@@ -256,9 +257,13 @@ export default function AgentScreen() {
                 <Text style={{ fontSize: 26 }}>🛒</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.cartBtnTitle}>Send to Smart Cart</Text>
+                <Text style={s.cartBtnTitle}>
+                  {planType === 'week'
+                    ? `Send Week's Groceries — ${ingredientCount} ingredients`
+                    : `Send to Smart Cart — ${ingredientCount} ingredients`}
+                </Text>
                 <Text style={s.cartBtnSub}>
-                  {ingredientCount} ingredients · Woolworths or Coles
+                  Woolworths or Coles
                 </Text>
               </View>
               <View style={s.cartArrow}>

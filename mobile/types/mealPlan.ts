@@ -50,3 +50,34 @@ export interface MealPlan {
 }
 
 export type AgentScreenState = 'idle' | 'generating' | 'plan_ready' | 'cart_sent';
+
+export type IngredientCategory =
+  | 'produce'
+  | 'protein'
+  | 'dairy'
+  | 'pantry'
+  | 'bakery'
+  | 'frozen'
+  | 'other';
+
+export interface ConsolidatedIngredient {
+  id: string;
+  name: string;
+  totalQuantity: number;
+  unit: string;
+  displayQuantity: string;
+  category: IngredientCategory;
+  usedIn: string[];
+  isInPantry: boolean;
+  estimatedPrice?: number;
+  supermarketProduct?: string;
+  store: 'woolworths' | 'coles';
+  isChecked: boolean;
+}
+
+export interface AgentCartPayload {
+  ingredients: ConsolidatedIngredient[];
+  planType: 'today' | 'week' | 'single';
+  mealCount: number;
+  generatedAt: string;
+}

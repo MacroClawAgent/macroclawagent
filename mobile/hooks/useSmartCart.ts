@@ -17,10 +17,27 @@ import type {
   NearbyStore,
   StoreType,
   SupermarketProduct,
+  CartMeta,
 } from '../types/smartCart';
+import type { ConsolidatedIngredient, IngredientCategory as ConsolidatedCategory } from '../types/mealPlan';
 
 const STORAGE_KEY = 'jonno_smart_cart';
+const AGENT_CART_KEY = 'jonno_agent_cart';
 const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+// Map consolidation categories → SmartCart categories
+function mapCategory(c: ConsolidatedCategory): SmartCartIngredient['category'] {
+  const map: Record<ConsolidatedCategory, SmartCartIngredient['category']> = {
+    produce:  'vegetables',
+    protein:  'protein',
+    dairy:    'dairy',
+    pantry:   'carbs',
+    bakery:   'carbs',
+    frozen:   'other',
+    other:    'other',
+  };
+  return map[c] ?? 'other';
+}
 const BATCH_SIZE = 3;
 const BATCH_DELAY_MS = 350;
 
@@ -41,6 +58,8 @@ function persistCart(cart: SmartCart): void {
 export function useSmartCart() {
   const { userProfile } = useAuth();
   const [cart, setCart] = useState<SmartCart | null>(null);
+  const [cartMeta, setCartMeta] = useState<CartMeta | null>(null);
+  const [pantryItems, setPantryItems] = useState<ConsolidatedIngredient[]>([]);
   const [initializing, setInitializing] = useState(false);
   const [productsLoading, setProductsLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -167,6 +186,68 @@ export function useSmartCart() {
     abortRef.current = true; // stop any in-flight product loading
     await AsyncStorage.removeItem(STORAGE_KEY).catch(() => {});
 
+    // ── Check for agent-generated cart first ──────────────────────────────
+    try {
+      const agentRaw = await AsyncStorage.getItem(AGENT_CART_KEY);
+      if (agentRaw) {
+        const agentCart = JSON.parse(agentRaw) as {
+          ingredients: ConsolidatedIngredient[];
+          planType: 'today' | 'week' | 'single';
+          mealCount: number;
+          generatedAt: string;
+        };
+        const toBuy = agentCart.ingredients.filter(i => !i.isInPantry);
+        const inPantry = agentCart.ingredients.filter(i => i.isInPantry);
+
+        const mapped: SmartCartIngredient[] = toBuy.map(ci => ({
+          id: ci.id,
+          name: ci.name,
+          quantity: ci.totalQuantity,
+          unit: ci.unit,
+          category: mapCategory(ci.category),
+          isChecked: false,
+          woolworthsProducts: [],
+          colesProducts: [],
+          selectedProductId: null,
+          isLoadingProducts: true,
+          usedIn: ci.usedIn,
+          estimatedPrice: ci.estimatedPrice,
+          supermarketProduct: ci.supermarketProduct,
+          displayQuantity: ci.displayQuantity,
+        }));
+
+        const newCart: SmartCart = {
+          id: makeId(),
+          createdAt: new Date().toISOString(),
+          ingredients: mapped,
+          selectedStore: null,
+          selectedNearbyStore: null,
+          nearbyStores: [],
+          estimatedTotal: 0,
+          lastUpdated: new Date().toISOString(),
+        };
+
+        setCart(newCart);
+        persistCart(newCart);
+        setCartMeta({
+          source: 'agent',
+          planType: agentCart.planType,
+          mealCount: agentCart.mealCount,
+          pantrySkipped: inPantry.length,
+          generatedAt: agentCart.generatedAt,
+        });
+        setPantryItems(inPantry);
+        setInitializing(false);
+
+        loadNearbyStores(newCart.id);
+        loadProductsForIngredients(mapped, newCart.id);
+        return;
+      }
+    } catch {
+      // fall through to existing logic
+    }
+
+    // ── Fallback: API / macro defaults ────────────────────────────────────
     let ingredients: SmartCartIngredient[] = [];
 
     try {
@@ -201,12 +282,22 @@ export function useSmartCart() {
 
     setCart(newCart);
     persistCart(newCart);
+    setCartMeta({ source: 'generated', planType: 'today', mealCount: 0, pantrySkipped: 0, generatedAt: new Date().toISOString() });
     setInitializing(false);
 
     // Load location and products in parallel
     loadNearbyStores(newCart.id);
     loadProductsForIngredients(ingredients, newCart.id);
   }, [userProfile, loadNearbyStores, loadProductsForIngredients]);
+
+  // ── Refresh from agent plan ───────────────────────────────────────────────
+
+  const refreshFromPlan = useCallback(async () => {
+    await AsyncStorage.removeItem(STORAGE_KEY).catch(() => {});
+    setCartMeta(null);
+    setPantryItems([]);
+    initializeCart();
+  }, [initializeCart]);
 
   // ── Ingredient mutations ──────────────────────────────────────────────────
 
@@ -375,6 +466,8 @@ export function useSmartCart() {
 
   return {
     cart,
+    cartMeta,
+    pantryItems,
     initializing,
     productsLoading,
     locationLoading,
@@ -383,6 +476,7 @@ export function useSmartCart() {
     networkError,
     suburb,
     initializeCart,
+    refreshFromPlan,
     toggleIngredient,
     toggleAll,
     removeIngredient,

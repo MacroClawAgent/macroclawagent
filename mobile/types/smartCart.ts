@@ -31,6 +31,19 @@ export interface SmartCartIngredient {
   colesProducts: SupermarketProduct[];
   selectedProductId: string | null;
   isLoadingProducts: boolean;
+  // Optional fields populated when ingredient comes from Agent meal plan
+  usedIn?: string[];
+  estimatedPrice?: number;
+  supermarketProduct?: string;
+  displayQuantity?: string;
+}
+
+export interface CartMeta {
+  source: 'agent' | 'generated';
+  planType: 'today' | 'week' | 'single';
+  mealCount: number;
+  pantrySkipped: number;
+  generatedAt: string;
 }
 
 export interface NearbyStore {
