@@ -216,7 +216,7 @@ export function Hero() {
             {/* H1 */}
             <motion.h1
               variants={itemVariants}
-              className="text-5xl md:text-6xl lg:text-[68px] font-bebas tracking-wide leading-[0.95]"
+              className="text-5xl md:text-6xl lg:text-[68px] font-black tracking-tight leading-[0.92]"
               style={{ color: "#E8E0D0" }}
             >
               AI nutrition

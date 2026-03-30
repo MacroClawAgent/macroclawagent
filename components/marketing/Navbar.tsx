@@ -45,7 +45,7 @@ export function Navbar() {
             className="object-contain"
             priority
           />
-          <span className="font-bebas text-2xl tracking-widest transition-colors duration-300" style={{ color: "#E8E0D0" }}>
+          <span className="font-bold text-lg tracking-tight transition-colors duration-300" style={{ color: "#E8E0D0" }}>
             Jonno
           </span>
         </Link>

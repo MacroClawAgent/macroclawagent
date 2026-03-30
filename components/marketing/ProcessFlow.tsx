@@ -253,7 +253,7 @@ export function ProcessFlow() {
           <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#F5C842" }}>
             How It Works
           </p>
-          <h2 className="text-4xl md:text-5xl font-bebas tracking-wide" style={{ color: "#E8E0D0" }}>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight" style={{ color: "#E8E0D0" }}>
             Hit your goals in{" "}
             <span style={{ color: "#F5C842" }}>3 steps.</span>
           </h2>
@@ -280,7 +280,7 @@ export function ProcessFlow() {
                 </span>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(232,224,208,0.40)" }}>{step.subtitle}</p>
-                  <h3 className="text-3xl md:text-4xl font-bebas tracking-wide leading-tight" style={{ color: "#E8E0D0" }}>{step.title}</h3>
+                  <h3 className="text-3xl md:text-4xl font-black leading-tight" style={{ color: "#E8E0D0" }}>{step.title}</h3>
                 </div>
                 <p className="leading-relaxed text-base max-w-md" style={{ color: "rgba(232,224,208,0.55)" }}>{step.description}</p>
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full w-fit" style={step.labelStyle}>

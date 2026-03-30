@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Geist_Mono, Bebas_Neue } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -11,13 +11,6 @@ const inter = Inter({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const bebasNeue = Bebas_Neue({
-  variable: "--font-bebas",
-  weight: "400",
   subsets: ["latin"],
   display: "swap",
 });
@@ -50,7 +43,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${inter.variable} ${geistMono.variable} ${bebasNeue.variable} font-sans min-h-screen bg-white text-gray-900 antialiased`}
+        className={`${inter.variable} ${geistMono.variable} font-sans min-h-screen bg-white text-gray-900 antialiased`}
       >
         {children}
         <Analytics />

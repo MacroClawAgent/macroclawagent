@@ -74,7 +74,7 @@ export function TrustSignals() {
           <p className="text-sm font-medium uppercase tracking-widest mb-3" style={{ color: "#F5C842" }}>
             Works With
           </p>
-          <h2 className="text-3xl md:text-4xl font-bebas tracking-wide" style={{ color: "#E8E0D0" }}>
+          <h2 className="text-3xl md:text-4xl font-black" style={{ color: "#E8E0D0" }}>
             Your Favorite Apps
           </h2>
         </motion.div>
@@ -135,7 +135,7 @@ export function TrustSignals() {
           <div className="p-12 rounded-[24px] max-w-2xl mx-auto relative overflow-hidden" style={{ background: "linear-gradient(135deg, #E07B54 0%, #3D2218 100%)", boxShadow: "0 12px 40px rgba(224,123,84,0.25)", border: "1px solid rgba(224,123,84,0.25)" }}>
             {/* Decorative blob */}
             <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(245,200,66,0.15) 0%, transparent 70%)" }} />
-            <h3 className="text-3xl font-bebas tracking-wide mb-4 relative z-10" style={{ color: "#F5C842" }}>
+            <h3 className="text-3xl font-black mb-4 relative z-10" style={{ color: "#F5C842" }}>
               Fuel smarter with Jonno.
             </h3>
             <p className="mb-8 relative z-10" style={{ color: "rgba(232,224,208,0.75)" }}>
