@@ -30,9 +30,9 @@ export function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         atTop
           ? "bg-transparent border-b border-transparent"
-          : "backdrop-blur-md border-b border-[#E5E7EB] shadow-sm"
+          : "backdrop-blur-md border-b shadow-sm"
       }`}
-      style={!atTop ? { backgroundColor: "rgba(255,255,255,0.94)" } : undefined}
+      style={!atTop ? { backgroundColor: "rgba(28,20,16,0.95)", borderColor: "rgba(255,220,150,0.12)" } : undefined}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo — always visible */}
@@ -45,7 +45,7 @@ export function Navbar() {
             className="object-contain"
             priority
           />
-          <span className="font-bold text-lg tracking-tight text-[#1C1C1E] transition-colors duration-300 group-hover:text-[#20C7B7]">
+          <span className="font-bold text-lg tracking-tight transition-colors duration-300" style={{ color: "#E8E0D0" }}>
             Jonno
           </span>
         </Link>
@@ -56,7 +56,8 @@ export function Navbar() {
             <Link
               key={item.label}
               href={item.href}
-              className="text-sm font-medium text-[#6B7280] hover:text-[#1C1C1E] transition-colors duration-200"
+              className="text-sm font-medium transition-colors duration-200"
+              style={{ color: "rgba(232,224,208,0.60)" }}
             >
               {item.label}
             </Link>
@@ -67,8 +68,8 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/join"
-            className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full text-white text-sm font-bold transition-all duration-200 hover:opacity-90"
-            style={{ backgroundColor: "#4C7DFF", boxShadow: "0 2px 10px rgba(76,125,255,0.28)" }}
+            className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-200 hover:opacity-90"
+            style={{ backgroundColor: "#F5C842", color: "#1C1410", boxShadow: "0 2px 10px rgba(245,200,66,0.25)" }}
           >
             Join Waitlist
           </Link>
@@ -78,22 +79,23 @@ export function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            <span className={`block h-0.5 w-5 transition-all duration-200 bg-[#6B7280] ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} />
-            <span className={`block h-0.5 w-5 transition-all duration-200 bg-[#6B7280] ${mobileOpen ? "opacity-0" : ""}`} />
-            <span className={`block h-0.5 w-5 transition-all duration-200 bg-[#6B7280] ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} style={{ backgroundColor: "rgba(232,224,208,0.65)" }} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 ${mobileOpen ? "opacity-0" : ""}`} style={{ backgroundColor: "rgba(232,224,208,0.65)" }} />
+            <span className={`block h-0.5 w-5 transition-all duration-200 ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} style={{ backgroundColor: "rgba(232,224,208,0.65)" }} />
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-[#E5E7EB] px-6 py-4 flex flex-col gap-1 shadow-lg" style={{ backgroundColor: "#FFFFFF" }}>
+        <div className="md:hidden px-6 py-4 flex flex-col gap-1 shadow-lg" style={{ backgroundColor: "#1C1410", borderTop: "1px solid rgba(255,220,150,0.12)" }}>
           {navLinks.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className="py-3 px-2 text-sm font-medium text-[#6B7280] hover:text-[#1C1C1E] border-b border-[#E5E7EB] last:border-0 transition-colors"
+              className="py-3 px-2 text-sm font-medium transition-colors"
+              style={{ color: "rgba(232,224,208,0.65)", borderBottom: "1px solid rgba(255,220,150,0.08)" }}
             >
               {item.label}
             </Link>
@@ -102,8 +104,8 @@ export function Navbar() {
             <Link
               href="/join"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center w-full px-5 py-3 rounded-full text-white text-sm font-bold transition-all"
-              style={{ backgroundColor: "#4C7DFF" }}
+              className="flex items-center justify-center w-full px-5 py-3 rounded-full text-sm font-bold transition-all"
+              style={{ backgroundColor: "#F5C842", color: "#1C1410" }}
             >
               Join Waitlist
             </Link>

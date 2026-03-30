@@ -27,7 +27,7 @@ function Ring({
       <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth={strokeWidth}
+          fill="none" stroke="rgba(255,220,150,0.10)" strokeWidth={strokeWidth}
         />
         <circle
           cx={size / 2} cy={size / 2} r={r}
@@ -37,8 +37,8 @@ function Ring({
           strokeDashoffset={circ * (1 - pct)}
         />
       </svg>
-      <span className="text-[10px] text-gray-400">{label}</span>
-      <span className="text-[11px] font-bold text-gray-700">{value}</span>
+      <span className="text-[10px]" style={{ color: "rgba(232,224,208,0.40)" }}>{label}</span>
+      <span className="text-[11px] font-bold" style={{ color: "#E8E0D0" }}>{value}</span>
     </div>
   );
 }
@@ -46,35 +46,35 @@ function Ring({
 /* ── Card A: Dashboard ── */
 function DashboardCard() {
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-5 p-6 rounded-[20px]" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+    <div className="flex flex-col h-full overflow-hidden gap-5 p-6 rounded-[20px]" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.12)", boxShadow: "0 4px 20px rgba(0,0,0,0.25)" }}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[11px] uppercase tracking-widest font-semibold mb-0.5" style={{ color: "#6B7280" }}>Dashboard</p>
-          <h3 className="text-base font-bold" style={{ color: "#1C1C1E" }}>Today&apos;s Performance</h3>
+          <p className="text-[11px] uppercase tracking-widest font-semibold mb-0.5" style={{ color: "rgba(232,224,208,0.40)" }}>Dashboard</p>
+          <h3 className="text-base font-bold" style={{ color: "#E8E0D0" }}>Today&apos;s Performance</h3>
         </div>
-        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ backgroundColor: "#4C7DFF" }}>
+        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: "#E07B54", color: "#1C1410" }}>
           A
         </div>
       </div>
 
       {/* Activity rings */}
       <div className="flex items-center justify-around flex-1 py-2">
-        <Ring pct={0.76} strokeColor="#20C7B7" size={72} strokeWidth={7} label="Calories" value="2140" />
-        <Ring pct={0.79} strokeColor="#4C7DFF" size={72} strokeWidth={7} label="Protein" value="142g" />
-        <Ring pct={0.64} strokeColor="#22C55E" size={72} strokeWidth={7} label="Carbs" value="220g" />
+        <Ring pct={0.76} strokeColor="#F5C842" size={72} strokeWidth={7} label="Calories" value="2140" />
+        <Ring pct={0.79} strokeColor="#E07B54" size={72} strokeWidth={7} label="Protein" value="142g" />
+        <Ring pct={0.64} strokeColor="#8B9E6E" size={72} strokeWidth={7} label="Carbs" value="220g" />
       </div>
 
       {/* Stat pills */}
       <div className="flex flex-wrap gap-2">
         {[
-          { label: "647 kcal burned", color: "#20C7B7" },
-          { label: "8.2km", color: "#6B7280" },
-          { label: "74 BPM avg", color: "#4C7DFF" },
+          { label: "647 kcal burned", color: "#F5C842" },
+          { label: "8.2km", color: "rgba(232,224,208,0.55)" },
+          { label: "74 BPM avg", color: "#E07B54" },
         ].map((s) => (
           <span
             key={s.label}
             className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
-            style={{ color: s.color, backgroundColor: "#F4F5F7", border: "1px solid #E5E7EB" }}
+            style={{ color: s.color, backgroundColor: "rgba(255,220,150,0.06)", border: "1px solid rgba(255,220,150,0.12)" }}
           >
             {s.label}
           </span>
@@ -87,15 +87,15 @@ function DashboardCard() {
 /* ── Card B: Jonno Agent chat ── */
 function AgentCard() {
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 rounded-[20px]" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 rounded-[20px]" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.12)", boxShadow: "0 4px 16px rgba(0,0,0,0.20)" }}>
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#20C7B7" }}>
-          <Bot className="w-3.5 h-3.5 text-white" />
+        <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#F5C842" }}>
+          <Bot className="w-3.5 h-3.5" style={{ color: "#1C1410" }} />
         </div>
         <div>
-          <p className="text-[11px] font-bold" style={{ color: "#1C1C1E" }}>Jonno Agent</p>
-          <p className="text-[10px] flex items-center gap-1" style={{ color: "#20C7B7" }}>
-            <span className="w-1 h-1 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#20C7B7" }} />
+          <p className="text-[11px] font-bold" style={{ color: "#E8E0D0" }}>Jonno Agent</p>
+          <p className="text-[10px] flex items-center gap-1" style={{ color: "#8B9E6E" }}>
+            <span className="w-1 h-1 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#8B9E6E" }} />
             Online
           </p>
         </div>
@@ -105,13 +105,13 @@ function AgentCard() {
       <div className="flex flex-col gap-2 flex-1 overflow-hidden">
         {/* User */}
         <div className="flex justify-end">
-          <div className="rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] max-w-[85%]" style={{ backgroundColor: "#F4F5F7", border: "1px solid #E5E7EB", color: "#1C1C1E" }}>
+          <div className="rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] max-w-[85%]" style={{ backgroundColor: "rgba(255,220,150,0.06)", border: "1px solid rgba(255,220,150,0.12)", color: "#E8E0D0" }}>
             What should I eat before my long run?
           </div>
         </div>
         {/* Agent */}
         <div className="flex justify-start">
-          <div className="rounded-2xl rounded-tl-sm px-3 py-2 text-[11px] text-white leading-snug max-w-[90%]" style={{ backgroundColor: "#20C7B7" }}>
+          <div className="rounded-2xl rounded-tl-sm px-3 py-2 text-[11px] leading-snug max-w-[90%]" style={{ backgroundColor: "#F5C842", color: "#1C1410", fontWeight: 600 }}>
             Based on your 15km plan, aim for 80g carbs 3hrs before. Oat porridge + banana fits perfectly.
           </div>
         </div>
@@ -128,11 +128,11 @@ function CartCard() {
     { name: "Quinoa Power Bowl", macros: "22P · 68C · 12F", price: "$15.20" },
   ];
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 rounded-[20px]" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 rounded-[20px]" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.12)", boxShadow: "0 4px 16px rgba(0,0,0,0.20)" }}>
       <div className="flex items-center gap-2">
-        <ShoppingBag className="w-4 h-4" style={{ color: "#22C55E" }} />
-        <p className="text-sm font-bold" style={{ color: "#1C1C1E" }}>Smart Cart</p>
-        <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ color: "#22C55E", backgroundColor: "rgba(34,197,94,0.10)", border: "1px solid rgba(34,197,94,0.25)" }}>
+        <ShoppingBag className="w-4 h-4" style={{ color: "#8B9E6E" }} />
+        <p className="text-sm font-bold" style={{ color: "#E8E0D0" }}>Smart Cart</p>
+        <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ color: "#8B9E6E", backgroundColor: "rgba(139,158,110,0.12)", border: "1px solid rgba(139,158,110,0.25)" }}>
           Macro-matched
         </span>
       </div>
@@ -142,18 +142,18 @@ function CartCard() {
           <div
             key={m.name}
             className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl"
-            style={{ backgroundColor: "#F4F5F7", border: "1px solid #E5E7EB" }}
+            style={{ backgroundColor: "rgba(255,220,150,0.04)", border: "1px solid rgba(255,220,150,0.10)" }}
           >
             <div>
-              <p className="text-[11px] font-semibold" style={{ color: "#1C1C1E" }}>{m.name}</p>
-              <p className="text-[10px] font-medium" style={{ color: "#6B7280" }}>{m.macros}</p>
+              <p className="text-[11px] font-semibold" style={{ color: "#E8E0D0" }}>{m.name}</p>
+              <p className="text-[10px] font-medium" style={{ color: "rgba(232,224,208,0.45)" }}>{m.macros}</p>
             </div>
-            <span className="text-[11px] font-bold flex-shrink-0" style={{ color: "#1C1C1E" }}>{m.price}</span>
+            <span className="text-[11px] font-bold flex-shrink-0" style={{ color: "#F5C842" }}>{m.price}</span>
           </div>
         ))}
       </div>
 
-      <button className="w-full py-2 rounded-xl text-white text-[11px] font-bold tracking-wide transition-opacity hover:opacity-90" style={{ backgroundColor: "#22C55E" }}>
+      <button className="w-full py-2 rounded-xl text-[11px] font-bold tracking-wide transition-opacity hover:opacity-90" style={{ backgroundColor: "#8B9E6E", color: "#1C1410" }}>
         Build Cart →
       </button>
     </div>
@@ -163,25 +163,25 @@ function CartCard() {
 /* ── Card D: Strava Sync ── */
 function StravaCard() {
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 rounded-[20px]" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+    <div className="flex flex-col h-full overflow-hidden gap-4 p-5 rounded-[20px]" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.12)", boxShadow: "0 4px 16px rgba(0,0,0,0.20)" }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Image src="/strava.png" alt="Strava" width={16} height={16} className="object-contain" />
-          <p className="text-sm font-bold" style={{ color: "#1C1C1E" }}>Strava Sync</p>
+          <p className="text-sm font-bold" style={{ color: "#E8E0D0" }}>Strava Sync</p>
         </div>
-        <span className="text-[10px] font-semibold" style={{ color: "#22C55E" }}>● Live</span>
+        <span className="text-[10px] font-semibold" style={{ color: "#8B9E6E" }}>● Live</span>
       </div>
       <div>
-        <p className="text-[11px] mb-0.5" style={{ color: "#6B7280" }}>Last activity synced 2 min ago</p>
-        <p className="text-sm font-bold" style={{ color: "#1C1C1E" }}>Morning Ride</p>
-        <p className="text-[11px] mt-0.5" style={{ color: "#6B7280" }}>28.4km · 1h 12m · 924 kcal</p>
+        <p className="text-[11px] mb-0.5" style={{ color: "rgba(232,224,208,0.45)" }}>Last activity synced 2 min ago</p>
+        <p className="text-sm font-bold" style={{ color: "#E8E0D0" }}>Morning Ride</p>
+        <p className="text-[11px] mt-0.5" style={{ color: "rgba(232,224,208,0.45)" }}>28.4km · 1h 12m · 924 kcal</p>
       </div>
       <div className="flex items-end gap-0.5 h-8">
         {[45, 60, 40, 75, 65, 85, 55, 70, 80, 50, 65, 90].map((h, i) => (
           <div
             key={i}
             className="flex-1 rounded-full"
-            style={{ height: `${h}%`, backgroundColor: "#20C7B7" }}
+            style={{ height: `${h}%`, backgroundColor: "#E07B54" }}
           />
         ))}
       </div>
@@ -192,11 +192,11 @@ function StravaCard() {
 /* ── Card E: Macro Target ── */
 function MacroCard() {
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 rounded-[20px] justify-center text-white" style={{ background: "linear-gradient(135deg, #4C7DFF 0%, #3A6FEE 100%)", boxShadow: "0 6px 24px rgba(76,125,255,0.28)" }}>
-      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "rgba(255,255,255,0.65)" }}>Daily Target</p>
+    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 rounded-[20px] justify-center" style={{ background: "linear-gradient(135deg, #E07B54 0%, #3D2218 100%)", boxShadow: "0 6px 24px rgba(224,123,84,0.25)", border: "1px solid rgba(224,123,84,0.30)" }}>
+      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "rgba(255,255,255,0.55)" }}>Daily Target</p>
       <div>
-        <p className="text-4xl font-black text-white leading-none">2,840</p>
-        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.70)" }}>kcal today</p>
+        <p className="text-4xl font-black leading-none" style={{ color: "#F5C842" }}>2,840</p>
+        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.60)" }}>kcal today</p>
       </div>
       <div className="flex gap-3 mt-1">
         {[
@@ -205,8 +205,8 @@ function MacroCard() {
           { macro: "F", val: "95g" },
         ].map((m) => (
           <div key={m.macro} className="flex flex-col">
-            <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.55)" }}>{m.macro}</span>
-            <span className="text-xs font-semibold text-white">{m.val}</span>
+            <span className="text-[10px] font-bold" style={{ color: "rgba(232,224,208,0.45)" }}>{m.macro}</span>
+            <span className="text-xs font-semibold" style={{ color: "#E8E0D0" }}>{m.val}</span>
           </div>
         ))}
       </div>
@@ -218,25 +218,25 @@ function MacroCard() {
 function StreakCard() {
   const days = Array.from({ length: 28 }, (_, i) => i < 14 || (i >= 18 && i < 21));
   return (
-    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 rounded-[20px]" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+    <div className="flex flex-col h-full overflow-hidden gap-3 p-5 rounded-[20px]" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.12)", boxShadow: "0 4px 16px rgba(0,0,0,0.20)" }}>
       <div className="flex items-center gap-2">
-        <Flame className="w-4 h-4" style={{ color: "#20C7B7" }} />
-        <p className="text-sm font-bold" style={{ color: "#1C1C1E" }}>Streak</p>
+        <Flame className="w-4 h-4" style={{ color: "#F5C842" }} />
+        <p className="text-sm font-bold" style={{ color: "#E8E0D0" }}>Streak</p>
       </div>
       <div>
-        <p className="text-3xl font-black leading-none" style={{ color: "#1C1C1E" }}>14</p>
-        <p className="text-[11px] mt-0.5" style={{ color: "#6B7280" }}>consecutive days</p>
+        <p className="text-3xl font-black leading-none" style={{ color: "#F5C842" }}>14</p>
+        <p className="text-[11px] mt-0.5" style={{ color: "rgba(232,224,208,0.45)" }}>consecutive days</p>
       </div>
       <div className="grid grid-cols-7 gap-1">
         {days.map((active, i) => (
           <div
             key={i}
             className="aspect-square rounded-sm"
-            style={{ backgroundColor: active ? "#20C7B7" : "#E5E7EB" }}
+            style={{ backgroundColor: active ? "#F5C842" : "rgba(255,220,150,0.10)" }}
           />
         ))}
       </div>
-      <div className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: "#22C55E" }}>
+      <div className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: "#8B9E6E" }}>
         <Check className="w-3 h-3" />
         All macros hit yesterday
       </div>
@@ -246,7 +246,7 @@ function StreakCard() {
 
 export function BentoShowcase() {
   return (
-    <section className="relative py-16 lg:py-24 xl:py-28 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
+    <section className="relative py-16 lg:py-24 xl:py-28 px-6 overflow-hidden" style={{ backgroundColor: "#0D0A07" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -256,14 +256,14 @@ export function BentoShowcase() {
           transition={{ duration: 0.6 }}
           className="text-center mb-10 lg:mb-16"
         >
-          <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
+          <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#F5C842" }}>
             Product Preview
           </p>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight" style={{ color: "#1C1C1E" }}>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight" style={{ color: "#E8E0D0" }}>
             Everything you need.{" "}
-            <span style={{ color: "#20C7B7" }}>Nothing you don&apos;t.</span>
+            <span style={{ color: "#F5C842" }}>Nothing you don&apos;t.</span>
           </h2>
-          <p className="mt-4 max-w-xl mx-auto" style={{ color: "#6B7280" }}>
+          <p className="mt-4 max-w-xl mx-auto" style={{ color: "rgba(232,224,208,0.55)" }}>
             One platform. Activity intelligence, AI meal planning and smart food delivery. All connected.
           </p>
         </motion.div>

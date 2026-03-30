@@ -41,7 +41,7 @@ const featurePillars = [
 
 export function TrustSignals() {
   return (
-    <section className="relative py-16 lg:py-24 xl:py-32 px-6 overflow-hidden" style={{ backgroundColor: "#F4F5F7" }}>
+    <section className="relative py-16 lg:py-24 xl:py-32 px-6 overflow-hidden" style={{ backgroundColor: "#0D0A07" }}>
 
       <div className="max-w-5xl mx-auto">
         {/* Feature pillars */}
@@ -54,11 +54,11 @@ export function TrustSignals() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.08 }}
               className="text-center p-5 rounded-2xl"
-              style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB" }}
+              style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.10)" }}
             >
               <p className="text-3xl mb-3">{p.icon}</p>
-              <p className="text-sm font-bold mb-1" style={{ color: "#1C1C1E" }}>{p.headline}</p>
-              <p className="text-xs leading-relaxed" style={{ color: "#6B7280" }}>{p.sub}</p>
+              <p className="text-sm font-bold mb-1" style={{ color: "#E8E0D0" }}>{p.headline}</p>
+              <p className="text-xs leading-relaxed" style={{ color: "rgba(232,224,208,0.45)" }}>{p.sub}</p>
             </motion.div>
           ))}
         </div>
@@ -71,10 +71,10 @@ export function TrustSignals() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <p className="text-sm font-medium uppercase tracking-widest mb-3" style={{ color: "#20C7B7" }}>
+          <p className="text-sm font-medium uppercase tracking-widest mb-3" style={{ color: "#F5C842" }}>
             Works With
           </p>
-          <h2 className="text-3xl md:text-4xl font-black" style={{ color: "#1C1C1E" }}>
+          <h2 className="text-3xl md:text-4xl font-black" style={{ color: "#E8E0D0" }}>
             Your Favorite Apps
           </h2>
         </motion.div>
@@ -93,13 +93,13 @@ export function TrustSignals() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-              className={`flex items-center gap-4 px-6 py-4 rounded-2xl min-w-[200px]`} style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+              className="flex items-center gap-4 px-6 py-4 rounded-2xl min-w-[200px]" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.10)", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
             >
-              <div className={`${app.color} flex-shrink-0`}>{app.icon}</div>
+              <div className="flex-shrink-0" style={{ color: "rgba(232,224,208,0.65)" }}>{app.icon}</div>
               <div className="flex flex-col">
-                <span className="font-semibold text-sm" style={{ color: "#1C1C1E" }}>{app.name}</span>
-                <span className="flex items-center gap-1.5 text-xs mt-0.5" style={{ color: "#6B7280" }}>
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#22C55E" }} />
+                <span className="font-semibold text-sm" style={{ color: "#E8E0D0" }}>{app.name}</span>
+                <span className="flex items-center gap-1.5 text-xs mt-0.5" style={{ color: "rgba(232,224,208,0.45)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#8B9E6E" }} />
                   {app.status}
                 </span>
               </div>
@@ -112,14 +112,14 @@ export function TrustSignals() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="flex items-center gap-4 px-6 py-4 rounded-2xl min-w-[200px]" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+            className="flex items-center gap-4 px-6 py-4 rounded-2xl min-w-[200px]" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.10)", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#F4F5F7" }}>
-              <Plus className="w-5 h-5" style={{ color: "#D1D5DB" }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(255,220,150,0.06)" }}>
+              <Plus className="w-5 h-5" style={{ color: "rgba(232,224,208,0.25)" }} />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-sm" style={{ color: "#6B7280" }}>More Soon</span>
-              <span className="text-xs mt-0.5" style={{ color: "#9CA3AF" }}>Whoop, Garmin, Oura</span>
+              <span className="font-semibold text-sm" style={{ color: "rgba(232,224,208,0.50)" }}>More Soon</span>
+              <span className="text-xs mt-0.5" style={{ color: "rgba(232,224,208,0.30)" }}>Whoop, Garmin, Oura</span>
             </div>
           </motion.div>
         </motion.div>
@@ -132,19 +132,19 @@ export function TrustSignals() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-center mt-16"
         >
-          <div className="p-12 rounded-[24px] max-w-2xl mx-auto relative overflow-hidden" style={{ background: "linear-gradient(135deg, #4C7DFF 0%, #3A6FEE 100%)", boxShadow: "0 12px 40px rgba(76,125,255,0.28)" }}>
+          <div className="p-12 rounded-[24px] max-w-2xl mx-auto relative overflow-hidden" style={{ background: "linear-gradient(135deg, #E07B54 0%, #3D2218 100%)", boxShadow: "0 12px 40px rgba(224,123,84,0.25)", border: "1px solid rgba(224,123,84,0.25)" }}>
             {/* Decorative blob */}
-            <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(255,255,255,0.12) 0%, transparent 70%)" }} />
-            <h3 className="text-3xl font-black text-white mb-4 relative z-10">
+            <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(245,200,66,0.15) 0%, transparent 70%)" }} />
+            <h3 className="text-3xl font-black mb-4 relative z-10" style={{ color: "#F5C842" }}>
               Fuel smarter with Jonno.
             </h3>
-            <p className="mb-8 relative z-10" style={{ color: "rgba(255,255,255,0.80)" }}>
+            <p className="mb-8 relative z-10" style={{ color: "rgba(232,224,208,0.75)" }}>
               Stop guessing your macros. Get early access to adaptive nutrition built for serious athletes.
             </p>
             <Link
               href="/join"
-              className="inline-block font-bold px-8 py-3.5 rounded-full text-sm transition-colors relative z-10"
-              style={{ backgroundColor: "#FFFFFF", color: "#4C7DFF" }}
+              className="inline-block font-bold px-8 py-3.5 rounded-full text-sm transition-colors relative z-10 hover:opacity-90"
+              style={{ backgroundColor: "#F5C842", color: "#1C1410" }}
             >
               Join the Waitlist
             </Link>
