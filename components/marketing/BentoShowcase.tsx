@@ -259,7 +259,7 @@ export function BentoShowcase() {
           <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#F5C842" }}>
             Product Preview
           </p>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight" style={{ color: "#E8E0D0" }}>
+          <h2 className="text-4xl md:text-5xl font-bebas tracking-wide" style={{ color: "#E8E0D0" }}>
             Everything you need.{" "}
             <span style={{ color: "#F5C842" }}>Nothing you don&apos;t.</span>
           </h2>

@@ -72,6 +72,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
+        bebas: ["var(--font-bebas)", "sans-serif"],
       },
       keyframes: {
         shimmer: {
