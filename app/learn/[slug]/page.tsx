@@ -36,14 +36,14 @@ const posts: Record<string, LearnPost> = {
   "fueling-strava-rides": {
     slug: "fueling-strava-rides",
     tag: "Performance",
-    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
-    tagBorder: "border-[rgba(32,199,183,0.20)]",
+    tagColor: "text-[#F5C842] bg-[rgba(245,200,66,0.10)]",
+    tagBorder: "border-[rgba(245,200,66,0.20)]",
     title: "How to Fuel Your Strava Rides with Precision Macros",
     excerpt: "Stop guessing your carb intake on ride day. Here's how to sync your training load with your nutrition targets automatically.",
     date: "Feb 18, 2026",
     readTime: "6 min read",
     emoji: "🚴",
-    gradient: "from-[rgba(32,199,183,0.40)] to-[#0F111A]",
+    gradient: "from-[rgba(245,200,66,0.40)] to-[#0D0A07]",
     coverImage: "/cyclists.png",
     toc: [
       "Why your calorie target needs to move with your rides",
@@ -57,7 +57,7 @@ const posts: Record<string, LearnPost> = {
       name: "Marco R.",
       role: "Co-founder & CEO",
       initials: "MR",
-      gradient: "from-[#20C7B7] to-[#4C7DFF]",
+      gradient: "from-[#F5C842] to-[#E07B54]",
       bio: "Cyclist and ex-consultant. Built Jonno after years of training hard and eating wrong.",
     },
     relatedSlugs: ["ai-nutrition-coaching", "zone-2-fat-adaptation"],
@@ -103,8 +103,8 @@ const posts: Record<string, LearnPost> = {
   "ai-nutrition-coaching": {
     slug: "ai-nutrition-coaching",
     tag: "AI + Nutrition",
-    tagColor: "text-blue-600 bg-blue-50",
-    tagBorder: "border-blue-200",
+    tagColor: "text-[#F5C842] bg-[rgba(245,200,66,0.10)]",
+    tagBorder: "border-[rgba(245,200,66,0.25)]",
     title: "Why AI Nutrition Coaching is Changing Athletic Performance",
     excerpt: "Human coaches are expensive and unavailable at 11pm when you're logging your third meal. Here's why AI is closing that gap.",
     date: "Feb 10, 2026",
@@ -123,7 +123,7 @@ const posts: Record<string, LearnPost> = {
       name: "Lena W.",
       role: "Co-founder & CTO",
       initials: "LW",
-      gradient: "from-indigo-500 to-violet-600",
+      gradient: "from-[#F5C842] to-[#E07B54]",
       bio: "Marathon runner and engineer. Built Jonno to make intelligent nutrition guidance available at 11pm, not just in scheduled appointments.",
     },
     relatedSlugs: ["fueling-strava-rides", "protein-targets-athletes"],
@@ -244,14 +244,14 @@ const posts: Record<string, LearnPost> = {
   "protein-targets-athletes": {
     slug: "protein-targets-athletes",
     tag: "Science",
-    tagColor: "text-emerald-400 bg-emerald-500/10",
-    tagBorder: "border-emerald-500/20",
+    tagColor: "text-[#8B9E6E] bg-[rgba(139,158,110,0.10)]",
+    tagBorder: "border-[rgba(139,158,110,0.20)]",
     title: "The Science Behind Protein Targets for Endurance Athletes",
     excerpt: "0.8g/kg? 1.6g/kg? 2.2g/kg? The research on protein needs for endurance athletes is clearer than you think, and the number is probably higher than your app suggests.",
     date: "Jan 28, 2026",
     readTime: "10 min read",
     emoji: "🥩",
-    gradient: "from-emerald-900/40 to-[#0F111A]",
+    gradient: "from-[rgba(139,158,110,0.40)] to-[#0D0A07]",
     coverImage: "/nutrition.png",
     toc: [
       "The outdated RDA and why it's not a target",
@@ -265,7 +265,7 @@ const posts: Record<string, LearnPost> = {
       name: "Yuki T.",
       role: "Head of AI",
       initials: "YT",
-      gradient: "from-emerald-500 to-teal-600",
+      gradient: "from-[#8B9E6E] to-[#F5C842]",
       bio: "Triathlete and ex-Anthropic engineer. Digs deep into sports nutrition literature so athletes don't have to.",
     },
     relatedSlugs: ["fueling-strava-rides", "ai-nutrition-coaching"],
@@ -389,15 +389,15 @@ const posts: Record<string, LearnPost> = {
   "calories-burned-running": {
     slug: "calories-burned-running",
     tag: "Performance",
-    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
-    tagBorder: "border-[rgba(32,199,183,0.20)]",
+    tagColor: "text-[#F5C842] bg-[rgba(245,200,66,0.10)]",
+    tagBorder: "border-[rgba(245,200,66,0.20)]",
     title: "How Many Calories Do You Actually Burn Running?",
     excerpt: "Your running app's calorie estimate can be off by 30% or more. Here's the real science behind energy expenditure and how to get accurate numbers for your nutrition.",
     date: "Mar 1, 2026",
     readTime: "9 min read",
     emoji: "🏃",
     coverImage: "/caloriesburning.png",
-    gradient: "from-[rgba(76,125,255,0.40)] to-[#0F111A]",
+    gradient: "from-[rgba(245,200,66,0.40)] to-[#0D0A07]",
     toc: [
       "Why calorie estimates are often wrong",
       "The science of energy expenditure during running",
@@ -412,7 +412,7 @@ const posts: Record<string, LearnPost> = {
       name: "Marco R.",
       role: "Co-founder & CEO",
       initials: "MR",
-      gradient: "from-[#20C7B7] to-[#4C7DFF]",
+      gradient: "from-[#F5C842] to-[#E07B54]",
       bio: "Cyclist and ex-consultant. Built Jonno after years of training hard and eating wrong.",
     },
     relatedSlugs: ["fueling-strava-rides", "carbohydrate-loading-race-day"],
@@ -585,15 +585,15 @@ const posts: Record<string, LearnPost> = {
   "carbohydrate-loading-race-day": {
     slug: "carbohydrate-loading-race-day",
     tag: "Science",
-    tagColor: "text-emerald-400 bg-emerald-500/10",
-    tagBorder: "border-emerald-500/20",
+    tagColor: "text-[#8B9E6E] bg-[rgba(139,158,110,0.10)]",
+    tagBorder: "border-[rgba(139,158,110,0.20)]",
     title: "Carbohydrate Loading for Race Day: What the Science Actually Says",
     excerpt: "Carb loading is one of the most misunderstood strategies in endurance sport. The protocol most athletes follow is outdated. Here's what the evidence actually supports.",
     date: "Feb 25, 2026",
     readTime: "11 min read",
     emoji: "🍝",
     coverImage: "/carbs.png",
-    gradient: "from-amber-900/40 to-[#0F111A]",
+    gradient: "from-[rgba(224,123,84,0.40)] to-[#0D0A07]",
     toc: [
       "What carbohydrate loading actually does",
       "The original protocol vs. modern evidence",
@@ -608,7 +608,7 @@ const posts: Record<string, LearnPost> = {
       name: "Yuki T.",
       role: "Head of AI",
       initials: "YT",
-      gradient: "from-emerald-500 to-teal-600",
+      gradient: "from-[#8B9E6E] to-[#F5C842]",
       bio: "Triathlete and ex-Anthropic engineer. Digs deep into sports nutrition literature so athletes don't have to.",
     },
     relatedSlugs: ["fueling-strava-rides", "gut-health-athletes"],
@@ -781,15 +781,15 @@ const posts: Record<string, LearnPost> = {
   "sleep-recovery-nutrition": {
     slug: "sleep-recovery-nutrition",
     tag: "Recovery",
-    tagColor: "text-violet-500 bg-violet-500/10",
-    tagBorder: "border-violet-500/20",
+    tagColor: "text-[#E07B54] bg-[rgba(224,123,84,0.10)]",
+    tagBorder: "border-[rgba(224,123,84,0.20)]",
     title: "Sleep, Recovery Nutrition, and Athletic Performance",
     excerpt: "Most athletes optimise their training and their diet. Almost none optimise the nutritional window that governs how well they recover between sessions: sleep.",
     date: "Feb 20, 2026",
     readTime: "8 min read",
     emoji: "😴",
     coverImage: "/sleep.png",
-    gradient: "from-violet-900/40 to-[#0F111A]",
+    gradient: "from-[rgba(224,123,84,0.40)] to-[#0D0A07]",
     toc: [
       "What happens physiologically during sleep",
       "The protein synthesis window you're missing",
@@ -804,7 +804,7 @@ const posts: Record<string, LearnPost> = {
       name: "Lena W.",
       role: "Co-founder & CTO",
       initials: "LW",
-      gradient: "from-indigo-500 to-violet-600",
+      gradient: "from-[#E07B54] to-[#F5C842]",
       bio: "Marathon runner and engineer. Built Jonno to make intelligent nutrition guidance available at 11pm, not just in scheduled appointments.",
     },
     relatedSlugs: ["protein-targets-athletes", "gut-health-athletes"],
@@ -978,15 +978,15 @@ const posts: Record<string, LearnPost> = {
   "zone-2-fat-adaptation": {
     slug: "zone-2-fat-adaptation",
     tag: "Performance",
-    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
-    tagBorder: "border-[rgba(32,199,183,0.20)]",
+    tagColor: "text-[#F5C842] bg-[rgba(245,200,66,0.10)]",
+    tagBorder: "border-[rgba(245,200,66,0.20)]",
     title: "Zone 2 Training and Fat Adaptation: What It Means for Your Diet",
     excerpt: "Zone 2 training is having a moment. But does training low actually mean eating low? Here's what fat adaptation really means for your daily nutrition strategy.",
     date: "Feb 14, 2026",
     readTime: "10 min read",
     emoji: "❤️",
     coverImage: "/zone2.png",
-    gradient: "from-orange-900/40 to-[#0F111A]",
+    gradient: "from-[rgba(224,123,84,0.40)] to-[#0D0A07]",
     toc: [
       "What Zone 2 actually means",
       "The physiology of fat oxidation",
@@ -1001,7 +1001,7 @@ const posts: Record<string, LearnPost> = {
       name: "Marco R.",
       role: "Co-founder & CEO",
       initials: "MR",
-      gradient: "from-[#20C7B7] to-[#4C7DFF]",
+      gradient: "from-[#F5C842] to-[#E07B54]",
       bio: "Cyclist and ex-consultant. Built Jonno after years of training hard and eating wrong.",
     },
     relatedSlugs: ["fueling-strava-rides", "calories-burned-running"],
@@ -1186,15 +1186,15 @@ const posts: Record<string, LearnPost> = {
   "gut-health-athletes": {
     slug: "gut-health-athletes",
     tag: "Science",
-    tagColor: "text-emerald-400 bg-emerald-500/10",
-    tagBorder: "border-emerald-500/20",
+    tagColor: "text-[#8B9E6E] bg-[rgba(139,158,110,0.10)]",
+    tagBorder: "border-[rgba(139,158,110,0.20)]",
     title: "Gut Health for Athletes: Why Your Digestion Determines Your Performance",
     excerpt: "GI distress is the number one reason athletes abandon race-day nutrition plans. Understanding why your gut fails under stress, and how to fix it, can be the difference between a PR and a DNF.",
     date: "Feb 5, 2026",
     readTime: "9 min read",
     emoji: "🦠",
     coverImage: "/gut.png",
-    gradient: "from-green-900/40 to-[#0F111A]",
+    gradient: "from-[rgba(139,158,110,0.40)] to-[#0D0A07]",
     toc: [
       "Why runners and cyclists have GI problems",
       "The exercise-gut microbiome connection",
@@ -1209,7 +1209,7 @@ const posts: Record<string, LearnPost> = {
       name: "Yuki T.",
       role: "Head of AI",
       initials: "YT",
-      gradient: "from-emerald-500 to-teal-600",
+      gradient: "from-[#8B9E6E] to-[#F5C842]",
       bio: "Triathlete and ex-Anthropic engineer. Digs deep into sports nutrition literature so athletes don't have to.",
     },
     relatedSlugs: ["carbohydrate-loading-race-day", "sleep-recovery-nutrition"],
@@ -1409,7 +1409,7 @@ export default async function LearnArticlePage({ params }: { params: Promise<{ s
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://jonnoai.com/learn/${slug}`)}`;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#0D0A07" }}>
       <Navbar />
       <BlogProgress />
       <main className="pt-16">
@@ -1471,38 +1471,39 @@ export default async function LearnArticlePage({ params }: { params: Promise<{ s
         </section>
 
         {/* Body + Sidebar */}
-        <section className="py-12 pb-24">
+        <section className="py-12 pb-24" style={{ backgroundColor: "#0D0A07" }}>
           <div className="max-w-5xl mx-auto px-6">
             <div className="grid lg:grid-cols-[1fr_260px] gap-10 items-start">
 
               {/* Main article */}
               <div className="min-w-0">
-                <div className="bg-white rounded-2xl p-8 md:p-12 article-body">
+                <div style={{ backgroundColor: "#1C1410" }} className="rounded-2xl p-8 md:p-12 article-body">
                   {post.body}
                 </div>
 
                 {/* Author card */}
-                <div className="mt-8 light-card p-6 flex items-start gap-5">
+                <div className="mt-8 p-6 flex items-start gap-5 rounded-2xl border" style={{ backgroundColor: "#1C1410", borderColor: "rgba(255,220,150,0.12)" }}>
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${post.author.gradient} flex items-center justify-center text-lg font-black text-white flex-shrink-0`}>
                     {post.author.initials}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 mb-0.5">{post.author.name}</p>
-                    <p className="text-xs font-medium mb-2" style={{ color: "#20C7B7" }}>{post.author.role}</p>
-                    <p className="text-sm text-gray-600 leading-relaxed">{post.author.bio}</p>
-                    <p className="text-xs text-gray-400 mt-3">Written for Jonno · {post.date}</p>
+                    <p className="font-bold mb-0.5" style={{ color: "#E8E0D0" }}>{post.author.name}</p>
+                    <p className="text-xs font-medium mb-2" style={{ color: "#F5C842" }}>{post.author.role}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: "rgba(232,224,208,0.55)" }}>{post.author.bio}</p>
+                    <p className="text-xs mt-3" style={{ color: "rgba(232,224,208,0.40)" }}>Written for Jonno · {post.date}</p>
                   </div>
                 </div>
 
                 {/* Share row */}
                 <div className="mt-6 flex items-center gap-3">
-                  <span className="text-sm text-gray-500 font-medium">Share:</span>
+                  <span className="text-sm font-medium" style={{ color: "rgba(232,224,208,0.55)" }}>Share:</span>
                   <CopyLinkButton />
                   <a
                     href={twitterUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 border border-gray-100 text-sm text-gray-600 hover:text-gray-800 hover:border-gray-200 transition-all duration-200"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all duration-200"
+                    style={{ backgroundColor: "rgba(255,220,150,0.06)", border: "1px solid rgba(255,220,150,0.12)", color: "rgba(232,224,208,0.55)" }}
                   >
                     <Twitter className="w-3.5 h-3.5" />
                     Share on X
@@ -1512,7 +1513,7 @@ export default async function LearnArticlePage({ params }: { params: Promise<{ s
                 {/* Related posts */}
                 {relatedPosts.length > 0 && (
                   <div className="mt-12">
-                    <p className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "#20C7B7" }}>
+                    <p className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "#F5C842" }}>
                       Related articles
                     </p>
                     <div className="grid sm:grid-cols-2 gap-4">
@@ -1520,15 +1521,16 @@ export default async function LearnArticlePage({ params }: { params: Promise<{ s
                         <Link
                           key={related.slug}
                           href={`/learn/${related.slug}`}
-                          className="bg-white border border-[#E5E7EB] rounded-2xl p-5 flex flex-col gap-2 hover:border-[#20C7B7]/40 transition-colors group"
+                          className="rounded-2xl p-5 flex flex-col gap-2 transition-colors group"
+                          style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.12)" }}
                         >
                           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full self-start border ${related.tagColor} ${related.tagBorder}`}>
                             {related.tag}
                           </span>
-                          <p className="text-sm font-bold text-gray-800 leading-snug group-hover:text-[#20C7B7] transition-colors">
+                          <p className="text-sm font-bold leading-snug transition-colors" style={{ color: "#E8E0D0" }}>
                             {related.title}
                           </p>
-                          <span className="text-xs text-gray-500">{related.readTime}</span>
+                          <span className="text-xs" style={{ color: "rgba(232,224,208,0.40)" }}>{related.readTime}</span>
                         </Link>
                       ))}
                     </div>
@@ -1536,10 +1538,10 @@ export default async function LearnArticlePage({ params }: { params: Promise<{ s
                 )}
 
                 {/* Bottom CTA */}
-                <div className="mt-12 rounded-2xl border border-[#E5E7EB] p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6" style={{ backgroundColor: "#F4F5F7" }}>
+                <div className="mt-12 rounded-2xl p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.12)" }}>
                   <div className="flex-1 text-center sm:text-left">
-                    <p className="font-bold text-gray-900 mb-1">Let Jonno apply this automatically.</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-bold mb-1" style={{ color: "#E8E0D0" }}>Let Jonno apply this automatically.</p>
+                    <p className="text-sm" style={{ color: "rgba(232,224,208,0.55)" }}>
                       Sync Strava. Get evidence-based targets. Order recovery meals in one tap.
                     </p>
                   </div>
@@ -1562,15 +1564,16 @@ export default async function LearnArticlePage({ params }: { params: Promise<{ s
 
               {/* Sidebar */}
               <aside className="hidden lg:block sticky top-24 space-y-4">
-                <div className="bg-white border border-[#E5E7EB] rounded-2xl p-5">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+                <div className="rounded-2xl p-5" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(255,220,150,0.12)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "rgba(232,224,208,0.40)" }}>
                     In this article
                   </p>
                   <nav className="flex flex-col gap-1">
                     {post.toc.map((heading, i) => (
                       <span
                         key={i}
-                        className="text-sm text-gray-500 hover:text-gray-800 leading-snug cursor-pointer transition-colors py-1 border-l-2 border-transparent hover:border-[#20C7B7] pl-3"
+                        className="text-sm leading-snug cursor-pointer transition-colors py-1 border-l-2 border-transparent pl-3"
+                        style={{ color: "rgba(232,224,208,0.55)" }}
                       >
                         {heading}
                       </span>
@@ -1578,9 +1581,9 @@ export default async function LearnArticlePage({ params }: { params: Promise<{ s
                   </nav>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-[rgba(32,199,183,0.30)] p-5 flex flex-col gap-3">
-                  <p className="text-sm font-bold text-gray-900">Let Jonno apply this</p>
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                <div className="rounded-2xl p-5 flex flex-col gap-3" style={{ backgroundColor: "#1C1410", border: "1px solid rgba(245,200,66,0.30)" }}>
+                  <p className="text-sm font-bold" style={{ color: "#E8E0D0" }}>Let Jonno apply this</p>
+                  <p className="text-xs leading-relaxed" style={{ color: "rgba(232,224,208,0.55)" }}>
                     Connect Strava. Get evidence-based targets. Order recovery meals automatically.
                   </p>
                   <Button variant="glow" size="sm" asChild className="w-full">

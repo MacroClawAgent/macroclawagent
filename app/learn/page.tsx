@@ -13,9 +13,9 @@ const posts = [
   {
     slug: "fueling-strava-rides",
     tag: "Performance",
-    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
-    tagBorder: "border-[rgba(32,199,183,0.20)]",
-    gradient: "from-[rgba(32,199,183,0.40)] to-[#0F111A]",
+    tagColor: "text-[#F5C842] bg-[rgba(245,200,66,0.10)]",
+    tagBorder: "border-[rgba(245,200,66,0.20)]",
+    gradient: "from-[rgba(245,200,66,0.40)] to-[#0D0A07]",
     coverImage: "/cyclists.png",
     title: "How to Fuel Your Strava Rides with Precision Macros",
     excerpt:
@@ -24,14 +24,14 @@ const posts = [
     readTime: "6 min read",
     author: "Marco R.",
     authorInitials: "MR",
-    authorGradient: "from-[#20C7B7] to-[#4C7DFF]",
+    authorGradient: "from-[#F5C842] to-[#E07B54]",
     emoji: "🚴",
   },
   {
     slug: "ai-nutrition-coaching",
     tag: "AI + Nutrition",
-    tagColor: "text-[#4C7DFF] bg-[rgba(105,189,235,0.10)]",
-    tagBorder: "border-[rgba(105,189,235,0.25)]",
+    tagColor: "text-[#F5C842] bg-[rgba(245,200,66,0.10)]",
+    tagBorder: "border-[rgba(245,200,66,0.25)]",
     gradient: "from-indigo-900/40 to-[#0F111A]",
     coverImage: "/gym.png" as string | null,
     title: "Why AI Nutrition Coaching is Changing Athletic Performance",
@@ -41,15 +41,15 @@ const posts = [
     readTime: "8 min read",
     author: "Lena W.",
     authorInitials: "LW",
-    authorGradient: "from-indigo-500 to-violet-600",
+    authorGradient: "from-[#F5C842] to-[#E07B54]",
     emoji: "🤖",
   },
   {
     slug: "protein-targets-athletes",
     tag: "Science",
-    tagColor: "text-emerald-400 bg-emerald-500/10",
-    tagBorder: "border-emerald-500/20",
-    gradient: "from-emerald-900/40 to-[#0F111A]",
+    tagColor: "text-[#8B9E6E] bg-[rgba(139,158,110,0.10)]",
+    tagBorder: "border-[rgba(139,158,110,0.20)]",
+    gradient: "from-[rgba(139,158,110,0.40)] to-[#0D0A07]",
     coverImage: "/nutrition.png" as string | null,
     title: "The Science Behind Protein Targets for Endurance Athletes",
     excerpt:
@@ -58,15 +58,15 @@ const posts = [
     readTime: "10 min read",
     author: "Yuki T.",
     authorInitials: "YT",
-    authorGradient: "from-emerald-500 to-teal-600",
+    authorGradient: "from-[#8B9E6E] to-[#F5C842]",
     emoji: "🥩",
   },
   {
     slug: "calories-burned-running",
     tag: "Performance",
-    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
-    tagBorder: "border-[rgba(32,199,183,0.20)]",
-    gradient: "from-[rgba(76,125,255,0.40)] to-[#0F111A]",
+    tagColor: "text-[#F5C842] bg-[rgba(245,200,66,0.10)]",
+    tagBorder: "border-[rgba(245,200,66,0.20)]",
+    gradient: "from-[rgba(245,200,66,0.40)] to-[#0D0A07]",
     coverImage: "/caloriesburning.png",
     title: "How Many Calories Do You Actually Burn Running?",
     excerpt:
@@ -75,14 +75,14 @@ const posts = [
     readTime: "9 min read",
     author: "Marco R.",
     authorInitials: "MR",
-    authorGradient: "from-[#20C7B7] to-[#4C7DFF]",
+    authorGradient: "from-[#F5C842] to-[#E07B54]",
     emoji: "🏃",
   },
   {
     slug: "carbohydrate-loading-race-day",
     tag: "Science",
-    tagColor: "text-emerald-400 bg-emerald-500/10",
-    tagBorder: "border-emerald-500/20",
+    tagColor: "text-[#8B9E6E] bg-[rgba(139,158,110,0.10)]",
+    tagBorder: "border-[rgba(139,158,110,0.20)]",
     gradient: "from-amber-900/40 to-[#0F111A]",
     coverImage: "/carbs.png",
     title: "Carbohydrate Loading for Race Day: What the Science Actually Says",
@@ -92,14 +92,14 @@ const posts = [
     readTime: "11 min read",
     author: "Yuki T.",
     authorInitials: "YT",
-    authorGradient: "from-emerald-500 to-teal-600",
+    authorGradient: "from-[#8B9E6E] to-[#F5C842]",
     emoji: "🍝",
   },
   {
     slug: "sleep-recovery-nutrition",
     tag: "Recovery",
-    tagColor: "text-violet-500 bg-violet-500/10",
-    tagBorder: "border-violet-500/20",
+    tagColor: "text-[#E07B54] bg-[rgba(224,123,84,0.10)]",
+    tagBorder: "border-[rgba(224,123,84,0.20)]",
     gradient: "from-violet-900/40 to-[#0F111A]",
     coverImage: "/sleep.png",
     title: "Sleep, Recovery Nutrition, and Athletic Performance",
@@ -109,14 +109,14 @@ const posts = [
     readTime: "8 min read",
     author: "Lena W.",
     authorInitials: "LW",
-    authorGradient: "from-indigo-500 to-violet-600",
+    authorGradient: "from-[#E07B54] to-[#F5C842]",
     emoji: "😴",
   },
   {
     slug: "zone-2-fat-adaptation",
     tag: "Performance",
-    tagColor: "text-[#20C7B7] bg-[rgba(32,199,183,0.10)]",
-    tagBorder: "border-[rgba(32,199,183,0.20)]",
+    tagColor: "text-[#F5C842] bg-[rgba(245,200,66,0.10)]",
+    tagBorder: "border-[rgba(245,200,66,0.20)]",
     gradient: "from-orange-900/40 to-[#0F111A]",
     coverImage: "/zone2.png",
     title: "Zone 2 Training and Fat Adaptation: What It Means for Your Diet",
@@ -126,14 +126,14 @@ const posts = [
     readTime: "10 min read",
     author: "Marco R.",
     authorInitials: "MR",
-    authorGradient: "from-[#20C7B7] to-[#4C7DFF]",
+    authorGradient: "from-[#F5C842] to-[#E07B54]",
     emoji: "❤️",
   },
   {
     slug: "gut-health-athletes",
     tag: "Science",
-    tagColor: "text-emerald-400 bg-emerald-500/10",
-    tagBorder: "border-emerald-500/20",
+    tagColor: "text-[#8B9E6E] bg-[rgba(139,158,110,0.10)]",
+    tagBorder: "border-[rgba(139,158,110,0.20)]",
     gradient: "from-green-900/40 to-[#0F111A]",
     coverImage: "/gut.png",
     title: "Gut Health for Athletes: Why Your Digestion Determines Your Performance",
@@ -143,7 +143,7 @@ const posts = [
     readTime: "9 min read",
     author: "Yuki T.",
     authorInitials: "YT",
-    authorGradient: "from-emerald-500 to-teal-600",
+    authorGradient: "from-[#8B9E6E] to-[#F5C842]",
     emoji: "🦠",
   },
 ];
@@ -159,7 +159,7 @@ export default function LearnPage() {
   const secondary = filtered.slice(1);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FFFFFF" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#0D0A07" }}>
       <Navbar />
       <main className="pt-16">
 
@@ -173,14 +173,14 @@ export default function LearnPage() {
               transition={{ duration: 0.5 }}
               className="text-center md:text-left"
             >
-              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#20C7B7" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#F5C842" }}>
                 Jonno Learn
               </p>
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight text-[#20C7B7] mb-4">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4" style={{ color: "#F5C842" }}>
                 Nutrition intel for
                 <br className="hidden md:block" /> serious athletes.
               </h1>
-              <p className="text-lg max-w-xl mb-6" style={{ color: "#6B7280" }}>
+              <p className="text-lg max-w-xl mb-6" style={{ color: "rgba(232,224,208,0.55)" }}>
                 Evidence-based articles on performance nutrition, AI coaching, and training fueling.
               </p>
 
@@ -189,7 +189,7 @@ export default function LearnPage() {
                   <span
                     key={s}
                     className="text-xs px-3 py-1 rounded-full border"
-                    style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB", color: "#6B7280" }}
+                    style={{ backgroundColor: "rgba(255,220,150,0.06)", borderColor: "rgba(255,220,150,0.12)", color: "rgba(232,224,208,0.55)" }}
                   >
                     {s}
                   </span>
@@ -204,8 +204,8 @@ export default function LearnPage() {
                     className="px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200"
                     style={
                       activeCategory === cat
-                        ? { backgroundColor: "rgba(32,199,183,0.10)", borderColor: "rgba(32,199,183,0.30)", color: "#20C7B7" }
-                        : { backgroundColor: "transparent", borderColor: "#E5E7EB", color: "#6B7280" }
+                        ? { backgroundColor: "rgba(245,200,66,0.10)", borderColor: "rgba(245,200,66,0.30)", color: "#F5C842" }
+                        : { backgroundColor: "transparent", borderColor: "rgba(255,220,150,0.15)", color: "rgba(232,224,208,0.55)" }
                     }
                   >
                     {cat}
@@ -229,8 +229,8 @@ export default function LearnPage() {
               >
                 <Link
                   href={`/learn/${featured.slug}`}
-                  className="block light-card overflow-hidden transition-colors duration-300 group border"
-                  style={{ borderColor: "#E5E7EB" }}
+                  className="block overflow-hidden transition-colors duration-300 group border rounded-2xl"
+                  style={{ backgroundColor: "#1C1410", borderColor: "rgba(255,220,150,0.12)" }}
                 >
                   <div className="relative h-64 md:h-80 overflow-hidden">
                     {featured.coverImage ? (
@@ -258,10 +258,10 @@ export default function LearnPage() {
                       <span className="text-slate-700">·</span>
                       <span className="text-xs text-gray-500">{featured.readTime}</span>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-black leading-tight transition-colors" style={{ color: "#1C1C1E" }}>
+                    <h2 className="text-2xl md:text-3xl font-black leading-tight transition-colors" style={{ color: "#E8E0D0" }}>
                       {featured.title}
                     </h2>
-                    <p className="leading-relaxed max-w-2xl" style={{ color: "#6B7280" }}>
+                    <p className="leading-relaxed max-w-2xl" style={{ color: "rgba(232,224,208,0.55)" }}>
                       {featured.excerpt}
                     </p>
                     <div className="flex items-center justify-between mt-2">
@@ -269,9 +269,9 @@ export default function LearnPage() {
                         <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${featured.authorGradient} flex items-center justify-center text-xs font-black text-white`}>
                           {featured.authorInitials}
                         </div>
-                        <span className="text-sm" style={{ color: "#6B7280" }}>{featured.author}</span>
+                        <span className="text-sm" style={{ color: "rgba(232,224,208,0.55)" }}>{featured.author}</span>
                       </div>
-                      <span className="flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all" style={{ color: "#20C7B7" }}>
+                      <span className="flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all" style={{ color: "#F5C842" }}>
                         Read article
                         <ArrowRight className="w-3.5 h-3.5" />
                       </span>
@@ -292,7 +292,8 @@ export default function LearnPage() {
                   >
                     <Link
                       href={`/learn/${post.slug}`}
-                      className="block light-card overflow-hidden hover:border-blue-200 transition-colors duration-300 group h-full"
+                      className="block overflow-hidden transition-colors duration-300 group h-full border rounded-2xl"
+                      style={{ backgroundColor: "#1C1410", borderColor: "rgba(255,220,150,0.12)" }}
                     >
                       <div className="relative h-40 overflow-hidden">
                         {post.coverImage ? (
@@ -319,10 +320,10 @@ export default function LearnPage() {
                           </span>
                           <span className="text-xs text-gray-500">{post.readTime}</span>
                         </div>
-                        <h2 className="text-lg font-bold leading-snug transition-colors" style={{ color: "#1C1C1E" }}>
+                        <h2 className="text-lg font-bold leading-snug transition-colors" style={{ color: "#E8E0D0" }}>
                           {post.title}
                         </h2>
-                        <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "#6B7280" }}>
+                        <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "rgba(232,224,208,0.55)" }}>
                           {post.excerpt}
                         </p>
                         <div className="flex items-center justify-between mt-2">
@@ -330,11 +331,11 @@ export default function LearnPage() {
                             <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${post.authorGradient} flex items-center justify-center text-[10px] font-black text-white`}>
                               {post.authorInitials}
                             </div>
-                            <span className="text-xs" style={{ color: "#6B7280" }}>
+                            <span className="text-xs" style={{ color: "rgba(232,224,208,0.55)" }}>
                               {post.author} · {post.date}
                             </span>
                           </div>
-                          <span className="flex items-center gap-1 text-xs font-semibold group-hover:gap-2 transition-all" style={{ color: "#20C7B7" }}>
+                          <span className="flex items-center gap-1 text-xs font-semibold group-hover:gap-2 transition-all" style={{ color: "#F5C842" }}>
                             Read
                             <ArrowRight className="w-3 h-3" />
                           </span>
@@ -362,13 +363,13 @@ export default function LearnPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 border"
-              style={{ backgroundColor: "#F4F5F7", borderColor: "#E5E7EB" }}
+              style={{ backgroundColor: "#1C1410", borderColor: "rgba(255,220,150,0.12)" }}
             >
               <div className="flex-1 text-center md:text-left">
-                <p className="font-black text-xl mb-1" style={{ color: "#1C1C1E" }}>
+                <p className="font-black text-xl mb-1" style={{ color: "#E8E0D0" }}>
                   Weekly nutrition intel for athletes.
                 </p>
-                <p className="text-sm" style={{ color: "#6B7280" }}>
+                <p className="text-sm" style={{ color: "rgba(232,224,208,0.55)" }}>
                   Evidence-based articles on training fueling, AI coaching, and performance nutrition. No spam.
                 </p>
               </div>
@@ -377,7 +378,7 @@ export default function LearnPage() {
                   type="email"
                   placeholder="your@email.com"
                   className="flex-1 md:w-56 px-4 py-2.5 rounded-xl text-sm focus:outline-none border"
-                  style={{ backgroundColor: "#FFFFFF", borderColor: "#E5E7EB", color: "#1C1C1E" }}
+                  style={{ backgroundColor: "rgba(255,220,150,0.06)", borderColor: "rgba(255,220,150,0.12)", color: "#E8E0D0" }}
                 />
                 <Button variant="glow" size="default">
                   Subscribe
