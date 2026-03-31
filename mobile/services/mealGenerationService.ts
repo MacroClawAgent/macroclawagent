@@ -12,6 +12,22 @@ interface NutritionTargets {
   fat: number;
   goal: string;
   consumed?: { calories: number; protein: number; carbs: number; fat: number };
+  activityContext?: {
+    workoutLabel?: string;
+    caloriesBurned?: number;
+    steps?: number;
+  };
+}
+
+function buildActivityLine(activityContext?: NutritionTargets['activityContext']): string {
+  if (!activityContext) return '';
+  if (activityContext.workoutLabel && activityContext.caloriesBurned) {
+    return `\nTRAINING TODAY: ${activityContext.workoutLabel} · ${activityContext.caloriesBurned} kcal burned. Adjust meals: increase complex carbs for glycogen replenishment and ensure protein targets are met for muscle recovery.\n`;
+  }
+  if (activityContext.steps && activityContext.steps > 3000) {
+    return `\nACTIVITY TODAY: ${activityContext.steps.toLocaleString()} steps · ${activityContext.caloriesBurned ?? 0} kcal active energy. Account for extra calorie burn when planning meals.\n`;
+  }
+  return '';
 }
 
 // ── Prompt builders ────────────────────────────────────────────────────────────
@@ -24,13 +40,14 @@ function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets, pan
   const consumedCtx = targets.consumed
     ? `\nALREADY EATEN TODAY: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein, ${targets.consumed.carbs}g carbs, ${targets.consumed.fat}g fat.\nRemaining: ${targets.calories - targets.consumed.calories} kcal, ${targets.protein - targets.consumed.protein}g protein.\n`
     : '';
+  const activityLine = buildActivityLine(targets.activityContext);
   return (
     `You are a professional nutritionist creating a personalised meal plan for an Australian user.\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
     `USER NUTRITION TARGETS:\nGoal: ${targets.goal}\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
     `Servings: ${prefs.servings} person(s)\n` +
-    consumedCtx + pantryContext + `\n` +
+    consumedCtx + activityLine + pantryContext + `\n` +
     `Generate exactly 4 meals for today: breakfast, lunch, snack, dinner.\n\n` +
     `For EACH meal return this exact JSON structure:\n${MEAL_JSON_SPEC}\n\n` +
     `Return a JSON array of exactly 4 meal objects.\n` +
@@ -49,11 +66,12 @@ function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targe
     : mealType === 'lunch' ? Math.round(targets.calories * 0.30)
     : mealType === 'dinner' ? Math.round(targets.calories * 0.30)
     : Math.round(targets.calories * 0.15);
+  const activityLine = buildActivityLine(targets.activityContext);
   return (
     `You are a professional nutritionist. Suggest ONE ${mealType} meal for an Australian user.\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
     `USER GOAL: ${targets.goal}\nTarget for this meal: ~${calTarget} kcal, ${Math.round(targets.protein * (calTarget / targets.calories))}g protein\n` +
-    consumedCtx + pantryContext + `\n` +
+    consumedCtx + activityLine + pantryContext + `\n` +
     `Return a single JSON object (not an array) with this structure:\n${MEAL_JSON_SPEC}\n\n` +
     `JSON only — no other text.`
   );
@@ -65,12 +83,13 @@ function buildWeekPrompt(prefs: UserPreferences, targets: NutritionTargets): str
   const monday = new Date(today);
   monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
 
+  const activityLine = buildActivityLine(targets.activityContext);
   return (
     `You are a professional nutritionist creating a personalised 7-day meal plan for an Australian user.\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
     `USER NUTRITION TARGETS:\nGoal: ${targets.goal}\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
-    `Servings: ${prefs.servings} person(s)\n\n` +
+    `Servings: ${prefs.servings} person(s)\n` + activityLine + `\n` +
     `Generate 7 days of meals (Monday to Sunday). Each day has 4 meals: breakfast, lunch, snack, dinner.\n\n` +
     `VARIETY RULES:\n- Never repeat the same meal twice in the week\n` +
     `- Rotate protein sources: chicken, fish, beef/lamb, eggs, legumes throughout the week\n` +

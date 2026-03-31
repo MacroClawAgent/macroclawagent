@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,12 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { usePreferences } from '@/hooks/usePreferences';
 import { useMealPlan } from '@/hooks/useMealPlan';
-import { usePantry } from '@/hooks/usePantry';
-import { getPreferencesSummary } from '@/services/preferencesService';
+import { useAgentContext } from '@/hooks/useAgentContext';
+import { getPantryPhotos } from '@/services/pantryService';
 import { getCurrentMealContext } from '@/utils/mealContext';
-import { apiGet } from '@/lib/api';
 import PreferencesSheet from '@/components/Agent/PreferencesSheet';
 import MealPlanCard from '@/components/Agent/MealPlanCard';
 import RecipeSheet from '@/components/Agent/RecipeSheet';
@@ -35,14 +34,6 @@ const SAGE   = '#8B9E6E';
 const TEXT   = '#E8E0D0';
 const MUTED  = 'rgba(232,224,208,0.5)';
 const DIM    = 'rgba(232,224,208,0.3)';
-
-const NUTRITION_TARGETS = {
-  calories: 2984,
-  protein: 191,
-  carbs: 250,
-  fat: 70,
-  goal: 'Build Muscle',
-};
 
 const TIP_KEY = 'jonno_agent_tip_dismissed';
 
@@ -89,7 +80,8 @@ function SingleGenerating({ mealType }: { mealType: string }) {
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function AgentScreen() {
-  const { preferences, hasAnyPreferences, completeOnboarding } = usePreferences();
+  const ctx = useAgentContext();
+  const { preferences, hasAnyPreferences, completeOnboarding, training, pantry, nutrition, targets, goal, prefTags } = ctx;
 
   const {
     state,
@@ -108,8 +100,6 @@ export default function AgentScreen() {
     setSelectedDayIndex,
   } = useMealPlan();
 
-  const { items: pantryItems, add: addPantryItem, remove: removePantryItem } = usePantry();
-
   const [showPreferences, setShowPreferences] = useState(false);
   const [selectedMeal,    setSelectedMeal]    = useState<Meal | null>(null);
   const [showRecipe,      setShowRecipe]      = useState(false);
@@ -118,14 +108,10 @@ export default function AgentScreen() {
   const [pantryExpanded,  setPantryExpanded]  = useState(false);
   const [showScanner,     setShowScanner]     = useState(false);
   const [tipDismissed,    setTipDismissed]    = useState(true);
-  const [todayConsumed,   setTodayConsumed]   = useState<{ calories: number; protein: number } | null>(null);
 
   useEffect(() => {
     AsyncStorage.getItem(TIP_KEY)
       .then(v => { if (!v) setTipDismissed(false); })
-      .catch(() => {});
-    apiGet<{ calories_consumed?: number; protein_g?: number }>('/api/nutrition/today')
-      .then(d => setTodayConsumed({ calories: d.calories_consumed ?? 0, protein: d.protein_g ?? 0 }))
       .catch(() => {});
   }, []);
 
@@ -134,11 +120,23 @@ export default function AgentScreen() {
     await AsyncStorage.setItem(TIP_KEY, '1');
   }, []);
 
-  const mealCtx        = getCurrentMealContext();
-  const prefTags       = getPreferencesSummary(preferences);
-  const selectedDay    = days[selectedDayIndex];
+  const mealCtx         = getCurrentMealContext();
+  const selectedDay     = days[selectedDayIndex];
   const ingredientCount = getAllIngredientsCount();
-  const targetsWithConsumed = { ...NUTRITION_TARGETS, consumed: todayConsumed ?? undefined };
+  const pantryItems     = pantry.items;
+  const pantryPhotos    = getPantryPhotos(pantryItems);
+
+  const targetsWithConsumed = {
+    calories: targets.calories,
+    protein:  targets.protein,
+    carbs:    targets.carbs,
+    fat:      targets.fat,
+    goal,
+    consumed: nutrition.consumed ?? undefined,
+    activityContext: training
+      ? { workoutLabel: training.label, caloriesBurned: training.caloriesBurned }
+      : undefined,
+  };
 
   const handleGenerate = useCallback(
     (type: Parameters<typeof generate>[0]) => {
@@ -152,29 +150,9 @@ export default function AgentScreen() {
 
   const handleSendToCart  = useCallback(async () => { await sendToCart(); }, [sendToCart]);
   const handleOpenRecipe  = useCallback((meal: Meal) => { setSelectedMeal(meal); setShowRecipe(true); }, []);
-  const handleScannerConfirm = useCallback(async (items: string[]) => {
-    for (const name of items) { await addPantryItem(name); }
-  }, [addPantryItem]);
-
-  // Context card — dynamic lines
-  const contextLines: { text: string; primary?: boolean }[] = [];
-  if (todayConsumed) {
-    const remCal = Math.max(0, NUTRITION_TARGETS.calories - todayConsumed.calories);
-    const remPro = Math.max(0, NUTRITION_TARGETS.protein - todayConsumed.protein);
-    if (remCal > 100) {
-      contextLines.push({ text: `${remCal} kcal · ${remPro}g protein left today`, primary: true });
-    } else {
-      contextLines.push({ text: 'Targets hit for today. Well done.', primary: true });
-    }
-  } else {
-    contextLines.push({ text: `${NUTRITION_TARGETS.calories} kcal · ${NUTRITION_TARGETS.protein}g protein goal`, primary: true });
-  }
-  if (pantryItems.length > 0) {
-    contextLines.push({ text: `${pantryItems.length} ingredient${pantryItems.length > 1 ? 's' : ''} in your kitchen I can use` });
-  }
-  if (hasAnyPreferences && prefTags.length > 0) {
-    contextLines.push({ text: `${prefTags.slice(0, 2).join(' · ')} preferences active` });
-  }
+  const handleScannerConfirm = useCallback(async (items: string[], photoUri: string) => {
+    for (const name of items) { await pantry.add(name, 'photo', photoUri); }
+  }, [pantry]);
 
   // ── GENERATING ───────────────────────────────────────────────────────────────
 
@@ -249,7 +227,7 @@ export default function AgentScreen() {
             <View style={s.headerActions}>
               <TouchableOpacity
                 style={s.regenBtn}
-                onPress={() => regenerate(preferences, NUTRITION_TARGETS)}
+                onPress={() => regenerate(preferences, targetsWithConsumed)}
                 disabled={isRegenerating}
                 activeOpacity={0.8}
               >
@@ -420,20 +398,65 @@ export default function AgentScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Context card ────────────────────────────────────────────────────── */}
-        <View style={s.contextCard}>
-          <Text style={s.contextBadge}>✦  Jonno</Text>
-          {contextLines.map((line, i) => (
-            <Text
-              key={i}
-              style={[s.contextLine, line.primary && s.contextLinePrimary]}
-            >
-              {line.text}
+        {/* ── Intelligence Card ───────────────────────────────────────────────── */}
+        <View style={s.intelCard}>
+          <View style={s.intelCardHeader}>
+            <Text style={s.intelBadge}>✦  JONNO</Text>
+            <Text style={s.intelGoal}>{goal.toUpperCase()}</Text>
+          </View>
+
+          {/* Macro progress bar */}
+          <View style={s.macroBar}>
+            {nutrition.progressPct > 0 && (
+              <View style={[s.macroBarConsumed, { flex: nutrition.progressPct }]} />
+            )}
+            <View style={[s.macroBarRemaining, { flex: Math.max(1, 100 - nutrition.progressPct) }]} />
+          </View>
+
+          {/* Primary stat line */}
+          {nutrition.remaining ? (
+            <Text style={s.intelPrimary}>
+              {nutrition.remaining.calories.toLocaleString()} kcal · {nutrition.remaining.protein}g protein remaining
             </Text>
-          ))}
+          ) : (
+            <Text style={s.intelPrimary}>
+              {targets.calories.toLocaleString()} kcal · {targets.protein}g protein daily goal
+            </Text>
+          )}
+
+          {/* Training line */}
+          {training && (
+            <View style={s.intelRow}>
+              <View style={[s.intelDot, { backgroundColor: CORAL }]} />
+              <Text style={[s.intelLine, { color: CORAL }]}>
+                {training.label}
+                {training.caloriesBurned > 0 ? ` · ${training.caloriesBurned} kcal` : ''}
+              </Text>
+            </View>
+          )}
+
+          {/* Pantry line */}
+          {pantry.count > 0 && (
+            <View style={s.intelRow}>
+              <View style={[s.intelDot, { backgroundColor: SAGE }]} />
+              <Text style={[s.intelLine, { color: SAGE }]}>
+                {pantry.count} item{pantry.count !== 1 ? 's' : ''} in your kitchen
+              </Text>
+            </View>
+          )}
+
+          {/* Preferences line */}
+          {hasAnyPreferences && prefTags.length > 0 && (
+            <View style={s.intelRow}>
+              <View style={[s.intelDot, { backgroundColor: GOLD }]} />
+              <Text style={[s.intelLine, { color: 'rgba(245,200,66,0.75)' }]}>
+                {prefTags.slice(0, 3).join(' · ')}
+              </Text>
+            </View>
+          )}
         </View>
 
-        {/* ── Onboarding tip (first-time, between context card and hero) ──────── */}
+        {/* ── Onboarding tip ──────────────────────────────────────────────────── */}
         {!tipDismissed && !hasAnyPreferences && (
           <View style={s.tipCard}>
             <View style={{ flex: 1 }}>
@@ -474,16 +497,28 @@ export default function AgentScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* ── Secondary pills ─────────────────────────────────────────────────── */}
-        <View style={s.pillsRow}>
-          <TouchableOpacity style={s.pill} onPress={() => handleGenerate('today')} activeOpacity={0.75}>
-            <Text style={s.pillText}>Full day</Text>
+        {/* ── Secondary action cards ──────────────────────────────────────────── */}
+        <View style={s.actionGrid}>
+          <TouchableOpacity style={s.actionCard} onPress={() => handleGenerate('today')} activeOpacity={0.8}>
+            <View style={[s.actionIcon, { backgroundColor: 'rgba(224,123,84,0.15)' }]}>
+              <Text style={{ fontSize: 20 }}>🍽️</Text>
+            </View>
+            <Text style={s.actionTitle}>Full day</Text>
+            <Text style={s.actionSub}>4 meals</Text>
+            <View style={[s.actionAccent, { backgroundColor: CORAL }]} />
           </TouchableOpacity>
-          <TouchableOpacity style={s.pill} onPress={() => handleGenerate('week')} activeOpacity={0.75}>
-            <Text style={s.pillText}>This week</Text>
+
+          <TouchableOpacity style={s.actionCard} onPress={() => handleGenerate('week')} activeOpacity={0.8}>
+            <View style={[s.actionIcon, { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
+              <Text style={{ fontSize: 20 }}>📅</Text>
+            </View>
+            <Text style={s.actionTitle}>This week</Text>
+            <Text style={s.actionSub}>7 days</Text>
+            <View style={[s.actionAccent, { backgroundColor: GOLD }]} />
           </TouchableOpacity>
+
           <TouchableOpacity
-            style={s.pill}
+            style={s.actionCard}
             onPress={() => {
               if (pantryItems.length > 0) {
                 generate('single', preferences, targetsWithConsumed, {
@@ -491,12 +526,21 @@ export default function AgentScreen() {
                   pantryItems,
                 });
               } else {
-                setShowPreferences(true);
+                setPantryExpanded(true);
               }
             }}
-            activeOpacity={0.75}
+            activeOpacity={0.8}
           >
-            <Text style={s.pillText}>{pantryItems.length > 0 ? 'Use pantry' : 'Customise'}</Text>
+            <View style={[s.actionIcon, { backgroundColor: 'rgba(139,158,110,0.15)' }]}>
+              <Text style={{ fontSize: 20 }}>🥬</Text>
+            </View>
+            <Text style={s.actionTitle}>
+              {pantryItems.length > 0 ? 'Use pantry' : 'Add items'}
+            </Text>
+            <Text style={s.actionSub}>
+              {pantryItems.length > 0 ? `${pantryItems.length} items` : 'Kitchen'}
+            </Text>
+            <View style={[s.actionAccent, { backgroundColor: SAGE }]} />
           </TouchableOpacity>
         </View>
 
@@ -509,7 +553,7 @@ export default function AgentScreen() {
             activeOpacity={0.8}
           >
             <View style={s.pantryStripLeft}>
-              <Text style={s.pantryStripTitle}>In your kitchen</Text>
+              <Text style={s.pantryStripTitle}>Fridge & Pantry</Text>
               {pantryItems.length > 0 && (
                 <View style={s.pantryCountBadge}>
                   <Text style={s.pantryCountText}>{pantryItems.length}</Text>
@@ -536,6 +580,20 @@ export default function AgentScreen() {
           {/* Expanded content */}
           {pantryExpanded && (
             <>
+              {/* Photo thumbnails (scanner photos) */}
+              {pantryPhotos.length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={s.photoThumbRow}
+                  style={{ marginTop: 10 }}
+                >
+                  {pantryPhotos.map(uri => (
+                    <Image key={uri} source={{ uri }} style={s.photoThumb} />
+                  ))}
+                </ScrollView>
+              )}
+
               {addingPantry && (
                 <View style={s.pantryInputRow}>
                   <TextInput
@@ -547,14 +605,14 @@ export default function AgentScreen() {
                     autoFocus
                     returnKeyType="done"
                     onSubmitEditing={async () => {
-                      if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
+                      if (pantryInput.trim()) { await pantry.add(pantryInput); setPantryInput(''); }
                       setAddingPantry(false);
                     }}
                   />
                   <TouchableOpacity
                     style={s.pantryInputBtn}
                     onPress={async () => {
-                      if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
+                      if (pantryInput.trim()) { await pantry.add(pantryInput); setPantryInput(''); }
                       setAddingPantry(false);
                     }}
                   >
@@ -569,7 +627,7 @@ export default function AgentScreen() {
                     <TouchableOpacity
                       key={item.id}
                       style={s.pantryChip}
-                      onPress={() => removePantryItem(item.id)}
+                      onPress={() => pantry.remove(item.id)}
                       activeOpacity={0.7}
                     >
                       <Text style={s.pantryChipText}>{item.name}</Text>
@@ -645,16 +703,23 @@ const s = StyleSheet.create({
   pulseDot:         { position: 'absolute', top: 7, right: 7, width: 8, height: 8, borderRadius: 4, backgroundColor: GOLD },
   filterDotStatic:  { position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: 3.5, backgroundColor: GOLD },
 
-  // Context card
-  contextCard: {
+  // Intelligence Card
+  intelCard: {
     marginHorizontal: 16, marginTop: 4, marginBottom: 10,
-    backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
-    padding: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25, shadowRadius: 12, elevation: 5,
+    backgroundColor: CARD, borderRadius: 22, borderWidth: 1, borderColor: BORDER,
+    padding: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3, shadowRadius: 14, elevation: 6,
   },
-  contextBadge:       { fontSize: 11, fontWeight: '700', color: GOLD, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 },
-  contextLine:        { fontSize: 14, color: MUTED, lineHeight: 20, marginTop: 4 },
-  contextLinePrimary: { fontSize: 16, fontWeight: '600', color: TEXT, marginTop: 0 },
+  intelCardHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  intelBadge:       { fontSize: 11, fontWeight: '700', color: GOLD, letterSpacing: 1.2 },
+  intelGoal:        { fontSize: 10, fontWeight: '700', color: MUTED, letterSpacing: 0.8, backgroundColor: 'rgba(245,200,66,0.08)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(245,200,66,0.18)' },
+  macroBar:         { flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden', backgroundColor: 'rgba(232,224,208,0.08)', marginBottom: 10 },
+  macroBarConsumed: { backgroundColor: CORAL, borderRadius: 3 },
+  macroBarRemaining:{ backgroundColor: 'rgba(245,200,66,0.35)', borderRadius: 3 },
+  intelPrimary:     { fontSize: 17, fontWeight: '800', color: TEXT, marginBottom: 8 },
+  intelRow:         { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 5 },
+  intelDot:         { width: 6, height: 6, borderRadius: 3 },
+  intelLine:        { fontSize: 13, fontWeight: '500', flex: 1 },
 
   // Tip card
   tipCard: {
@@ -682,10 +747,17 @@ const s = StyleSheet.create({
   primaryBtnTitle: { fontSize: 17, fontWeight: '800', color: BG },
   primaryBtnSub:   { fontSize: 12, color: 'rgba(28,22,18,0.55)', marginTop: 2 },
 
-  // Secondary pills
-  pillsRow: { flexDirection: 'row', gap: 8, marginTop: 10, marginHorizontal: 16 },
-  pill:     { flex: 1, backgroundColor: CARD, borderRadius: 18, paddingVertical: 11, alignItems: 'center', borderWidth: 1, borderColor: BORDER },
-  pillText: { fontSize: 13, fontWeight: '600', color: TEXT },
+  // Secondary action cards (3-col grid)
+  actionGrid: { flexDirection: 'row', gap: 8, marginTop: 10, marginHorizontal: 16 },
+  actionCard: {
+    flex: 1, backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
+    padding: 14, alignItems: 'center', gap: 6, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 2,
+  },
+  actionIcon:   { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
+  actionTitle:  { fontSize: 13, fontWeight: '700', color: TEXT, textAlign: 'center' },
+  actionSub:    { fontSize: 11, color: MUTED, textAlign: 'center' },
+  actionAccent: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 2 },
 
   // Pantry strip (collapsible)
   pantryStrip: {
@@ -706,10 +778,12 @@ const s = StyleSheet.create({
   pantryInput:        { flex: 1, backgroundColor: 'rgba(248,213,97,0.04)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, fontSize: 14, color: TEXT, borderWidth: 1, borderColor: BORDER },
   pantryInputBtn:     { backgroundColor: CORAL, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9, justifyContent: 'center' },
   pantryInputBtnText: { fontSize: 14, fontWeight: '700', color: BG },
-  pantryChipsRow:     { gap: 8 },
-  pantryChip:         { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,158,110,0.12)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,158,110,0.25)', paddingHorizontal: 12, paddingVertical: 6 },
-  pantryChipText:     { fontSize: 13, fontWeight: '500', color: SAGE },
-  pantryChipX:        { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
+  photoThumbRow:    { gap: 8 },
+  photoThumb:       { width: 52, height: 52, borderRadius: 10, backgroundColor: CARD },
+  pantryChipsRow:   { gap: 8 },
+  pantryChip:       { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,158,110,0.12)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,158,110,0.25)', paddingHorizontal: 12, paddingVertical: 6 },
+  pantryChipText:   { fontSize: 13, fontWeight: '500', color: SAGE },
+  pantryChipX:      { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
 
   // Single meal swap pills
   swapRow: { flexDirection: 'row', gap: 8, marginHorizontal: 16, marginTop: 12, flexWrap: 'wrap' },
