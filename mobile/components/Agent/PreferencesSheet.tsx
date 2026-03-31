@@ -251,12 +251,17 @@ export default function PreferencesSheet({ visible, onClose }: Props) {
   );
 }
 
-// ── Styles ─────────────────────────────────────────────────────────────────────
-
-const TEAL = '#2DD4BF';
+// ── Palette (matches agent.tsx) ───────────────────────────────────────────────
+const BG     = '#1C1612';
+const CARD   = '#252018';
+const BORDER = 'rgba(248,213,97,0.08)';
+const GOLD   = '#F5C842';
+const TEXT_C = '#E8E0D0';
+const MUTED  = 'rgba(232,224,208,0.5)';
+const DIM    = 'rgba(232,224,208,0.3)';
 
 const s = StyleSheet.create({
-  safe:  { flex: 1, backgroundColor: '#FFFFFF' },
+  safe:  { flex: 1, backgroundColor: BG },
 
   header: {
     flexDirection: 'row',
@@ -266,17 +271,17 @@ const s = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: BORDER,
   },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B' },
-  headerSub:   { fontSize: 13, color: '#94A3B8', marginTop: 2, maxWidth: 240 },
-  doneBtn:     { backgroundColor: TEAL, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 8 },
-  doneBtnText: { fontSize: 14, fontWeight: '700', color: 'white' },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: TEXT_C },
+  headerSub:   { fontSize: 13, color: MUTED, marginTop: 2, maxWidth: 240 },
+  doneBtn:     { backgroundColor: GOLD, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 8 },
+  doneBtnText: { fontSize: 14, fontWeight: '700', color: BG },
 
   scrollContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20 },
 
-  sectionLabel: { fontSize: 13, fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 24, marginBottom: 10 },
-  sectionHint:  { fontSize: 12, color: '#94A3B8', marginBottom: 10, marginTop: -6 },
+  sectionLabel: { fontSize: 13, fontWeight: '700', color: DIM, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 24, marginBottom: 10 },
+  sectionHint:  { fontSize: 12, color: MUTED, marginBottom: 10, marginTop: -6 },
 
   optionRow: {
     flexDirection: 'row',
@@ -285,30 +290,30 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: BORDER,
     marginBottom: 6,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: CARD,
     gap: 10,
   },
-  optionRowActive: { backgroundColor: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.4)' },
+  optionRowActive: { backgroundColor: 'rgba(245,200,66,0.08)', borderColor: 'rgba(245,200,66,0.35)' },
   optionEmoji: { fontSize: 18, width: 24, textAlign: 'center' },
-  optionText:  { flex: 1, fontSize: 15, color: '#334155', fontWeight: '500' },
-  optionTextActive: { color: '#1E293B', fontWeight: '600' },
-  checkmark:   { fontSize: 16, color: TEAL, fontWeight: '700' },
+  optionText:  { flex: 1, fontSize: 15, color: MUTED, fontWeight: '500' },
+  optionTextActive: { color: TEXT_C, fontWeight: '600' },
+  checkmark:   { fontSize: 16, color: GOLD, fontWeight: '700' },
 
   chipRow:   { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip:      { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' },
-  chipActive:{ backgroundColor: 'rgba(45,212,191,0.12)', borderColor: 'rgba(45,212,191,0.4)' },
-  chipText:  { fontSize: 13, fontWeight: '600', color: '#64748B' },
-  chipTextActive: { color: TEAL },
+  chip:      { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: BORDER, backgroundColor: CARD },
+  chipActive:{ backgroundColor: 'rgba(245,200,66,0.12)', borderColor: 'rgba(245,200,66,0.35)' },
+  chipText:  { fontSize: 13, fontWeight: '600', color: DIM },
+  chipTextActive: { color: GOLD },
 
-  segmented:     { flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 16, padding: 4, gap: 4 },
+  segmented:     { flexDirection: 'row', backgroundColor: CARD, borderRadius: 16, padding: 4, gap: 4, borderWidth: 1, borderColor: BORDER },
   segment:       { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
-  segmentActive: { backgroundColor: 'white', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
-  segmentText:   { fontSize: 12, color: '#94A3B8', textAlign: 'center', lineHeight: 16 },
-  segmentTextActive: { color: '#1E293B', fontWeight: '700' },
+  segmentActive: { backgroundColor: 'rgba(245,200,66,0.12)', borderWidth: 1, borderColor: 'rgba(245,200,66,0.25)' },
+  segmentText:   { fontSize: 12, color: MUTED, textAlign: 'center', lineHeight: 16 },
+  segmentTextActive: { color: TEXT_C, fontWeight: '700' },
 
-  footer:  { paddingHorizontal: 20, paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
-  saveBtn: { backgroundColor: TEAL, borderRadius: 20, paddingVertical: 16, alignItems: 'center', shadowColor: TEAL, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6 },
-  saveBtnText: { fontSize: 16, fontWeight: '700', color: 'white' },
+  footer:  { paddingHorizontal: 20, paddingVertical: 16, borderTopWidth: 1, borderTopColor: BORDER },
+  saveBtn: { backgroundColor: GOLD, borderRadius: 20, paddingVertical: 16, alignItems: 'center', shadowColor: GOLD, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6 },
+  saveBtnText: { fontSize: 16, fontWeight: '700', color: BG },
 });

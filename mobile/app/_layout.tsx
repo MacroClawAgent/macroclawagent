@@ -51,6 +51,10 @@ export default function RootLayout() {
           <Stack.Screen name="meals" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           <Stack.Screen name="strava-connected" options={{ headerShown: false }} />
+          <Stack.Screen name="recipes" options={{ headerShown: false }} />
+          <Stack.Screen name="progress" options={{ headerShown: false }} />
+          <Stack.Screen name="prep-guide" options={{ headerShown: false }} />
+          <Stack.Screen name="nutrition-tips" options={{ headerShown: false }} />
         </Stack>
         <Toast />
         </>
