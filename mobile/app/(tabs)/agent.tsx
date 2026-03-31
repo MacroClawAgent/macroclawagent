@@ -156,26 +156,43 @@ export default function AgentScreen() {
             onPress={() => { setSelectedMeal(singleMeal); setShowRecipe(true); }}
           />
 
-          {/* Swap pills */}
-          <View style={s.swapRow}>
-            {['↑ More protein', '↓ Make lighter', '🌏 Different cuisine'].map(label => (
-              <TouchableOpacity
-                key={label}
-                style={s.swapPill}
-                activeOpacity={0.75}
-                onPress={() => generate('single', preferences, targetsWithConsumed, {
-                  mealType: mealCtx.mealType,
-                  pantryItems: pantryItems.length > 0 ? pantryItems : undefined,
-                })}
-              >
-                <Text style={s.swapPillText}>{label}</Text>
-              </TouchableOpacity>
-            ))}
+          {/* Quick actions */}
+          <View style={s.quickActions}>
+            <Text style={s.quickActionsLabel}>Try something different</Text>
+            <View style={s.quickActionsGrid}>
+              {[
+                { icon: 'barbell-outline' as const, label: 'High protein', color: CORAL },
+                { icon: 'leaf-outline' as const, label: 'Make lighter', color: SAGE },
+                { icon: 'globe-outline' as const, label: 'New cuisine', color: GOLD },
+                { icon: 'refresh-outline' as const, label: 'Surprise me', color: MUTED },
+              ].map(action => (
+                <TouchableOpacity
+                  key={action.label}
+                  style={s.quickActionBtn}
+                  activeOpacity={0.75}
+                  onPress={() => generate('single', preferences, targetsWithConsumed, {
+                    mealType: mealCtx.mealType,
+                    pantryItems: pantryItems.length > 0 ? pantryItems : undefined,
+                  })}
+                >
+                  <Ionicons name={action.icon} size={16} color={action.color} />
+                  <Text style={s.quickActionText}>{action.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
-          <TouchableOpacity style={s.fullDayLink} onPress={() => handleGenerate('today')} activeOpacity={0.75}>
-            <Text style={s.fullDayLinkText}>See full day plan instead →</Text>
-          </TouchableOpacity>
+          {/* Bottom actions */}
+          <View style={s.singleBottomActions}>
+            <TouchableOpacity style={s.singleCartBtn} onPress={handleSendToCart} activeOpacity={0.85}>
+              <Ionicons name="cart-outline" size={18} color={BG} />
+              <Text style={s.singleCartText}>Add to Smart Cart</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={s.singleFullDayBtn} onPress={() => handleGenerate('today')} activeOpacity={0.75}>
+              <Ionicons name="calendar-outline" size={16} color={MUTED} />
+              <Text style={s.singleFullDayText}>Plan full day instead</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={{ height: 32 }} />
         </ScrollView>
@@ -698,13 +715,29 @@ const s = StyleSheet.create({
   pantryChipText:      { fontSize: 13, fontWeight: '500', color: SAGE },
   pantryChipX:         { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
 
-  // Single meal swap pills
-  swapRow: { flexDirection: 'row', gap: 8, marginHorizontal: 16, marginTop: 12, flexWrap: 'wrap' },
-  swapPill: { backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 8 },
-  swapPillText: { fontSize: 13, fontWeight: '500', color: TEXT },
+  // Quick actions (single meal)
+  quickActions:      { marginHorizontal: 16, marginTop: 16 },
+  quickActionsLabel: { fontSize: 12, fontWeight: '600', color: DIM, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 },
+  quickActionsGrid:  { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  quickActionBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER,
+    paddingHorizontal: 14, paddingVertical: 10,
+  },
+  quickActionText: { fontSize: 13, fontWeight: '600', color: TEXT },
 
-  fullDayLink:     { marginHorizontal: 16, marginTop: 12, alignItems: 'center', paddingVertical: 8 },
-  fullDayLinkText: { fontSize: 14, color: MUTED, fontWeight: '500' },
+  // Single meal bottom actions
+  singleBottomActions: { marginHorizontal: 16, marginTop: 20, gap: 10 },
+  singleCartBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: GOLD, borderRadius: 18, paddingVertical: 14,
+  },
+  singleCartText: { fontSize: 15, fontWeight: '700', color: BG },
+  singleFullDayBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: CARD, borderRadius: 18, borderWidth: 1, borderColor: BORDER, paddingVertical: 12,
+  },
+  singleFullDayText: { fontSize: 14, fontWeight: '600', color: MUTED },
 
   // Cart strip (plan_ready, at top)
   cartStrip: {
