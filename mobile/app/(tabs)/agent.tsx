@@ -409,21 +409,21 @@ export default function AgentScreen() {
         {/* ── Action cards ────────────────────────────────────────────────────── */}
         <View style={s.actionGrid}>
           <TouchableOpacity style={s.actionCard} onPress={() => handleGenerate('today')} activeOpacity={0.8}>
-            <View style={[s.actionIcon, { backgroundColor: 'rgba(224,123,84,0.15)' }]}>
-              <Ionicons name="calendar-outline" size={22} color={CORAL} />
+            <View style={[s.actionIcon, { backgroundColor: 'rgba(139,158,110,0.15)' }]}>
+              <Ionicons name="calendar-outline" size={22} color={SAGE} />
             </View>
             <Text style={s.actionTitle}>Full day</Text>
             <Text style={s.actionSub}>4 meals</Text>
-            <View style={[s.actionAccent, { backgroundColor: CORAL }]} />
+            <View style={[s.actionAccent, { backgroundColor: SAGE }]} />
           </TouchableOpacity>
 
           <TouchableOpacity style={s.actionCard} onPress={() => handleGenerate('week')} activeOpacity={0.8}>
-            <View style={[s.actionIcon, { backgroundColor: 'rgba(224,123,84,0.10)' }]}>
-              <Ionicons name="grid-outline" size={22} color={CORAL} />
+            <View style={[s.actionIcon, { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
+              <Ionicons name="grid-outline" size={22} color={GOLD} />
             </View>
             <Text style={s.actionTitle}>This week</Text>
             <Text style={s.actionSub}>7 days</Text>
-            <View style={[s.actionAccent, { backgroundColor: CORAL }]} />
+            <View style={[s.actionAccent, { backgroundColor: GOLD }]} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -657,7 +657,7 @@ const s = StyleSheet.create({
   primaryBtnSub:   { fontSize: 12, color: 'rgba(28,22,18,0.55)', marginTop: 2 },
 
   // Secondary action cards (3-col grid)
-  actionGrid: { flexDirection: 'row', gap: 8, marginTop: 10, marginHorizontal: 16 },
+  actionGrid: { flexDirection: 'row', gap: 8, marginTop: 10, marginBottom: 10, marginHorizontal: 16 },
   actionCard: {
     flex: 1, backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     padding: 14, alignItems: 'center', gap: 6, overflow: 'hidden',
