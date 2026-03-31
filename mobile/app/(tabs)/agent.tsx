@@ -127,6 +127,7 @@ export default function AgentScreen() {
     activityContext: training
       ? { workoutLabel: training.label, caloriesBurned: training.caloriesBurned }
       : undefined,
+    equipment: equipment.size > 0 ? [...equipment] : undefined,
   };
 
   const handleGenerate = useCallback(

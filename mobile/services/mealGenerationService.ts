@@ -17,6 +17,7 @@ interface NutritionTargets {
     caloriesBurned?: number;
     steps?: number;
   };
+  equipment?: string[];
 }
 
 function buildActivityLine(activityContext?: NutritionTargets['activityContext']): string {
@@ -30,6 +31,27 @@ function buildActivityLine(activityContext?: NutritionTargets['activityContext']
   return '';
 }
 
+function buildEquipmentLine(equipment?: string[]): string {
+  if (!equipment || equipment.length === 0) return '';
+  const labels: Record<string, string> = {
+    oven: 'Oven', stovetop: 'Stovetop/Hob', air_fryer: 'Air Fryer', microwave: 'Microwave',
+    blender: 'Blender', slow_cooker: 'Slow Cooker', grill: 'Grill/BBQ', rice_cooker: 'Rice Cooker',
+  };
+  const available = equipment.map(e => labels[e] ?? e).join(', ');
+  return `\nKITCHEN EQUIPMENT AVAILABLE: ${available}.\nONLY suggest recipes that can be made with the equipment listed above. Do NOT suggest recipes requiring equipment the user does not have.\n`;
+}
+
+function buildGoalPreamble(goal: string): string {
+  const goalMap: Record<string, string> = {
+    'Build Muscle': 'PRIMARY OBJECTIVE: BUILD MUSCLE. Prioritise high protein (>30g per meal), include complex carbs for energy and recovery, favour lean protein sources. Every meal must serve muscle growth.',
+    'Lose Weight': 'PRIMARY OBJECTIVE: LOSE WEIGHT. Prioritise high protein to preserve muscle, keep calories strictly within targets, favour high-volume low-calorie foods (vegetables, lean proteins). Avoid calorie-dense sauces and oils where possible.',
+    'Performance': 'PRIMARY OBJECTIVE: ATHLETIC PERFORMANCE. Balance macros for sustained energy, include complex carbs for fuel, adequate protein for recovery, healthy fats for hormones. Time carbs around training if possible.',
+    'Stay Healthy': 'PRIMARY OBJECTIVE: GENERAL HEALTH. Balanced whole-food meals, variety of micronutrients, adequate fibre, lean proteins, healthy fats. Focus on nutrient density.',
+    'Maintain': 'PRIMARY OBJECTIVE: MAINTAIN CURRENT PHYSIQUE. Hit macro targets precisely, balanced meals, sustainable and enjoyable food choices.',
+  };
+  return goalMap[goal] ?? `PRIMARY OBJECTIVE: ${goal}. Optimise every meal to serve this goal.`;
+}
+
 // ── Prompt builders ────────────────────────────────────────────────────────────
 
 const MEAL_JSON_SPEC = `{"type":"breakfast","name":"meal name (max 5 words)","ingredients":"Ingredient 1 (150g), Ingredient 2 (100g)","ingredientsList":["ingredient 1","ingredient 2"],"calories":520,"protein":42,"carbs":48,"fat":14,"time":"7:30 AM","emoji":"🍗","cookTime":20,"difficulty":"Easy","reason":"One sentence max 15 words explaining why this meal is right for this user right now. Be specific — reference their goal, remaining macros, or pantry items.","recipeSteps":["Step 1.","Step 2.","Step 3.","Step 4.","Step 5."]}`;
@@ -41,13 +63,16 @@ function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets, pan
     ? `\nALREADY EATEN TODAY: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein, ${targets.consumed.carbs}g carbs, ${targets.consumed.fat}g fat.\nRemaining: ${targets.calories - targets.consumed.calories} kcal, ${targets.protein - targets.consumed.protein}g protein.\n`
     : '';
   const activityLine = buildActivityLine(targets.activityContext);
+  const equipLine = buildEquipmentLine(targets.equipment);
+  const goalPreamble = buildGoalPreamble(targets.goal);
   return (
     `You are a professional nutritionist creating a personalised meal plan for an Australian user.\n\n` +
+    `${goalPreamble}\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
-    `USER NUTRITION TARGETS:\nGoal: ${targets.goal}\nDaily calories: ${targets.calories} kcal\n` +
+    `USER NUTRITION TARGETS:\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
     `Servings: ${prefs.servings} person(s)\n` +
-    consumedCtx + activityLine + pantryContext + `\n` +
+    consumedCtx + activityLine + equipLine + pantryContext + `\n` +
     `Generate exactly 4 meals for today: breakfast, lunch, snack, dinner.\n\n` +
     `For EACH meal return this exact JSON structure:\n${MEAL_JSON_SPEC}\n\n` +
     `Return a JSON array of exactly 4 meal objects.\n` +
@@ -67,11 +92,14 @@ function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targe
     : mealType === 'dinner' ? Math.round(targets.calories * 0.30)
     : Math.round(targets.calories * 0.15);
   const activityLine = buildActivityLine(targets.activityContext);
+  const equipLine = buildEquipmentLine(targets.equipment);
+  const goalPreamble = buildGoalPreamble(targets.goal);
   return (
     `You are a professional nutritionist. Suggest ONE ${mealType} meal for an Australian user.\n\n` +
+    `${goalPreamble}\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
-    `USER GOAL: ${targets.goal}\nTarget for this meal: ~${calTarget} kcal, ${Math.round(targets.protein * (calTarget / targets.calories))}g protein\n` +
-    consumedCtx + activityLine + pantryContext + `\n` +
+    `Target for this meal: ~${calTarget} kcal, ${Math.round(targets.protein * (calTarget / targets.calories))}g protein\n` +
+    consumedCtx + activityLine + equipLine + pantryContext + `\n` +
     `Return a single JSON object (not an array) with this structure:\n${MEAL_JSON_SPEC}\n\n` +
     `JSON only — no other text.`
   );
@@ -84,12 +112,15 @@ function buildWeekPrompt(prefs: UserPreferences, targets: NutritionTargets): str
   monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
 
   const activityLine = buildActivityLine(targets.activityContext);
+  const equipLine = buildEquipmentLine(targets.equipment);
+  const goalPreamble = buildGoalPreamble(targets.goal);
   return (
     `You are a professional nutritionist creating a personalised 7-day meal plan for an Australian user.\n\n` +
+    `${goalPreamble}\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
-    `USER NUTRITION TARGETS:\nGoal: ${targets.goal}\nDaily calories: ${targets.calories} kcal\n` +
+    `USER NUTRITION TARGETS:\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
-    `Servings: ${prefs.servings} person(s)\n` + activityLine + `\n` +
+    `Servings: ${prefs.servings} person(s)\n` + activityLine + equipLine + `\n` +
     `Generate 7 days of meals (Monday to Sunday). Each day has 4 meals: breakfast, lunch, snack, dinner.\n\n` +
     `VARIETY RULES:\n- Never repeat the same meal twice in the week\n` +
     `- Rotate protein sources: chicken, fish, beef/lamb, eggs, legumes throughout the week\n` +
