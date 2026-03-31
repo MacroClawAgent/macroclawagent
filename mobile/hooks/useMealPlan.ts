@@ -7,7 +7,7 @@ import type { UserPreferences } from '@/types/preferences';
 import type { PantryItem } from '@/services/pantryService';
 import { generateMealPlan, generateSingleMeal } from '@/services/mealGenerationService';
 import { consolidateIngredients } from '@/services/ingredientConsolidationService';
-import { loadPantryItems } from '@/services/pantryService';
+import { loadPantryItems, importFromSmartCart } from '@/services/pantryService';
 
 const PLAN_STORAGE_KEY = 'jonno_meal_plan';
 
@@ -113,7 +113,10 @@ export const useMealPlan = () => {
         generatedAt: new Date().toISOString(),
       };
       await AsyncStorage.setItem('jonno_agent_cart', JSON.stringify(payload));
-      const toBuy = consolidated.filter(i => !i.isInPantry).length;
+      // Auto-add ordered groceries to pantry so Jonno knows what's in the kitchen
+      const toBuyNames = consolidated.filter(i => !i.isInPantry).map(i => i.name);
+      importFromSmartCart(toBuyNames).catch(() => {});
+      const toBuy = toBuyNames.length;
       Toast.show({
         type: 'success',
         text1: 'Building your cart... 🛒',

@@ -22,6 +22,7 @@ import PreferencesSheet from '@/components/Agent/PreferencesSheet';
 import MealPlanCard from '@/components/Agent/MealPlanCard';
 import RecipeSheet from '@/components/Agent/RecipeSheet';
 import GeneratingLoader from '@/components/Agent/GeneratingLoader';
+import PantryScanner from '@/components/Agent/PantryScanner';
 import type { Meal } from '@/types/mealPlan';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
@@ -114,6 +115,8 @@ export default function AgentScreen() {
   const [showRecipe,      setShowRecipe]      = useState(false);
   const [addingPantry,    setAddingPantry]    = useState(false);
   const [pantryInput,     setPantryInput]     = useState('');
+  const [pantryExpanded,  setPantryExpanded]  = useState(false);
+  const [showScanner,     setShowScanner]     = useState(false);
   const [tipDismissed,    setTipDismissed]    = useState(true);
   const [todayConsumed,   setTodayConsumed]   = useState<{ calories: number; protein: number } | null>(null);
 
@@ -149,6 +152,9 @@ export default function AgentScreen() {
 
   const handleSendToCart  = useCallback(async () => { await sendToCart(); }, [sendToCart]);
   const handleOpenRecipe  = useCallback((meal: Meal) => { setSelectedMeal(meal); setShowRecipe(true); }, []);
+  const handleScannerConfirm = useCallback(async (items: string[]) => {
+    for (const name of items) { await addPantryItem(name); }
+  }, [addPantryItem]);
 
   // Context card — dynamic lines
   const contextLines: { text: string; primary?: boolean }[] = [];
@@ -494,91 +500,95 @@ export default function AgentScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Pantry strip (only when items exist) ────────────────────────────── */}
-        {pantryItems.length > 0 && (
-          <View style={s.pantryStrip}>
-            <View style={s.pantryStripHeader}>
+        {/* ── Pantry section — collapsible ────────────────────────────────────── */}
+        <View style={s.pantryStrip}>
+          {/* Always-visible header row */}
+          <TouchableOpacity
+            style={s.pantryStripHeader}
+            onPress={() => setPantryExpanded(p => !p)}
+            activeOpacity={0.8}
+          >
+            <View style={s.pantryStripLeft}>
               <Text style={s.pantryStripTitle}>In your kitchen</Text>
-              <TouchableOpacity onPress={() => setAddingPantry(true)} activeOpacity={0.75}>
-                <Text style={s.pantryAddLink}>+ Add</Text>
-              </TouchableOpacity>
+              {pantryItems.length > 0 && (
+                <View style={s.pantryCountBadge}>
+                  <Text style={s.pantryCountText}>{pantryItems.length}</Text>
+                </View>
+              )}
             </View>
-            {addingPantry && (
-              <View style={s.pantryInputRow}>
-                <TextInput
-                  style={s.pantryInput}
-                  placeholder="e.g. Chicken breast"
-                  placeholderTextColor={DIM}
-                  value={pantryInput}
-                  onChangeText={setPantryInput}
-                  autoFocus
-                  returnKeyType="done"
-                  onSubmitEditing={async () => {
-                    if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
-                    setAddingPantry(false);
-                  }}
-                />
-                <TouchableOpacity
-                  style={s.pantryInputBtn}
-                  onPress={async () => {
-                    if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
-                    setAddingPantry(false);
-                  }}
-                >
-                  <Text style={s.pantryInputBtnText}>Add</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pantryChipsRow}>
-              {pantryItems.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={s.pantryChip}
-                  onPress={() => removePantryItem(item.id)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={s.pantryChipText}>{item.name}</Text>
-                  <Text style={s.pantryChipX}>×</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* ── Empty pantry prompt ─────────────────────────────────────────────── */}
-        {pantryItems.length === 0 && !addingPantry && (
-          <TouchableOpacity style={s.pantryPrompt} onPress={() => setAddingPantry(true)} activeOpacity={0.75}>
-            <Text style={s.pantryPromptText}>+ Add pantry items so Jonno can use them</Text>
-          </TouchableOpacity>
-        )}
-        {pantryItems.length === 0 && addingPantry && (
-          <View style={[s.pantryStrip, { marginTop: 14 }]}>
-            <View style={s.pantryInputRow}>
-              <TextInput
-                style={s.pantryInput}
-                placeholder="e.g. Chicken breast"
-                placeholderTextColor={DIM}
-                value={pantryInput}
-                onChangeText={setPantryInput}
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={async () => {
-                  if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
-                  setAddingPantry(false);
-                }}
-              />
+            <View style={s.pantryStripActions}>
               <TouchableOpacity
-                style={s.pantryInputBtn}
-                onPress={async () => {
-                  if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
-                  setAddingPantry(false);
-                }}
+                onPress={() => setShowScanner(true)}
+                style={s.scanBtn}
+                activeOpacity={0.75}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text style={s.pantryInputBtnText}>Add</Text>
+                <Ionicons name="camera-outline" size={18} color={MUTED} />
               </TouchableOpacity>
+              <Ionicons
+                name={pantryExpanded ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={DIM}
+              />
             </View>
-          </View>
-        )}
+          </TouchableOpacity>
+
+          {/* Expanded content */}
+          {pantryExpanded && (
+            <>
+              {addingPantry && (
+                <View style={s.pantryInputRow}>
+                  <TextInput
+                    style={s.pantryInput}
+                    placeholder="e.g. Chicken breast"
+                    placeholderTextColor={DIM}
+                    value={pantryInput}
+                    onChangeText={setPantryInput}
+                    autoFocus
+                    returnKeyType="done"
+                    onSubmitEditing={async () => {
+                      if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
+                      setAddingPantry(false);
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={s.pantryInputBtn}
+                    onPress={async () => {
+                      if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
+                      setAddingPantry(false);
+                    }}
+                  >
+                    <Text style={s.pantryInputBtnText}>Add</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {pantryItems.length > 0 ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pantryChipsRow} style={{ marginTop: 10 }}>
+                  {pantryItems.map(item => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={s.pantryChip}
+                      onPress={() => removePantryItem(item.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={s.pantryChipText}>{item.name}</Text>
+                      <Text style={s.pantryChipX}>×</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : (
+                <Text style={s.pantryEmptyInline}>Nothing added yet</Text>
+              )}
+
+              {!addingPantry && (
+                <TouchableOpacity style={s.pantryAddRow} onPress={() => setAddingPantry(true)} activeOpacity={0.75}>
+                  <Text style={s.pantryAddLink}>+ Type an item</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+        </View>
 
         <View style={{ height: 32 }} />
       </ScrollView>
@@ -589,6 +599,12 @@ export default function AgentScreen() {
           setShowPreferences(false);
           completeOnboarding();
         }}
+      />
+
+      <PantryScanner
+        visible={showScanner}
+        onClose={() => setShowScanner(false)}
+        onItemsConfirmed={handleScannerConfirm}
       />
     </SafeAreaView>
   );
@@ -655,10 +671,10 @@ const s = StyleSheet.create({
   errorBox:  { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10 },
   errorText: { fontSize: 13, color: '#DC2626', textAlign: 'center' },
 
-  // Primary hero button (gold)
+  // Primary hero button (sage green)
   primaryBtn: {
     marginHorizontal: 16, borderRadius: 22, overflow: 'hidden',
-    backgroundColor: GOLD, shadowColor: GOLD, shadowOffset: { width: 0, height: 8 },
+    backgroundColor: SAGE, shadowColor: SAGE, shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.28, shadowRadius: 16, elevation: 8,
   },
   primaryBtnInner: { flexDirection: 'row', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 18, gap: 14 },
@@ -671,26 +687,29 @@ const s = StyleSheet.create({
   pill:     { flex: 1, backgroundColor: CARD, borderRadius: 18, paddingVertical: 11, alignItems: 'center', borderWidth: 1, borderColor: BORDER },
   pillText: { fontSize: 13, fontWeight: '600', color: TEXT },
 
-  // Pantry strip
+  // Pantry strip (collapsible)
   pantryStrip: {
     marginHorizontal: 16, backgroundColor: CARD, borderRadius: 18,
-    borderWidth: 1, borderColor: BORDER, padding: 14,
+    borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12,
   },
-  pantryStripHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  pantryStripTitle:  { fontSize: 13, fontWeight: '600', color: MUTED },
-  pantryAddLink:     { fontSize: 13, fontWeight: '600', color: GOLD },
-  pantryInputRow:    { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  pantryInput:       { flex: 1, backgroundColor: 'rgba(248,213,97,0.04)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, fontSize: 14, color: TEXT, borderWidth: 1, borderColor: BORDER },
-  pantryInputBtn:    { backgroundColor: GOLD, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9, justifyContent: 'center' },
-  pantryInputBtnText:{ fontSize: 14, fontWeight: '700', color: BG },
-  pantryChipsRow:    { gap: 8 },
-  pantryChip:        { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,158,110,0.12)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,158,110,0.25)', paddingHorizontal: 12, paddingVertical: 6 },
-  pantryChipText:    { fontSize: 13, fontWeight: '500', color: SAGE },
-  pantryChipX:       { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
-
-  // Empty pantry prompt
-  pantryPrompt:     { marginHorizontal: 16, marginTop: 14, paddingVertical: 12, alignItems: 'center' },
-  pantryPromptText: { fontSize: 13, color: DIM },
+  pantryStripHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  pantryStripLeft:    { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pantryStripTitle:   { fontSize: 13, fontWeight: '600', color: MUTED },
+  pantryCountBadge:   { backgroundColor: 'rgba(139,158,110,0.2)', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 1 },
+  pantryCountText:    { fontSize: 11, fontWeight: '700', color: SAGE },
+  pantryStripActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  scanBtn:            { width: 30, height: 30, borderRadius: 8, backgroundColor: BG, borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center' },
+  pantryEmptyInline:  { fontSize: 13, color: DIM, marginTop: 10 },
+  pantryAddRow:       { marginTop: 10 },
+  pantryAddLink:      { fontSize: 13, fontWeight: '600', color: CORAL },
+  pantryInputRow:     { flexDirection: 'row', gap: 8, marginTop: 10 },
+  pantryInput:        { flex: 1, backgroundColor: 'rgba(248,213,97,0.04)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, fontSize: 14, color: TEXT, borderWidth: 1, borderColor: BORDER },
+  pantryInputBtn:     { backgroundColor: CORAL, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9, justifyContent: 'center' },
+  pantryInputBtnText: { fontSize: 14, fontWeight: '700', color: BG },
+  pantryChipsRow:     { gap: 8 },
+  pantryChip:         { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,158,110,0.12)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,158,110,0.25)', paddingHorizontal: 12, paddingVertical: 6 },
+  pantryChipText:     { fontSize: 13, fontWeight: '500', color: SAGE },
+  pantryChipX:        { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
 
   // Single meal swap pills
   swapRow: { flexDirection: 'row', gap: 8, marginHorizontal: 16, marginTop: 12, flexWrap: 'wrap' },

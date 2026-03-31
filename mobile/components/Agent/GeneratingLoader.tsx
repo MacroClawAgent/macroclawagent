@@ -68,7 +68,7 @@ export default function GeneratingLoader({ type, preferences }: Props) {
     <SafeAreaView style={s.safe} edges={['top']}>
       <Animated.View style={[s.container, { opacity: fadeAnim }]}>
         {/* Spinning icon */}
-        <LinearGradient colors={['#2DD4BF', '#0EA5E9']} style={s.iconWrap}>
+        <LinearGradient colors={['#E07B54', '#F5C842']} style={s.iconWrap}>
           <Animated.Text style={[s.iconText, { transform: [{ rotate: spin }] }]}>✦</Animated.Text>
         </LinearGradient>
 
@@ -101,22 +101,22 @@ export default function GeneratingLoader({ type, preferences }: Props) {
 }
 
 const s = StyleSheet.create({
-  safe:      { flex: 1, backgroundColor: '#EEF4FA' },
+  safe:      { flex: 1, backgroundColor: '#1C1612' },
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 16 },
 
-  iconWrap:  { width: 80, height: 80, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginBottom: 8, shadowColor: '#2DD4BF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 },
-  iconText:  { fontSize: 38, color: 'white' },
+  iconWrap:  { width: 80, height: 80, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginBottom: 8, shadowColor: '#E07B54', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 },
+  iconText:  { fontSize: 38, color: '#1C1612' },
 
-  title:    { fontSize: 24, fontWeight: '800', color: '#1E293B', textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: -4 },
+  title:    { fontSize: 24, fontWeight: '800', color: '#E8E0D0', textAlign: 'center' },
+  subtitle: { fontSize: 14, color: 'rgba(232,224,208,0.5)', textAlign: 'center', marginTop: -4 },
 
-  stepBox:  { backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 16, paddingHorizontal: 20, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(45,212,191,0.2)', minWidth: 260, alignItems: 'center' },
-  stepText: { fontSize: 14, color: '#2DD4BF', fontWeight: '600', textAlign: 'center' },
+  stepBox:  { backgroundColor: '#252018', borderRadius: 16, paddingHorizontal: 20, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(248,213,97,0.12)', minWidth: 260, alignItems: 'center' },
+  stepText: { fontSize: 14, color: '#F5C842', fontWeight: '600', textAlign: 'center' },
 
   dots:     { flexDirection: 'row', gap: 6 },
-  dot:      { width: 6, height: 6, borderRadius: 3, backgroundColor: '#E2E8F0' },
-  dotActive:{ backgroundColor: '#2DD4BF', width: 18 },
-  dotDone:  { backgroundColor: 'rgba(45,212,191,0.4)' },
+  dot:      { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(232,224,208,0.15)' },
+  dotActive:{ backgroundColor: '#F5C842', width: 18 },
+  dotDone:  { backgroundColor: 'rgba(248,213,97,0.3)' },
 
-  footnote: { fontSize: 12, color: '#94A3B8', textAlign: 'center', marginTop: 8 },
+  footnote: { fontSize: 12, color: 'rgba(232,224,208,0.4)', textAlign: 'center', marginTop: 8 },
 });

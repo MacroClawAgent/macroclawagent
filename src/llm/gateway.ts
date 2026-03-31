@@ -340,6 +340,67 @@ Be realistic with portions. Use standard nutritional data. Round values to 1 dec
   }
 }
 
+// ── Pantry / Fridge Vision Gateway ────────────────────────────────────────────
+// Sends a fridge or pantry photo to Claude Vision and returns a list of
+// ingredient names for the user to confirm before saving to their pantry.
+
+export async function scanPantryImage(
+  imageBase64: string,
+  mimeType: "image/jpeg" | "image/png" | "image/webp" | "image/gif" = "image/jpeg"
+): Promise<{ items: string[]; error?: string }> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return { items: [], error: "AI not configured" };
+  }
+
+  const client = new Anthropic({ apiKey });
+
+  const prompt = `Look at this photo of a fridge, pantry or kitchen. Identify every visible food item, ingredient, condiment, beverage and produce.
+Return ONLY valid JSON with a single "items" array of clean ingredient name strings. No markdown, no extra text:
+{
+  "items": ["Chicken breast", "Greek yoghurt", "Spinach", "Eggs", "Cheddar cheese", "Milk"]
+}
+Rules:
+- Use simple generic names (not brands unless the item is only known by brand, e.g. "Vegemite")
+- If you can clearly see a quantity, include it briefly e.g. "Eggs × 6"
+- One entry per distinct ingredient type
+- Maximum 30 items
+- If you cannot identify food items in this photo, return { "items": [] }`;
+
+  try {
+    const response = await client.messages.create({
+      model: MODEL,
+      max_tokens: 512,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
+            { type: "text", text: prompt },
+          ],
+        },
+      ],
+    });
+
+    const textBlock = response.content.find((b) => b.type === "text");
+    if (!textBlock || textBlock.type !== "text") throw new Error("No text response");
+
+    const raw = textBlock.text.trim();
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No JSON found");
+
+    const parsed = JSON.parse(jsonMatch[0]) as { items?: unknown };
+    const items = Array.isArray(parsed.items)
+      ? (parsed.items as unknown[]).filter((i): i is string => typeof i === "string")
+      : [];
+
+    return { items };
+  } catch (err) {
+    console.error("[LLM Gateway] scanPantryImage error:", err);
+    return { items: [], error: "Couldn't read this photo — please add items manually." };
+  }
+}
+
 export async function callAgentWithContext(
   userMessage: string,
   systemPrompt: string
