@@ -311,67 +311,6 @@ export default function AgentScreen() {
     );
   }
 
-  // ── CART SENT ────────────────────────────────────────────────────────────────
-
-  if (state === 'cart_sent') {
-    return (
-      <SafeAreaView style={s.safe} edges={['top']}>
-        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
-          <View style={s.header}>
-            <Text style={s.title}>Jonno</Text>
-          </View>
-
-          <View style={s.successCard}>
-            <View style={s.successIconWrap}>
-              <Ionicons name="checkmark" size={34} color={SAGE} />
-            </View>
-            <Text style={s.successTitle}>Cart is ready</Text>
-            <Text style={s.successSub}>{`Ingredients sent to your Smart Cart.\nOrder from Woolworths or Coles.`}</Text>
-            <TouchableOpacity
-              style={s.openCartBtn}
-              onPress={() => router.push('/(tabs)/cart' as any)}
-              activeOpacity={0.85}
-            >
-              <Text style={s.openCartBtnText}>Open Smart Cart →</Text>
-            </TouchableOpacity>
-          </View>
-
-          {days[0] && (
-            <>
-              <Text style={s.recipesHeader}>Recipes for your meals</Text>
-              {(['breakfast', 'lunch', 'snack', 'dinner'] as const).map(mealType => {
-                const meal = days[0].meals[mealType];
-                if (!meal) return null;
-                return (
-                  <TouchableOpacity
-                    key={mealType}
-                    style={s.recipeCard}
-                    onPress={() => { setSelectedMeal(meal); setShowRecipe(true); }}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={s.recipeEmoji}>{meal.emoji}</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.recipeName}>{meal.name}</Text>
-                      <Text style={s.recipeMeta}>⏱ {meal.cookTime} min · {meal.difficulty}</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color={MUTED} />
-                  </TouchableOpacity>
-                );
-              })}
-            </>
-          )}
-
-          <TouchableOpacity style={s.newPlanBtn} onPress={resetPlan} activeOpacity={0.8}>
-            <Text style={s.newPlanText}>↺  Plan something else</Text>
-          </TouchableOpacity>
-
-          <View style={{ height: 32 }} />
-        </ScrollView>
-        <RecipeSheet meal={selectedMeal} visible={showRecipe} onClose={() => setShowRecipe(false)} />
-      </SafeAreaView>
-    );
-  }
-
   // ── IDLE ─────────────────────────────────────────────────────────────────────
 
   return (
@@ -771,24 +710,4 @@ const s = StyleSheet.create({
   totalsStripValue: { fontSize: 14, fontWeight: '700' },
   totalsStripLabel: { fontSize: 10, color: 'rgba(232,224,208,0.4)', marginLeft: 2 },
 
-  // Cart sent — success card (sage)
-  successCard: {
-    marginHorizontal: 16, marginTop: 8, backgroundColor: CARD, borderRadius: 28,
-    borderWidth: 1, borderColor: 'rgba(139,158,110,0.3)', padding: 28, alignItems: 'center', gap: 8,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 14, elevation: 4,
-  },
-  successIconWrap: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(139,158,110,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  successTitle:    { fontSize: 24, fontWeight: '800', color: TEXT },
-  successSub:      { fontSize: 15, color: MUTED, textAlign: 'center', lineHeight: 22 },
-  openCartBtn:     { marginTop: 10, backgroundColor: GOLD, borderRadius: 20, paddingHorizontal: 28, paddingVertical: 14 },
-  openCartBtnText: { fontSize: 16, fontWeight: '700', color: BG },
-
-  recipesHeader: { fontSize: 18, fontWeight: '800', color: TEXT, paddingHorizontal: 20, marginTop: 24, marginBottom: 10 },
-  recipeCard:    { marginHorizontal: 16, marginBottom: 10, backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  recipeEmoji:   { fontSize: 28 },
-  recipeName:    { fontSize: 15, fontWeight: '700', color: TEXT },
-  recipeMeta:    { fontSize: 12, color: MUTED, marginTop: 2 },
-
-  newPlanBtn:  { marginHorizontal: 16, marginTop: 20, paddingVertical: 14, borderRadius: 18, borderWidth: 1, borderColor: BORDER, backgroundColor: CARD, alignItems: 'center' },
-  newPlanText: { fontSize: 15, fontWeight: '600', color: MUTED },
 });

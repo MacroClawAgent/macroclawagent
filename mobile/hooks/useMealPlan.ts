@@ -10,6 +10,23 @@ import { consolidateIngredients } from '@/services/ingredientConsolidationServic
 import { loadPantryItems, importFromSmartCart } from '@/services/pantryService';
 
 const PLAN_STORAGE_KEY = 'jonno_meal_plan';
+const HISTORY_KEY = 'jonno_meal_plan_history';
+
+async function saveMealToHistory(meal: Meal) {
+  const raw = await AsyncStorage.getItem(HISTORY_KEY);
+  const history = raw ? JSON.parse(raw) : [];
+  history.unshift({
+    name: meal.name,
+    emoji: meal.emoji,
+    type: meal.type,
+    calories: meal.calories,
+    protein: meal.protein,
+    savedAt: new Date().toISOString(),
+  });
+  // Keep last 50
+  if (history.length > 50) history.length = 50;
+  await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
 
 interface NutritionTargets {
   calories: number;
@@ -44,11 +61,19 @@ export const useMealPlan = () => {
         const meal = await generateSingleMeal(opts?.mealType ?? 'lunch', preferences, targets, opts?.pantryItems);
         setSingleMeal(meal);
         setState('plan_ready');
+        // Save to history
+        saveMealToHistory(meal).catch(() => {});
       } else {
         const generated = await generateMealPlan(type, preferences, targets, opts?.pantryItems);
         setDays(generated);
         setState('plan_ready');
         await AsyncStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify({ type, days: generated }));
+        // Save all meals to history
+        for (const day of generated) {
+          for (const m of Object.values(day.meals)) {
+            if (m) saveMealToHistory(m).catch(() => {});
+          }
+        }
       }
     } catch {
       setError('Could not generate plan. Please try again.');
@@ -100,35 +125,50 @@ export const useMealPlan = () => {
   }, [days]);
 
   const sendToCart = useCallback(async () => {
+    // Build days array — for single meals, wrap singleMeal in a DayPlan
+    const effectiveDays: DayPlan[] = days.length > 0
+      ? days
+      : singleMeal
+        ? [{
+            date: new Date().toISOString(),
+            dayLabel: 'Today',
+            meals: { [singleMeal.type]: singleMeal } as DayPlan['meals'],
+            totalCalories: singleMeal.calories,
+            totalProtein: singleMeal.protein,
+            totalCarbs: singleMeal.carbs,
+            totalFat: singleMeal.fat,
+            allIngredients: singleMeal.ingredientsList ?? [],
+          }]
+        : [];
+
+    if (effectiveDays.length === 0) return;
+
     try {
       const pantryItems = await loadPantryItems();
-      const consolidated = consolidateIngredients(days, pantryItems);
+      const consolidated = consolidateIngredients(effectiveDays, pantryItems);
       const payload = {
         ingredients: consolidated,
         planType,
-        mealCount: days.reduce(
+        mealCount: effectiveDays.reduce(
           (n, d) => n + Object.values(d.meals).filter(Boolean).length,
           0,
         ),
         generatedAt: new Date().toISOString(),
       };
       await AsyncStorage.setItem('jonno_agent_cart', JSON.stringify(payload));
-      // Auto-add ordered groceries to pantry so Jonno knows what's in the kitchen
       const toBuyNames = consolidated.filter(i => !i.isInPantry).map(i => i.name);
       importFromSmartCart(toBuyNames).catch(() => {});
       const toBuy = toBuyNames.length;
       Toast.show({
         type: 'success',
-        text1: 'Building your cart... 🛒',
-        text2: `${toBuy} ingredient${toBuy !== 1 ? 's' : ''} added`,
+        text1: `${toBuy} ingredient${toBuy !== 1 ? 's' : ''} added to cart`,
         visibilityTime: 2000,
       });
     } catch {
-      // If consolidation fails, still navigate — cart will fallback to existing logic
+      // consolidation failed — still navigate
     }
-    setState('cart_sent');
     router.push('/(tabs)/cart' as never);
-  }, [days, planType, router]);
+  }, [days, singleMeal, planType, router]);
 
   const resetPlan = useCallback(() => {
     setState('idle');
