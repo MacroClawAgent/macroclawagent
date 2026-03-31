@@ -1,0 +1,134 @@
+import React, { useEffect, useState } from 'react';
+import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const BG = '#1C1612';
+const CARD = '#252018';
+const TEXT = '#E8E0D0';
+const GOLD = '#F5C842';
+const MUTED = 'rgba(232,224,208,0.5)';
+const DIM = 'rgba(232,224,208,0.3)';
+
+interface SavedMeal {
+  name: string;
+  emoji: string;
+  type: string;
+  calories: number;
+  protein: number;
+  savedAt: string;
+}
+
+const FILTERS = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack'];
+
+export default function RecipesScreen() {
+  const router = useRouter();
+  const [meals, setMeals] = useState<SavedMeal[]>([]);
+  const [filter, setFilter] = useState('All');
+
+  useEffect(() => {
+    AsyncStorage.getItem('jonno_meal_plan_history')
+      .then(raw => { if (raw) setMeals(JSON.parse(raw)); })
+      .catch(() => {});
+  }, []);
+
+  const filtered = filter === 'All' ? meals : meals.filter(m => m.type.toLowerCase() === filter.toLowerCase());
+
+  const daysAgo = (iso: string) => {
+    const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+    if (d === 0) return 'Today';
+    if (d === 1) return 'Yesterday';
+    return `${d} days ago`;
+  };
+
+  return (
+    <SafeAreaView style={s.safe} edges={['top']}>
+      {/* Header */}
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Ionicons name="chevron-back" size={24} color={TEXT} />
+        </TouchableOpacity>
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={s.title}>My Recipes</Text>
+          <Text style={s.subtitle}>Meals Jonno has made for you</Text>
+        </View>
+      </View>
+
+      {meals.length === 0 ? (
+        /* Empty state */
+        <View style={s.empty}>
+          <Text style={{ fontSize: 48 }}>🍽️</Text>
+          <Text style={s.emptyTitle}>No recipes yet</Text>
+          <Text style={s.emptySub}>
+            Generate a meal plan in the Agent tab to start building your recipe collection
+          </Text>
+          <TouchableOpacity style={s.ctaBtn} onPress={() => router.push('/(tabs)/agent' as any)} activeOpacity={0.85}>
+            <Text style={s.ctaBtnText}>Go to Agent →</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          {/* Filter pills */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
+            {FILTERS.map(f => (
+              <TouchableOpacity
+                key={f}
+                style={[s.filterPill, filter === f && s.filterPillActive]}
+                onPress={() => setFilter(f)}
+                activeOpacity={0.75}
+              >
+                <Text style={[s.filterText, filter === f && s.filterTextActive]}>{f}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* Recipe list */}
+          <FlatList
+            data={filtered}
+            keyExtractor={(_, i) => String(i)}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            renderItem={({ item }) => (
+              <View style={s.card}>
+                <View style={s.cardEmoji}>
+                  <Text style={{ fontSize: 24 }}>{item.emoji}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.cardName} numberOfLines={1}>{item.name}</Text>
+                  <Text style={s.cardMacro}>{item.calories} cal · {item.protein}g protein</Text>
+                  <Text style={s.cardDate}>Generated {daysAgo(item.savedAt)}</Text>
+                </View>
+              </View>
+            )}
+          />
+        </>
+      )}
+    </SafeAreaView>
+  );
+}
+
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: BG },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 },
+  title: { fontSize: 20, fontWeight: '800', color: TEXT },
+  subtitle: { fontSize: 13, color: MUTED, marginTop: 2 },
+
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: TEXT, marginTop: 12 },
+  emptySub: { fontSize: 13, color: MUTED, textAlign: 'center', marginTop: 8, lineHeight: 20 },
+  ctaBtn: { backgroundColor: GOLD, borderRadius: 22, paddingVertical: 14, paddingHorizontal: 28, marginTop: 24 },
+  ctaBtnText: { color: BG, fontWeight: '700', fontSize: 15 },
+
+  filterRow: { paddingHorizontal: 16, gap: 8, marginBottom: 14 },
+  filterPill: { backgroundColor: CARD, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(232,224,208,0.1)' },
+  filterPillActive: { backgroundColor: GOLD, borderColor: GOLD },
+  filterText: { fontSize: 13, color: MUTED },
+  filterTextActive: { color: BG, fontWeight: '700' },
+
+  card: { flexDirection: 'row', gap: 14, backgroundColor: CARD, borderRadius: 20, marginHorizontal: 16, marginBottom: 10, padding: 16, borderWidth: 1, borderColor: 'rgba(248,213,97,0.08)' },
+  cardEmoji: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(232,224,208,0.06)', alignItems: 'center', justifyContent: 'center' },
+  cardName: { fontSize: 15, fontWeight: '700', color: TEXT },
+  cardMacro: { fontSize: 12, color: 'rgba(232,224,208,0.45)', marginTop: 2 },
+  cardDate: { fontSize: 11, color: DIM, marginTop: 4 },
+});
