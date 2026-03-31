@@ -181,8 +181,7 @@ export default function AgentScreen() {
 
           <MealPlanCard
             meal={singleMeal}
-            onLog={() => {}}
-            onRecipe={() => { setSelectedMeal(singleMeal); setShowRecipe(true); }}
+            onPress={() => { setSelectedMeal(singleMeal); setShowRecipe(true); }}
           />
 
           {/* Swap pills */}
@@ -208,7 +207,11 @@ export default function AgentScreen() {
 
           <View style={{ height: 32 }} />
         </ScrollView>
-        <RecipeSheet meal={selectedMeal} visible={showRecipe} onClose={() => setShowRecipe(false)} />
+        <RecipeSheet
+          meal={selectedMeal}
+          visible={showRecipe}
+          onClose={() => setShowRecipe(false)}
+        />
       </SafeAreaView>
     );
   }
@@ -219,6 +222,7 @@ export default function AgentScreen() {
     return (
       <SafeAreaView style={s.safe} edges={['top']}>
         <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+          {/* Header — title + icon-only regen + close */}
           <View style={s.header}>
             <View>
               <Text style={s.title}>{planType === 'today' ? "Today's Plan" : 'This Week'}</Text>
@@ -226,12 +230,12 @@ export default function AgentScreen() {
             </View>
             <View style={s.headerActions}>
               <TouchableOpacity
-                style={s.regenBtn}
+                style={s.closeBtn}
                 onPress={() => regenerate(preferences, targetsWithConsumed)}
                 disabled={isRegenerating}
-                activeOpacity={0.8}
+                activeOpacity={0.75}
               >
-                <Text style={s.regenBtnText}>{isRegenerating ? '...' : '↻ Regenerate'}</Text>
+                <Ionicons name="refresh" size={16} color={isRegenerating ? DIM : GOLD} />
               </TouchableOpacity>
               <TouchableOpacity onPress={resetPlan} style={s.closeBtn} activeOpacity={0.75}>
                 <Ionicons name="close" size={18} color={MUTED} />
@@ -239,6 +243,7 @@ export default function AgentScreen() {
             </View>
           </View>
 
+          {/* Day selector (week only) */}
           {planType === 'week' && (
             <ScrollView
               horizontal
@@ -261,6 +266,19 @@ export default function AgentScreen() {
             </ScrollView>
           )}
 
+          {/* Cart strip — visible at top without scrolling */}
+          <TouchableOpacity style={s.cartStrip} onPress={handleSendToCart} activeOpacity={0.85}>
+            <Ionicons name="cart-outline" size={18} color={BG} />
+            <Text style={s.cartStripText}>
+              {planType === 'week' ? "Add week's groceries" : 'Add to Smart Cart'}
+            </Text>
+            <View style={s.cartStripBadge}>
+              <Text style={s.cartStripBadgeText}>{ingredientCount}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={14} color={BG} />
+          </TouchableOpacity>
+
+          {/* Compact meal rows */}
           {(['breakfast', 'lunch', 'snack', 'dinner'] as const).map(mealType => {
             const meal = selectedDay.meals[mealType];
             if (!meal) return null;
@@ -268,51 +286,38 @@ export default function AgentScreen() {
               <MealPlanCard
                 key={mealType}
                 meal={meal}
-                onLog={() => markMealLogged(selectedDayIndex, mealType)}
-                onRecipe={() => handleOpenRecipe(meal)}
+                onPress={() => handleOpenRecipe(meal)}
               />
             );
           })}
 
-          <View style={s.totalsCard}>
-            <Text style={s.totalsHeading}>
-              {planType === 'today' ? "Today's totals" : selectedDay.dayLabel}
-            </Text>
-            <View style={s.totalsRow}>
-              {[
-                { label: 'Cal',     value: String(selectedDay.totalCalories), color: TEXT  },
-                { label: 'Protein', value: `${selectedDay.totalProtein}g`,    color: CORAL },
-                { label: 'Carbs',   value: `${selectedDay.totalCarbs}g`,      color: GOLD  },
-                { label: 'Fat',     value: `${selectedDay.totalFat}g`,        color: SAGE  },
-              ].map(stat => (
-                <View key={stat.label} style={s.totalStat}>
-                  <Text style={[s.totalValue, { color: stat.color }]}>{stat.value}</Text>
-                  <Text style={s.totalLabel}>{stat.label}</Text>
-                </View>
-              ))}
-            </View>
+          {/* Totals strip — compact inline with all 4 colours */}
+          <View style={s.totalsStrip}>
+            {[
+              { label: 'Cal',  value: String(selectedDay.totalCalories), color: TEXT  },
+              { label: 'Pro',  value: `${selectedDay.totalProtein}g`,    color: CORAL },
+              { label: 'Carb', value: `${selectedDay.totalCarbs}g`,      color: GOLD  },
+              { label: 'Fat',  value: `${selectedDay.totalFat}g`,        color: SAGE  },
+            ].map(stat => (
+              <View key={stat.label} style={s.totalsStripItem}>
+                <View style={[s.totalsStripDot, { backgroundColor: stat.color }]} />
+                <Text style={[s.totalsStripValue, { color: stat.color }]}>{stat.value}</Text>
+                <Text style={s.totalsStripLabel}>{stat.label}</Text>
+              </View>
+            ))}
           </View>
-
-          <TouchableOpacity style={s.cartBtn} onPress={handleSendToCart} activeOpacity={0.85}>
-            <View style={s.cartBtnInner}>
-              <View style={s.cartIconCircle}>
-                <Ionicons name="cart" size={24} color={BG} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={s.cartBtnTitle}>
-                  {planType === 'week'
-                    ? `Send Week's Groceries — ${ingredientCount} ingredients`
-                    : `Send to Smart Cart — ${ingredientCount} ingredients`}
-                </Text>
-                <Text style={s.cartBtnSub}>Woolworths or Coles</Text>
-              </View>
-              <Ionicons name="arrow-forward" size={18} color={BG} />
-            </View>
-          </TouchableOpacity>
 
           <View style={{ height: 32 }} />
         </ScrollView>
-        <RecipeSheet meal={selectedMeal} visible={showRecipe} onClose={() => setShowRecipe(false)} />
+        <RecipeSheet
+          meal={selectedMeal}
+          visible={showRecipe}
+          onClose={() => setShowRecipe(false)}
+          onLog={() => {
+            if (selectedMeal) markMealLogged(selectedDayIndex, selectedMeal.type);
+            setShowRecipe(false);
+          }}
+        />
       </SafeAreaView>
     );
   }
@@ -793,13 +798,16 @@ const s = StyleSheet.create({
   fullDayLink:     { marginHorizontal: 16, marginTop: 12, alignItems: 'center', paddingVertical: 8 },
   fullDayLinkText: { fontSize: 14, color: MUTED, fontWeight: '500' },
 
-  // Plan ready — header actions
-  regenBtn: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16,
-    backgroundColor: 'rgba(245,200,66,0.10)', borderWidth: 1, borderColor: 'rgba(245,200,66,0.25)',
-    minWidth: 100, alignItems: 'center',
+  // Cart strip (plan_ready, at top)
+  cartStrip: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginHorizontal: 16, marginBottom: 12, marginTop: 4,
+    backgroundColor: GOLD, borderRadius: 14,
+    paddingVertical: 12, paddingHorizontal: 16,
   },
-  regenBtnText: { fontSize: 13, fontWeight: '600', color: GOLD },
+  cartStripText:      { flex: 1, fontSize: 14, fontWeight: '700', color: BG },
+  cartStripBadge:     { backgroundColor: 'rgba(28,22,18,0.15)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
+  cartStripBadgeText: { fontSize: 11, fontWeight: '700', color: BG },
 
   // Day selector
   daySelector:       { marginBottom: 6 },
@@ -809,28 +817,18 @@ const s = StyleSheet.create({
   dayPillText:       { fontSize: 13, fontWeight: '600', color: MUTED },
   dayPillTextActive: { color: BG },
 
-  // Totals card
-  totalsCard: {
-    marginHorizontal: 16, marginTop: 4, marginBottom: 16,
-    backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER, padding: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 3,
+  // Totals strip (compact inline)
+  totalsStrip: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    marginHorizontal: 16, marginTop: 8, marginBottom: 4,
+    backgroundColor: CARD, borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(248,213,97,0.08)',
+    paddingVertical: 10, paddingHorizontal: 20,
   },
-  totalsHeading: { fontSize: 12, fontWeight: '600', color: DIM, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
-  totalsRow:     { flexDirection: 'row', justifyContent: 'space-around' },
-  totalStat:     { alignItems: 'center' },
-  totalValue:    { fontSize: 22, fontWeight: '800' },
-  totalLabel:    { fontSize: 11, color: MUTED, marginTop: 2 },
-
-  // Cart CTA (gold)
-  cartBtn: {
-    marginHorizontal: 16, borderRadius: 22, overflow: 'hidden',
-    backgroundColor: GOLD, shadowColor: GOLD, shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.22, shadowRadius: 16, elevation: 8,
-  },
-  cartBtnInner:   { flexDirection: 'row', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 18, gap: 14 },
-  cartIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(28,22,18,0.12)', alignItems: 'center', justifyContent: 'center' },
-  cartBtnTitle:   { fontSize: 16, fontWeight: '800', color: BG },
-  cartBtnSub:     { fontSize: 12, color: 'rgba(28,22,18,0.55)', marginTop: 2 },
+  totalsStripItem:  { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  totalsStripDot:   { width: 6, height: 6, borderRadius: 3 },
+  totalsStripValue: { fontSize: 14, fontWeight: '700' },
+  totalsStripLabel: { fontSize: 10, color: 'rgba(232,224,208,0.4)', marginLeft: 2 },
 
   // Cart sent — success card (sage)
   successCard: {

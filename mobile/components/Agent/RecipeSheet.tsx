@@ -9,23 +9,36 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import type { Meal } from '@/types/mealPlan';
 import { generateRecipe } from '@/services/mealGenerationService';
+
+// ── Palette (matches agent.tsx) ──────────────────────────────────────────────
+const BG     = '#1C1612';
+const CARD   = '#252018';
+const BORDER = 'rgba(248,213,97,0.08)';
+const GOLD   = '#F5C842';
+const CORAL  = '#E07B54';
+const SAGE   = '#8B9E6E';
+const TEXT_C = '#E8E0D0';
+const MUTED  = 'rgba(232,224,208,0.5)';
+const DIM    = 'rgba(232,224,208,0.3)';
+
+const MEAL_COLORS: Record<string, { bg: string; color: string }> = {
+  breakfast: { bg: 'rgba(245,200,66,0.15)',  color: GOLD  },
+  lunch:     { bg: 'rgba(139,158,110,0.15)', color: SAGE  },
+  snack:     { bg: 'rgba(245,200,66,0.10)',  color: GOLD  },
+  dinner:    { bg: 'rgba(224,123,84,0.15)',  color: CORAL },
+};
 
 interface Props {
   meal: Meal | null;
   visible: boolean;
   onClose: () => void;
+  onLog?: () => void;
 }
 
-const MEAL_EMOJIS: Record<string, { bg: string; color: string }> = {
-  breakfast: { bg: '#FEF3C7', color: '#D97706' },
-  lunch:     { bg: '#DCFCE7', color: '#16A34A' },
-  snack:     { bg: '#EDE9FE', color: '#6366F1' },
-  dinner:    { bg: '#DBEAFE', color: '#2563EB' },
-};
-
-export default function RecipeSheet({ meal, visible, onClose }: Props) {
+export default function RecipeSheet({ meal, visible, onClose, onLog }: Props) {
   const [steps, setSteps]     = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +56,7 @@ export default function RecipeSheet({ meal, visible, onClose }: Props) {
   }, [meal, visible]);
 
   if (!meal) return null;
-  const palette = MEAL_EMOJIS[meal.type] ?? MEAL_EMOJIS.lunch;
+  const palette = MEAL_COLORS[meal.type] ?? MEAL_COLORS.lunch;
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
@@ -59,7 +72,7 @@ export default function RecipeSheet({ meal, visible, onClose }: Props) {
             <Text style={s.metaText}>⏱ {meal.cookTime} min · {meal.difficulty}</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={s.closeBtn} activeOpacity={0.75}>
-            <Text style={s.closeBtnText}>✕</Text>
+            <Ionicons name="close" size={16} color={MUTED} />
           </TouchableOpacity>
         </View>
 
@@ -70,10 +83,10 @@ export default function RecipeSheet({ meal, visible, onClose }: Props) {
           {/* Macros */}
           <View style={s.macroRow}>
             {[
-              { label: 'Calories', value: `${meal.calories}`, color: '#1E293B' },
-              { label: 'Protein',  value: `${meal.protein}g`, color: '#16A34A' },
-              { label: 'Carbs',    value: `${meal.carbs}g`,   color: '#D97706' },
-              { label: 'Fat',      value: `${meal.fat}g`,     color: '#7C3AED' },
+              { label: 'Calories', value: `${meal.calories}`, color: TEXT_C },
+              { label: 'Protein',  value: `${meal.protein}g`, color: CORAL  },
+              { label: 'Carbs',    value: `${meal.carbs}g`,   color: GOLD   },
+              { label: 'Fat',      value: `${meal.fat}g`,     color: SAGE   },
             ].map(m => (
               <View key={m.label} style={s.macroItem}>
                 <Text style={[s.macroValue, { color: m.color }]}>{m.value}</Text>
@@ -81,6 +94,14 @@ export default function RecipeSheet({ meal, visible, onClose }: Props) {
               </View>
             ))}
           </View>
+
+          {/* Reason */}
+          {!!meal.reason && (
+            <View style={s.reasonBox}>
+              <Text style={s.reasonIcon}>✦</Text>
+              <Text style={s.reasonText}>{meal.reason}</Text>
+            </View>
+          )}
 
           {/* Ingredients */}
           <Text style={s.sectionTitle}>Ingredients</Text>
@@ -93,8 +114,8 @@ export default function RecipeSheet({ meal, visible, onClose }: Props) {
 
           {loading ? (
             <View style={s.loadingRow}>
-              <ActivityIndicator color="#2DD4BF" />
-              <Text style={s.loadingText}>Getting recipe…</Text>
+              <ActivityIndicator color={GOLD} />
+              <Text style={s.loadingText}>Getting recipe...</Text>
             </View>
           ) : (
             steps.map((step, i) => (
@@ -108,11 +129,22 @@ export default function RecipeSheet({ meal, visible, onClose }: Props) {
           )}
         </ScrollView>
 
-        {/* Log button */}
+        {/* Footer — Log button */}
         <View style={s.footer}>
-          <TouchableOpacity style={s.logBtn} onPress={onClose} activeOpacity={0.85}>
-            <Text style={s.logBtnText}>Got it — close recipe</Text>
-          </TouchableOpacity>
+          {!meal.isLogged && onLog ? (
+            <TouchableOpacity style={s.logBtn} onPress={onLog} activeOpacity={0.85}>
+              <Text style={s.logBtnText}>Log This Meal</Text>
+            </TouchableOpacity>
+          ) : meal.isLogged ? (
+            <View style={s.loggedFooter}>
+              <Ionicons name="checkmark-circle" size={18} color={SAGE} />
+              <Text style={s.loggedFooterText}>Already logged</Text>
+            </View>
+          ) : (
+            <TouchableOpacity style={s.closeFooterBtn} onPress={onClose} activeOpacity={0.85}>
+              <Text style={s.closeFooterText}>Close</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </SafeAreaView>
     </Modal>
@@ -120,7 +152,7 @@ export default function RecipeSheet({ meal, visible, onClose }: Props) {
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FFFFFF' },
+  safe: { flex: 1, backgroundColor: BG },
 
   header: {
     flexDirection: 'row',
@@ -130,34 +162,41 @@ const s = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: BORDER,
   },
   emojiCircle: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   emojiText:   { fontSize: 26 },
-  mealName:    { fontSize: 18, fontWeight: '800', color: '#1E293B', lineHeight: 24 },
-  metaText:    { fontSize: 12, color: '#94A3B8', marginTop: 3 },
-  closeBtn:    { width: 32, height: 32, borderRadius: 10, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' },
-  closeBtnText:{ fontSize: 14, color: '#94A3B8', fontWeight: '600' },
+  mealName:    { fontSize: 18, fontWeight: '800', color: TEXT_C, lineHeight: 24 },
+  metaText:    { fontSize: 12, color: MUTED, marginTop: 3 },
+  closeBtn:    { width: 32, height: 32, borderRadius: 10, backgroundColor: CARD, borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center' },
 
-  macroRow:  { flexDirection: 'row', gap: 0, justifyContent: 'space-between', marginVertical: 20, backgroundColor: '#F8FAFC', borderRadius: 18, padding: 16 },
+  macroRow:  { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 20, backgroundColor: CARD, borderRadius: 18, padding: 16, borderWidth: 1, borderColor: BORDER },
   macroItem: { alignItems: 'center', flex: 1 },
   macroValue:{ fontSize: 18, fontWeight: '800' },
-  macroLabel:{ fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  macroLabel:{ fontSize: 11, color: MUTED, marginTop: 2 },
 
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 10, marginTop: 4 },
+  reasonBox:  { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: 16, backgroundColor: 'rgba(248,213,97,0.06)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(248,213,97,0.15)' },
+  reasonIcon: { fontSize: 11, color: GOLD, marginTop: 2 },
+  reasonText: { flex: 1, fontSize: 13, color: 'rgba(248,213,97,0.85)', fontWeight: '500', lineHeight: 19 },
 
-  ingredientsBox: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 14, marginBottom: 20 },
-  ingredientsText:{ fontSize: 14, color: '#334155', lineHeight: 22 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: TEXT_C, marginBottom: 10, marginTop: 4, letterSpacing: 0.3 },
+
+  ingredientsBox: { backgroundColor: CARD, borderRadius: 16, padding: 14, marginBottom: 20, borderWidth: 1, borderColor: BORDER },
+  ingredientsText:{ fontSize: 14, color: MUTED, lineHeight: 22 },
 
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 20 },
-  loadingText:{ fontSize: 14, color: '#94A3B8' },
+  loadingText:{ fontSize: 14, color: MUTED },
 
   stepRow:     { flexDirection: 'row', gap: 14, marginBottom: 16, alignItems: 'flex-start' },
-  stepNum:     { width: 28, height: 28, borderRadius: 14, backgroundColor: '#2DD4BF', alignItems: 'center', justifyContent: 'center', marginTop: 1, flexShrink: 0 },
-  stepNumText: { fontSize: 13, fontWeight: '800', color: 'white' },
-  stepText:    { flex: 1, fontSize: 14, color: '#334155', lineHeight: 22 },
+  stepNum:     { width: 28, height: 28, borderRadius: 14, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', marginTop: 1, flexShrink: 0 },
+  stepNumText: { fontSize: 13, fontWeight: '800', color: BG },
+  stepText:    { flex: 1, fontSize: 14, color: TEXT_C, lineHeight: 22 },
 
-  footer:   { paddingHorizontal: 20, paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
-  logBtn:   { backgroundColor: '#F1F5F9', borderRadius: 18, paddingVertical: 14, alignItems: 'center' },
-  logBtnText: { fontSize: 15, fontWeight: '700', color: '#64748B' },
+  footer:   { paddingHorizontal: 20, paddingVertical: 16, borderTopWidth: 1, borderTopColor: BORDER },
+  logBtn:   { backgroundColor: GOLD, borderRadius: 18, paddingVertical: 14, alignItems: 'center' },
+  logBtnText: { fontSize: 15, fontWeight: '700', color: BG },
+  loggedFooter:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14 },
+  loggedFooterText: { fontSize: 15, fontWeight: '600', color: SAGE },
+  closeFooterBtn:   { backgroundColor: CARD, borderRadius: 18, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: BORDER },
+  closeFooterText:  { fontSize: 15, fontWeight: '600', color: MUTED },
 });
