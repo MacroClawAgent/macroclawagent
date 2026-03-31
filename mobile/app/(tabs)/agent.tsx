@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
+  Animated,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,15 +9,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useTheme } from '@/context/ThemeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePreferences } from '@/hooks/usePreferences';
 import { useMealPlan } from '@/hooks/useMealPlan';
 import { usePantry } from '@/hooks/usePantry';
 import { getPreferencesSummary } from '@/services/preferencesService';
-import { getPantryString } from '@/services/pantryService';
 import { getCurrentMealContext } from '@/utils/mealContext';
 import { apiGet } from '@/lib/api';
 import PreferencesSheet from '@/components/Agent/PreferencesSheet';
@@ -26,25 +24,71 @@ import RecipeSheet from '@/components/Agent/RecipeSheet';
 import GeneratingLoader from '@/components/Agent/GeneratingLoader';
 import type { Meal } from '@/types/mealPlan';
 
-// ── Nutrition targets (from user profile — wired to real profile later) ────────
+// ── Palette ───────────────────────────────────────────────────────────────────
+const BG     = '#1C1612';
+const CARD   = '#252018';
+const BORDER = 'rgba(248,213,97,0.10)';
+const GOLD   = '#F5C842';
+const CORAL  = '#E07B54';
+const SAGE   = '#8B9E6E';
+const TEXT   = '#E8E0D0';
+const MUTED  = 'rgba(232,224,208,0.5)';
+const DIM    = 'rgba(232,224,208,0.3)';
 
 const NUTRITION_TARGETS = {
   calories: 2984,
-  protein:  191,
-  carbs:    250,
-  fat:      70,
-  goal:     'Build Muscle',
+  protein: 191,
+  carbs: 250,
+  fat: 70,
+  goal: 'Build Muscle',
 };
+
+const TIP_KEY = 'jonno_agent_tip_dismissed';
+
+// ── Pulsing dot for filter button (first-time users) ─────────────────────────
+
+function PulseDot() {
+  const scale = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scale, { toValue: 1.6, duration: 700, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1,   duration: 700, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [scale]);
+  return <Animated.View style={[s.pulseDot, { transform: [{ scale }] }]} />;
+}
+
+// ── Generating — single meal (minimal pulsing circle) ────────────────────────
+
+function SingleGenerating({ mealType }: { mealType: string }) {
+  const opacity = useRef(new Animated.Value(0.5)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1,   duration: 900, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.5, duration: 900, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [opacity]);
+  return (
+    <SafeAreaView style={s.safe} edges={['top']}>
+      <View style={s.genWrap}>
+        <Animated.View style={[s.genCircle, { opacity }]}>
+          <Text style={s.genStar}>✦</Text>
+        </Animated.View>
+        <Text style={s.genTitle}>Thinking up your {mealType}...</Text>
+        <Text style={s.genSub}>Balancing macros · Checking pantry · Optimising</Text>
+      </View>
+    </SafeAreaView>
+  );
+}
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function AgentScreen() {
-  const { isDark } = useTheme();
-  const {
-    preferences,
-    hasAnyPreferences,
-    completeOnboarding,
-  } = usePreferences();
+  const { preferences, hasAnyPreferences, completeOnboarding } = usePreferences();
 
   const {
     state,
@@ -57,7 +101,6 @@ export default function AgentScreen() {
     generate,
     regenerate,
     markMealLogged,
-    getAllIngredients,
     getAllIngredientsCount,
     sendToCart,
     resetPlan,
@@ -71,76 +114,114 @@ export default function AgentScreen() {
   const [showRecipe,      setShowRecipe]      = useState(false);
   const [addingPantry,    setAddingPantry]    = useState(false);
   const [pantryInput,     setPantryInput]     = useState('');
-  const [todayConsumed,   setTodayConsumed]   = useState<{ calories: number; protein: number; carbs: number; fat: number } | null>(null);
+  const [tipDismissed,    setTipDismissed]    = useState(true);
+  const [todayConsumed,   setTodayConsumed]   = useState<{ calories: number; protein: number } | null>(null);
 
-  // Fetch today's consumed macros for the gap bar
   useEffect(() => {
-    apiGet<{ calories_consumed?: number; protein_g?: number; carbs_g?: number; fat_g?: number }>('/api/nutrition/today')
-      .then((d) => setTodayConsumed({
-        calories: d.calories_consumed ?? 0,
-        protein:  d.protein_g  ?? 0,
-        carbs:    d.carbs_g    ?? 0,
-        fat:      d.fat_g      ?? 0,
-      }))
+    AsyncStorage.getItem(TIP_KEY)
+      .then(v => { if (!v) setTipDismissed(false); })
+      .catch(() => {});
+    apiGet<{ calories_consumed?: number; protein_g?: number }>('/api/nutrition/today')
+      .then(d => setTodayConsumed({ calories: d.calories_consumed ?? 0, protein: d.protein_g ?? 0 }))
       .catch(() => {});
   }, []);
 
-  const mealCtx = getCurrentMealContext();
-  const preferencesTags = getPreferencesSummary(preferences);
-  const selectedDay     = days[selectedDayIndex];
-
-  const targetsWithConsumed = {
-    ...NUTRITION_TARGETS,
-    consumed: todayConsumed ?? undefined,
-  };
-
-  const handleGenerate = useCallback((type: Parameters<typeof generate>[0]) => {
-    generate(type, preferences, targetsWithConsumed, {
-      mealType: type === 'single' ? mealCtx.mealType : undefined,
-      pantryItems: pantryItems.length > 0 ? pantryItems : undefined,
-    });
-  }, [preferences, generate, targetsWithConsumed, mealCtx.mealType, pantryItems]);
-
-  const handleSendToCart = useCallback(async () => {
-    await sendToCart();
-  }, [sendToCart]);
-
-  const handleOpenRecipe = useCallback((meal: Meal) => {
-    setSelectedMeal(meal);
-    setShowRecipe(true);
+  const dismissTip = useCallback(async () => {
+    setTipDismissed(true);
+    await AsyncStorage.setItem(TIP_KEY, '1');
   }, []);
+
+  const mealCtx        = getCurrentMealContext();
+  const prefTags       = getPreferencesSummary(preferences);
+  const selectedDay    = days[selectedDayIndex];
+  const ingredientCount = getAllIngredientsCount();
+  const targetsWithConsumed = { ...NUTRITION_TARGETS, consumed: todayConsumed ?? undefined };
+
+  const handleGenerate = useCallback(
+    (type: Parameters<typeof generate>[0]) => {
+      generate(type, preferences, targetsWithConsumed, {
+        mealType: type === 'single' ? mealCtx.mealType : undefined,
+        pantryItems: pantryItems.length > 0 ? pantryItems : undefined,
+      });
+    },
+    [preferences, generate, targetsWithConsumed, mealCtx.mealType, pantryItems]
+  );
+
+  const handleSendToCart  = useCallback(async () => { await sendToCart(); }, [sendToCart]);
+  const handleOpenRecipe  = useCallback((meal: Meal) => { setSelectedMeal(meal); setShowRecipe(true); }, []);
+
+  // Context card — dynamic lines
+  const contextLines: { text: string; primary?: boolean }[] = [];
+  if (todayConsumed) {
+    const remCal = Math.max(0, NUTRITION_TARGETS.calories - todayConsumed.calories);
+    const remPro = Math.max(0, NUTRITION_TARGETS.protein - todayConsumed.protein);
+    if (remCal > 100) {
+      contextLines.push({ text: `${remCal} kcal · ${remPro}g protein left today`, primary: true });
+    } else {
+      contextLines.push({ text: 'Targets hit for today. Well done.', primary: true });
+    }
+  } else {
+    contextLines.push({ text: `${NUTRITION_TARGETS.calories} kcal · ${NUTRITION_TARGETS.protein}g protein goal`, primary: true });
+  }
+  if (pantryItems.length > 0) {
+    contextLines.push({ text: `${pantryItems.length} ingredient${pantryItems.length > 1 ? 's' : ''} in your kitchen I can use` });
+  }
+  if (hasAnyPreferences && prefTags.length > 0) {
+    contextLines.push({ text: `${prefTags.slice(0, 2).join(' · ')} preferences active` });
+  }
 
   // ── GENERATING ───────────────────────────────────────────────────────────────
 
   if (state === 'generating') {
-    return (
-      <GeneratingLoader type={planType} preferences={preferences} />
-    );
+    if (planType === 'single') return <SingleGenerating mealType={mealCtx.mealType} />;
+    return <GeneratingLoader type={planType} preferences={preferences} />;
   }
 
   // ── PLAN READY — single meal ─────────────────────────────────────────────────
 
   if (state === 'plan_ready' && planType === 'single' && singleMeal) {
     return (
-      <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={['top']}>
+      <SafeAreaView style={s.safe} edges={['top']}>
         <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
           <View style={s.header}>
             <View>
-              <Text style={[s.title, isDark && { color: '#E8E0D0' }]}>{mealCtx.greeting} {mealCtx.emoji}</Text>
-              <Text style={[s.subtitle, isDark && { color: 'rgba(232,224,208,0.55)' }]}>Here's your {singleMeal.type} — Generated by Jonno ✦</Text>
+              <Text style={s.title}>
+                {singleMeal.type.charAt(0).toUpperCase() + singleMeal.type.slice(1)}
+              </Text>
+              <Text style={s.headerSub}>Generated by Jonno ✦</Text>
             </View>
             <TouchableOpacity onPress={resetPlan} style={s.closeBtn} activeOpacity={0.75}>
-              <Ionicons name="close" size={18} color="#94A3B8" />
+              <Ionicons name="close" size={18} color={MUTED} />
             </TouchableOpacity>
           </View>
+
           <MealPlanCard
             meal={singleMeal}
             onLog={() => {}}
             onRecipe={() => { setSelectedMeal(singleMeal); setShowRecipe(true); }}
           />
+
+          {/* Swap pills */}
+          <View style={s.swapRow}>
+            {['↑ More protein', '↓ Make lighter', '🌏 Different cuisine'].map(label => (
+              <TouchableOpacity
+                key={label}
+                style={s.swapPill}
+                activeOpacity={0.75}
+                onPress={() => generate('single', preferences, targetsWithConsumed, {
+                  mealType: mealCtx.mealType,
+                  pantryItems: pantryItems.length > 0 ? pantryItems : undefined,
+                })}
+              >
+                <Text style={s.swapPillText}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
           <TouchableOpacity style={s.fullDayLink} onPress={() => handleGenerate('today')} activeOpacity={0.75}>
             <Text style={s.fullDayLinkText}>See full day plan instead →</Text>
           </TouchableOpacity>
+
           <View style={{ height: 32 }} />
         </ScrollView>
         <RecipeSheet meal={selectedMeal} visible={showRecipe} onClose={() => setShowRecipe(false)} />
@@ -151,21 +232,13 @@ export default function AgentScreen() {
   // ── PLAN READY — full day / week ─────────────────────────────────────────────
 
   if (state === 'plan_ready' && selectedDay) {
-    const ingredientCount = getAllIngredientsCount();
-
     return (
-      <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={['top']}>
-        <ScrollView
-          contentContainerStyle={s.scroll}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header */}
+      <SafeAreaView style={s.safe} edges={['top']}>
+        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
           <View style={s.header}>
             <View>
-              <Text style={[s.title, isDark && { color: '#E8E0D0' }]}>
-                {planType === 'today' ? "Today's Plan" : 'This Week'}
-              </Text>
-              <Text style={[s.subtitle, isDark && { color: 'rgba(232,224,208,0.55)' }]}>Generated by Jonno ✦</Text>
+              <Text style={s.title}>{planType === 'today' ? "Today's Plan" : 'This Week'}</Text>
+              <Text style={s.headerSub}>Generated by Jonno ✦</Text>
             </View>
             <View style={s.headerActions}>
               <TouchableOpacity
@@ -174,17 +247,14 @@ export default function AgentScreen() {
                 disabled={isRegenerating}
                 activeOpacity={0.8}
               >
-                {isRegenerating
-                  ? <ActivityIndicator size="small" color="#2DD4BF" />
-                  : <Text style={s.regenBtnText}>↻ Regenerate</Text>}
+                <Text style={s.regenBtnText}>{isRegenerating ? '...' : '↻ Regenerate'}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={resetPlan} style={s.closeBtn} activeOpacity={0.75}>
-                <Ionicons name="close" size={18} color="#94A3B8" />
+                <Ionicons name="close" size={18} color={MUTED} />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Day selector — week mode only */}
           {planType === 'week' && (
             <ScrollView
               horizontal
@@ -207,7 +277,6 @@ export default function AgentScreen() {
             </ScrollView>
           )}
 
-          {/* Meal cards */}
           {(['breakfast', 'lunch', 'snack', 'dinner'] as const).map(mealType => {
             const meal = selectedDay.meals[mealType];
             if (!meal) return null;
@@ -221,40 +290,29 @@ export default function AgentScreen() {
             );
           })}
 
-          {/* Daily totals */}
-          <View style={[s.totalsCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
-            <Text style={[s.totalsHeading, isDark && { color: 'rgba(232,224,208,0.45)' }]}>
-              {planType === 'today' ? "Today's totals" : `${selectedDay.dayLabel}`}
+          <View style={s.totalsCard}>
+            <Text style={s.totalsHeading}>
+              {planType === 'today' ? "Today's totals" : selectedDay.dayLabel}
             </Text>
             <View style={s.totalsRow}>
               {[
-                { label: 'Cal',     value: String(selectedDay.totalCalories),    color: isDark ? '#E8E0D0' : '#1E293B' },
-                { label: 'Protein', value: `${selectedDay.totalProtein}g`,        color: isDark ? '#E07B54' : '#16A34A' },
-                { label: 'Carbs',   value: `${selectedDay.totalCarbs}g`,          color: isDark ? '#F5C842' : '#D97706' },
-                { label: 'Fat',     value: `${selectedDay.totalFat}g`,            color: isDark ? '#8B9E6E' : '#7C3AED' },
+                { label: 'Cal',     value: String(selectedDay.totalCalories), color: TEXT  },
+                { label: 'Protein', value: `${selectedDay.totalProtein}g`,    color: CORAL },
+                { label: 'Carbs',   value: `${selectedDay.totalCarbs}g`,      color: GOLD  },
+                { label: 'Fat',     value: `${selectedDay.totalFat}g`,        color: SAGE  },
               ].map(stat => (
                 <View key={stat.label} style={s.totalStat}>
                   <Text style={[s.totalValue, { color: stat.color }]}>{stat.value}</Text>
-                  <Text style={[s.totalLabel, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{stat.label}</Text>
+                  <Text style={s.totalLabel}>{stat.label}</Text>
                 </View>
               ))}
             </View>
           </View>
 
-          {/* Send to cart CTA */}
-          <TouchableOpacity
-            style={s.cartBtn}
-            onPress={handleSendToCart}
-            activeOpacity={0.85}
-          >
-            <LinearGradient
-              colors={isDark ? ['#E07B54', '#F5C842'] : ['#2DD4BF', '#0EA5E9']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={s.cartBtnGradient}
-            >
+          <TouchableOpacity style={s.cartBtn} onPress={handleSendToCart} activeOpacity={0.85}>
+            <View style={s.cartBtnInner}>
               <View style={s.cartIconCircle}>
-                <Text style={{ fontSize: 26 }}>🛒</Text>
+                <Ionicons name="cart" size={24} color={BG} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.cartBtnTitle}>
@@ -262,24 +320,15 @@ export default function AgentScreen() {
                     ? `Send Week's Groceries — ${ingredientCount} ingredients`
                     : `Send to Smart Cart — ${ingredientCount} ingredients`}
                 </Text>
-                <Text style={s.cartBtnSub}>
-                  Woolworths or Coles
-                </Text>
+                <Text style={s.cartBtnSub}>Woolworths or Coles</Text>
               </View>
-              <View style={s.cartArrow}>
-                <Ionicons name="arrow-forward" size={18} color="white" />
-              </View>
-            </LinearGradient>
+              <Ionicons name="arrow-forward" size={18} color={BG} />
+            </View>
           </TouchableOpacity>
 
           <View style={{ height: 32 }} />
         </ScrollView>
-
-        <RecipeSheet
-          meal={selectedMeal}
-          visible={showRecipe}
-          onClose={() => setShowRecipe(false)}
-        />
+        <RecipeSheet meal={selectedMeal} visible={showRecipe} onClose={() => setShowRecipe(false)} />
       </SafeAreaView>
     );
   }
@@ -288,66 +337,59 @@ export default function AgentScreen() {
 
   if (state === 'cart_sent') {
     return (
-      <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={['top']}>
+      <SafeAreaView style={s.safe} edges={['top']}>
         <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
           <View style={s.header}>
-            <Text style={[s.title, isDark && { color: '#E8E0D0' }]}>Jonno</Text>
+            <Text style={s.title}>Jonno</Text>
           </View>
 
-          <View style={[s.successCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
-            <Text style={s.successEmoji}>✅</Text>
-            <Text style={[s.successTitle, isDark && { color: '#E8E0D0' }]}>Cart is ready!</Text>
-            <Text style={[s.successSub, isDark && { color: 'rgba(232,224,208,0.55)' }]}>
-              Ingredients sent to your Smart Cart.{'\n'}Order from Woolworths or Coles.
-            </Text>
+          <View style={s.successCard}>
+            <View style={s.successIconWrap}>
+              <Ionicons name="checkmark" size={34} color={SAGE} />
+            </View>
+            <Text style={s.successTitle}>Cart is ready</Text>
+            <Text style={s.successSub}>{`Ingredients sent to your Smart Cart.\nOrder from Woolworths or Coles.`}</Text>
             <TouchableOpacity
-              style={[s.openCartBtn, isDark && { backgroundColor: '#F5C842' }]}
+              style={s.openCartBtn}
               onPress={() => router.push('/(tabs)/cart' as any)}
               activeOpacity={0.85}
             >
-              <Text style={[s.openCartBtnText, isDark && { color: '#1C1410' }]}>Open Smart Cart →</Text>
+              <Text style={s.openCartBtnText}>Open Smart Cart →</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Recipes */}
-          <Text style={[s.recipesHeader, isDark && { color: '#E8E0D0' }]}>Recipes for your meals</Text>
+          {days[0] && (
+            <>
+              <Text style={s.recipesHeader}>Recipes for your meals</Text>
+              {(['breakfast', 'lunch', 'snack', 'dinner'] as const).map(mealType => {
+                const meal = days[0].meals[mealType];
+                if (!meal) return null;
+                return (
+                  <TouchableOpacity
+                    key={mealType}
+                    style={s.recipeCard}
+                    onPress={() => { setSelectedMeal(meal); setShowRecipe(true); }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={s.recipeEmoji}>{meal.emoji}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.recipeName}>{meal.name}</Text>
+                      <Text style={s.recipeMeta}>⏱ {meal.cookTime} min · {meal.difficulty}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={MUTED} />
+                  </TouchableOpacity>
+                );
+              })}
+            </>
+          )}
 
-          {days[0] &&
-            (['breakfast', 'lunch', 'snack', 'dinner'] as const).map(mealType => {
-              const meal = days[0].meals[mealType];
-              if (!meal) return null;
-              return (
-                <TouchableOpacity
-                  key={mealType}
-                  style={[s.recipeCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}
-                  onPress={() => {
-                    setSelectedMeal(meal);
-                    setShowRecipe(true);
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Text style={s.recipeEmoji}>{meal.emoji}</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[s.recipeName, isDark && { color: '#E8E0D0' }]}>{meal.name}</Text>
-                    <Text style={[s.recipeMeta, isDark && { color: 'rgba(232,224,208,0.4)' }]}>⏱ {meal.cookTime} min · {meal.difficulty}</Text>
-                  </View>
-                  <Text style={s.recipeArrow}>Recipe →</Text>
-                </TouchableOpacity>
-              );
-            })}
-
-          <TouchableOpacity style={[s.newPlanBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]} onPress={resetPlan} activeOpacity={0.8}>
-            <Text style={[s.newPlanText, isDark && { color: 'rgba(232,224,208,0.55)' }]}>↺  Plan new meals</Text>
+          <TouchableOpacity style={s.newPlanBtn} onPress={resetPlan} activeOpacity={0.8}>
+            <Text style={s.newPlanText}>↺  Plan something else</Text>
           </TouchableOpacity>
 
           <View style={{ height: 32 }} />
         </ScrollView>
-
-        <RecipeSheet
-          meal={selectedMeal}
-          visible={showRecipe}
-          onClose={() => setShowRecipe(false)}
-        />
+        <RecipeSheet meal={selectedMeal} visible={showRecipe} onClose={() => setShowRecipe(false)} />
       </SafeAreaView>
     );
   }
@@ -355,151 +397,167 @@ export default function AgentScreen() {
   // ── IDLE ─────────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={[s.safe, isDark && { backgroundColor: '#0D0A07' }]} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={s.scroll}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
+    <SafeAreaView style={s.safe} edges={['top']}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+
+        {/* ── Header ─────────────────────────────────────────────────────────── */}
         <View style={s.header}>
-          <View>
-            <Text style={[s.title, isDark && { color: '#E8E0D0' }]}>Jonno</Text>
-            <View style={s.statusRow}>
-              <View style={s.statusDot} />
-              <Text style={[s.statusText, isDark && { color: 'rgba(232,224,208,0.55)' }]}>AI Meal Planner</Text>
-            </View>
-          </View>
+          <Text style={s.title}>Jonno</Text>
           <TouchableOpacity
-            style={[s.filterBtn, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }, hasAnyPreferences && s.filterBtnActive]}
+            style={[s.filterBtn, hasAnyPreferences && s.filterBtnActive]}
             onPress={() => setShowPreferences(true)}
             activeOpacity={0.8}
           >
-            <Ionicons
-              name="options-outline"
-              size={20}
-              color={hasAnyPreferences ? '#2DD4BF' : '#64748B'}
-            />
-            {hasAnyPreferences && <View style={s.filterDot} />}
+            <Ionicons name="options-outline" size={20} color={hasAnyPreferences ? GOLD : MUTED} />
+            {!hasAnyPreferences && <PulseDot />}
+            {hasAnyPreferences && <View style={s.filterDotStatic} />}
           </TouchableOpacity>
         </View>
 
-        {/* ── Macro gap bar ─────────────────────────────────────────────── */}
-        {todayConsumed && (() => {
-          const remCal  = Math.max(0, NUTRITION_TARGETS.calories - todayConsumed.calories);
-          const remPro  = Math.max(0, NUTRITION_TARGETS.protein  - todayConsumed.protein);
-          const pct     = Math.min(100, Math.round((todayConsumed.calories / NUTRITION_TARGETS.calories) * 100));
-          return (
-            <View style={[s.macroGapCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
-              <View style={s.macroGapHeader}>
-                <Text style={[s.macroGapTitle, isDark && { color: 'rgba(232,224,208,0.55)' }]}>Today so far</Text>
-                <Text style={[s.macroGapPct, isDark && { color: '#F5C842' }]}>{pct}% of goal</Text>
-              </View>
-              <View style={[s.macroGapTrack, isDark && { backgroundColor: 'rgba(255,220,150,0.08)' }]}>
-                <View style={[s.macroGapFill, { width: `${pct}%` as any }, isDark && { backgroundColor: '#F5C842' }]} />
-              </View>
-              <View style={s.macroGapStats}>
-                <Text style={[s.macroGapStat, isDark && { color: 'rgba(232,224,208,0.55)' }]}><Text style={[s.macroGapVal, isDark && { color: '#E8E0D0' }]}>{remCal}</Text> kcal remaining</Text>
-                <Text style={[s.macroGapDot, isDark && { color: 'rgba(255,220,150,0.2)' }]}>·</Text>
-                <Text style={[s.macroGapStat, isDark && { color: 'rgba(232,224,208,0.55)' }]}><Text style={[s.macroGapVal, { color: isDark ? '#E07B54' : '#16A34A' }]}>{remPro}g</Text> protein left</Text>
-              </View>
+        {/* ── Context card ────────────────────────────────────────────────────── */}
+        <View style={s.contextCard}>
+          <Text style={s.contextBadge}>✦  Jonno</Text>
+          {contextLines.map((line, i) => (
+            <Text
+              key={i}
+              style={[s.contextLine, line.primary && s.contextLinePrimary]}
+            >
+              {line.text}
+            </Text>
+          ))}
+        </View>
+
+        {/* ── Onboarding tip (first-time, between context card and hero) ──────── */}
+        {!tipDismissed && !hasAnyPreferences && (
+          <View style={s.tipCard}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.tipTitle}>Personalise your meals</Text>
+              <Text style={s.tipBody}>
+                Tell Jonno about dietary preferences, budget and cuisine. Tap the filter icon above.
+              </Text>
             </View>
-          );
-        })()}
-
-        {/* ── Hero card ─────────────────────────────────────────────────── */}
-        <View style={[s.heroCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
-          {/* Greeting */}
-          <View style={s.heroGreeting}>
-            <Text style={s.heroGreetingEmoji}>{mealCtx.emoji}</Text>
-            <Text style={[s.heroGreetingText, isDark && { color: '#E8E0D0' }]}>{mealCtx.greeting}</Text>
-          </View>
-
-          {/* Active preference tags */}
-          {hasAnyPreferences && preferencesTags.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}
-              contentContainerStyle={s.prefTagsRow} style={{ marginBottom: 14, width: '100%' }}>
-              {preferencesTags.map((tag, i) => (
-                <View key={i} style={s.prefTag}><Text style={s.prefTagText}>{tag}</Text></View>
-              ))}
-              <TouchableOpacity onPress={() => setShowPreferences(true)} style={{ paddingHorizontal: 8, justifyContent: 'center' }}>
-                <Text style={{ fontSize: 12, color: '#94A3B8' }}>Edit ✏️</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          )}
-
-          {error && (
-            <View style={s.errorBox}><Text style={s.errorText}>{error}</Text></View>
-          )}
-
-          {/* Primary contextual button */}
-          <TouchableOpacity style={s.primaryBtn} onPress={() => handleGenerate('single')} activeOpacity={0.85}>
-            <LinearGradient colors={isDark ? ['#E07B54', '#F5C842'] : ['#2DD4BF', '#0EA5E9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.primaryBtnGradient}>
-              <View style={s.btnIcon}>
-                <Text style={{ fontSize: 22 }}>{
-                  mealCtx.mealType === 'breakfast' ? '🥣'
-                  : mealCtx.mealType === 'lunch'   ? '🍽️'
-                  : mealCtx.mealType === 'dinner'  ? '🌙'
-                  : '⚡'
-                }</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={s.primaryBtnTitle}>{mealCtx.buttonTitle}</Text>
-                <Text style={s.primaryBtnSub}>{mealCtx.buttonSub}</Text>
-              </View>
-              <Ionicons name="arrow-forward" size={20} color="white" />
-            </LinearGradient>
-          </TouchableOpacity>
-
-          {/* Secondary pills */}
-          <View style={s.pillsRow}>
-            {([
-              { label: '📅 Full day', type: 'today' as const },
-              { label: '📆 This week', type: 'week' as const },
-              { label: '🥬 Use pantry', type: 'single' as const, pantryOnly: true },
-            ]).map((p) => (
-              <TouchableOpacity
-                key={p.label}
-                style={[s.pill, isDark && { backgroundColor: 'rgba(255,220,150,0.06)', borderColor: 'rgba(255,220,150,0.12)' }]}
-                activeOpacity={0.75}
-                onPress={() => {
-                  if (p.pantryOnly) {
-                    generate('single', preferences, targetsWithConsumed, { mealType: mealCtx.mealType, pantryItems });
-                  } else {
-                    handleGenerate(p.type);
-                  }
-                }}
-              >
-                <Text style={[s.pillText, isDark && { color: '#E8E0D0' }]}>{p.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {!hasAnyPreferences && (
-            <TouchableOpacity onPress={() => setShowPreferences(true)} style={s.personaliseRow} activeOpacity={0.75}>
-              <Text style={s.personaliseText}>🎯 Personalise for halal, vegetarian, budget + more →</Text>
+            <TouchableOpacity onPress={dismissTip} activeOpacity={0.75} style={s.tipClose}>
+              <Ionicons name="close" size={14} color={DIM} />
             </TouchableOpacity>
-          )}
+          </View>
+        )}
 
-          <Text style={[s.targetsText, isDark && { color: 'rgba(232,224,208,0.3)' }]}>
-            {NUTRITION_TARGETS.goal} · {NUTRITION_TARGETS.calories} cal · {NUTRITION_TARGETS.protein}g protein
-          </Text>
+        {/* ── Error ──────────────────────────────────────────────────────────── */}
+        {error && (
+          <View style={s.errorBox}>
+            <Text style={s.errorText}>{error}</Text>
+          </View>
+        )}
+
+        {/* ── Primary hero button ─────────────────────────────────────────────── */}
+        <TouchableOpacity style={s.primaryBtn} onPress={() => handleGenerate('single')} activeOpacity={0.85}>
+          <View style={s.primaryBtnInner}>
+            <View style={s.primaryBtnIcon}>
+              <Text style={{ fontSize: 22 }}>
+                {mealCtx.mealType === 'breakfast' ? '🥣'
+                  : mealCtx.mealType === 'lunch'  ? '🍽️'
+                  : mealCtx.mealType === 'dinner' ? '🌙'
+                  : '⚡'}
+              </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.primaryBtnTitle}>{mealCtx.buttonTitle}</Text>
+              <Text style={s.primaryBtnSub}>{mealCtx.buttonSub}</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={20} color={BG} />
+          </View>
+        </TouchableOpacity>
+
+        {/* ── Secondary pills ─────────────────────────────────────────────────── */}
+        <View style={s.pillsRow}>
+          <TouchableOpacity style={s.pill} onPress={() => handleGenerate('today')} activeOpacity={0.75}>
+            <Text style={s.pillText}>Full day</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.pill} onPress={() => handleGenerate('week')} activeOpacity={0.75}>
+            <Text style={s.pillText}>This week</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={s.pill}
+            onPress={() => {
+              if (pantryItems.length > 0) {
+                generate('single', preferences, targetsWithConsumed, {
+                  mealType: mealCtx.mealType,
+                  pantryItems,
+                });
+              } else {
+                setShowPreferences(true);
+              }
+            }}
+            activeOpacity={0.75}
+          >
+            <Text style={s.pillText}>{pantryItems.length > 0 ? 'Use pantry' : 'Customise'}</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* ── Pantry strip ──────────────────────────────────────────────── */}
-        <View style={[s.pantryCard, isDark && { backgroundColor: '#1C1410', borderColor: 'rgba(255,220,150,0.12)' }]}>
-          <View style={s.pantryHeader}>
-            <Text style={[s.pantryTitle, isDark && { color: '#E8E0D0' }]}>🥬 In your kitchen</Text>
-            <TouchableOpacity onPress={() => setAddingPantry(true)} activeOpacity={0.75}>
-              <Text style={s.pantryAddLink}>+ Add item</Text>
-            </TouchableOpacity>
+        {/* ── Pantry strip (only when items exist) ────────────────────────────── */}
+        {pantryItems.length > 0 && (
+          <View style={s.pantryStrip}>
+            <View style={s.pantryStripHeader}>
+              <Text style={s.pantryStripTitle}>In your kitchen</Text>
+              <TouchableOpacity onPress={() => setAddingPantry(true)} activeOpacity={0.75}>
+                <Text style={s.pantryAddLink}>+ Add</Text>
+              </TouchableOpacity>
+            </View>
+            {addingPantry && (
+              <View style={s.pantryInputRow}>
+                <TextInput
+                  style={s.pantryInput}
+                  placeholder="e.g. Chicken breast"
+                  placeholderTextColor={DIM}
+                  value={pantryInput}
+                  onChangeText={setPantryInput}
+                  autoFocus
+                  returnKeyType="done"
+                  onSubmitEditing={async () => {
+                    if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
+                    setAddingPantry(false);
+                  }}
+                />
+                <TouchableOpacity
+                  style={s.pantryInputBtn}
+                  onPress={async () => {
+                    if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
+                    setAddingPantry(false);
+                  }}
+                >
+                  <Text style={s.pantryInputBtnText}>Add</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pantryChipsRow}>
+              {pantryItems.map(item => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={s.pantryChip}
+                  onPress={() => removePantryItem(item.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={s.pantryChipText}>{item.name}</Text>
+                  <Text style={s.pantryChipX}>×</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
+        )}
 
-          {addingPantry && (
+        {/* ── Empty pantry prompt ─────────────────────────────────────────────── */}
+        {pantryItems.length === 0 && !addingPantry && (
+          <TouchableOpacity style={s.pantryPrompt} onPress={() => setAddingPantry(true)} activeOpacity={0.75}>
+            <Text style={s.pantryPromptText}>+ Add pantry items so Jonno can use them</Text>
+          </TouchableOpacity>
+        )}
+        {pantryItems.length === 0 && addingPantry && (
+          <View style={[s.pantryStrip, { marginTop: 14 }]}>
             <View style={s.pantryInputRow}>
               <TextInput
-                style={[s.pantryInput, isDark && { backgroundColor: 'rgba(255,220,150,0.04)', borderColor: 'rgba(255,220,150,0.12)', color: '#E8E0D0' }]}
+                style={s.pantryInput}
                 placeholder="e.g. Chicken breast"
-                placeholderTextColor={isDark ? 'rgba(232,224,208,0.3)' : '#94A3B8'}
+                placeholderTextColor={DIM}
                 value={pantryInput}
                 onChangeText={setPantryInput}
                 autoFocus
@@ -509,28 +567,18 @@ export default function AgentScreen() {
                   setAddingPantry(false);
                 }}
               />
-              <TouchableOpacity style={s.pantryInputBtn} onPress={async () => {
-                if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
-                setAddingPantry(false);
-              }}>
+              <TouchableOpacity
+                style={s.pantryInputBtn}
+                onPress={async () => {
+                  if (pantryInput.trim()) { await addPantryItem(pantryInput); setPantryInput(''); }
+                  setAddingPantry(false);
+                }}
+              >
                 <Text style={s.pantryInputBtnText}>Add</Text>
               </TouchableOpacity>
             </View>
-          )}
-
-          {pantryItems.length === 0 && !addingPantry ? (
-            <Text style={[s.pantryEmpty, isDark && { color: 'rgba(232,224,208,0.35)' }]}>No items yet — add ingredients or send a meal plan to cart to auto-populate</Text>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pantryChipsRow}>
-              {pantryItems.map((item) => (
-                <TouchableOpacity key={item.id} style={s.pantryChip} onPress={() => removePantryItem(item.id)} activeOpacity={0.7}>
-                  <Text style={s.pantryChipText}>{item.name}</Text>
-                  <Text style={s.pantryChipX}>×</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-        </View>
+          </View>
+        )}
 
         <View style={{ height: 32 }} />
       </ScrollView>
@@ -548,166 +596,167 @@ export default function AgentScreen() {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const TEAL = '#2DD4BF';
-
 const s = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: '#EEF4FA' },
+  safe:   { flex: 1, backgroundColor: BG },
   scroll: { paddingBottom: 100 },
+
+  // Generating — single
+  genWrap:   { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, minHeight: 500 },
+  genCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: CARD, borderWidth: 1.5, borderColor: BORDER, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  genStar:   { fontSize: 28, color: GOLD },
+  genTitle:  { fontSize: 20, fontWeight: '700', color: TEXT, textAlign: 'center', marginBottom: 8 },
+  genSub:    { fontSize: 13, color: MUTED, textAlign: 'center' },
 
   // Header
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
   },
-  title:    { fontSize: 28, fontWeight: '800', color: '#1E293B' },
-  subtitle: { fontSize: 12, color: '#64748B', marginTop: 2 },
-  statusRow:{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 },
-  statusDot:{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' },
-  statusText:{ fontSize: 12, color: '#64748B' },
+  title:         { fontSize: 32, fontWeight: '900', color: TEXT, letterSpacing: -0.5 },
+  headerSub:     { fontSize: 12, color: MUTED, marginTop: 2 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  closeBtn:      {
+    width: 34, height: 34, borderRadius: 10, backgroundColor: CARD,
+    borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center',
+  },
 
+  // Filter button
   filterBtn: {
-    width: 40, height: 40, borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderWidth: 1, borderColor: '#E2E8F0',
-    alignItems: 'center', justifyContent: 'center',
+    width: 42, height: 42, borderRadius: 13, backgroundColor: CARD,
+    borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center',
   },
-  filterBtnActive: { borderColor: 'rgba(45,212,191,0.4)', backgroundColor: 'rgba(45,212,191,0.06)' },
-  filterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: TEAL },
+  filterBtnActive:  { borderColor: 'rgba(245,200,66,0.4)', backgroundColor: 'rgba(245,200,66,0.08)' },
+  pulseDot:         { position: 'absolute', top: 7, right: 7, width: 8, height: 8, borderRadius: 4, backgroundColor: GOLD },
+  filterDotStatic:  { position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: 3.5, backgroundColor: GOLD },
 
-  regenBtn: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16,
-    backgroundColor: 'rgba(45,212,191,0.12)', borderWidth: 1, borderColor: 'rgba(45,212,191,0.3)',
-    minWidth: 100, alignItems: 'center',
+  // Context card
+  contextCard: {
+    marginHorizontal: 16, marginTop: 4, marginBottom: 10,
+    backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
+    padding: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 12, elevation: 5,
   },
-  regenBtnText: { fontSize: 13, fontWeight: '600', color: TEAL },
-  closeBtn:     { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.8)', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' },
+  contextBadge:       { fontSize: 11, fontWeight: '700', color: GOLD, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 },
+  contextLine:        { fontSize: 14, color: MUTED, lineHeight: 20, marginTop: 4 },
+  contextLinePrimary: { fontSize: 16, fontWeight: '600', color: TEXT, marginTop: 0 },
 
-  // Day selector
-  daySelector: { marginBottom: 6 },
-  daySelectorContent: { paddingHorizontal: 16, gap: 8 },
-  dayPill:      { paddingHorizontal: 18, paddingVertical: 9, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.75)', borderWidth: 1, borderColor: '#E2E8F0' },
-  dayPillActive:{ backgroundColor: TEAL, borderColor: TEAL },
-  dayPillText:  { fontSize: 13, fontWeight: '600', color: '#64748B' },
-  dayPillTextActive: { color: 'white' },
-
-  // Totals
-  totalsCard: {
-    marginHorizontal: 16, marginTop: 4, marginBottom: 16,
-    backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 20, borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.9)', padding: 16,
-    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3,
+  // Tip card
+  tipCard: {
+    marginHorizontal: 16, marginBottom: 10,
+    backgroundColor: 'rgba(245,200,66,0.06)', borderRadius: 16,
+    borderWidth: 1, borderColor: 'rgba(245,200,66,0.18)',
+    padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 10,
   },
-  totalsHeading: { fontSize: 12, fontWeight: '600', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
-  totalsRow:     { flexDirection: 'row', justifyContent: 'space-around' },
-  totalStat:     { alignItems: 'center' },
-  totalValue:    { fontSize: 20, fontWeight: '800' },
-  totalLabel:    { fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  tipTitle: { fontSize: 13, fontWeight: '700', color: GOLD, marginBottom: 3 },
+  tipBody:  { fontSize: 12, color: MUTED, lineHeight: 18 },
+  tipClose: { paddingTop: 2 },
 
-  // Cart CTA
-  cartBtn:         { marginHorizontal: 16, borderRadius: 26, overflow: 'hidden', shadowColor: TEAL, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 },
-  cartBtnGradient: { flexDirection: 'row', alignItems: 'center', paddingVertical: 20, paddingHorizontal: 20, gap: 14 },
-  cartIconCircle:  { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  cartBtnTitle:    { fontSize: 18, fontWeight: '800', color: 'white' },
-  cartBtnSub:      { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
-  cartArrow:       { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-
-  // Success / Cart Sent
-  successCard: {
-    marginHorizontal: 16, marginTop: 8,
-    backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 28, borderWidth: 1, borderColor: 'rgba(45,212,191,0.2)',
-    padding: 28, alignItems: 'center', gap: 8,
-    shadowColor: TEAL, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 14, elevation: 4,
-  },
-  successEmoji:   { fontSize: 48 },
-  successTitle:   { fontSize: 24, fontWeight: '800', color: '#1E293B' },
-  successSub:     { fontSize: 15, color: '#64748B', textAlign: 'center', lineHeight: 22 },
-  openCartBtn:    { marginTop: 10, backgroundColor: TEAL, borderRadius: 20, paddingHorizontal: 28, paddingVertical: 14 },
-  openCartBtnText:{ fontSize: 16, fontWeight: '700', color: 'white' },
-
-  recipesHeader: { fontSize: 18, fontWeight: '800', color: '#1E293B', paddingHorizontal: 20, marginTop: 24, marginBottom: 10 },
-  recipeCard:    { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0', padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  recipeEmoji:   { fontSize: 28 },
-  recipeName:    { fontSize: 15, fontWeight: '700', color: '#1E293B' },
-  recipeMeta:    { fontSize: 12, color: '#94A3B8', marginTop: 2 },
-  recipeArrow:   { fontSize: 13, fontWeight: '600', color: TEAL },
-
-  newPlanBtn:    { marginHorizontal: 16, marginTop: 20, paddingVertical: 14, borderRadius: 18, borderWidth: 1.5, borderColor: '#E2E8F0', backgroundColor: 'rgba(255,255,255,0.7)', alignItems: 'center' },
-  newPlanText:   { fontSize: 15, fontWeight: '600', color: '#64748B' },
-
-  // Hero card (idle)
-  // Macro gap bar
-  macroGapCard: {
-    marginHorizontal: 16, marginTop: 8,
-    backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(226,232,240,0.8)',
-    padding: 16, shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 3,
-  },
-  macroGapHeader:  { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  macroGapTitle:   { fontSize: 12, fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: 0.5 },
-  macroGapPct:     { fontSize: 12, fontWeight: '700', color: TEAL },
-  macroGapTrack:   { height: 6, backgroundColor: '#F1F5F9', borderRadius: 3, overflow: 'hidden', marginBottom: 8 },
-  macroGapFill:    { height: 6, backgroundColor: TEAL, borderRadius: 3 },
-  macroGapStats:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  macroGapStat:    { fontSize: 13, color: '#64748B' },
-  macroGapVal:     { fontWeight: '700', color: '#1E293B' },
-  macroGapDot:     { fontSize: 14, color: '#CBD5E1' },
-
-  // Hero card
-  heroCard: {
-    marginHorizontal: 16, marginTop: 10,
-    backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)',
-    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 8,
-    padding: 22, alignItems: 'center',
-  },
-  heroGreeting:     { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, alignSelf: 'flex-start' },
-  heroGreetingEmoji:{ fontSize: 22 },
-  heroGreetingText: { fontSize: 20, fontWeight: '800', color: '#1E293B' },
-
-  prefTagsRow:   { gap: 6, paddingVertical: 2 },
-  prefTag:       { backgroundColor: 'rgba(45,212,191,0.1)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(45,212,191,0.25)', paddingHorizontal: 10, paddingVertical: 4 },
-  prefTagText:   { fontSize: 12, color: TEAL, fontWeight: '500' },
-
-  errorBox:  { backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, width: '100%', marginBottom: 12 },
+  // Error
+  errorBox:  { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10 },
   errorText: { fontSize: 13, color: '#DC2626', textAlign: 'center' },
 
-  primaryBtn:        { width: '100%', borderRadius: 22, overflow: 'hidden', shadowColor: TEAL, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
-  primaryBtnGradient:{ flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 16, gap: 12 },
-  btnIcon:           { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  primaryBtnTitle:   { fontSize: 16, fontWeight: '700', color: 'white' },
-  primaryBtnSub:     { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
-
-  pillsRow:   { flexDirection: 'row', gap: 8, marginTop: 12, width: '100%' },
-  pill:       { flex: 1, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 20, paddingVertical: 10, alignItems: 'center', borderWidth: 1.5, borderColor: '#E2E8F0' },
-  pillText:   { fontSize: 12, fontWeight: '600', color: '#1E293B' },
-
-  personaliseRow:  { marginTop: 14, paddingVertical: 6 },
-  personaliseText: { fontSize: 13, color: TEAL, textAlign: 'center' },
-  targetsText:     { fontSize: 11, color: '#94A3B8', textAlign: 'center', marginTop: 10 },
-
-  // Single meal result
-  fullDayLink:     { marginHorizontal: 16, marginTop: 12, alignItems: 'center', paddingVertical: 8 },
-  fullDayLinkText: { fontSize: 14, color: TEAL, fontWeight: '600' },
-
-  // Pantry card
-  pantryCard: {
-    marginHorizontal: 16, marginTop: 12,
-    backgroundColor: 'rgba(255,255,255,0.82)', borderRadius: 22, borderWidth: 1, borderColor: 'rgba(226,232,240,0.8)',
-    padding: 16, shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 2,
+  // Primary hero button (gold)
+  primaryBtn: {
+    marginHorizontal: 16, borderRadius: 22, overflow: 'hidden',
+    backgroundColor: GOLD, shadowColor: GOLD, shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.28, shadowRadius: 16, elevation: 8,
   },
-  pantryHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  pantryTitle:     { fontSize: 14, fontWeight: '700', color: '#1E293B' },
-  pantryAddLink:   { fontSize: 13, fontWeight: '600', color: TEAL },
-  pantryEmpty:     { fontSize: 12, color: '#94A3B8', lineHeight: 18 },
-  pantryInputRow:  { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  pantryInput:     { flex: 1, backgroundColor: '#F8FAFC', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, fontSize: 14, color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0' },
-  pantryInputBtn:  { backgroundColor: TEAL, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9, justifyContent: 'center' },
-  pantryInputBtnText: { fontSize: 14, fontWeight: '700', color: 'white' },
-  pantryChipsRow:  { gap: 8 },
-  pantryChip:      { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(45,212,191,0.1)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(45,212,191,0.25)', paddingHorizontal: 12, paddingVertical: 6 },
-  pantryChipText:  { fontSize: 13, fontWeight: '500', color: '#0D7066' },
-  pantryChipX:     { fontSize: 14, color: '#94A3B8', fontWeight: '600', marginLeft: 2 },
+  primaryBtnInner: { flexDirection: 'row', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 18, gap: 14 },
+  primaryBtnIcon:  { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(28,22,18,0.12)', alignItems: 'center', justifyContent: 'center' },
+  primaryBtnTitle: { fontSize: 17, fontWeight: '800', color: BG },
+  primaryBtnSub:   { fontSize: 12, color: 'rgba(28,22,18,0.55)', marginTop: 2 },
+
+  // Secondary pills
+  pillsRow: { flexDirection: 'row', gap: 8, marginTop: 10, marginHorizontal: 16 },
+  pill:     { flex: 1, backgroundColor: CARD, borderRadius: 18, paddingVertical: 11, alignItems: 'center', borderWidth: 1, borderColor: BORDER },
+  pillText: { fontSize: 13, fontWeight: '600', color: TEXT },
+
+  // Pantry strip
+  pantryStrip: {
+    marginHorizontal: 16, backgroundColor: CARD, borderRadius: 18,
+    borderWidth: 1, borderColor: BORDER, padding: 14,
+  },
+  pantryStripHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  pantryStripTitle:  { fontSize: 13, fontWeight: '600', color: MUTED },
+  pantryAddLink:     { fontSize: 13, fontWeight: '600', color: GOLD },
+  pantryInputRow:    { flexDirection: 'row', gap: 8, marginBottom: 10 },
+  pantryInput:       { flex: 1, backgroundColor: 'rgba(248,213,97,0.04)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, fontSize: 14, color: TEXT, borderWidth: 1, borderColor: BORDER },
+  pantryInputBtn:    { backgroundColor: GOLD, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9, justifyContent: 'center' },
+  pantryInputBtnText:{ fontSize: 14, fontWeight: '700', color: BG },
+  pantryChipsRow:    { gap: 8 },
+  pantryChip:        { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,158,110,0.12)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,158,110,0.25)', paddingHorizontal: 12, paddingVertical: 6 },
+  pantryChipText:    { fontSize: 13, fontWeight: '500', color: SAGE },
+  pantryChipX:       { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
+
+  // Empty pantry prompt
+  pantryPrompt:     { marginHorizontal: 16, marginTop: 14, paddingVertical: 12, alignItems: 'center' },
+  pantryPromptText: { fontSize: 13, color: DIM },
+
+  // Single meal swap pills
+  swapRow: { flexDirection: 'row', gap: 8, marginHorizontal: 16, marginTop: 12, flexWrap: 'wrap' },
+  swapPill: { backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 8 },
+  swapPillText: { fontSize: 13, fontWeight: '500', color: TEXT },
+
+  fullDayLink:     { marginHorizontal: 16, marginTop: 12, alignItems: 'center', paddingVertical: 8 },
+  fullDayLinkText: { fontSize: 14, color: MUTED, fontWeight: '500' },
+
+  // Plan ready — header actions
+  regenBtn: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16,
+    backgroundColor: 'rgba(245,200,66,0.10)', borderWidth: 1, borderColor: 'rgba(245,200,66,0.25)',
+    minWidth: 100, alignItems: 'center',
+  },
+  regenBtnText: { fontSize: 13, fontWeight: '600', color: GOLD },
+
+  // Day selector
+  daySelector:       { marginBottom: 6 },
+  daySelectorContent:{ paddingHorizontal: 16, gap: 8 },
+  dayPill:           { paddingHorizontal: 18, paddingVertical: 9, borderRadius: 20, backgroundColor: CARD, borderWidth: 1, borderColor: BORDER },
+  dayPillActive:     { backgroundColor: GOLD, borderColor: GOLD },
+  dayPillText:       { fontSize: 13, fontWeight: '600', color: MUTED },
+  dayPillTextActive: { color: BG },
+
+  // Totals card
+  totalsCard: {
+    marginHorizontal: 16, marginTop: 4, marginBottom: 16,
+    backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER, padding: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 3,
+  },
+  totalsHeading: { fontSize: 12, fontWeight: '600', color: DIM, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
+  totalsRow:     { flexDirection: 'row', justifyContent: 'space-around' },
+  totalStat:     { alignItems: 'center' },
+  totalValue:    { fontSize: 22, fontWeight: '800' },
+  totalLabel:    { fontSize: 11, color: MUTED, marginTop: 2 },
+
+  // Cart CTA (gold)
+  cartBtn: {
+    marginHorizontal: 16, borderRadius: 22, overflow: 'hidden',
+    backgroundColor: GOLD, shadowColor: GOLD, shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.22, shadowRadius: 16, elevation: 8,
+  },
+  cartBtnInner:   { flexDirection: 'row', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 18, gap: 14 },
+  cartIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(28,22,18,0.12)', alignItems: 'center', justifyContent: 'center' },
+  cartBtnTitle:   { fontSize: 16, fontWeight: '800', color: BG },
+  cartBtnSub:     { fontSize: 12, color: 'rgba(28,22,18,0.55)', marginTop: 2 },
+
+  // Cart sent — success card (sage)
+  successCard: {
+    marginHorizontal: 16, marginTop: 8, backgroundColor: CARD, borderRadius: 28,
+    borderWidth: 1, borderColor: 'rgba(139,158,110,0.3)', padding: 28, alignItems: 'center', gap: 8,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 14, elevation: 4,
+  },
+  successIconWrap: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(139,158,110,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  successTitle:    { fontSize: 24, fontWeight: '800', color: TEXT },
+  successSub:      { fontSize: 15, color: MUTED, textAlign: 'center', lineHeight: 22 },
+  openCartBtn:     { marginTop: 10, backgroundColor: GOLD, borderRadius: 20, paddingHorizontal: 28, paddingVertical: 14 },
+  openCartBtnText: { fontSize: 16, fontWeight: '700', color: BG },
+
+  recipesHeader: { fontSize: 18, fontWeight: '800', color: TEXT, paddingHorizontal: 20, marginTop: 24, marginBottom: 10 },
+  recipeCard:    { marginHorizontal: 16, marginBottom: 10, backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  recipeEmoji:   { fontSize: 28 },
+  recipeName:    { fontSize: 15, fontWeight: '700', color: TEXT },
+  recipeMeta:    { fontSize: 12, color: MUTED, marginTop: 2 },
+
+  newPlanBtn:  { marginHorizontal: 16, marginTop: 20, paddingVertical: 14, borderRadius: 18, borderWidth: 1, borderColor: BORDER, backgroundColor: CARD, alignItems: 'center' },
+  newPlanText: { fontSize: 15, fontWeight: '600', color: MUTED },
 });
