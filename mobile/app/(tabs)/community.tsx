@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   FlatList,
-  Image,
   Modal,
+  PanResponder,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -24,7 +25,6 @@ import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
 import { consumePendingCommunityPost } from '@/lib/communityStore';
 import { deletePost, deletePostWithFoodLog } from '@/services/communityService';
-import { getPostImage } from '@/data/communityMockData';
 import { getFollowingFeedPosts } from '@/services/profileService';
 import { MOCK_PROFILES, setFollowing } from '@/data/profileMockData';
 import type { CommunityFilter, CommunityPost, UserProfile } from '@/types/community';
@@ -37,9 +37,10 @@ const CREAM  = '#E8E0D0';
 const MUTED  = 'rgba(232,224,208,0.4)';
 const BG     = '#0D0A07';
 
-type ActiveTab = 'foryou' | 'following' | 'challenges' | 'profile';
+type ActiveTab = 'foryou' | 'following' | 'challenges';
 
-const TAB_LABELS: Record<ActiveTab, string> = { foryou: 'For You', following: 'Following', challenges: 'Challenges', profile: 'My Posts' };
+const TAB_LABELS: Record<ActiveTab, string> = { foryou: 'For You', following: 'Following', challenges: 'Challenges' };
+const TAB_KEYS: ActiveTab[] = ['foryou', 'following', 'challenges'];
 
 const FILTER_OPTIONS: { key: CommunityFilter; label: string; emoji: string }[] = [
   { key: 'build_muscle', label: 'Muscle',      emoji: '💪' },
@@ -90,6 +91,29 @@ export default function CommunityScreen() {
   } = useCommunity();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('foryou');
+
+  // Swipe between community tabs
+  const activeTabRef = useRef<ActiveTab>('foryou');
+  activeTabRef.current = activeTab;
+  const SCREEN_W = Dimensions.get('window').width;
+  const tabSwipe = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, { dx, dy }) =>
+        Math.abs(dx) > 25 && Math.abs(dx) > Math.abs(dy) * 2.5,
+      onPanResponderRelease: (_, { dx, vx }) => {
+        const cur = TAB_KEYS.indexOf(activeTabRef.current);
+        if (cur === -1) return;
+        const direction = dx < 0 ? 1 : -1;
+        const next = cur + direction;
+        const fast = Math.abs(vx) > 0.4;
+        const far = Math.abs(dx) > SCREEN_W * 0.3;
+        if ((fast || far) && next >= 0 && next < TAB_KEYS.length) {
+          setActiveTab(TAB_KEYS[next]);
+          if (TAB_KEYS[next] === 'following') loadFollowingPosts();
+        }
+      },
+    })
+  ).current;
   const [followingPosts, setFollowingPosts] = useState<CommunityPost[]>([]);
   const [followingLoading, setFollowingLoading] = useState(false);
   const [trendingVisible, setTrendingVisible] = useState(true);
@@ -295,67 +319,6 @@ export default function CommunityScreen() {
     );
   }
 
-  // ── My Posts tab ───────────────────────────────────────────────────────────────
-  const myPosts = posts.filter(p => p.userId === currentUserId);
-  const totalLikes = myPosts.reduce((sum, p) => sum + p.likes, 0);
-
-  function MyPostsTab() {
-    return (
-      <ScrollView contentContainerStyle={{ paddingBottom: 100, paddingTop: 12 }} showsVerticalScrollIndicator={false}>
-        {/* Stats row */}
-        <View style={mp.statsCard}>
-          {[
-            { label: 'Posts', value: String(myPosts.length) },
-            { label: 'Likes', value: String(totalLikes) },
-            { label: 'Streak', value: '\u2014' },
-          ].map((stat, i) => (
-            <View key={stat.label} style={[mp.statCell, i > 0 && mp.statBorder]}>
-              <Text style={mp.statVal}>{stat.value}</Text>
-              <Text style={mp.statLbl}>{stat.label}</Text>
-            </View>
-          ))}
-        </View>
-
-        {myPosts.length === 0 ? (
-          <View style={s.empty}>
-            <Text style={s.emptyEmoji}>🍽️</Text>
-            <Text style={s.emptyTitle}>No posts yet</Text>
-            <Text style={s.emptySub}>Share a meal in the For You tab to see it here</Text>
-          </View>
-        ) : (
-          myPosts.map(post => {
-            const localImg = getPostImage(post.id);
-            return (
-              <View key={post.id} style={mp.postCard}>
-                <View style={mp.thumb}>
-                  {localImg ? (
-                    <Image source={localImg} style={mp.thumbImg} resizeMode="cover" />
-                  ) : post.imageUri ? (
-                    <Image source={{ uri: post.imageUri }} style={mp.thumbImg} resizeMode="cover" />
-                  ) : (
-                    <View style={mp.thumbPlaceholder}><Text style={{ fontSize: 28 }}>🥗</Text></View>
-                  )}
-                </View>
-                <View style={{ flex: 1, gap: 3 }}>
-                  <Text style={mp.postName} numberOfLines={1}>{post.mealName}</Text>
-                  <Text style={mp.postMeta}>{post.timeAgo} · {post.nutrition.calories} cal · ♥ {post.likes}</Text>
-                  <View style={mp.macroRow}>
-                    <Text style={mp.macroChip}>P {post.nutrition.protein}g</Text>
-                    <Text style={mp.macroChip}>C {post.nutrition.carbs}g</Text>
-                    <Text style={mp.macroChip}>F {post.nutrition.fat}g</Text>
-                  </View>
-                </View>
-                <TouchableOpacity style={mp.deleteBtn} onPress={() => handleDeletePost(post)} activeOpacity={0.7}>
-                  <Text style={mp.deleteTxt}>🗑</Text>
-                </TouchableOpacity>
-              </View>
-            );
-          })
-        )}
-      </ScrollView>
-    );
-  }
-
   // ── Empty state ───────────────────────────────────────────────────────────────
   function EmptyState() {
     if (activeTab === 'following') {
@@ -537,9 +500,8 @@ export default function CommunityScreen() {
       ) : (
         <>
           <TabBar />
-          {activeTab === 'profile' ? (
-            <MyPostsTab />
-          ) : activeTab === 'challenges' ? (
+          <View style={{ flex: 1 }} {...tabSwipe.panHandlers}>
+          {activeTab === 'challenges' ? (
             <ChallengesTab />
           ) : isLoading ? (
             <ActivityIndicator color={GOLD} size="large" style={{ marginTop: 60 }} />
@@ -568,6 +530,7 @@ export default function CommunityScreen() {
               )}
             />
           )}
+          </View>
           <FilterSheet />
         </>
       )}
@@ -723,21 +686,3 @@ const chal = StyleSheet.create({
   joinText: { fontSize: 14, fontWeight: '700', color: GOLD, fontFamily: 'BebasNeue_400Regular' },
 });
 
-// My Posts tab
-const mp = StyleSheet.create({
-  statsCard: { flexDirection: 'row', backgroundColor: CARD, borderRadius: 16, marginHorizontal: 16, marginBottom: 12, paddingVertical: 16, borderWidth: 1, borderColor: BORDER },
-  statCell: { flex: 1, alignItems: 'center', gap: 2 },
-  statBorder: { borderLeftWidth: 1, borderLeftColor: 'rgba(255,220,150,0.08)' },
-  statVal: { fontSize: 20, fontWeight: '800', color: CREAM },
-  statLbl: { fontSize: 11, fontWeight: '600', color: MUTED, textTransform: 'uppercase', letterSpacing: 0.4 },
-  postCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: CARD, borderRadius: 16, padding: 12, marginHorizontal: 16, marginBottom: 8, borderWidth: 1, borderColor: BORDER },
-  thumb: { width: 60, height: 60, borderRadius: 12, overflow: 'hidden', backgroundColor: '#252018' },
-  thumbImg: { width: 60, height: 60 },
-  thumbPlaceholder: { width: 60, height: 60, alignItems: 'center', justifyContent: 'center', backgroundColor: '#252018' },
-  postName: { fontSize: 14, fontWeight: '700', color: CREAM },
-  postMeta: { fontSize: 11, color: MUTED },
-  macroRow: { flexDirection: 'row', gap: 6, marginTop: 2 },
-  macroChip: { fontSize: 10, fontWeight: '600', color: GOLD, backgroundColor: 'rgba(245,200,66,0.10)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
-  deleteBtn: { padding: 8 },
-  deleteTxt: { fontSize: 18 },
-});

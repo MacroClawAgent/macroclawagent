@@ -16,7 +16,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 import { useRouter } from 'expo-router';
 import { useSmartCart } from '@/hooks/useSmartCart';
-import { useTabSwipe } from '@/hooks/useTabSwipe';
 import { searchBothStores } from '@/services/supermarketApi';
 import { StoreSelector } from '@/components/SmartCart/StoreSelector';
 import type {
@@ -290,7 +289,6 @@ function ProductPickerModal({
 export default function CartScreen() {
   const router = useRouter();
   const sc = useSmartCart();
-  const swipe = useTabSwipe();
   const [collapsed, setCollapsed] = useState<Set<IngredientCategory>>(new Set());
   const [addText, setAddText] = useState('');
   const [pickerIngredient, setPickerIngredient] = useState<SmartCartIngredient | null>(null);
@@ -327,7 +325,7 @@ export default function CartScreen() {
     : 'store';
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']} {...swipe}>
+    <SafeAreaView style={s.safe} edges={['top']}>
       {/* ── Header ── */}
       <View style={s.header}>
         <Text style={s.title}>Smart Cart</Text>

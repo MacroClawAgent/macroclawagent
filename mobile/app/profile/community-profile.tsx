@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator, Alert, ScrollView, StyleSheet, Switch,
+  ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Switch,
   Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
+import { useCommunity } from "@/hooks/useCommunity";
+import { deletePost, deletePostWithFoodLog } from "@/services/communityService";
+import { getPostImage } from "@/data/communityMockData";
 import { apiPost } from "@/lib/api";
 
 const BG = "#0D0A07"; const WHITE = "#1C1410"; const BORDER = "rgba(255,220,150,0.12)";
@@ -23,6 +26,21 @@ function validate(u: string): string | null {
 
 export default function CommunityProfileScreen() {
   const { userProfile, refreshProfile } = useAuth();
+  const { posts, currentUserId, loadPosts, removePost } = useCommunity();
+
+  useEffect(() => { loadPosts(); }, []);
+
+  const myPosts = posts.filter(p => p.userId === currentUserId);
+  const totalLikes = myPosts.reduce((sum, p) => sum + p.likes, 0);
+
+  function handleDeletePost(post: typeof myPosts[0]) {
+    const logDate = post.createdAt.split("T")[0];
+    Alert.alert("Delete post", "Also delete this meal from your food log?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Post only", onPress: async () => { await deletePost(post.id); removePost(post.id); } },
+      { text: "Post + log", style: "destructive", onPress: async () => { await deletePostWithFoodLog(post.id, post.mealName, logDate); removePost(post.id); } },
+    ]);
+  }
 
   const [username, setUsername] = useState(userProfile?.username ?? "");
   const [bio, setBio] = useState(userProfile?.bio ?? "");
@@ -155,6 +173,59 @@ export default function CommunityProfileScreen() {
             : <Text style={s.saveBtnText}>Save Changes</Text>
           }
         </TouchableOpacity>
+
+        {/* My Posts */}
+        <Text style={[s.sectionLabel, { marginTop: 28 }]}>My Posts</Text>
+        <View style={s.card}>
+          <View style={cp.statsRow}>
+            {[
+              { label: "Posts", value: String(myPosts.length) },
+              { label: "Likes", value: String(totalLikes) },
+            ].map((stat, i) => (
+              <View key={stat.label} style={[cp.statCell, i > 0 && cp.statBorder]}>
+                <Text style={cp.statVal}>{stat.value}</Text>
+                <Text style={cp.statLbl}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {myPosts.length === 0 ? (
+          <View style={cp.empty}>
+            <Text style={{ fontSize: 36 }}>🍽️</Text>
+            <Text style={cp.emptyText}>No posts yet</Text>
+            <Text style={cp.emptySub}>Share a meal in the Community tab</Text>
+          </View>
+        ) : (
+          myPosts.map(post => {
+            const localImg = getPostImage(post.id);
+            return (
+              <View key={post.id} style={cp.postCard}>
+                <View style={cp.thumb}>
+                  {localImg ? (
+                    <Image source={localImg} style={cp.thumbImg} resizeMode="cover" />
+                  ) : post.imageUri ? (
+                    <Image source={{ uri: post.imageUri }} style={cp.thumbImg} resizeMode="cover" />
+                  ) : (
+                    <View style={cp.thumbPlaceholder}><Text style={{ fontSize: 28 }}>🥗</Text></View>
+                  )}
+                </View>
+                <View style={{ flex: 1, gap: 3 }}>
+                  <Text style={cp.postName} numberOfLines={1}>{post.mealName}</Text>
+                  <Text style={cp.postMeta}>{post.timeAgo} · {post.nutrition.calories} cal · ♥ {post.likes}</Text>
+                  <View style={cp.macroRow}>
+                    <Text style={cp.macroChip}>P {post.nutrition.protein}g</Text>
+                    <Text style={cp.macroChip}>C {post.nutrition.carbs}g</Text>
+                    <Text style={cp.macroChip}>F {post.nutrition.fat}g</Text>
+                  </View>
+                </View>
+                <TouchableOpacity style={cp.deleteBtn} onPress={() => handleDeletePost(post)} activeOpacity={0.7}>
+                  <Text style={{ fontSize: 18 }}>🗑</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -177,4 +248,24 @@ const s = StyleSheet.create({
   switchSub: { fontSize: 12, color: "rgba(232,224,208,0.4)", marginTop: 2, lineHeight: 16 },
   saveBtn: { backgroundColor: TEAL, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 24 },
   saveBtnText: { color: WHITE, fontWeight: "800", fontSize: 16 },
+});
+
+const cp = StyleSheet.create({
+  statsRow: { flexDirection: "row", paddingVertical: 16 },
+  statCell: { flex: 1, alignItems: "center", gap: 2 },
+  statBorder: { borderLeftWidth: 1, borderLeftColor: "rgba(255,220,150,0.08)" },
+  statVal: { fontSize: 20, fontWeight: "800", color: "#E8E0D0" },
+  statLbl: { fontSize: 11, fontWeight: "600", color: "rgba(232,224,208,0.4)", textTransform: "uppercase", letterSpacing: 0.4 },
+  empty: { alignItems: "center", paddingVertical: 24, gap: 6 },
+  emptyText: { fontSize: 15, fontWeight: "700", color: "#E8E0D0" },
+  emptySub: { fontSize: 12, color: "rgba(232,224,208,0.4)" },
+  postCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: WHITE, borderRadius: 16, padding: 12, marginTop: 8, borderWidth: 1, borderColor: BORDER },
+  thumb: { width: 60, height: 60, borderRadius: 12, overflow: "hidden", backgroundColor: "#252018" },
+  thumbImg: { width: 60, height: 60 },
+  thumbPlaceholder: { width: 60, height: 60, alignItems: "center", justifyContent: "center", backgroundColor: "#252018" },
+  postName: { fontSize: 14, fontWeight: "700", color: "#E8E0D0" },
+  postMeta: { fontSize: 11, color: "rgba(232,224,208,0.4)" },
+  macroRow: { flexDirection: "row", gap: 6, marginTop: 2 },
+  macroChip: { fontSize: 10, fontWeight: "600", color: TEAL, backgroundColor: "rgba(245,200,66,0.10)", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
+  deleteBtn: { padding: 8 },
 });
