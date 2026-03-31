@@ -99,12 +99,12 @@ const fabStyles = StyleSheet.create({
     elevation: 10,
   },
   plus: {
-    fontSize: 30,
-    fontWeight: "300",
-    fontFamily: "BebasNeue_400Regular",
+    fontSize: 32,
+    fontWeight: "700",
     color: "#FFFFFF",
-    lineHeight: 34,
-    marginTop: -1,
+    lineHeight: 32,
+    textAlign: "center",
+    includeFontPadding: false,
   },
 });
 
