@@ -12,7 +12,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMealPlan } from '@/hooks/useMealPlan';
 import { useAgentContext } from '@/hooks/useAgentContext';
 import { getPantryPhotos } from '@/services/pantryService';
@@ -36,22 +35,7 @@ const TEXT   = '#E8E0D0';
 const MUTED  = 'rgba(232,224,208,0.5)';
 const DIM    = 'rgba(232,224,208,0.3)';
 
-const TIP_KEY = 'jonno_agent_tip_dismissed';
-
-// ── Pulsing dot for filter button (first-time users) ─────────────────────────
-
-function PulseDot() {
-  const scale = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(scale, { toValue: 1.6, duration: 700, useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1,   duration: 700, useNativeDriver: true }),
-      ])
-    ).start();
-  }, [scale]);
-  return <Animated.View style={[s.pulseDot, { transform: [{ scale }] }]} />;
-}
+// (tip dismissed state removed — intelligence card + onboarding tip removed from idle)
 
 // ── Generating — single meal (minimal pulsing circle) ────────────────────────
 
@@ -109,18 +93,6 @@ export default function AgentScreen() {
   const [pantryInput,     setPantryInput]     = useState('');
   const [pantryExpanded,  setPantryExpanded]  = useState(false);
   const [showScanner,     setShowScanner]     = useState(false);
-  const [tipDismissed,    setTipDismissed]    = useState(true);
-
-  useEffect(() => {
-    AsyncStorage.getItem(TIP_KEY)
-      .then(v => { if (!v) setTipDismissed(false); })
-      .catch(() => {});
-  }, []);
-
-  const dismissTip = useCallback(async () => {
-    setTipDismissed(true);
-    await AsyncStorage.setItem(TIP_KEY, '1');
-  }, []);
 
   const mealCtx         = getCurrentMealContext();
   const selectedDay     = days[selectedDayIndex];
@@ -394,89 +366,24 @@ export default function AgentScreen() {
         {/* ── Header ─────────────────────────────────────────────────────────── */}
         <View style={s.header}>
           <Text style={s.title}>Jonno</Text>
-          <TouchableOpacity
-            style={[s.filterBtn, hasAnyPreferences && s.filterBtnActive]}
-            onPress={() => setShowPreferences(true)}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="options-outline" size={20} color={hasAnyPreferences ? GOLD : MUTED} />
-            {!hasAnyPreferences && <PulseDot />}
-            {hasAnyPreferences && <View style={s.filterDotStatic} />}
-          </TouchableOpacity>
-        </View>
-
-        {/* ── Intelligence Card ───────────────────────────────────────────────── */}
-        <View style={s.intelCard}>
-          <View style={s.intelCardHeader}>
-            <Text style={s.intelBadge}>✦  JONNO</Text>
-            <Text style={s.intelGoal}>{goal.toUpperCase()}</Text>
-          </View>
-
-          {/* Macro progress bar */}
-          <View style={s.macroBar}>
-            {nutrition.progressPct > 0 && (
-              <View style={[s.macroBarConsumed, { flex: nutrition.progressPct }]} />
-            )}
-            <View style={[s.macroBarRemaining, { flex: Math.max(1, 100 - nutrition.progressPct) }]} />
-          </View>
-
-          {/* Primary stat line */}
-          {nutrition.remaining ? (
-            <Text style={s.intelPrimary}>
-              {nutrition.remaining.calories.toLocaleString()} kcal · {nutrition.remaining.protein}g protein remaining
-            </Text>
-          ) : (
-            <Text style={s.intelPrimary}>
-              {targets.calories.toLocaleString()} kcal · {targets.protein}g protein daily goal
-            </Text>
-          )}
-
-          {/* Training line */}
-          {training && (
-            <View style={s.intelRow}>
-              <View style={[s.intelDot, { backgroundColor: CORAL }]} />
-              <Text style={[s.intelLine, { color: CORAL }]}>
-                {training.label}
-                {training.caloriesBurned > 0 ? ` · ${training.caloriesBurned} kcal` : ''}
-              </Text>
-            </View>
-          )}
-
-          {/* Pantry line */}
-          {pantry.count > 0 && (
-            <View style={s.intelRow}>
-              <View style={[s.intelDot, { backgroundColor: SAGE }]} />
-              <Text style={[s.intelLine, { color: SAGE }]}>
-                {pantry.count} item{pantry.count !== 1 ? 's' : ''} in your kitchen
-              </Text>
-            </View>
-          )}
-
-          {/* Preferences line */}
-          {hasAnyPreferences && prefTags.length > 0 && (
-            <View style={s.intelRow}>
-              <View style={[s.intelDot, { backgroundColor: GOLD }]} />
-              <Text style={[s.intelLine, { color: 'rgba(245,200,66,0.75)' }]}>
-                {prefTags.slice(0, 3).join(' · ')}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* ── Onboarding tip ──────────────────────────────────────────────────── */}
-        {!tipDismissed && !hasAnyPreferences && (
-          <View style={s.tipCard}>
-            <View style={{ flex: 1 }}>
-              <Text style={s.tipTitle}>Personalise your meals</Text>
-              <Text style={s.tipBody}>
-                Tell Jonno about dietary preferences, budget and cuisine. Tap the filter icon above.
-              </Text>
-            </View>
-            <TouchableOpacity onPress={dismissTip} activeOpacity={0.75} style={s.tipClose}>
-              <Ionicons name="close" size={14} color={DIM} />
+          <View style={s.headerActions}>
+            <TouchableOpacity
+              style={s.headerIconBtn}
+              onPress={() => router.push('/recipes' as any)}
+              activeOpacity={0.75}
+            >
+              <Ionicons name="time-outline" size={20} color={MUTED} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.headerIconBtn, hasAnyPreferences && s.filterBtnActive]}
+              onPress={() => setShowPreferences(true)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="options-outline" size={20} color={hasAnyPreferences ? GOLD : MUTED} />
+              {hasAnyPreferences && <View style={s.filterDotStatic} />}
             </TouchableOpacity>
           </View>
-        )}
+        </View>
 
         {/* ── Error ──────────────────────────────────────────────────────────── */}
         {error && (
@@ -551,49 +458,54 @@ export default function AgentScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Pantry section — collapsible ────────────────────────────────────── */}
-        <View style={s.pantryStrip}>
-          {/* Always-visible header row */}
-          <TouchableOpacity
-            style={s.pantryStripHeader}
-            onPress={() => setPantryExpanded(p => !p)}
-            activeOpacity={0.8}
-          >
-            <View style={s.pantryStripLeft}>
-              <Text style={s.pantryStripTitle}>Fridge & Pantry</Text>
+        {/* ── Fridge & Pantry ──────────────────────────────────────────────── */}
+        <View style={s.pantrySection}>
+          {/* Section header */}
+          <View style={s.pantrySectionHeader}>
+            <View style={s.pantrySectionLeft}>
+              <Ionicons name="nutrition-outline" size={18} color={SAGE} />
+              <Text style={s.pantrySectionTitle}>Fridge & Pantry</Text>
               {pantryItems.length > 0 && (
                 <View style={s.pantryCountBadge}>
                   <Text style={s.pantryCountText}>{pantryItems.length}</Text>
                 </View>
               )}
             </View>
-            <View style={s.pantryStripActions}>
-              <TouchableOpacity
-                onPress={() => setShowScanner(true)}
-                style={s.scanBtn}
-                activeOpacity={0.75}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons name="camera-outline" size={18} color={MUTED} />
-              </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setPantryExpanded(p => !p)}
+              activeOpacity={0.75}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Ionicons
                 name={pantryExpanded ? 'chevron-up' : 'chevron-down'}
-                size={16}
+                size={18}
                 color={DIM}
               />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
+
+          {/* Action buttons row */}
+          <View style={s.pantryBtnRow}>
+            <TouchableOpacity style={s.pantryActionBtn} onPress={() => setShowScanner(true)} activeOpacity={0.8}>
+              <Ionicons name="camera" size={18} color={CORAL} />
+              <Text style={s.pantryActionText}>Scan fridge</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={s.pantryActionBtn} onPress={() => { setPantryExpanded(true); setAddingPantry(true); }} activeOpacity={0.8}>
+              <Ionicons name="add-circle-outline" size={18} color={SAGE} />
+              <Text style={s.pantryActionText}>Add item</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Expanded content */}
           {pantryExpanded && (
-            <>
+            <View style={s.pantryExpandedContent}>
               {/* Photo thumbnails (scanner photos) */}
               {pantryPhotos.length > 0 && (
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={s.photoThumbRow}
-                  style={{ marginTop: 10 }}
+                  style={{ marginBottom: 12 }}
                 >
                   {pantryPhotos.map(uri => (
                     <Image key={uri} source={{ uri }} style={s.photoThumb} />
@@ -629,7 +541,7 @@ export default function AgentScreen() {
               )}
 
               {pantryItems.length > 0 ? (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pantryChipsRow} style={{ marginTop: 10 }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pantryChipsRow}>
                   {pantryItems.map(item => (
                     <TouchableOpacity
                       key={item.id}
@@ -642,16 +554,10 @@ export default function AgentScreen() {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-              ) : (
-                <Text style={s.pantryEmptyInline}>Nothing added yet</Text>
-              )}
-
-              {!addingPantry && (
-                <TouchableOpacity style={s.pantryAddRow} onPress={() => setAddingPantry(true)} activeOpacity={0.75}>
-                  <Text style={s.pantryAddLink}>+ Type an item</Text>
-                </TouchableOpacity>
-              )}
-            </>
+              ) : !addingPantry ? (
+                <Text style={s.pantryEmptyInline}>Scan your fridge or add items manually</Text>
+              ) : null}
+            </View>
           )}
         </View>
 
@@ -701,43 +607,13 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center',
   },
 
-  // Filter button
-  filterBtn: {
+  // Header icon buttons
+  headerIconBtn: {
     width: 42, height: 42, borderRadius: 13, backgroundColor: CARD,
     borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center',
   },
   filterBtnActive:  { borderColor: 'rgba(245,200,66,0.4)', backgroundColor: 'rgba(245,200,66,0.08)' },
-  pulseDot:         { position: 'absolute', top: 7, right: 7, width: 8, height: 8, borderRadius: 4, backgroundColor: GOLD },
   filterDotStatic:  { position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: 3.5, backgroundColor: GOLD },
-
-  // Intelligence Card
-  intelCard: {
-    marginHorizontal: 16, marginTop: 4, marginBottom: 10,
-    backgroundColor: CARD, borderRadius: 22, borderWidth: 1, borderColor: BORDER,
-    padding: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3, shadowRadius: 14, elevation: 6,
-  },
-  intelCardHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  intelBadge:       { fontSize: 11, fontWeight: '700', color: GOLD, letterSpacing: 1.2 },
-  intelGoal:        { fontSize: 10, fontWeight: '700', color: MUTED, letterSpacing: 0.8, backgroundColor: 'rgba(245,200,66,0.08)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(245,200,66,0.18)' },
-  macroBar:         { flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden', backgroundColor: 'rgba(232,224,208,0.08)', marginBottom: 10 },
-  macroBarConsumed: { backgroundColor: CORAL, borderRadius: 3 },
-  macroBarRemaining:{ backgroundColor: 'rgba(245,200,66,0.35)', borderRadius: 3 },
-  intelPrimary:     { fontSize: 17, fontWeight: '800', color: TEXT, marginBottom: 8 },
-  intelRow:         { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 5 },
-  intelDot:         { width: 6, height: 6, borderRadius: 3 },
-  intelLine:        { fontSize: 13, fontWeight: '500', flex: 1 },
-
-  // Tip card
-  tipCard: {
-    marginHorizontal: 16, marginBottom: 10,
-    backgroundColor: 'rgba(245,200,66,0.06)', borderRadius: 16,
-    borderWidth: 1, borderColor: 'rgba(245,200,66,0.18)',
-    padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 10,
-  },
-  tipTitle: { fontSize: 13, fontWeight: '700', color: GOLD, marginBottom: 3 },
-  tipBody:  { fontSize: 12, color: MUTED, lineHeight: 18 },
-  tipClose: { paddingTop: 2 },
 
   // Error
   errorBox:  { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10 },
@@ -766,31 +642,35 @@ const s = StyleSheet.create({
   actionSub:    { fontSize: 11, color: MUTED, textAlign: 'center' },
   actionAccent: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 2 },
 
-  // Pantry strip (collapsible)
-  pantryStrip: {
-    marginHorizontal: 16, backgroundColor: CARD, borderRadius: 18,
-    borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12,
+  // Pantry section
+  pantrySection: {
+    marginHorizontal: 16, marginTop: 20, backgroundColor: CARD, borderRadius: 22,
+    borderWidth: 1, borderColor: BORDER, padding: 18,
   },
-  pantryStripHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pantryStripLeft:    { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  pantryStripTitle:   { fontSize: 13, fontWeight: '600', color: MUTED },
-  pantryCountBadge:   { backgroundColor: 'rgba(139,158,110,0.2)', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 1 },
-  pantryCountText:    { fontSize: 11, fontWeight: '700', color: SAGE },
-  pantryStripActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  scanBtn:            { width: 30, height: 30, borderRadius: 8, backgroundColor: BG, borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center' },
-  pantryEmptyInline:  { fontSize: 13, color: DIM, marginTop: 10 },
-  pantryAddRow:       { marginTop: 10 },
-  pantryAddLink:      { fontSize: 13, fontWeight: '600', color: CORAL },
-  pantryInputRow:     { flexDirection: 'row', gap: 8, marginTop: 10 },
-  pantryInput:        { flex: 1, backgroundColor: 'rgba(248,213,97,0.04)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, fontSize: 14, color: TEXT, borderWidth: 1, borderColor: BORDER },
-  pantryInputBtn:     { backgroundColor: CORAL, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9, justifyContent: 'center' },
-  pantryInputBtnText: { fontSize: 14, fontWeight: '700', color: BG },
-  photoThumbRow:    { gap: 8 },
-  photoThumb:       { width: 52, height: 52, borderRadius: 10, backgroundColor: CARD },
-  pantryChipsRow:   { gap: 8 },
-  pantryChip:       { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,158,110,0.12)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,158,110,0.25)', paddingHorizontal: 12, paddingVertical: 6 },
-  pantryChipText:   { fontSize: 13, fontWeight: '500', color: SAGE },
-  pantryChipX:      { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
+  pantrySectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  pantrySectionLeft:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pantrySectionTitle:  { fontSize: 16, fontWeight: '700', color: TEXT },
+  pantryCountBadge:    { backgroundColor: 'rgba(139,158,110,0.2)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
+  pantryCountText:     { fontSize: 11, fontWeight: '700', color: SAGE },
+  pantryBtnRow:        { flexDirection: 'row', gap: 10, marginBottom: 4 },
+  pantryActionBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: BG, borderRadius: 14, paddingVertical: 12,
+    borderWidth: 1, borderColor: BORDER,
+  },
+  pantryActionText:    { fontSize: 13, fontWeight: '600', color: TEXT },
+  pantryExpandedContent: { marginTop: 14 },
+  pantryEmptyInline:   { fontSize: 13, color: DIM, textAlign: 'center', paddingVertical: 8 },
+  pantryInputRow:      { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  pantryInput:         { flex: 1, backgroundColor: 'rgba(248,213,97,0.04)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: TEXT, borderWidth: 1, borderColor: BORDER },
+  pantryInputBtn:      { backgroundColor: SAGE, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 11, justifyContent: 'center' },
+  pantryInputBtnText:  { fontSize: 14, fontWeight: '700', color: BG },
+  photoThumbRow:       { gap: 8 },
+  photoThumb:          { width: 56, height: 56, borderRadius: 12, backgroundColor: BG },
+  pantryChipsRow:      { gap: 8 },
+  pantryChip:          { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,158,110,0.12)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,158,110,0.25)', paddingHorizontal: 12, paddingVertical: 7 },
+  pantryChipText:      { fontSize: 13, fontWeight: '500', color: SAGE },
+  pantryChipX:         { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
 
   // Single meal swap pills
   swapRow: { flexDirection: 'row', gap: 8, marginHorizontal: 16, marginTop: 12, flexWrap: 'wrap' },
