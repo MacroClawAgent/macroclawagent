@@ -46,7 +46,7 @@ function useForYouStats(calorieProgress: { consumed: number; target: number }) {
   const progressStat = calorieProgress.consumed > 0
     ? `${Math.round((calorieProgress.consumed / calorieProgress.target) * 100)}% of goal today`
     : 'Log meals to track';
-  const recipeStat = recipeCount > 0 ? `${recipeCount} saved` : 'Try the Agent ✦';
+  const recipeStat = recipeCount > 0 ? `${recipeCount} meals` : 'Try the Agent';
   const planStat = hasPlan ? 'Plan ready to prep' : 'Generate a plan first';
   const tipsStat = unreadTips > 0 ? `${unreadTips} new tips` : 'Up to date';
 
@@ -213,7 +213,7 @@ export default function HomeScreen() {
 
           <View style={styles.tileGrid}>
             {([
-              { title: 'My Recipes', stat: forYou.recipeStat, statColor: '#E07B54', icon: 'restaurant-outline' as const, iconBg: 'rgba(224,123,84,0.15)', iconColor: '#E07B54', route: '/recipes' },
+              { title: 'Meal History', stat: forYou.recipeStat, statColor: '#E07B54', icon: 'time-outline' as const, iconBg: 'rgba(224,123,84,0.15)', iconColor: '#E07B54', route: '/recipes' },
               { title: 'My Progress', stat: forYou.progressStat, statColor: '#F5C842', icon: 'trending-up-outline' as const, iconBg: 'rgba(248,213,97,0.12)', iconColor: '#F5C842', route: '/progress' },
               { title: 'Prep Guide', stat: forYou.planStat, statColor: forYou.hasPlan ? '#8B9E6E' : 'rgba(232,224,208,0.3)', icon: 'cube-outline' as const, iconBg: 'rgba(139,158,110,0.12)', iconColor: '#8B9E6E', route: '/prep-guide' },
               { title: 'Nutrition Tips', stat: forYou.tipsStat, statColor: '#F5C842', icon: 'bulb-outline' as const, iconBg: 'rgba(248,213,97,0.1)', iconColor: '#F5C842', route: '/nutrition-tips' },
