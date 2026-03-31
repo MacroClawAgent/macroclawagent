@@ -5,7 +5,6 @@ import {
   Dimensions,
   FlatList,
   Modal,
-  PanResponder,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -91,29 +90,24 @@ export default function CommunityScreen() {
   } = useCommunity();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('foryou');
-
-  // Swipe between community tabs
-  const activeTabRef = useRef<ActiveTab>('foryou');
-  activeTabRef.current = activeTab;
   const SCREEN_W = Dimensions.get('window').width;
-  const tabSwipe = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, { dx, dy }) =>
-        Math.abs(dx) > 25 && Math.abs(dx) > Math.abs(dy) * 2.5,
-      onPanResponderRelease: (_, { dx, vx }) => {
-        const cur = TAB_KEYS.indexOf(activeTabRef.current);
-        if (cur === -1) return;
-        const direction = dx < 0 ? 1 : -1;
-        const next = cur + direction;
-        const fast = Math.abs(vx) > 0.4;
-        const far = Math.abs(dx) > SCREEN_W * 0.3;
-        if ((fast || far) && next >= 0 && next < TAB_KEYS.length) {
-          setActiveTab(TAB_KEYS[next]);
-          if (TAB_KEYS[next] === 'following') loadFollowingPosts();
-        }
-      },
-    })
-  ).current;
+  const pagerRef = useRef<ScrollView>(null);
+
+  const scrollToTab = (tab: ActiveTab) => {
+    const idx = TAB_KEYS.indexOf(tab);
+    pagerRef.current?.scrollTo({ x: idx * SCREEN_W, animated: true });
+    setActiveTab(tab);
+    if (tab === 'following') loadFollowingPosts();
+  };
+
+  const onPagerScroll = (e: any) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
+    const tab = TAB_KEYS[idx];
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab);
+      if (tab === 'following') loadFollowingPosts();
+    }
+  };
   const [followingPosts, setFollowingPosts] = useState<CommunityPost[]>([]);
   const [followingLoading, setFollowingLoading] = useState(false);
   const [trendingVisible, setTrendingVisible] = useState(true);
@@ -229,8 +223,6 @@ export default function CommunityScreen() {
         return (p as any).fitnessGoal === f;
       }))
     : posts;
-  const displayedPosts = activeTab === 'following' ? followingPosts : filteredPosts;
-  const isLoading = activeTab === 'following' ? followingLoading : (loading && posts.length === 0);
 
   // ── Search result row ────────────────────────────────────────────────────────
   function SearchResultRow({ profile }: { profile: UserProfile }) {
@@ -270,10 +262,7 @@ export default function CommunityScreen() {
             key={tab}
             style={tb.tab}
             activeOpacity={0.75}
-            onPress={() => {
-              setActiveTab(tab);
-              if (tab === 'following') loadFollowingPosts();
-            }}
+            onPress={() => scrollToTab(tab)}
           >
             <Text style={[tb.tabText, activeTab === tab && tb.tabTextActive]}>
               {TAB_LABELS[tab]}
@@ -500,37 +489,67 @@ export default function CommunityScreen() {
       ) : (
         <>
           <TabBar />
-          <View style={{ flex: 1 }} {...tabSwipe.panHandlers}>
-          {activeTab === 'challenges' ? (
-            <ChallengesTab />
-          ) : isLoading ? (
-            <ActivityIndicator color={GOLD} size="large" style={{ marginTop: 60 }} />
-          ) : (
-            <FlatList
-              data={displayedPosts}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 100, paddingTop: 12 }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={activeTab === 'following' ? loadFollowingPosts : handleRefresh}
-                  tintColor={GOLD}
-                />
-              }
-              ListHeaderComponent={<TrendingStrip />}
-              ListEmptyComponent={<EmptyState />}
-              renderItem={({ item }) => (
-                <CommunityPostCard
-                  post={item}
-                  onLike={handleLike}
-                  isOwn={!!currentUserId && item.userId === currentUserId}
-                  onDelete={() => handleDeletePost(item)}
+          <ScrollView
+            ref={pagerRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            onMomentumScrollEnd={onPagerScroll}
+            style={{ flex: 1 }}
+          >
+            {/* Page 1: For You */}
+            <View style={{ width: SCREEN_W, flex: 1 }}>
+              {loading && posts.length === 0 ? (
+                <ActivityIndicator color={GOLD} size="large" style={{ marginTop: 60 }} />
+              ) : (
+                <FlatList
+                  data={filteredPosts}
+                  keyExtractor={(item) => item.id}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 100, paddingTop: 12 }}
+                  refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={GOLD} />}
+                  ListHeaderComponent={<TrendingStrip />}
+                  ListEmptyComponent={<EmptyState />}
+                  renderItem={({ item }) => (
+                    <CommunityPostCard post={item} onLike={handleLike} isOwn={!!currentUserId && item.userId === currentUserId} onDelete={() => handleDeletePost(item)} />
+                  )}
                 />
               )}
-            />
-          )}
-          </View>
+            </View>
+
+            {/* Page 2: Following */}
+            <View style={{ width: SCREEN_W, flex: 1 }}>
+              {followingLoading ? (
+                <ActivityIndicator color={GOLD} size="large" style={{ marginTop: 60 }} />
+              ) : followingPosts.length === 0 ? (
+                <View style={s.empty}>
+                  <Text style={s.emptyEmoji}>👥</Text>
+                  <Text style={s.emptyTitle}>No posts yet</Text>
+                  <Text style={s.emptySub}>Follow people to see their meals here</Text>
+                  <TouchableOpacity style={s.emptyBtn} onPress={() => scrollToTab('foryou')} activeOpacity={0.8}>
+                    <Text style={s.emptyBtnText}>Browse All →</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <FlatList
+                  data={followingPosts}
+                  keyExtractor={(item) => item.id}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 100, paddingTop: 12 }}
+                  refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadFollowingPosts} tintColor={GOLD} />}
+                  renderItem={({ item }) => (
+                    <CommunityPostCard post={item} onLike={handleLike} isOwn={!!currentUserId && item.userId === currentUserId} onDelete={() => handleDeletePost(item)} />
+                  )}
+                />
+              )}
+            </View>
+
+            {/* Page 3: Challenges */}
+            <View style={{ width: SCREEN_W, flex: 1 }}>
+              <ChallengesTab />
+            </View>
+          </ScrollView>
           <FilterSheet />
         </>
       )}
