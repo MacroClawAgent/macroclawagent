@@ -427,9 +427,23 @@ export function useSmartCart() {
     await deepLinkOpenInStore(cart.selectedStore, cart.ingredients);
   }, [cart]);
 
+  // Check if a fresh agent cart exists and load it (called on tab focus)
+  const checkForAgentCart = useCallback(async () => {
+    try {
+      const raw = await AsyncStorage.getItem(AGENT_CART_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      // If we already have this cart loaded, skip
+      if (cartMeta?.generatedAt === data.generatedAt) return;
+      // Fresh agent cart — initialize
+      initializeCart();
+    } catch {}
+  }, [cartMeta, initializeCart]);
+
   return {
     cart,
     cartMeta,
+    checkForAgentCart,
     pantryItems,
     initializing,
     productsLoading,

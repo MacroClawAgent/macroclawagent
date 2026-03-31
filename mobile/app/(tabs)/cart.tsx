@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSmartCart } from '@/hooks/useSmartCart';
 import { searchBothStores } from '@/services/supermarketApi';
 import { StoreSelector } from '@/components/SmartCart/StoreSelector';
@@ -289,6 +289,12 @@ function ProductPickerModal({
 export default function CartScreen() {
   const router = useRouter();
   const sc = useSmartCart();
+
+  // Re-check for fresh agent cart every time tab gains focus
+  useFocusEffect(
+    useCallback(() => { sc.checkForAgentCart(); }, [sc.checkForAgentCart])
+  );
+
   const [collapsed, setCollapsed] = useState<Set<IngredientCategory>>(new Set());
   const [addText, setAddText] = useState('');
   const [pickerIngredient, setPickerIngredient] = useState<SmartCartIngredient | null>(null);
