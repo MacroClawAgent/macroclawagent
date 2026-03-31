@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMealPlan } from '@/hooks/useMealPlan';
 import { useAgentContext } from '@/hooks/useAgentContext';
 import { getPantryPhotos } from '@/services/pantryService';
@@ -91,6 +92,23 @@ export default function AgentScreen() {
   const [pantryInput,     setPantryInput]     = useState('');
   const [pantryExpanded,  setPantryExpanded]  = useState(false);
   const [showScanner,     setShowScanner]     = useState(false);
+  const [equipment, setEquipment] = useState<Set<string>>(new Set());
+
+  // Load saved equipment on mount
+  useEffect(() => {
+    AsyncStorage.getItem('jonno_kitchen_equipment')
+      .then(raw => { if (raw) setEquipment(new Set(JSON.parse(raw))); })
+      .catch(() => {});
+  }, []);
+
+  const toggleEquipment = useCallback((item: string) => {
+    setEquipment(prev => {
+      const next = new Set(prev);
+      if (next.has(item)) next.delete(item); else next.add(item);
+      AsyncStorage.setItem('jonno_kitchen_equipment', JSON.stringify([...next])).catch(() => {});
+      return next;
+    });
+  }, []);
 
   const mealCtx         = getCurrentMealContext();
   const selectedDay     = days[selectedDayIndex];
@@ -533,6 +551,40 @@ export default function AgentScreen() {
           )}
         </View>
 
+        {/* ── Kitchen Equipment ──────────────────────────────────────────────── */}
+        <View style={s.equipSection}>
+          <View style={s.equipHeader}>
+            <Ionicons name="flame-outline" size={18} color={GOLD} />
+            <Text style={s.equipTitle}>Kitchen Equipment</Text>
+          </View>
+          <Text style={s.equipSub}>Jonno will only suggest meals you can make</Text>
+          <View style={s.equipGrid}>
+            {[
+              { id: 'oven', label: 'Oven', icon: 'cube-outline' as const },
+              { id: 'stovetop', label: 'Stovetop', icon: 'flame-outline' as const },
+              { id: 'air_fryer', label: 'Air Fryer', icon: 'flash-outline' as const },
+              { id: 'microwave', label: 'Microwave', icon: 'radio-outline' as const },
+              { id: 'blender', label: 'Blender', icon: 'color-filter-outline' as const },
+              { id: 'slow_cooker', label: 'Slow Cooker', icon: 'time-outline' as const },
+              { id: 'grill', label: 'Grill', icon: 'bonfire-outline' as const },
+              { id: 'rice_cooker', label: 'Rice Cooker', icon: 'cafe-outline' as const },
+            ].map(item => {
+              const active = equipment.has(item.id);
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[s.equipChip, active && s.equipChipActive]}
+                  onPress={() => toggleEquipment(item.id)}
+                  activeOpacity={0.75}
+                >
+                  <Ionicons name={item.icon} size={15} color={active ? GOLD : DIM} />
+                  <Text style={[s.equipChipText, active && s.equipChipTextActive]}>{item.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         <View style={{ height: 32 }} />
       </ScrollView>
 
@@ -653,6 +705,24 @@ const s = StyleSheet.create({
   pantryChip:          { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,158,110,0.12)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,158,110,0.25)', paddingHorizontal: 12, paddingVertical: 7 },
   pantryChipText:      { fontSize: 13, fontWeight: '500', color: SAGE },
   pantryChipX:         { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
+
+  // Kitchen Equipment
+  equipSection: {
+    marginHorizontal: 16, marginTop: 16, backgroundColor: CARD, borderRadius: 22,
+    borderWidth: 1, borderColor: BORDER, padding: 18,
+  },
+  equipHeader:        { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  equipTitle:         { fontSize: 16, fontWeight: '700', color: TEXT },
+  equipSub:           { fontSize: 12, color: DIM, marginTop: 4, marginBottom: 14 },
+  equipGrid:          { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  equipChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 12, paddingVertical: 9, borderRadius: 14,
+    backgroundColor: BG, borderWidth: 1, borderColor: BORDER,
+  },
+  equipChipActive:    { backgroundColor: 'rgba(245,200,66,0.10)', borderColor: 'rgba(245,200,66,0.3)' },
+  equipChipText:      { fontSize: 12, fontWeight: '600', color: DIM },
+  equipChipTextActive:{ color: GOLD },
 
   // Quick actions (single meal)
   quickActions:      { marginHorizontal: 16, marginTop: 16 },
