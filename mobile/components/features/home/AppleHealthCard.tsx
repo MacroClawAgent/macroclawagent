@@ -95,7 +95,7 @@ export function AppleHealthCard({ authorized, loading, summary, error }: Props) 
   return (
     <View style={s.card}>
       <LinearGradient
-        colors={["rgba(250,74,91,0.07)", "rgba(255,255,255,0)"]}
+        colors={["rgba(224,123,84,0.06)", "rgba(0,0,0,0)"]}
         style={StyleSheet.absoluteFillObject}
         pointerEvents="none"
       />
@@ -148,19 +148,27 @@ export function AppleHealthCard({ authorized, loading, summary, error }: Props) 
   );
 }
 
+const BG     = '#1C1612';
+const CARD   = '#252018';
+const BORDER = 'rgba(248,213,97,0.08)';
+const TEXT_C = '#E8E0D0';
+const MUTED  = 'rgba(232,224,208,0.5)';
+const DIM    = 'rgba(232,224,208,0.3)';
+const CORAL  = '#E07B54';
+
 const s = StyleSheet.create({
   card: {
     marginHorizontal: 16,
     borderRadius: 28,
-    backgroundColor: "rgba(255,255,255,0.92)",
+    backgroundColor: CARD,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
+    borderColor: BORDER,
     overflow: "hidden",
     padding: 20,
-    shadowColor: "#FA4A5B",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
     gap: 16,
   },
   centerBox: {
@@ -170,47 +178,47 @@ const s = StyleSheet.create({
     gap: 8,
   },
   unavailIcon: { fontSize: 36 },
-  unavailTitle: { fontSize: 17, fontWeight: "700", color: "#111827" },
-  unavailSub: { fontSize: 13, color: "#9CA3AF", textAlign: "center", paddingHorizontal: 20 },
-  loadingText: { fontSize: 14, color: "#9CA3AF", marginTop: 8 },
+  unavailTitle: { fontSize: 17, fontWeight: "700", color: TEXT_C },
+  unavailSub: { fontSize: 13, color: MUTED, textAlign: "center", paddingHorizontal: 20 },
+  loadingText: { fontSize: 14, color: MUTED, marginTop: 8 },
 
   header: { flexDirection: "row", alignItems: "center", gap: 12 },
   headerIconWrap: {
     width: 44, height: 44, borderRadius: 14,
-    backgroundColor: "rgba(250,74,91,0.1)",
+    backgroundColor: "rgba(224,123,84,0.15)",
     alignItems: "center", justifyContent: "center",
   },
   headerIcon: { fontSize: 22 },
-  title: { fontSize: 17, fontWeight: "800", color: "#111827", letterSpacing: -0.3 },
-  subtitle: { fontSize: 12, color: "#9CA3AF", fontWeight: "500" },
+  title: { fontSize: 17, fontWeight: "800", color: TEXT_C, letterSpacing: -0.3 },
+  subtitle: { fontSize: 12, color: MUTED, fontWeight: "500" },
 
   pillRow: { flexDirection: "row", gap: 10 },
   pill: {
     flex: 1, alignItems: "center", gap: 2,
-    backgroundColor: "rgba(255,255,255,0.8)",
+    backgroundColor: BG,
     borderRadius: 14, paddingVertical: 10,
     borderWidth: 1,
   },
   pillIcon: { fontSize: 18 },
   pillValue: { fontSize: 18, fontWeight: "800", letterSpacing: -0.5 },
-  pillLabel: { fontSize: 10, color: "#9CA3AF", fontWeight: "600" },
+  pillLabel: { fontSize: 10, color: MUTED, fontWeight: "600" },
 
   progressWrap: { gap: 6 },
   progressTrack: {
     height: 6, borderRadius: 3,
-    backgroundColor: "rgba(0,0,0,0.06)",
+    backgroundColor: "rgba(232,224,208,0.08)",
     overflow: "hidden",
   },
   progressFill: {
     height: 6, borderRadius: 3,
-    backgroundColor: "#5C8CFF",
+    backgroundColor: CORAL,
   },
-  progressLabel: { fontSize: 11, color: "#9CA3AF", fontWeight: "600" },
+  progressLabel: { fontSize: 11, color: MUTED, fontWeight: "600" },
 
   workoutsSection: { gap: 6 },
-  workoutsSectionTitle: { fontSize: 12, fontWeight: "700", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.4 },
+  workoutsSectionTitle: { fontSize: 12, fontWeight: "700", color: DIM, textTransform: "uppercase", letterSpacing: 0.4 },
   workoutRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  workoutDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#FA4A5B" },
-  workoutName: { flex: 1, fontSize: 13, fontWeight: "600", color: "#111827" },
-  workoutMeta: { fontSize: 12, color: "#9CA3AF" },
+  workoutDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: CORAL },
+  workoutName: { flex: 1, fontSize: 13, fontWeight: "600", color: TEXT_C },
+  workoutMeta: { fontSize: 12, color: MUTED },
 });
