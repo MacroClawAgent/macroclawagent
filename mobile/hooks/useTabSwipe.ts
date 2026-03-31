@@ -1,44 +1,97 @@
-import { useRef } from 'react';
-import { PanResponder, GestureResponderHandlers } from 'react-native';
+import React, { useRef } from 'react';
+import { Animated, Dimensions, PanResponder, StyleSheet } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 
 /**
- * Swipe between footer tabs.
+ * Smooth swipe-to-navigate between footer tabs.
  *
- * Uses `onMoveShouldSetPanResponder` (NOT capture), so child views
- * like horizontal ScrollViews claim the gesture first. The hook only
- * takes over when no child handles the horizontal drag.
+ * Content follows the finger while dragging. On release:
+ * - Quick swipe (velocity > 0.5) → switches tab
+ * - Held past 40% screen width → switches tab
+ * - Otherwise → springs back
  *
- * Returns panHandlers to spread on the root View / SafeAreaView.
+ * Uses `onMoveShouldSetPanResponder` (NOT capture) so child
+ * horizontal ScrollViews still work normally.
  */
 
+const SCREEN_W = Dimensions.get('window').width;
 const TAB_ORDER = ['/home', '/community', '/agent', '/cart'];
-const MOVE_THRESHOLD = 30;   // px before we even consider claiming
-const SWIPE_THRESHOLD = 100; // px of dx required on release to switch
+const VELOCITY_THRESHOLD = 0.5;
+const DISTANCE_RATIO = 0.4; // 40% of screen width
 
-export function useTabSwipe(): GestureResponderHandlers {
+export function TabSwipeWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathnameRef = useRef('');
   const pathname = usePathname();
   pathnameRef.current = pathname;
 
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  const springBack = () => {
+    Animated.spring(translateX, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 120,
+      friction: 14,
+    }).start();
+  };
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, { dx, dy }) =>
-        Math.abs(dx) > MOVE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 2,
-      onPanResponderRelease: (_, { dx }) => {
-        if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+        Math.abs(dx) > 15 && Math.abs(dx) > Math.abs(dy) * 2,
+
+      onPanResponderMove: (_, { dx }) => {
         const current = TAB_ORDER.findIndex(t =>
           pathnameRef.current === t || pathnameRef.current.startsWith(t + '/')
         );
-        if (current === -1) return;
-        const next = dx < 0 ? current + 1 : current - 1;
-        if (next >= 0 && next < TAB_ORDER.length) {
-          router.replace(`/(tabs)${TAB_ORDER[next]}` as any);
+        // Apply resistance at edges (can't swipe past first/last tab)
+        const atLeftEdge = dx > 0 && current === 0;
+        const atRightEdge = dx < 0 && current === TAB_ORDER.length - 1;
+        const damping = (atLeftEdge || atRightEdge) ? 0.15 : 0.55;
+        translateX.setValue(dx * damping);
+      },
+
+      onPanResponderRelease: (_, { dx, vx }) => {
+        const current = TAB_ORDER.findIndex(t =>
+          pathnameRef.current === t || pathnameRef.current.startsWith(t + '/')
+        );
+        if (current === -1) { springBack(); return; }
+
+        const direction = dx < 0 ? 1 : -1; // 1 = swipe left (next), -1 = swipe right (prev)
+        const next = current + direction;
+        const fastEnough = Math.abs(vx) > VELOCITY_THRESHOLD;
+        const farEnough = Math.abs(dx) > SCREEN_W * DISTANCE_RATIO;
+
+        if ((fastEnough || farEnough) && next >= 0 && next < TAB_ORDER.length) {
+          // Animate content off-screen then navigate
+          Animated.timing(translateX, {
+            toValue: -direction * SCREEN_W,
+            duration: 180,
+            useNativeDriver: true,
+          }).start(() => {
+            translateX.setValue(0);
+            router.replace(`/(tabs)${TAB_ORDER[next]}` as any);
+          });
+        } else {
+          springBack();
         }
       },
+
+      onPanResponderTerminate: () => { springBack(); },
     })
   ).current;
 
-  return panResponder.panHandlers;
+  return React.createElement(
+    Animated.View,
+    {
+      style: [styles.container, { transform: [{ translateX }] }],
+      ...panResponder.panHandlers,
+    },
+    children
+  );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+});

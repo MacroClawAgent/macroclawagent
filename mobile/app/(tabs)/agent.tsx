@@ -21,7 +21,7 @@ import MealPlanCard from '@/components/Agent/MealPlanCard';
 import RecipeSheet from '@/components/Agent/RecipeSheet';
 import GeneratingLoader from '@/components/Agent/GeneratingLoader';
 import PantryScanner from '@/components/Agent/PantryScanner';
-import { useTabSwipe } from '@/hooks/useTabSwipe';
+import { TabSwipeWrapper } from '@/hooks/useTabSwipe';
 import type { Meal } from '@/types/mealPlan';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
@@ -66,7 +66,6 @@ function SingleGenerating({ mealType }: { mealType: string }) {
 
 export default function AgentScreen() {
   const ctx = useAgentContext();
-  const swipe = useTabSwipe();
   const { preferences, hasAnyPreferences, completeOnboarding, training, pantry, nutrition, targets, goal, prefTags } = ctx;
 
   const {
@@ -360,7 +359,8 @@ export default function AgentScreen() {
   // ── IDLE ─────────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']} {...swipe}>
+    <TabSwipeWrapper>
+    <SafeAreaView style={s.safe} edges={['top']}>
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -578,6 +578,7 @@ export default function AgentScreen() {
         onItemsConfirmed={handleScannerConfirm}
       />
     </SafeAreaView>
+    </TabSwipeWrapper>
   );
 }
 
