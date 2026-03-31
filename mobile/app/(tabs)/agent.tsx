@@ -383,6 +383,22 @@ export default function AgentScreen() {
           </View>
         </View>
 
+        {/* ── Agent Insight ────────────────────────────────────────────────── */}
+        <View style={s.insightCard}>
+          <View style={s.insightHeader}>
+            <Ionicons name="sparkles" size={14} color={CORAL} />
+            <Text style={s.insightBadge}>TODAY'S PLAN</Text>
+          </View>
+          <Text style={s.insightBody}>
+            {nutrition.remaining
+              ? `You have ${nutrition.remaining.calories.toLocaleString()} kcal and ${nutrition.remaining.protein}g protein left today.`
+              : `Your daily target is ${targets.calories.toLocaleString()} kcal with ${targets.protein}g protein.`}
+            {training ? ` ${training.label} — adjust for recovery.` : ''}
+            {pantry.count > 0 ? ` ${pantry.count} items in your kitchen ready to use.` : ''}
+            {hasAnyPreferences && prefTags.length > 0 ? ` Preferences: ${prefTags.slice(0, 2).join(', ')}.` : ''}
+          </Text>
+        </View>
+
         {/* ── Error ──────────────────────────────────────────────────────────── */}
         {error && (
           <View style={s.errorBox}>
@@ -390,30 +406,11 @@ export default function AgentScreen() {
           </View>
         )}
 
-        {/* ── Primary hero button ─────────────────────────────────────────────── */}
-        <TouchableOpacity style={s.primaryBtn} onPress={() => handleGenerate('single')} activeOpacity={0.85}>
-          <View style={s.primaryBtnInner}>
-            <View style={s.primaryBtnIcon}>
-              <Text style={{ fontSize: 22 }}>
-                {mealCtx.mealType === 'breakfast' ? '🥣'
-                  : mealCtx.mealType === 'lunch'  ? '🍽️'
-                  : mealCtx.mealType === 'dinner' ? '🌙'
-                  : '⚡'}
-              </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.primaryBtnTitle}>{mealCtx.buttonTitle}</Text>
-              <Text style={s.primaryBtnSub}>{mealCtx.buttonSub}</Text>
-            </View>
-            <Ionicons name="arrow-forward" size={20} color={BG} />
-          </View>
-        </TouchableOpacity>
-
-        {/* ── Secondary action cards ──────────────────────────────────────────── */}
+        {/* ── Action cards ────────────────────────────────────────────────────── */}
         <View style={s.actionGrid}>
           <TouchableOpacity style={s.actionCard} onPress={() => handleGenerate('today')} activeOpacity={0.8}>
             <View style={[s.actionIcon, { backgroundColor: 'rgba(224,123,84,0.15)' }]}>
-              <Text style={{ fontSize: 20 }}>🍽️</Text>
+              <Ionicons name="calendar-outline" size={22} color={CORAL} />
             </View>
             <Text style={s.actionTitle}>Full day</Text>
             <Text style={s.actionSub}>4 meals</Text>
@@ -421,12 +418,12 @@ export default function AgentScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity style={s.actionCard} onPress={() => handleGenerate('week')} activeOpacity={0.8}>
-            <View style={[s.actionIcon, { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
-              <Text style={{ fontSize: 20 }}>📅</Text>
+            <View style={[s.actionIcon, { backgroundColor: 'rgba(224,123,84,0.10)' }]}>
+              <Ionicons name="grid-outline" size={22} color={CORAL} />
             </View>
             <Text style={s.actionTitle}>This week</Text>
             <Text style={s.actionSub}>7 days</Text>
-            <View style={[s.actionAccent, { backgroundColor: GOLD }]} />
+            <View style={[s.actionAccent, { backgroundColor: CORAL }]} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -443,8 +440,8 @@ export default function AgentScreen() {
             }}
             activeOpacity={0.8}
           >
-            <View style={[s.actionIcon, { backgroundColor: 'rgba(139,158,110,0.15)' }]}>
-              <Text style={{ fontSize: 20 }}>🥬</Text>
+            <View style={[s.actionIcon, { backgroundColor: 'rgba(224,123,84,0.10)' }]}>
+              <Ionicons name="leaf-outline" size={22} color={CORAL} />
             </View>
             <Text style={s.actionTitle}>
               {pantryItems.length > 0 ? 'Use pantry' : 'Add items'}
@@ -452,9 +449,30 @@ export default function AgentScreen() {
             <Text style={s.actionSub}>
               {pantryItems.length > 0 ? `${pantryItems.length} items` : 'Kitchen'}
             </Text>
-            <View style={[s.actionAccent, { backgroundColor: SAGE }]} />
+            <View style={[s.actionAccent, { backgroundColor: CORAL }]} />
           </TouchableOpacity>
         </View>
+
+        {/* ── Meal suggestion ─────────────────────────────────────────────────── */}
+        <TouchableOpacity style={s.primaryBtn} onPress={() => handleGenerate('single')} activeOpacity={0.85}>
+          <View style={s.primaryBtnInner}>
+            <View style={s.primaryBtnIcon}>
+              <Ionicons
+                name={mealCtx.mealType === 'breakfast' ? 'sunny-outline'
+                  : mealCtx.mealType === 'lunch' ? 'restaurant-outline'
+                  : mealCtx.mealType === 'dinner' ? 'moon-outline'
+                  : 'flash-outline'}
+                size={22}
+                color={BG}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.primaryBtnTitle}>{mealCtx.buttonTitle}</Text>
+              <Text style={s.primaryBtnSub}>{mealCtx.buttonSub}</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={20} color={BG} />
+          </View>
+        </TouchableOpacity>
 
         {/* ── Fridge & Pantry ──────────────────────────────────────────────── */}
         <View style={s.pantrySection}>
@@ -613,14 +631,24 @@ const s = StyleSheet.create({
   filterBtnActive:  { borderColor: 'rgba(245,200,66,0.4)', backgroundColor: 'rgba(245,200,66,0.08)' },
   filterDotStatic:  { position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: 3.5, backgroundColor: GOLD },
 
+  // Agent Insight card
+  insightCard: {
+    marginHorizontal: 16, marginTop: 4, marginBottom: 10,
+    backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
+    padding: 16,
+  },
+  insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  insightBadge: { fontSize: 11, fontWeight: '700', color: CORAL, letterSpacing: 1 },
+  insightBody: { fontSize: 14, color: MUTED, lineHeight: 21 },
+
   // Error
   errorBox:  { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10 },
   errorText: { fontSize: 13, color: '#DC2626', textAlign: 'center' },
 
-  // Primary hero button (sage green)
+  // Primary meal suggestion button (terracotta)
   primaryBtn: {
-    marginHorizontal: 16, borderRadius: 22, overflow: 'hidden',
-    backgroundColor: SAGE, shadowColor: SAGE, shadowOffset: { width: 0, height: 8 },
+    marginHorizontal: 16, marginTop: 10, borderRadius: 22, overflow: 'hidden',
+    backgroundColor: CORAL, shadowColor: CORAL, shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.28, shadowRadius: 16, elevation: 8,
   },
   primaryBtnInner: { flexDirection: 'row', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 18, gap: 14 },
