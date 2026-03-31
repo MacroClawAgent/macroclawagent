@@ -220,11 +220,11 @@ const styles = StyleSheet.create({
   emptyActivityHint: { fontSize: 12, color: "#9CA3AF", lineHeight: 18 },
   agentCard: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    padding: 18, borderRadius: 18, backgroundColor: "#1C1C1E",
+    padding: 18, borderRadius: 18, backgroundColor: "#8B9E6E",
   },
   agentLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
-  agentEmoji: { fontSize: 20, color: "#20C7B7" },
+  agentEmoji: { fontSize: 20, color: "#FFFFFF" },
   agentTitle: { fontSize: 15, fontWeight: "800", color: "#FFFFFF" },
-  agentSub: { fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 1 },
-  agentArrow: { fontSize: 18, color: "#20C7B7", fontWeight: "700" },
+  agentSub: { fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 1 },
+  agentArrow: { fontSize: 18, color: "#FFFFFF", fontWeight: "700" },
 });
