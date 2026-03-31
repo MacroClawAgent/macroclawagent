@@ -93,6 +93,7 @@ export default function AgentScreen() {
   const [pantryExpanded,  setPantryExpanded]  = useState(false);
   const [showScanner,     setShowScanner]     = useState(false);
   const [equipment, setEquipment] = useState<Set<string>>(new Set());
+  const [equipExpanded, setEquipExpanded] = useState(false);
 
   // Load saved equipment on mount
   useEffect(() => {
@@ -476,13 +477,13 @@ export default function AgentScreen() {
 
           {/* Action buttons row */}
           <View style={s.pantryBtnRow}>
-            <TouchableOpacity style={s.pantryActionBtn} onPress={() => setShowScanner(true)} activeOpacity={0.8}>
-              <Ionicons name="camera" size={18} color={CORAL} />
-              <Text style={s.pantryActionText}>Scan fridge</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={s.pantryActionBtn} onPress={() => { setPantryExpanded(true); setAddingPantry(true); }} activeOpacity={0.8}>
-              <Ionicons name="add-circle-outline" size={18} color={SAGE} />
+              <Ionicons name="add-circle-outline" size={20} color={SAGE} />
               <Text style={s.pantryActionText}>Add item</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={s.pantryActionBtn} onPress={() => setShowScanner(true)} activeOpacity={0.8}>
+              <Ionicons name="camera" size={20} color={CORAL} />
+              <Text style={s.pantryActionText}>Scan fridge</Text>
             </TouchableOpacity>
           </View>
 
@@ -551,38 +552,59 @@ export default function AgentScreen() {
           )}
         </View>
 
-        {/* ── Kitchen Equipment ──────────────────────────────────────────────── */}
+        {/* ── Kitchen Equipment (collapsible) ───────────────────────────────── */}
         <View style={s.equipSection}>
-          <View style={s.equipHeader}>
-            <Ionicons name="flame-outline" size={18} color={GOLD} />
-            <Text style={s.equipTitle}>Kitchen Equipment</Text>
-          </View>
-          <Text style={s.equipSub}>Jonno will only suggest meals you can make</Text>
-          <View style={s.equipGrid}>
-            {[
-              { id: 'oven', label: 'Oven', icon: 'cube-outline' as const },
-              { id: 'stovetop', label: 'Stovetop', icon: 'flame-outline' as const },
-              { id: 'air_fryer', label: 'Air Fryer', icon: 'flash-outline' as const },
-              { id: 'microwave', label: 'Microwave', icon: 'radio-outline' as const },
-              { id: 'blender', label: 'Blender', icon: 'color-filter-outline' as const },
-              { id: 'slow_cooker', label: 'Slow Cooker', icon: 'time-outline' as const },
-              { id: 'grill', label: 'Grill', icon: 'bonfire-outline' as const },
-              { id: 'rice_cooker', label: 'Rice Cooker', icon: 'cafe-outline' as const },
-            ].map(item => {
-              const active = equipment.has(item.id);
-              return (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[s.equipChip, active && s.equipChipActive]}
-                  onPress={() => toggleEquipment(item.id)}
-                  activeOpacity={0.75}
-                >
-                  <Ionicons name={item.icon} size={15} color={active ? GOLD : DIM} />
-                  <Text style={[s.equipChipText, active && s.equipChipTextActive]}>{item.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          <TouchableOpacity
+            style={s.equipHeader}
+            onPress={() => setEquipExpanded(p => !p)}
+            activeOpacity={0.75}
+          >
+            <View style={s.equipHeaderLeft}>
+              <Ionicons name="flame-outline" size={18} color={GOLD} />
+              <Text style={s.equipTitle}>Kitchen Equipment</Text>
+              {equipment.size > 0 && (
+                <View style={s.equipCountBadge}>
+                  <Text style={s.equipCountText}>{equipment.size}</Text>
+                </View>
+              )}
+            </View>
+            <Ionicons
+              name={equipExpanded ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={DIM}
+            />
+          </TouchableOpacity>
+
+          {equipExpanded && (
+            <View style={s.equipContent}>
+              <Text style={s.equipSub}>Tap what you have — Jonno will only suggest meals you can make</Text>
+              <View style={s.equipGrid}>
+                {[
+                  { id: 'oven', label: 'Oven', icon: 'cube-outline' as const },
+                  { id: 'stovetop', label: 'Stovetop', icon: 'flame-outline' as const },
+                  { id: 'air_fryer', label: 'Air Fryer', icon: 'flash-outline' as const },
+                  { id: 'microwave', label: 'Microwave', icon: 'radio-outline' as const },
+                  { id: 'blender', label: 'Blender', icon: 'color-filter-outline' as const },
+                  { id: 'slow_cooker', label: 'Slow Cooker', icon: 'time-outline' as const },
+                  { id: 'grill', label: 'Grill', icon: 'bonfire-outline' as const },
+                  { id: 'rice_cooker', label: 'Rice Cooker', icon: 'cafe-outline' as const },
+                ].map(item => {
+                  const active = equipment.has(item.id);
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[s.equipChip, active && s.equipChipActive]}
+                      onPress={() => toggleEquipment(item.id)}
+                      activeOpacity={0.75}
+                    >
+                      <Ionicons name={item.icon} size={15} color={active ? GOLD : DIM} />
+                      <Text style={[s.equipChipText, active && s.equipChipTextActive]}>{item.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
         </View>
 
         <View style={{ height: 32 }} />
@@ -688,8 +710,8 @@ const s = StyleSheet.create({
   pantryCountText:     { fontSize: 11, fontWeight: '700', color: SAGE },
   pantryBtnRow:        { flexDirection: 'row', gap: 10, marginBottom: 4 },
   pantryActionBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: BG, borderRadius: 14, paddingVertical: 12,
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: BG, borderRadius: 16, paddingVertical: 18,
     borderWidth: 1, borderColor: BORDER,
   },
   pantryActionText:    { fontSize: 13, fontWeight: '600', color: TEXT },
@@ -706,14 +728,18 @@ const s = StyleSheet.create({
   pantryChipText:      { fontSize: 13, fontWeight: '500', color: SAGE },
   pantryChipX:         { fontSize: 14, color: MUTED, fontWeight: '600', marginLeft: 2 },
 
-  // Kitchen Equipment
+  // Kitchen Equipment (collapsible)
   equipSection: {
     marginHorizontal: 16, marginTop: 16, backgroundColor: CARD, borderRadius: 22,
     borderWidth: 1, borderColor: BORDER, padding: 18,
   },
-  equipHeader:        { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  equipHeader:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  equipHeaderLeft:    { flexDirection: 'row', alignItems: 'center', gap: 8 },
   equipTitle:         { fontSize: 16, fontWeight: '700', color: TEXT },
-  equipSub:           { fontSize: 12, color: DIM, marginTop: 4, marginBottom: 14 },
+  equipCountBadge:    { backgroundColor: 'rgba(245,200,66,0.2)', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 1 },
+  equipCountText:     { fontSize: 11, fontWeight: '700', color: GOLD },
+  equipContent:       { marginTop: 12 },
+  equipSub:           { fontSize: 12, color: DIM, marginBottom: 12 },
   equipGrid:          { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   equipChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
