@@ -353,23 +353,25 @@ export default function CartScreen() {
         /* ── Empty state ── */
         <View style={s.centred}>
           <Text style={{ fontSize: 64, opacity: 0.3 }}>🛒</Text>
-          <Text style={s.emptyTitle}>Your cart is empty</Text>
+          <Text style={s.emptyTitle}>No ingredients yet</Text>
           <Text style={s.emptySub}>
-            Generate a meal plan in the Agent tab and Jonno will build your shopping list automatically
+            Your Smart Cart fills up when you add ingredients from a meal plan or a community post.
           </Text>
+
           <TouchableOpacity
             onPress={() => router.push('/(tabs)/agent' as never)}
             style={s.buildBtn}
             activeOpacity={0.85}
           >
-            <Text style={s.buildBtnLabel}>Go to Agent →</Text>
+            <Text style={s.buildBtnLabel}>Plan meals with Jonno →</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
-            onPress={sc.initializeCart}
+            onPress={() => router.push('/(tabs)/community' as never)}
             activeOpacity={0.7}
-            style={{ marginTop: 12 }}
+            style={s.emptySecondaryBtn}
           >
-            <Text style={s.addManuallyLink}>Add item manually</Text>
+            <Text style={s.emptySecondaryText}>Browse community meals</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -568,7 +570,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 28, paddingVertical: 14,
   },
   buildBtnLabel: { color: '#1C1612', fontWeight: '700', fontSize: 15 },
-  addManuallyLink: { fontSize: 13, color: TEXT_DIM },
+  emptySecondaryBtn:  { marginTop: 12, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(248,213,97,0.15)', backgroundColor: 'rgba(248,213,97,0.06)' },
+  emptySecondaryText: { fontSize: 13, fontWeight: '600', color: TEXT_DIM },
 
   scroll: { paddingHorizontal: 16, paddingTop: 8, gap: 12 },
 

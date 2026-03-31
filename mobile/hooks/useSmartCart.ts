@@ -247,47 +247,10 @@ export function useSmartCart() {
       // fall through to existing logic
     }
 
-    // ── Fallback: API / macro defaults ────────────────────────────────────
-    let ingredients: SmartCartIngredient[] = [];
-
-    try {
-      const res = await apiGet<{ grocery_list?: { name: string; grams?: number }[] }>(
-        '/api/optimizer/create'
-      );
-      if (res?.grocery_list && res.grocery_list.length > 0) {
-        ingredients = generateCartFromGroceryList(res.grocery_list);
-      }
-    } catch {
-      setNetworkError(true);
-    }
-
-    if (ingredients.length === 0) {
-      ingredients = generateDefaultCartFromMacros(
-        userProfile?.protein_goal ?? 120,
-        userProfile?.carbs_goal ?? 250,
-        userProfile?.fat_goal ?? 70
-      );
-    }
-
-    const newCart: SmartCart = {
-      id: makeId(),
-      createdAt: new Date().toISOString(),
-      ingredients,
-      selectedStore: null,
-      selectedNearbyStore: null,
-      nearbyStores: [],
-      estimatedTotal: 0,
-      lastUpdated: new Date().toISOString(),
-    };
-
-    setCart(newCart);
-    persistCart(newCart);
-    setCartMeta({ source: 'generated', planType: 'today', mealCount: 0, pantrySkipped: 0, generatedAt: new Date().toISOString() });
+    // No agent cart — leave empty so the empty state shows
+    setCart(null);
+    setCartMeta(null);
     setInitializing(false);
-
-    // Load location and products in parallel
-    loadNearbyStores(newCart.id);
-    loadProductsForIngredients(ingredients, newCart.id);
   }, [userProfile, loadNearbyStores, loadProductsForIngredients]);
 
   // ── Refresh from agent plan ───────────────────────────────────────────────
