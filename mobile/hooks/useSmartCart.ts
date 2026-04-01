@@ -293,6 +293,9 @@ export function useSmartCart() {
 
         loadNearbyStores(newCart.id);
         loadProductsForIngredients(mapped, newCart.id);
+
+        // Consume the agent cart so it's not re-loaded on next focus
+        await AsyncStorage.removeItem(AGENT_CART_KEY);
         return;
       }
     } catch {
@@ -484,13 +487,10 @@ export function useSmartCart() {
     try {
       const raw = await AsyncStorage.getItem(AGENT_CART_KEY);
       if (!raw) return;
-      const data = JSON.parse(raw);
-      // If we already have this cart loaded, skip
-      if (cartMeta?.generatedAt === data.generatedAt) return;
-      // Fresh agent cart — initialize
+      // Fresh agent cart found — load it, then consume so it's not re-read
       initializeCart();
     } catch {}
-  }, [cartMeta, initializeCart]);
+  }, [initializeCart]);
 
   const deleteCartById = useCallback(async (id: string) => {
     await removeCartFromIndex(id);

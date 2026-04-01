@@ -389,16 +389,6 @@ export default function CartScreen() {
                   key={cart.id}
                   style={s.cartCard}
                   onPress={() => setShowDetail(true)}
-                  onLongPress={() => {
-                    Alert.alert(
-                      'Remove cart',
-                      `Delete "${cart.label}" from your carts?`,
-                      [
-                        { text: 'Cancel', style: 'cancel' },
-                        { text: 'Delete', style: 'destructive', onPress: () => sc.deleteCartById(cart.id) },
-                      ]
-                    );
-                  }}
                   activeOpacity={0.8}
                 >
                   <View style={{ flex: 1 }}>
@@ -409,16 +399,7 @@ export default function CartScreen() {
                   </View>
                   <TouchableOpacity
                     style={s.cartCardDelete}
-                    onPress={() => {
-                      Alert.alert(
-                        'Remove cart',
-                        `Delete "${cart.label}" from your carts?`,
-                        [
-                          { text: 'Cancel', style: 'cancel' },
-                          { text: 'Delete', style: 'destructive', onPress: () => sc.deleteCartById(cart.id) },
-                        ]
-                      );
-                    }}
+                    onPress={() => sc.deleteCartById(cart.id)}
                     activeOpacity={0.7}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
