@@ -160,27 +160,30 @@ export const useMealPlan = () => {
       const now = new Date().toISOString();
       const indexRaw = await AsyncStorage.getItem('jonno_carts_index');
       const existingIndex = indexRaw ? JSON.parse(indexRaw) : [];
-      const newEntries = allMeals.map((meal, i) => ({
-        id: `${Date.now()}-${i}`,
-        label: meal.name,
-        source: 'agent' as const,
-        ingredientCount: meal.ingredients.length,
-        estimatedTotal: consolidated
-          .filter(c => meal.ingredients.some(ing => c.name.toLowerCase().includes(ing.toLowerCase()) || ing.toLowerCase().includes(c.name.toLowerCase())))
-          .reduce((s, c) => s + (c.estimatedPrice ?? 0), 0),
-        createdAt: now,
-      }));
+      const newEntries = allMeals.map((meal, i) => {
+        const mealNameLower = meal.name.toLowerCase();
+        const matched = allMeals.length === 1 ? consolidated : consolidated
+          .filter(c => c.usedIn.some((u: string) => u.toLowerCase().includes(mealNameLower)));
+        return {
+          id: `${Date.now()}-${i}`,
+          label: meal.name,
+          source: 'agent' as const,
+          ingredientCount: matched.length,
+          estimatedTotal: matched.reduce((s, c) => s + (c.estimatedPrice ?? 0), 0),
+          createdAt: now,
+        };
+      });
       const updatedIndex = [...newEntries, ...existingIndex].slice(0, 20);
       await AsyncStorage.setItem('jonno_carts_index', JSON.stringify(updatedIndex));
 
       // Save full cart data per meal so each can be loaded independently
       for (let i = 0; i < allMeals.length; i++) {
         const meal = allMeals[i];
-        const mealIngredients = consolidated
-          .filter(c => meal.ingredients.some(ing =>
-            c.name.toLowerCase().includes(ing.toLowerCase()) || ing.toLowerCase().includes(c.name.toLowerCase())
-          ))
-          .map(c => ({
+        const mealNameLower = meal.name.toLowerCase();
+        // Match by usedIn (contains meal name) or fall back to all for single meals
+        const mealIngredients = (allMeals.length === 1 ? consolidated : consolidated
+          .filter(c => c.usedIn.some((u: string) => u.toLowerCase().includes(mealNameLower)))
+        ).map(c => ({
             id: c.id,
             name: c.name,
             quantity: c.totalQuantity,
@@ -211,25 +214,12 @@ export const useMealPlan = () => {
         await AsyncStorage.setItem(`jonno_cart_${newEntries[i].id}`, JSON.stringify(cartData));
       }
 
-      // Main label for the combined cart
-      const label = allMeals.length === 1
-        ? allMeals[0].name
-        : `${allMeals.length} meals`;
-
-      const payload = {
-        ingredients: consolidated,
-        planType,
-        mealCount: allMeals.length,
-        generatedAt: now,
-        label,
-      };
-      await AsyncStorage.setItem('jonno_agent_cart', JSON.stringify(payload));
+      // Auto-add to pantry
       const toBuyNames = consolidated.filter(i => !i.isInPantry).map(i => i.name);
       importFromSmartCart(toBuyNames).catch(() => {});
-      const toBuy = toBuyNames.length;
       Toast.show({
         type: 'success',
-        text1: `${toBuy} ingredient${toBuy !== 1 ? 's' : ''} added to cart`,
+        text1: `${allMeals.length} meal${allMeals.length !== 1 ? 's' : ''} added to Smart Cart`,
         visibilityTime: 2000,
       });
     } catch {
