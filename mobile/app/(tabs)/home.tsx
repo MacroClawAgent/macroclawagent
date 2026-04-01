@@ -21,7 +21,7 @@ import { useHomeViewModel } from "@/lib/viewModels/useHomeViewModel";
 
 const SCREEN_W = Dimensions.get("window").width;
 const CARD_COUNT = 3;
-const CAROUSEL_H = 350;
+const CAROUSEL_H = 360;
 
 function useForYouStats(calorieProgress: { consumed: number; target: number }) {
   const [recipeCount, setRecipeCount] = useState(0);
