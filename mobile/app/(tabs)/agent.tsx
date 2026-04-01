@@ -432,14 +432,14 @@ export default function AgentScreen() {
         {/* ── Meal suggestion ─────────────────────────────────────────────────── */}
         <TouchableOpacity style={s.primaryBtn} onPress={() => handleGenerate('single')} activeOpacity={0.85}>
           <View style={s.primaryBtnInner}>
-            <View style={s.primaryBtnIcon}>
+            <View style={[s.primaryBtnIcon, mealCtx.mealType === 'snack' && { backgroundColor: 'rgba(245,200,66,0.15)' }]}>
               <Ionicons
                 name={mealCtx.mealType === 'breakfast' ? 'sunny-outline'
                   : mealCtx.mealType === 'lunch' ? 'restaurant-outline'
                   : mealCtx.mealType === 'dinner' ? 'moon-outline'
                   : 'flash-outline'}
                 size={22}
-                color={BG}
+                color={mealCtx.mealType === 'snack' ? GOLD : BG}
               />
             </View>
             <View style={{ flex: 1 }}>
