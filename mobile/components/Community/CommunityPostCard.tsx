@@ -70,31 +70,14 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
     const ingredients = post.ingredients ?? [];
     if (ingredients.length === 0) return;
 
-    // Build consolidated ingredients for the cart
-    const consolidated = ingredients.map((name, i) => ({
-      id: `community-${post.id}-${i}`,
-      name,
-      totalQuantity: 0,
-      unit: '',
-      category: 'other' as const,
-      isInPantry: false,
-      estimatedPrice: 3,
-      usedIn: [post.mealName],
-    }));
-
-    // Save as agent cart so useSmartCart picks it up
-    const payload = {
-      ingredients: consolidated,
-      planType: 'single' as const,
-      mealCount: 1,
-      generatedAt: new Date().toISOString(),
-      label: post.mealName,
-    };
-    await AsyncStorage.setItem('jonno_agent_cart', JSON.stringify(payload));
-
-    // Also add to carts index
+    // Add to carts index only (not agent cart key — that would cause a duplicate)
     const indexRaw = await AsyncStorage.getItem('jonno_carts_index');
     const existing = indexRaw ? JSON.parse(indexRaw) : [];
+    // Don't add if already exists
+    if (existing.some((c: any) => c.id === `community-${post.id}`)) {
+      router.push('/(tabs)/cart' as any);
+      return;
+    }
     const entry = {
       id: `community-${post.id}`,
       label: post.mealName,
