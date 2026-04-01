@@ -5,8 +5,8 @@ import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from '@expo-googl
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Text, TextInput } from 'react-native';
 import 'react-native-reanimated';
+import { setDefaultFont } from '@/lib/setDefaultFont';
 import Toast from 'react-native-toast-message';
 
 import { AuthProvider } from '@/context/AuthContext';
@@ -31,21 +31,16 @@ export default function RootLayout() {
     DMSans_700Bold,
   });
 
-  // Set DM Sans as the default font for all Text and TextInput components
-  useEffect(() => {
-    if (!loaded) return;
-    const defaultTextProps = (Text as any).defaultProps || {};
-    (Text as any).defaultProps = { ...defaultTextProps, style: { fontFamily: 'DMSans_400Regular' } };
-    const defaultInputProps = (TextInput as any).defaultProps || {};
-    (TextInput as any).defaultProps = { ...defaultInputProps, style: { fontFamily: 'DMSans_400Regular' } };
-  }, [loaded]);
 
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
+    if (loaded) {
+      setDefaultFont();
+      SplashScreen.hideAsync();
+    }
   }, [loaded]);
 
   if (!loaded) return null;
