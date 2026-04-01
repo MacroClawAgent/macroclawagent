@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   ScrollView,
@@ -363,13 +364,35 @@ export default function CartScreen() {
         </View>
 
         <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, paddingTop: 8 }} showsVerticalScrollIndicator={false}>
-          {/* Location */}
-          <View style={s.locationRow}>
+          {/* Location — tappable to change */}
+          <TouchableOpacity
+            style={s.locationRow}
+            onPress={() => {
+              if (sc.suburb) {
+                // Re-fetch location
+                sc.initializeCart();
+              } else {
+                Linking.openURL('app-settings:').catch(() => {});
+              }
+            }}
+            activeOpacity={0.75}
+          >
             <Ionicons name="location" size={16} color={GOLD} />
             <Text style={s.locationText}>
               {sc.locationLoading ? 'Finding your location...'
                 : sc.suburb ? sc.suburb
-                : 'Enable location for nearby stores'}
+                : 'Tap to enable location'}
+            </Text>
+            <Ionicons name="pencil-outline" size={14} color={DIM} />
+          </TouchableOpacity>
+
+          {/* Jonno message */}
+          <View style={s.jonnoMsg}>
+            <Ionicons name="sparkles" size={14} color={CORAL} />
+            <Text style={s.jonnoMsgText}>
+              {visibleCarts.length > 0
+                ? 'Your meals are ready to shop. Tap a cart to pick your store and see ingredients.'
+                : 'Ask Jonno to create a meal plan — ingredients will appear here ready to shop.'}
             </Text>
           </View>
 
@@ -617,7 +640,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 6, paddingBottom: 10,
   },
-  title: { fontSize: 22, fontWeight: '800', color: TEXT },
+  title: { fontSize: 28, fontWeight: '800', fontFamily: 'BebasNeue_400Regular', letterSpacing: 1, color: TEXT },
   refreshBtn: {
     width: 36, height: 36, borderRadius: 11, backgroundColor: CARD,
     borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center',
@@ -649,7 +672,14 @@ const s = StyleSheet.create({
     backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER,
     paddingHorizontal: 16, paddingVertical: 14,
   },
-  locationText: { fontSize: 14, fontWeight: '600', color: TEXT, flex: 1 },
+  locationText: { fontSize: 15, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.8, color: TEXT, flex: 1 },
+
+  // Jonno message
+  jonnoMsg: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+    marginTop: 12, paddingHorizontal: 4,
+  },
+  jonnoMsgText: { fontSize: 13, color: TEXT_MUTED, lineHeight: 19, flex: 1 },
 
   // Cart overview cards
   cartCard: {
@@ -657,8 +687,8 @@ const s = StyleSheet.create({
     backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     padding: 18,
   },
-  cartCardTitle: { fontSize: 17, fontWeight: '800', color: TEXT },
-  cartCardSub: { fontSize: 13, color: TEXT_MUTED, marginTop: 3 },
+  cartCardTitle: { fontSize: 20, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.8, color: TEXT },
+  cartCardSub: { fontSize: 13, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.5, color: TEXT_MUTED, marginTop: 3 },
   cartCardArrow: {
     width: 32, height: 32, borderRadius: 10,
     backgroundColor: BG, borderWidth: 1, borderColor: BORDER,
