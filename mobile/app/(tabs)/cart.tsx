@@ -362,55 +362,41 @@ export default function CartScreen() {
           <Text style={s.title}>Smart Cart</Text>
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, gap: 12, paddingTop: 8 }} showsVerticalScrollIndicator={false}>
-          {/* Location + Store */}
-          <View style={s.storeCard}>
-            <StoreSelector
-              nearbyStores={sc.cart?.nearbyStores ?? []}
-              selectedNearbyStore={sc.cart?.selectedNearbyStore ?? null}
-              onSelectStore={sc.selectNearbyStore}
-              locationLoading={sc.locationLoading}
-              locationPermissionDenied={sc.locationPermissionDenied}
-              suburb={sc.suburb}
-            />
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, paddingTop: 8 }} showsVerticalScrollIndicator={false}>
+          {/* Location */}
+          <View style={s.locationRow}>
+            <Ionicons name="location" size={16} color={GOLD} />
+            <Text style={s.locationText}>
+              {sc.locationLoading ? 'Finding your location...'
+                : sc.suburb ? sc.suburb
+                : 'Enable location for nearby stores'}
+            </Text>
           </View>
-
-          {/* Section label */}
-          {visibleCarts.length > 0 && (
-            <Text style={s.sectionLabel}>YOUR CARTS</Text>
-          )}
 
           {/* Cart cards */}
           {visibleCarts.length > 0 ? (
-            visibleCarts.map(cart => {
-              const iconName = cart.source === 'agent' ? 'sparkles' as const
-                : cart.source === 'community' ? 'people' as const
-                : 'cart' as const;
-              const iconColor = cart.source === 'agent' ? GOLD
-                : cart.source === 'community' ? SAGE
-                : CORAL;
-              return (
+            <View style={{ gap: 10, marginTop: 16 }}>
+              {visibleCarts.map(cart => (
                 <TouchableOpacity
                   key={cart.id}
                   style={s.cartCard}
                   onPress={() => setShowDetail(true)}
                   activeOpacity={0.8}
                 >
-                  <View style={[s.cartCardIcon, { borderColor: iconColor + '30' }]}>
-                    <Ionicons name={iconName} size={20} color={iconColor} />
-                  </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={s.cartCardTitle}>{cart.label}</Text>
+                    <Text style={s.cartCardTitle} numberOfLines={1}>{cart.label}</Text>
                     <Text style={s.cartCardSub}>
-                      {cart.count} item{cart.count !== 1 ? 's' : ''} · ${cart.total.toFixed(2)} est.
+                      {cart.count} ingredient{cart.count !== 1 ? 's' : ''} · ${cart.total.toFixed(2)} est.
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={16} color={DIM} />
+                  <View style={s.cartCardArrow}>
+                    <Ionicons name="chevron-forward" size={16} color={DIM} />
+                  </View>
                 </TouchableOpacity>
-              );
-            })
+              ))}
+            </View>
           ) : (
-            <View style={s.centred}>
+            <View style={[s.centred, { marginTop: 40 }]}>
               <Ionicons name="cart-outline" size={48} color={DIM} />
               <Text style={s.emptyTitle}>No carts yet</Text>
               <Text style={s.emptySub}>
@@ -657,20 +643,27 @@ const s = StyleSheet.create({
     backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     padding: 16,
   },
+  // Location row (overview)
+  locationRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER,
+    paddingHorizontal: 16, paddingVertical: 14,
+  },
+  locationText: { fontSize: 14, fontWeight: '600', color: TEXT, flex: 1 },
+
   // Cart overview cards
   cartCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: CARD, borderRadius: 18, borderWidth: 1, borderColor: BORDER,
-    padding: 16,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
+    padding: 18,
   },
-  cartCardIcon: {
-    width: 44, height: 44, borderRadius: 14,
+  cartCardTitle: { fontSize: 17, fontWeight: '800', color: TEXT },
+  cartCardSub: { fontSize: 13, color: TEXT_MUTED, marginTop: 3 },
+  cartCardArrow: {
+    width: 32, height: 32, borderRadius: 10,
     backgroundColor: BG, borderWidth: 1, borderColor: BORDER,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center', marginLeft: 12,
   },
-  cartCardTitle: { fontSize: 15, fontWeight: '700', color: TEXT },
-  cartCardSub: { fontSize: 12, color: TEXT_MUTED, marginTop: 2 },
-  sectionLabel: { fontSize: 11, fontWeight: '700', color: DIM, letterSpacing: 1, marginTop: 4 },
 
   // Total card
   totalCard: {

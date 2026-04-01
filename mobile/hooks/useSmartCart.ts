@@ -260,8 +260,10 @@ export function useSmartCart() {
           lastUpdated: new Date().toISOString(),
         };
 
-        const planLabel = agentCart.planType === 'week' ? "This Week's Plan"
-          : agentCart.planType === 'single' ? 'Meal' : "Today's Plan";
+        const planLabel = agentCart.label
+          ?? (agentCart.planType === 'week' ? "This Week's Meals"
+            : agentCart.planType === 'single' ? 'Meal'
+            : "Today's Meals");
         const meta: CartMeta = {
           source: 'agent',
           planType: agentCart.planType,

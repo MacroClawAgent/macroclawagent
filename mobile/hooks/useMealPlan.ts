@@ -146,6 +146,18 @@ export const useMealPlan = () => {
     try {
       const pantryItems = await loadPantryItems();
       const consolidated = consolidateIngredients(effectiveDays, pantryItems);
+      // Build a descriptive label from meal names
+      const mealNames = effectiveDays.flatMap(d =>
+        Object.values(d.meals).filter(Boolean).map((m: any) => m.name)
+      );
+      const label = planType === 'single' && mealNames.length === 1
+        ? mealNames[0]
+        : planType === 'week'
+          ? "This Week's Meals"
+          : mealNames.length <= 2
+            ? mealNames.join(' & ')
+            : `${mealNames[0]} + ${mealNames.length - 1} more`;
+
       const payload = {
         ingredients: consolidated,
         planType,
@@ -154,6 +166,7 @@ export const useMealPlan = () => {
           0,
         ),
         generatedAt: new Date().toISOString(),
+        label,
       };
       await AsyncStorage.setItem('jonno_agent_cart', JSON.stringify(payload));
       const toBuyNames = consolidated.filter(i => !i.isInPantry).map(i => i.name);
