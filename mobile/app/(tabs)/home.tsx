@@ -268,16 +268,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   greetingWord: {
-    fontSize: 16,
-    fontFamily: "BebasNeue_400Regular",
-    letterSpacing: 1.5,
+    fontSize: 14,
+    fontWeight: "600",
+    letterSpacing: 0.5,
     color: "#6B7280",
   },
   greetingName: {
-    fontSize: 42,
-    fontFamily: "BebasNeue_400Regular",
-    letterSpacing: 1,
-    lineHeight: 44,
+    fontSize: 28,
+    fontWeight: "900",
+    letterSpacing: -0.5,
+    lineHeight: 32,
     color: "#111827",
   },
 
