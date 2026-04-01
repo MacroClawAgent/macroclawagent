@@ -96,7 +96,7 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
       quantity: 0,
       unit: '',
       category: 'other',
-      isChecked: false,
+      isChecked: true,
       woolworthsProducts: [],
       colesProducts: [],
       selectedProductId: null,

@@ -120,7 +120,7 @@ export function useSmartCart() {
         const saved = JSON.parse(raw) as SmartCart;
         const age = Date.now() - new Date(saved.lastUpdated).getTime();
         if (age < CACHE_MAX_AGE_MS) {
-          saved.ingredients = saved.ingredients.map((ing) => ({ ...ing, isChecked: false }));
+          // Preserve checked state from saved data
           saved.selectedNearbyStore = saved.selectedNearbyStore ?? null;
           setCart(saved);
         }
@@ -248,7 +248,7 @@ export function useSmartCart() {
           quantity: ci.totalQuantity,
           unit: ci.unit,
           category: mapCategory(ci.category),
-          isChecked: false,
+          isChecked: true,
           woolworthsProducts: [],
           colesProducts: [],
           selectedProductId: null,
@@ -381,7 +381,7 @@ export function useSmartCart() {
       quantity: 1,
       unit: 'unit',
       category: assignCategory(trimmed),
-      isChecked: false,
+      isChecked: true,
       woolworthsProducts: [],
       colesProducts: [],
       selectedProductId: null,

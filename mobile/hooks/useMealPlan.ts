@@ -189,7 +189,7 @@ export const useMealPlan = () => {
             quantity: c.totalQuantity,
             unit: c.unit,
             category: c.category === 'produce' ? 'vegetables' : c.category === 'pantry' || c.category === 'bakery' ? 'carbs' : c.category === 'frozen' ? 'other' : c.category,
-            isChecked: false,
+            isChecked: true,
             woolworthsProducts: [],
             colesProducts: [],
             selectedProductId: null,

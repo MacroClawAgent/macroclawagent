@@ -309,16 +309,10 @@ export default function CartScreen() {
   const checkedCount = sc.cart?.ingredients.filter((i) => i.isChecked).length ?? 0;
   const ingredientCount = sc.cart?.ingredients.length ?? 0;
 
-  // Compute total: agent cart uses estimatedPrice, otherwise uses product prices
-  const total = (() => {
-    if (!sc.cart) return 0;
-    if (sc.cartMeta?.source === 'agent') {
-      return sc.cart.ingredients
-        .filter(i => !i.isChecked)
-        .reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0);
-    }
-    return sc.getEstimatedTotal();
-  })();
+  // Total = sum of checked items' estimated prices
+  const total = sc.cart?.ingredients
+    .filter(i => i.isChecked)
+    .reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0) ?? 0;
 
   function toggleCollapse(cat: IngredientCategory) {
     setCollapsed((prev) => {
@@ -488,21 +482,52 @@ export default function CartScreen() {
             />
           </View>
 
-          {/* ── Estimated total card ── */}
-          <View style={s.totalCard}>
-            <Text style={s.totalNum}>
-              ${total.toFixed(2)}{' '}
-              <Text style={s.totalEstLabel}>estimated</Text>
-            </Text>
-            <Text style={s.totalSub}>
-              Based on {ingredientCount} items · {storeName}
-            </Text>
-            {sc.productsLoading && (
-              <View style={s.loadingBadge}>
-                <ActivityIndicator size="small" color={GOLD} />
-                <Text style={s.loadingBadgeText}>Loading prices...</Text>
+          {/* ── Select all + ingredients ── */}
+          <View style={s.selectAllCard}>
+            <TouchableOpacity
+              style={s.selectAllRow}
+              onPress={() => sc.toggleAll()}
+              activeOpacity={0.75}
+            >
+              <View style={[s.checkbox, checkedCount === ingredientCount && s.checkboxOn]}>
+                {checkedCount === ingredientCount && <Ionicons name="checkmark" size={12} color={BG} />}
               </View>
-            )}
+              <Text style={s.selectAllText}>
+                {checkedCount === ingredientCount ? 'Deselect all' : 'Select all'}
+              </Text>
+              <Text style={s.selectAllCount}>{checkedCount}/{ingredientCount}</Text>
+            </TouchableOpacity>
+
+            {sc.cart.ingredients.map(ing => (
+              <TouchableOpacity
+                key={ing.id}
+                style={s.ingRow}
+                onPress={() => sc.toggleIngredient(ing.id)}
+                activeOpacity={0.75}
+              >
+                <View style={[s.checkbox, ing.isChecked && s.checkboxOn]}>
+                  {ing.isChecked && <Ionicons name="checkmark" size={12} color={BG} />}
+                </View>
+                <Text style={[s.ingName, !ing.isChecked && s.ingNameOff]} numberOfLines={1}>{ing.name}</Text>
+                {ing.displayQuantity ? (
+                  <Text style={s.ingQty}>{ing.displayQuantity}</Text>
+                ) : null}
+                {ing.estimatedPrice ? (
+                  <Text style={s.ingPrice}>${ing.estimatedPrice.toFixed(2)}</Text>
+                ) : null}
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* ── Total ── */}
+          <View style={s.totalCard}>
+            <View style={s.totalRow}>
+              <Text style={s.totalLabel}>Estimated total</Text>
+              <Text style={s.totalNum}>${total.toFixed(2)}</Text>
+            </View>
+            <Text style={s.totalSub}>
+              {checkedCount} of {ingredientCount} items selected
+            </Text>
             <TouchableOpacity
               onPress={sc.openInStore}
               disabled={!sc.cart.selectedStore}
@@ -516,45 +541,6 @@ export default function CartScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* ── Ingredient list by category ── */}
-          {groupedIngredients.map(({ cat, items }) => {
-            const meta = CATEGORY_META[cat];
-            const isCollapsed = collapsed.has(cat);
-            return (
-              <View key={cat} style={s.categoryBlock}>
-                <TouchableOpacity
-                  onPress={() => toggleCollapse(cat)}
-                  style={s.categoryHeader}
-                  activeOpacity={0.7}
-                >
-                  <View style={s.categoryHeaderLeft}>
-                    <Text style={{ fontSize: 14 }}>{meta.emoji}</Text>
-                    <Text style={s.categoryLabel}>{meta.label}</Text>
-                    <View style={s.categoryCount}>
-                      <Text style={s.categoryCountTxt}>{items.length}</Text>
-                    </View>
-                  </View>
-                  <Text style={s.collapseChevron}>{isCollapsed ? '›' : '⌄'}</Text>
-                </TouchableOpacity>
-
-                {!isCollapsed && (
-                  <View style={s.categoryItems}>
-                    {items.map((ing) => (
-                      <IngredientRow
-                        key={ing.id}
-                        ingredient={ing}
-                        selectedStore={sc.cart?.selectedStore ?? null}
-                        onToggle={() => sc.toggleIngredient(ing.id)}
-                        onDelete={() => sc.removeIngredient(ing.id)}
-                        onSwap={() => setPickerIngredient(ing)}
-                      />
-                    ))}
-                  </View>
-                )}
-              </View>
-            );
-          })}
 
           {/* ── Pantry items section ── */}
           {sc.pantryItems.length > 0 && (
@@ -686,15 +672,40 @@ const s = StyleSheet.create({
   },
 
   // Total card
+  // Select all + ingredients
+  selectAllCard: {
+    backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER, padding: 16,
+  },
+  selectAllRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingBottom: 12, marginBottom: 8,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(232,224,208,0.06)',
+  },
+  selectAllText: { fontSize: 14, fontWeight: '700', color: TEXT, flex: 1 },
+  selectAllCount: { fontSize: 12, fontWeight: '600', color: TEXT_MUTED },
+  checkbox: {
+    width: 22, height: 22, borderRadius: 6, borderWidth: 1.5,
+    borderColor: 'rgba(232,224,208,0.2)', alignItems: 'center', justifyContent: 'center',
+  },
+  checkboxOn: { backgroundColor: GOLD, borderColor: GOLD },
+  ingRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(232,224,208,0.04)',
+  },
+  ingName: { flex: 1, fontSize: 14, fontWeight: '600', color: TEXT },
+  ingNameOff: { color: TEXT_DIM, textDecorationLine: 'line-through' },
+  ingQty: { fontSize: 12, color: TEXT_MUTED },
+  ingPrice: { fontSize: 13, fontWeight: '600', color: GOLD, minWidth: 45, textAlign: 'right' },
+
+  // Total
   totalCard: {
     backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     padding: 20, gap: 6,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25, shadowRadius: 12, elevation: 4,
   },
-  totalNum: { fontSize: 32, fontWeight: '800', color: TEXT },
-  totalEstLabel: { fontSize: 14, fontWeight: '500', color: TEXT_MUTED },
-  totalSub: { fontSize: 13, color: TEXT_MUTED },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  totalLabel: { fontSize: 14, fontWeight: '600', color: TEXT_MUTED },
+  totalNum: { fontSize: 24, fontWeight: '800', color: GOLD },
+  totalSub: { fontSize: 12, color: TEXT_DIM },
   loadingBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(248,213,97,0.08)', borderRadius: 8,
