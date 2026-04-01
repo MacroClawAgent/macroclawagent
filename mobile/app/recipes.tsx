@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -7,8 +7,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BG = '#1C1612';
 const CARD = '#252018';
-const TEXT = '#E8E0D0';
+const BORDER = 'rgba(248,213,97,0.08)';
+const TEXT_C = '#E8E0D0';
 const GOLD = '#F5C842';
+const CORAL = '#E07B54';
+const SAGE = '#8B9E6E';
 const MUTED = 'rgba(232,224,208,0.5)';
 const DIM = 'rgba(232,224,208,0.3)';
 
@@ -21,12 +24,44 @@ interface SavedMeal {
   savedAt: string;
 }
 
-const FILTERS = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack'];
+const MEAL_ORDER = ['breakfast', 'lunch', 'snack', 'dinner'];
+const MEAL_ICONS: Record<string, { icon: string; color: string }> = {
+  breakfast: { icon: 'sunny-outline', color: GOLD },
+  lunch: { icon: 'restaurant-outline', color: SAGE },
+  snack: { icon: 'flash-outline', color: GOLD },
+  dinner: { icon: 'moon-outline', color: CORAL },
+};
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - d.getTime()) / 86400000);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Yesterday';
+  return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function groupByDay(meals: SavedMeal[]): { date: string; label: string; meals: SavedMeal[] }[] {
+  const map = new Map<string, SavedMeal[]>();
+  for (const meal of meals) {
+    const key = meal.savedAt.split('T')[0];
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(meal);
+  }
+  return [...map.entries()]
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([date, dayMeals]) => ({
+      date,
+      label: formatDate(dayMeals[0].savedAt),
+      meals: dayMeals.sort((a, b) =>
+        MEAL_ORDER.indexOf(a.type.toLowerCase()) - MEAL_ORDER.indexOf(b.type.toLowerCase())
+      ),
+    }));
+}
 
 export default function RecipesScreen() {
   const router = useRouter();
   const [meals, setMeals] = useState<SavedMeal[]>([]);
-  const [filter, setFilter] = useState('All');
 
   useEffect(() => {
     AsyncStorage.getItem('jonno_meal_plan_history')
@@ -34,21 +69,14 @@ export default function RecipesScreen() {
       .catch(() => {});
   }, []);
 
-  const filtered = filter === 'All' ? meals : meals.filter(m => m.type.toLowerCase() === filter.toLowerCase());
-
-  const daysAgo = (iso: string) => {
-    const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-    if (d === 0) return 'Today';
-    if (d === 1) return 'Yesterday';
-    return `${d} days ago`;
-  };
+  const days = groupByDay(meals);
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
       {/* Header */}
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Ionicons name="chevron-back" size={24} color={TEXT} />
+          <Ionicons name="chevron-back" size={24} color={TEXT_C} />
         </TouchableOpacity>
         <View style={{ flex: 1, marginLeft: 12 }}>
           <Text style={s.title}>Meal History</Text>
@@ -57,9 +85,8 @@ export default function RecipesScreen() {
       </View>
 
       {meals.length === 0 ? (
-        /* Empty state */
         <View style={s.empty}>
-          <Text style={{ fontSize: 48 }}>🍽️</Text>
+          <Ionicons name="time-outline" size={48} color={DIM} />
           <Text style={s.emptyTitle}>No meals yet</Text>
           <Text style={s.emptySub}>
             Ask Jonno to generate a meal and it will appear here
@@ -69,40 +96,39 @@ export default function RecipesScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <>
-          {/* Filter pills */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
-            {FILTERS.map(f => (
-              <TouchableOpacity
-                key={f}
-                style={[s.filterPill, filter === f && s.filterPillActive]}
-                onPress={() => setFilter(f)}
-                activeOpacity={0.75}
-              >
-                <Text style={[s.filterText, filter === f && s.filterTextActive]}>{f}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+        <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+          {days.map(day => (
+            <View key={day.date} style={s.daySection}>
+              {/* Day header */}
+              <Text style={s.dayLabel}>{day.label}</Text>
 
-          {/* Recipe list */}
-          <FlatList
-            data={filtered}
-            keyExtractor={(_, i) => String(i)}
-            contentContainerStyle={{ paddingBottom: 40 }}
-            renderItem={({ item }) => (
-              <View style={s.card}>
-                <View style={s.cardEmoji}>
-                  <Text style={{ fontSize: 24 }}>{item.emoji}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.cardName} numberOfLines={1}>{item.name}</Text>
-                  <Text style={s.cardMacro}>{item.calories} cal · {item.protein}g protein</Text>
-                  <Text style={s.cardDate}>Generated {daysAgo(item.savedAt)}</Text>
-                </View>
+              {/* Meals for this day */}
+              <View style={s.dayCard}>
+                {day.meals.map((meal, i) => {
+                  const mealMeta = MEAL_ICONS[meal.type.toLowerCase()] ?? MEAL_ICONS.dinner;
+                  return (
+                    <View key={`${day.date}-${i}`}>
+                      {i > 0 && <View style={s.divider} />}
+                      <View style={s.mealRow}>
+                        <View style={[s.mealIcon, { backgroundColor: mealMeta.color + '18' }]}>
+                          <Ionicons name={mealMeta.icon as any} size={16} color={mealMeta.color} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={s.mealType}>{meal.type.charAt(0).toUpperCase() + meal.type.slice(1)}</Text>
+                          <Text style={s.mealName} numberOfLines={1}>{meal.name}</Text>
+                        </View>
+                        <View style={s.mealMacros}>
+                          <Text style={s.mealCal}>{meal.calories}</Text>
+                          <Text style={s.mealCalUnit}>kcal</Text>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
               </View>
-            )}
-          />
-        </>
+            </View>
+          ))}
+        </ScrollView>
       )}
     </SafeAreaView>
   );
@@ -111,24 +137,29 @@ export default function RecipesScreen() {
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 },
-  title: { fontSize: 20, fontWeight: '800', color: TEXT },
+  title: { fontSize: 20, fontWeight: '800', color: TEXT_C },
   subtitle: { fontSize: 13, color: MUTED, marginTop: 2 },
 
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: TEXT, marginTop: 12 },
-  emptySub: { fontSize: 13, color: MUTED, textAlign: 'center', marginTop: 8, lineHeight: 20 },
-  ctaBtn: { backgroundColor: GOLD, borderRadius: 22, paddingVertical: 14, paddingHorizontal: 28, marginTop: 24 },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 8 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: TEXT_C, marginTop: 12 },
+  emptySub: { fontSize: 13, color: MUTED, textAlign: 'center', lineHeight: 20 },
+  ctaBtn: { backgroundColor: GOLD, borderRadius: 22, paddingVertical: 14, paddingHorizontal: 28, marginTop: 16 },
   ctaBtnText: { color: BG, fontWeight: '700', fontSize: 15 },
 
-  filterRow: { paddingHorizontal: 16, gap: 8, marginBottom: 14 },
-  filterPill: { backgroundColor: CARD, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(232,224,208,0.1)' },
-  filterPillActive: { backgroundColor: GOLD, borderColor: GOLD },
-  filterText: { fontSize: 13, color: MUTED },
-  filterTextActive: { color: BG, fontWeight: '700' },
+  daySection: { marginTop: 16 },
+  dayLabel: { fontSize: 13, fontWeight: '700', color: DIM, letterSpacing: 0.5, textTransform: 'uppercase', marginLeft: 20, marginBottom: 8 },
 
-  card: { flexDirection: 'row', gap: 14, backgroundColor: CARD, borderRadius: 20, marginHorizontal: 16, marginBottom: 10, padding: 16, borderWidth: 1, borderColor: 'rgba(248,213,97,0.08)' },
-  cardEmoji: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(232,224,208,0.06)', alignItems: 'center', justifyContent: 'center' },
-  cardName: { fontSize: 15, fontWeight: '700', color: TEXT },
-  cardMacro: { fontSize: 12, color: 'rgba(232,224,208,0.45)', marginTop: 2 },
-  cardDate: { fontSize: 11, color: DIM, marginTop: 4 },
+  dayCard: {
+    marginHorizontal: 16, backgroundColor: CARD, borderRadius: 18,
+    borderWidth: 1, borderColor: BORDER, overflow: 'hidden',
+  },
+  divider: { height: 1, backgroundColor: 'rgba(232,224,208,0.06)', marginHorizontal: 14 },
+
+  mealRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 14 },
+  mealIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  mealType: { fontSize: 11, fontWeight: '600', color: MUTED, letterSpacing: 0.3 },
+  mealName: { fontSize: 15, fontWeight: '700', color: TEXT_C, marginTop: 1 },
+  mealMacros: { alignItems: 'flex-end' },
+  mealCal: { fontSize: 16, fontWeight: '800', color: TEXT_C },
+  mealCalUnit: { fontSize: 10, color: DIM, marginTop: -1 },
 });
