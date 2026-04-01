@@ -707,9 +707,10 @@ const s = StyleSheet.create({
   selectAllCount: { fontSize: 12, fontWeight: '600', color: TEXT_MUTED },
   checkbox: {
     width: 22, height: 22, borderRadius: 6, borderWidth: 1.5,
-    borderColor: 'rgba(232,224,208,0.2)', alignItems: 'center', justifyContent: 'center',
+    borderColor: 'rgba(139,158,110,0.4)', backgroundColor: 'rgba(139,158,110,0.06)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  checkboxOn: { backgroundColor: GOLD, borderColor: GOLD },
+  checkboxOn: { backgroundColor: SAGE, borderColor: SAGE },
   ingRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(232,224,208,0.04)',
@@ -735,9 +736,9 @@ const s = StyleSheet.create({
   },
   loadingBadgeText: { fontSize: 11, fontWeight: '600', color: GOLD },
   shopBtn: {
-    backgroundColor: GOLD, borderRadius: 24, paddingVertical: 16,
+    backgroundColor: CORAL, borderRadius: 24, paddingVertical: 16,
     alignItems: 'center', marginTop: 8,
-    shadowColor: GOLD, shadowOpacity: 0.35, shadowRadius: 12,
+    shadowColor: CORAL, shadowOpacity: 0.35, shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 }, elevation: 4,
   },
   shopBtnDisabled: { opacity: 0.45, shadowOpacity: 0 },
