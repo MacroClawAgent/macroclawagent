@@ -143,7 +143,7 @@ const s = StyleSheet.create({
     borderColor: "rgba(32,199,183,0.25)",
   },
   badgeDot: { fontSize: 9, color: TEAL },
-  badgeText: { fontSize: 13, fontWeight: "700", color: TEAL, letterSpacing: 1 },
+  badgeText: { fontSize: 12, fontWeight: "700", color: TEAL },
 
   liveChip: {
     flexDirection: "row",
@@ -160,15 +160,14 @@ const s = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 4,
   },
-  liveText: { fontSize: 13, fontWeight: "700", letterSpacing: 1, color: "#9CA3AF" },
+  liveText: { fontSize: 12, fontWeight: "500", color: "#9CA3AF" },
 
   // Body
   body: {
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "500",
     color: "#374151",
     lineHeight: 20,
-    letterSpacing: 0.8,
   },
 
   // CTA button
@@ -181,10 +180,9 @@ const s = StyleSheet.create({
     paddingVertical: 10,
   },
   ctaText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
     color: "#fff",
-    letterSpacing: 1.5,
   },
   ctaArrow: {
     fontSize: 18,

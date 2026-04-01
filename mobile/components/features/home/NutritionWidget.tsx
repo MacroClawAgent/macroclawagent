@@ -76,8 +76,8 @@ function MacroTablet({ label, color1, color2, shadowColor: sc, labelColor, consu
           <View style={{ position: 'absolute', top: 12, left: 14, width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.45)' }} />
         </LinearGradient>
       </View>
-      <Text style={{ fontSize: 15, fontWeight: '700', letterSpacing: 1, color: labelColor }}>{remaining}g left</Text>
-      <Text style={{ fontSize: 13, fontWeight: '700', letterSpacing: 1, color: 'rgba(232,224,208,0.45)' }}>{label}</Text>
+      <Text style={{ fontSize: 15, fontWeight: '800', color: labelColor }}>{remaining}g left</Text>
+      <Text style={{ fontSize: 12, fontWeight: '500', color: 'rgba(232,224,208,0.45)' }}>{label}</Text>
     </View>
   );
 }
@@ -89,9 +89,8 @@ const mb = StyleSheet.create({
     gap: 4,
   },
   grams: {
-    fontSize: 15,
-    fontWeight: "700",
-    letterSpacing: 0.8,
+    fontSize: 14,
+    fontWeight: "800",
   },
   track: {
     width: 36,
@@ -105,15 +104,13 @@ const mb = StyleSheet.create({
     borderBottomRightRadius: 10,
   },
   label: {
-    fontSize: 14,
-    fontWeight: "700",
-    letterSpacing: 1,
+    fontSize: 12,
+    fontWeight: "600",
     color: "#1E293B",
   },
   target: {
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0.5,
+    fontSize: 11,
+    fontWeight: "500",
     color: "#94A3B8",
   },
 });
@@ -268,15 +265,15 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
     backgroundColor: "rgba(43,182,166,0.18)",
   },
-  widgetTitle: { fontSize: 20, fontWeight: "700", letterSpacing: 1.5, color: "#1A1A1A" },
-  widgetSub: { fontSize: 13, fontWeight: "700", letterSpacing: 1, marginTop: 1, color: "#6B7280" },
+  widgetTitle: { fontSize: 18, fontWeight: "800", letterSpacing: -0.3, color: "#1A1A1A" },
+  widgetSub: { fontSize: 12, fontWeight: "500", marginTop: 1, color: "#6B7280" },
 
   // Calorie summary (right side of header)
   calRight: { alignItems: "flex-end", gap: 2 },
   calRow: { flexDirection: "row", alignItems: "baseline", gap: 3 },
-  calBig: { fontSize: 38, fontWeight: "700", letterSpacing: 1, color: "#0F172A" },
-  calOf: { fontSize: 15, fontWeight: "700", letterSpacing: 0.5, color: "#94A3B8" },
-  calSub: { fontSize: 13, fontWeight: "700", letterSpacing: 0.8, color: "#2DD4BF" },
+  calBig: { fontSize: 36, fontWeight: "900", letterSpacing: -0.5, color: "#0F172A" },
+  calOf: { fontSize: 14, fontWeight: "500", color: "#94A3B8" },
+  calSub: { fontSize: 12, fontWeight: "600", color: "#2DD4BF" },
 
   // Progress bar
   calBar: {

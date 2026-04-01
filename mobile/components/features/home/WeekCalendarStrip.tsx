@@ -630,13 +630,11 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
     color: "#FFFFFF",
-    letterSpacing: 1.5,
-  },
+     },
   cardSub: {
     fontSize: 13,
     fontWeight: "700",
-    letterSpacing: 1,
-    color: "rgba(255,255,255,0.75)",
+       color: "rgba(255,255,255,0.75)",
   },
   // ── Streak badge ──────────────────────────────────────────────────
   streakBadge: {
@@ -651,8 +649,7 @@ const styles = StyleSheet.create({
   streakCount: {
     fontSize: 15,
     fontWeight: "700",
-    letterSpacing: 1,
-    color: "#FFD580",
+       color: "#FFD580",
   },
   // ── Legend ────────────────────────────────────────────────────────
   inlineLegend: {
@@ -837,7 +834,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  ingredientName: { flex: 1, fontSize: 14, fontWeight: "700", letterSpacing: 0.8, marginRight: 8 },
+  ingredientName: { flex: 1, fontSize: 14, fontWeight: "700", marginRight: 8 },
   ingredientMacros: { fontSize: 13, fontWeight: "700", letterSpacing: 0.5 },
   // Activity
   actRow: { borderRadius: 12, padding: 12, marginBottom: 8, gap: 3 },
