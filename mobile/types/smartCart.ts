@@ -38,12 +38,15 @@ export interface SmartCartIngredient {
   displayQuantity?: string;
 }
 
+export type CartSource = 'agent' | 'community' | 'manual';
+
 export interface CartMeta {
-  source: 'agent' | 'generated';
+  source: CartSource;
   planType: 'today' | 'week' | 'single';
   mealCount: number;
   pantrySkipped: number;
   generatedAt: string;
+  label: string; // e.g. "Today's Plan", "Chicken Rice Bowl", "Manual Cart"
 }
 
 export interface NearbyStore {

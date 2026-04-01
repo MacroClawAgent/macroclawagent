@@ -23,7 +23,38 @@ import type { ConsolidatedIngredient, IngredientCategory as ConsolidatedCategory
 
 const STORAGE_KEY = 'jonno_smart_cart';
 const AGENT_CART_KEY = 'jonno_agent_cart';
+const CARTS_INDEX_KEY = 'jonno_carts_index';
 const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+export interface CartSummary {
+  id: string;
+  label: string;
+  source: 'agent' | 'community' | 'manual';
+  ingredientCount: number;
+  estimatedTotal: number;
+  createdAt: string;
+}
+
+async function loadCartsIndex(): Promise<CartSummary[]> {
+  const raw = await AsyncStorage.getItem(CARTS_INDEX_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+async function saveCartsIndex(carts: CartSummary[]): Promise<void> {
+  await AsyncStorage.setItem(CARTS_INDEX_KEY, JSON.stringify(carts));
+}
+
+async function addCartToIndex(summary: CartSummary): Promise<void> {
+  const carts = await loadCartsIndex();
+  // Replace if same id exists, else prepend
+  const filtered = carts.filter(c => c.id !== summary.id);
+  await saveCartsIndex([summary, ...filtered].slice(0, 20));
+}
+
+async function removeCartFromIndex(id: string): Promise<void> {
+  const carts = await loadCartsIndex();
+  await saveCartsIndex(carts.filter(c => c.id !== id));
+}
 
 // Map consolidation categories → SmartCart categories
 function mapCategory(c: ConsolidatedCategory): SmartCartIngredient['category'] {
@@ -59,6 +90,7 @@ export function useSmartCart() {
   const { userProfile } = useAuth();
   const [cart, setCart] = useState<SmartCart | null>(null);
   const [cartMeta, setCartMeta] = useState<CartMeta | null>(null);
+  const [cartsIndex, setCartsIndex] = useState<CartSummary[]>([]);
   const [pantryItems, setPantryItems] = useState<ConsolidatedIngredient[]>([]);
   const [initializing, setInitializing] = useState(false);
   const [productsLoading, setProductsLoading] = useState(false);
@@ -69,8 +101,9 @@ export function useSmartCart() {
   const [suburb, setSuburb] = useState<string | null>(null);
   const abortRef = useRef(false);
 
-  // Load persisted cart on mount — always reset isChecked to false
+  // Load carts index + persisted active cart on mount
   useEffect(() => {
+    loadCartsIndex().then(setCartsIndex).catch(() => {});
     AsyncStorage.getItem(STORAGE_KEY)
       .then((raw) => {
         if (!raw) return;
@@ -227,17 +260,34 @@ export function useSmartCart() {
           lastUpdated: new Date().toISOString(),
         };
 
-        setCart(newCart);
-        persistCart(newCart);
-        setCartMeta({
+        const planLabel = agentCart.planType === 'week' ? "This Week's Plan"
+          : agentCart.planType === 'single' ? 'Meal' : "Today's Plan";
+        const meta: CartMeta = {
           source: 'agent',
           planType: agentCart.planType,
           mealCount: agentCart.mealCount,
           pantrySkipped: inPantry.length,
           generatedAt: agentCart.generatedAt,
-        });
+          label: planLabel,
+        };
+
+        setCart(newCart);
+        persistCart(newCart);
+        setCartMeta(meta);
         setPantryItems(inPantry);
         setInitializing(false);
+
+        // Save to carts index
+        const estTotal = toBuy.reduce((s, i) => s + (i.estimatedPrice ?? 0), 0);
+        const summary: CartSummary = {
+          id: newCart.id,
+          label: planLabel,
+          source: 'agent',
+          ingredientCount: mapped.length,
+          estimatedTotal: estTotal,
+          createdAt: newCart.createdAt,
+        };
+        addCartToIndex(summary).then(() => loadCartsIndex().then(setCartsIndex));
 
         loadNearbyStores(newCart.id);
         loadProductsForIngredients(mapped, newCart.id);
@@ -440,9 +490,24 @@ export function useSmartCart() {
     } catch {}
   }, [cartMeta, initializeCart]);
 
+  const deleteCartById = useCallback(async (id: string) => {
+    await removeCartFromIndex(id);
+    if (cart?.id === id) {
+      setCart(null);
+      setCartMeta(null);
+      await AsyncStorage.removeItem(STORAGE_KEY);
+    }
+    setCartsIndex(await loadCartsIndex());
+  }, [cart]);
+
+  const refreshCartsIndex = useCallback(async () => {
+    setCartsIndex(await loadCartsIndex());
+  }, []);
+
   return {
     cart,
     cartMeta,
+    cartsIndex,
     checkForAgentCart,
     pantryItems,
     initializing,
@@ -454,6 +519,8 @@ export function useSmartCart() {
     suburb,
     initializeCart,
     refreshFromPlan,
+    refreshCartsIndex,
+    deleteCartById,
     toggleIngredient,
     toggleAll,
     removeIngredient,

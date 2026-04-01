@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSmartCart } from '@/hooks/useSmartCart';
 import { searchBothStores } from '@/services/supermarketApi';
@@ -35,7 +35,9 @@ const TEXT      = '#E8E0D0';
 const TEXT_MUTED = 'rgba(232,224,208,0.5)';
 const TEXT_DIM  = 'rgba(232,224,208,0.35)';
 const GOLD      = '#F5C842';
+const CORAL     = '#E07B54';
 const SAGE      = '#8B9E6E';
+const DIM       = 'rgba(232,224,208,0.3)';
 const WW_GREEN  = '#007837';
 const COLES_RED = '#E31837';
 
@@ -289,11 +291,20 @@ function ProductPickerModal({
 export default function CartScreen() {
   const router = useRouter();
   const sc = useSmartCart();
+  const [showDetail, setShowDetail] = useState(false);
 
   // Re-check for fresh agent cart every time tab gains focus
   useFocusEffect(
-    useCallback(() => { sc.checkForAgentCart(); }, [sc.checkForAgentCart])
+    useCallback(() => {
+      sc.checkForAgentCart();
+      sc.refreshCartsIndex();
+    }, [sc.checkForAgentCart, sc.refreshCartsIndex])
   );
+
+  // When a new cart loads, auto-show detail
+  useEffect(() => {
+    if (sc.cart && sc.cart.ingredients.length > 0) setShowDetail(true);
+  }, [sc.cart?.id]);
 
   const [collapsed, setCollapsed] = useState<Set<IngredientCategory>>(new Set());
   const [addText, setAddText] = useState('');
@@ -330,22 +341,87 @@ export default function CartScreen() {
     ? sc.cart.selectedNearbyStore.store === 'woolworths' ? 'Woolworths' : 'Coles'
     : 'store';
 
+  // ── Carts Overview (list of all carts) ──────────────────────────────────────
+  if (!showDetail) {
+    return (
+      <SafeAreaView style={s.safe} edges={['top']}>
+        <View style={s.header}>
+          <Text style={s.title}>Smart Cart</Text>
+        </View>
+
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, gap: 10, paddingTop: 8 }} showsVerticalScrollIndicator={false}>
+          {/* Location + Store */}
+          <View style={s.storeCard}>
+            <StoreSelector
+              nearbyStores={sc.cart?.nearbyStores ?? []}
+              selectedNearbyStore={sc.cart?.selectedNearbyStore ?? null}
+              onSelectStore={sc.selectNearbyStore}
+              locationLoading={sc.locationLoading}
+              locationPermissionDenied={sc.locationPermissionDenied}
+              suburb={sc.suburb}
+            />
+          </View>
+
+          {/* Cart cards */}
+          {sc.cartsIndex.length > 0 ? (
+            sc.cartsIndex.map(cart => (
+              <TouchableOpacity
+                key={cart.id}
+                style={s.cartCard}
+                onPress={() => { setShowDetail(true); }}
+                activeOpacity={0.8}
+              >
+                <View style={s.cartCardIcon}>
+                  <Ionicons
+                    name={cart.source === 'agent' ? 'sparkles' : cart.source === 'community' ? 'people' : 'cart'}
+                    size={20}
+                    color={cart.source === 'agent' ? GOLD : cart.source === 'community' ? SAGE : CORAL}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.cartCardTitle}>{cart.label}</Text>
+                  <Text style={s.cartCardSub}>{cart.ingredientCount} items · ${cart.estimatedTotal.toFixed(2)} est.</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={DIM} />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={s.centred}>
+              <Ionicons name="cart-outline" size={48} color={DIM} />
+              <Text style={s.emptyTitle}>No carts yet</Text>
+              <Text style={s.emptySub}>
+                Generate a meal plan or save a community recipe to create a cart.
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push('/(tabs)/agent' as never)}
+                style={s.buildBtn}
+                activeOpacity={0.85}
+              >
+                <Text style={s.buildBtnLabel}>Plan meals with Jonno →</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Cart Detail View ──────────────────────────────────────────────────────────
+
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
       {/* ── Header ── */}
       <View style={s.header}>
-        <Text style={s.title}>Smart Cart</Text>
+        <TouchableOpacity onPress={() => setShowDetail(false)} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Ionicons name="chevron-back" size={24} color={TEXT} />
+        </TouchableOpacity>
+        <Text style={[s.title, { flex: 1, marginLeft: 8 }]}>{sc.cartMeta?.label ?? 'Cart'}</Text>
         <TouchableOpacity
           onPress={sc.cartMeta?.source === 'agent' ? sc.refreshFromPlan : sc.initializeCart}
           style={s.refreshBtn}
           activeOpacity={0.7}
         >
-          <SymbolView
-            name={'arrow.clockwise' as any}
-            size={16}
-            tintColor={GOLD}
-            style={{ width: 16, height: 16 }}
-          />
+          <Ionicons name="refresh" size={16} color={GOLD} />
         </TouchableOpacity>
       </View>
 
@@ -356,28 +432,18 @@ export default function CartScreen() {
           <Text style={s.loadingText}>Building your cart...</Text>
         </View>
       ) : !sc.cart || sc.cart.ingredients.length === 0 ? (
-        /* ── Empty state ── */
         <View style={s.centred}>
-          <Text style={{ fontSize: 64, opacity: 0.3 }}>🛒</Text>
+          <Ionicons name="cart-outline" size={48} color={DIM} />
           <Text style={s.emptyTitle}>No ingredients yet</Text>
           <Text style={s.emptySub}>
-            Your Smart Cart fills up when you add ingredients from a meal plan or a community post.
+            Generate a meal plan or save a community recipe to create a cart.
           </Text>
-
           <TouchableOpacity
-            onPress={() => router.push('/(tabs)/agent' as never)}
+            onPress={() => { setShowDetail(false); router.push('/(tabs)/agent' as never); }}
             style={s.buildBtn}
             activeOpacity={0.85}
           >
             <Text style={s.buildBtnLabel}>Plan meals with Jonno →</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push('/(tabs)/community' as never)}
-            activeOpacity={0.7}
-            style={s.emptySecondaryBtn}
-          >
-            <Text style={s.emptySecondaryText}>Browse community meals</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -567,6 +633,19 @@ const s = StyleSheet.create({
     backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     padding: 16,
   },
+  // Cart overview cards
+  cartCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: CARD, borderRadius: 18, borderWidth: 1, borderColor: BORDER,
+    padding: 16,
+  },
+  cartCardIcon: {
+    width: 44, height: 44, borderRadius: 14,
+    backgroundColor: BG, borderWidth: 1, borderColor: BORDER,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  cartCardTitle: { fontSize: 15, fontWeight: '700', color: TEXT },
+  cartCardSub: { fontSize: 12, color: TEXT_MUTED, marginTop: 2 },
 
   // Total card
   totalCard: {
