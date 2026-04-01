@@ -274,10 +274,10 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
   greetingName: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "900",
     letterSpacing: -0.5,
-    lineHeight: 32,
+    lineHeight: 36,
     color: "#111827",
   },
 
