@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import type { CommunityPost } from '@/types/community';
 import { getPostImage } from '@/data/communityMockData';
@@ -65,9 +66,47 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
     onLike(post.id);
   }
 
-  function handleAddToCart() {
-    // TODO: pass ingredients to smart cart store
-    Toast.show({ type: 'success', text1: 'Ingredients added to Smart Cart 🛒', visibilityTime: 2000 });
+  async function handleAddToCart() {
+    const ingredients = post.ingredients ?? [];
+    if (ingredients.length === 0) return;
+
+    // Build consolidated ingredients for the cart
+    const consolidated = ingredients.map((name, i) => ({
+      id: `community-${post.id}-${i}`,
+      name,
+      totalQuantity: 0,
+      unit: '',
+      category: 'other' as const,
+      isInPantry: false,
+      estimatedPrice: 3,
+      usedIn: [post.mealName],
+    }));
+
+    // Save as agent cart so useSmartCart picks it up
+    const payload = {
+      ingredients: consolidated,
+      planType: 'single' as const,
+      mealCount: 1,
+      generatedAt: new Date().toISOString(),
+      label: post.mealName,
+    };
+    await AsyncStorage.setItem('jonno_agent_cart', JSON.stringify(payload));
+
+    // Also add to carts index
+    const indexRaw = await AsyncStorage.getItem('jonno_carts_index');
+    const existing = indexRaw ? JSON.parse(indexRaw) : [];
+    const entry = {
+      id: `community-${post.id}`,
+      label: post.mealName,
+      source: 'community' as const,
+      ingredientCount: ingredients.length,
+      estimatedTotal: ingredients.length * 3,
+      createdAt: new Date().toISOString(),
+    };
+    await AsyncStorage.setItem('jonno_carts_index', JSON.stringify([entry, ...existing].slice(0, 20)));
+
+    Toast.show({ type: 'success', text1: `${post.mealName} added to Smart Cart`, visibilityTime: 2000 });
+    router.push('/(tabs)/cart' as any);
   }
 
   return (
