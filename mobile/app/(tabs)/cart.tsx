@@ -389,6 +389,16 @@ export default function CartScreen() {
                   key={cart.id}
                   style={s.cartCard}
                   onPress={() => setShowDetail(true)}
+                  onLongPress={() => {
+                    Alert.alert(
+                      'Remove cart',
+                      `Delete "${cart.label}" from your carts?`,
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Delete', style: 'destructive', onPress: () => sc.deleteCartById(cart.id) },
+                      ]
+                    );
+                  }}
                   activeOpacity={0.8}
                 >
                   <View style={{ flex: 1 }}>
@@ -397,9 +407,23 @@ export default function CartScreen() {
                       {cart.ingredientCount} ingredient{cart.ingredientCount !== 1 ? 's' : ''} · ${cart.estimatedTotal.toFixed(2)} est.
                     </Text>
                   </View>
-                  <View style={s.cartCardArrow}>
-                    <Ionicons name="chevron-forward" size={16} color={DIM} />
-                  </View>
+                  <TouchableOpacity
+                    style={s.cartCardDelete}
+                    onPress={() => {
+                      Alert.alert(
+                        'Remove cart',
+                        `Delete "${cart.label}" from your carts?`,
+                        [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Delete', style: 'destructive', onPress: () => sc.deleteCartById(cart.id) },
+                        ]
+                      );
+                    }}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Ionicons name="close" size={14} color={DIM} />
+                  </TouchableOpacity>
                 </TouchableOpacity>
               ))}
             </View>
@@ -674,10 +698,10 @@ const s = StyleSheet.create({
   },
   cartCardTitle: { fontSize: 20, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.8, color: TEXT },
   cartCardSub: { fontSize: 13, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.5, color: TEXT_MUTED, marginTop: 3 },
-  cartCardArrow: {
-    width: 32, height: 32, borderRadius: 10,
-    backgroundColor: BG, borderWidth: 1, borderColor: BORDER,
-    alignItems: 'center', justifyContent: 'center', marginLeft: 12,
+  cartCardDelete: {
+    width: 30, height: 30, borderRadius: 10,
+    backgroundColor: 'rgba(239,68,68,0.08)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.15)',
+    alignItems: 'center', justifyContent: 'center', marginLeft: 10,
   },
 
   // Total card
