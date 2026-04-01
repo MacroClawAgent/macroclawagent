@@ -24,7 +24,7 @@ import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
 import { consumePendingCommunityPost } from '@/lib/communityStore';
 import { deletePost, deletePostWithFoodLog } from '@/services/communityService';
-import { getFollowingFeedPosts } from '@/services/profileService';
+import { getFollowingFeedPosts, followUser, unfollowUser } from '@/services/profileService';
 import { MOCK_PROFILES, setFollowing } from '@/data/profileMockData';
 import type { CommunityFilter, CommunityPost, UserProfile } from '@/types/community';
 
@@ -174,11 +174,19 @@ export default function CommunityScreen() {
     setSearchResults(searchProfiles(text));
   }
 
-  function handleToggleFollow(userId: string) {
+  async function handleToggleFollow(userId: string) {
     const nowFollowing = !followStates[userId];
+    // Optimistic UI update
     setFollowStates((prev) => ({ ...prev, [userId]: nowFollowing }));
     setFollowing(userId, nowFollowing);
-    // TODO: sync to backend
+    try {
+      if (nowFollowing) { await followUser(userId); }
+      else { await unfollowUser(userId); }
+    } catch {
+      // Revert on failure
+      setFollowStates((prev) => ({ ...prev, [userId]: !nowFollowing }));
+      setFollowing(userId, !nowFollowing);
+    }
   }
 
   async function loadFollowingPosts() {
