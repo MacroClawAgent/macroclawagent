@@ -146,26 +146,43 @@ export const useMealPlan = () => {
     try {
       const pantryItems = await loadPantryItems();
       const consolidated = consolidateIngredients(effectiveDays, pantryItems);
-      // Build a descriptive label from meal names
-      const mealNames = effectiveDays.flatMap(d =>
-        Object.values(d.meals).filter(Boolean).map((m: any) => m.name)
+      // Build per-meal entries for the carts index
+      const allMeals = effectiveDays.flatMap(d =>
+        Object.values(d.meals).filter(Boolean).map((m: any) => ({
+          name: m.name as string,
+          ingredients: (m.ingredientsList ?? []) as string[],
+          calories: m.calories as number,
+          protein: m.protein as number,
+        }))
       );
-      const label = planType === 'single' && mealNames.length === 1
-        ? mealNames[0]
-        : planType === 'week'
-          ? "This Week's Meals"
-          : mealNames.length <= 2
-            ? mealNames.join(' & ')
-            : `${mealNames[0]} + ${mealNames.length - 1} more`;
+
+      // Save individual meal entries to carts index
+      const now = new Date().toISOString();
+      const indexRaw = await AsyncStorage.getItem('jonno_carts_index');
+      const existingIndex = indexRaw ? JSON.parse(indexRaw) : [];
+      const newEntries = allMeals.map((meal, i) => ({
+        id: `${Date.now()}-${i}`,
+        label: meal.name,
+        source: 'agent' as const,
+        ingredientCount: meal.ingredients.length,
+        estimatedTotal: consolidated
+          .filter(c => meal.ingredients.some(ing => c.name.toLowerCase().includes(ing.toLowerCase()) || ing.toLowerCase().includes(c.name.toLowerCase())))
+          .reduce((s, c) => s + (c.estimatedPrice ?? 0), 0),
+        createdAt: now,
+      }));
+      const updatedIndex = [...newEntries, ...existingIndex].slice(0, 20);
+      await AsyncStorage.setItem('jonno_carts_index', JSON.stringify(updatedIndex));
+
+      // Main label for the combined cart
+      const label = allMeals.length === 1
+        ? allMeals[0].name
+        : `${allMeals.length} meals`;
 
       const payload = {
         ingredients: consolidated,
         planType,
-        mealCount: effectiveDays.reduce(
-          (n, d) => n + Object.values(d.meals).filter(Boolean).length,
-          0,
-        ),
-        generatedAt: new Date().toISOString(),
+        mealCount: allMeals.length,
+        generatedAt: now,
         label,
       };
       await AsyncStorage.setItem('jonno_agent_cart', JSON.stringify(payload));

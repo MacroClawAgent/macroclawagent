@@ -337,23 +337,8 @@ export default function CartScreen() {
     ? sc.cart.selectedNearbyStore.store === 'woolworths' ? 'Woolworths' : 'Coles'
     : 'store';
 
-  // Build visible carts list — active cart first, then any indexed carts not already shown
-  const visibleCarts: { id: string; label: string; source: string; count: number; total: number; isActive: boolean }[] = [];
-  if (sc.cart && sc.cart.ingredients.length > 0) {
-    visibleCarts.push({
-      id: sc.cart.id,
-      label: sc.cartMeta?.label ?? 'Current Cart',
-      source: sc.cartMeta?.source ?? 'agent',
-      count: sc.cart.ingredients.length,
-      total: sc.cart.ingredients.reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0),
-      isActive: true,
-    });
-  }
-  for (const c of sc.cartsIndex) {
-    if (!visibleCarts.some(v => v.id === c.id)) {
-      visibleCarts.push({ id: c.id, label: c.label, source: c.source, count: c.ingredientCount, total: c.estimatedTotal, isActive: false });
-    }
-  }
+  // Build visible carts list from index (each entry is a named meal)
+  const visibleCarts = sc.cartsIndex;
 
   // ── Carts Overview ──────────────────────────────────────────────────────────
   if (!showDetail) {
@@ -409,7 +394,7 @@ export default function CartScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={s.cartCardTitle} numberOfLines={1}>{cart.label}</Text>
                     <Text style={s.cartCardSub}>
-                      {cart.count} ingredient{cart.count !== 1 ? 's' : ''} · ${cart.total.toFixed(2)} est.
+                      {cart.ingredientCount} ingredient{cart.ingredientCount !== 1 ? 's' : ''} · ${cart.estimatedTotal.toFixed(2)} est.
                     </Text>
                   </View>
                   <View style={s.cartCardArrow}>
