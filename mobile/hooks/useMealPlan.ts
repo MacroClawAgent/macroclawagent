@@ -189,7 +189,7 @@ export const useMealPlan = () => {
             quantity: c.totalQuantity,
             unit: c.unit,
             category: c.category === 'produce' ? 'vegetables' : c.category === 'pantry' || c.category === 'bakery' ? 'carbs' : c.category === 'frozen' ? 'other' : c.category,
-            isChecked: true,
+            isChecked: !c.isInPantry,
             woolworthsProducts: [],
             colesProducts: [],
             selectedProductId: null,
@@ -197,6 +197,7 @@ export const useMealPlan = () => {
             usedIn: c.usedIn,
             estimatedPrice: c.estimatedPrice,
             displayQuantity: c.displayQuantity,
+            isInPantry: c.isInPantry,
           }));
         const cartData = {
           cart: {

@@ -398,7 +398,7 @@ export default function CartScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={s.cartCardTitle} numberOfLines={1}>{cart.label}</Text>
                     <Text style={s.cartCardSub}>
-                      {cart.ingredientCount} ingredient{cart.ingredientCount !== 1 ? 's' : ''} · ${cart.estimatedTotal.toFixed(2)} est.
+                      {cart.ingredientCount} ingredient{cart.ingredientCount !== 1 ? 's' : ''}
                     </Text>
                   </View>
                   <TouchableOpacity
@@ -550,7 +550,12 @@ export default function CartScreen() {
                   <View style={[s.checkbox, ing.isChecked && s.checkboxOn]}>
                     {ing.isChecked && <Ionicons name="checkmark" size={12} color={BG} />}
                   </View>
-                  <Text style={[s.ingName, !ing.isChecked && s.ingNameOff]} numberOfLines={1}>{ing.name}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.ingName, !ing.isChecked && s.ingNameOff]} numberOfLines={1}>{ing.name}</Text>
+                    {ing.isInPantry && (
+                      <Text style={s.pantryNote}>Check pantry/fridge</Text>
+                    )}
+                  </View>
                   {ing.displayQuantity ? (
                     <Text style={s.ingQty}>{ing.displayQuantity}</Text>
                   ) : null}
@@ -563,16 +568,6 @@ export default function CartScreen() {
               );
             })}
           </View>
-
-          {/* ── Pantry items section ── */}
-          {sc.pantryItems.length > 0 && (
-            <View>
-              <Text style={s.pantryHeader}>✓  Already in your kitchen</Text>
-              {sc.pantryItems.map((item) => (
-                <PantryRow key={item.id} item={item} />
-              ))}
-            </View>
-          )}
 
           {/* ── Add item row ── */}
           <View style={s.addRow}>
@@ -715,8 +710,9 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(232,224,208,0.04)',
   },
-  ingName: { flex: 1, fontSize: 14, fontWeight: '600', color: TEXT },
+  ingName: { fontSize: 14, fontWeight: '600', color: TEXT },
   ingNameOff: { color: TEXT_DIM, textDecorationLine: 'line-through' },
+  pantryNote: { fontSize: 11, color: SAGE, marginTop: 2 },
   ingQty: { fontSize: 12, color: TEXT_MUTED },
   ingPrice: { fontSize: 13, fontWeight: '600', color: GOLD, minWidth: 45, textAlign: 'right' },
 

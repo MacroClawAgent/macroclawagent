@@ -36,6 +36,7 @@ export interface SmartCartIngredient {
   estimatedPrice?: number;
   supermarketProduct?: string;
   displayQuantity?: string;
+  isInPantry?: boolean;
 }
 
 export type CartSource = 'agent' | 'community' | 'manual';
