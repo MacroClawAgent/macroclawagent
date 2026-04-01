@@ -113,6 +113,33 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
   return buildProfile(data, user?.id ?? null);
 }
 
+export async function searchUsers(query: string): Promise<UserProfile[]> {
+  const q = query.toLowerCase().replace('@', '').trim();
+  if (!q || q.length < 2) return [];
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .or(`username.ilike.%${q}%,full_name.ilike.%${q}%`)
+    .neq('id', user?.id ?? '')
+    .limit(20);
+
+  if (error || !data || data.length === 0) return [];
+  return Promise.all(data.map(row => buildProfile(row, user?.id ?? null)));
+}
+
+export async function getFollowingIds(): Promise<string[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', user.id);
+  return (data ?? []).map((r: any) => r.following_id);
+}
+
 export async function followUser(userId: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;

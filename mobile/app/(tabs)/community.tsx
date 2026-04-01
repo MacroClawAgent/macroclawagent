@@ -24,8 +24,7 @@ import { CreatePostSheet } from '@/components/Community/CreatePostSheet';
 import { useCommunity } from '@/hooks/useCommunity';
 import { consumePendingCommunityPost } from '@/lib/communityStore';
 import { deletePost, deletePostWithFoodLog } from '@/services/communityService';
-import { getFollowingFeedPosts, followUser, unfollowUser } from '@/services/profileService';
-import { MOCK_PROFILES, setFollowing } from '@/data/profileMockData';
+import { getFollowingFeedPosts, followUser, unfollowUser, searchUsers, getFollowingIds } from '@/services/profileService';
 import type { CommunityFilter, CommunityPost, UserProfile } from '@/types/community';
 
 const GOLD   = '#F5C842';
@@ -58,17 +57,6 @@ const CHALLENGES = [
 
 const TRENDING = ['Teriyaki Bowl', 'Overnight Oats', 'Greek Chicken', 'Protein Pancakes', 'Quinoa Salad'];
 
-// Search through mock profiles by name or username
-function searchProfiles(query: string): UserProfile[] {
-  const q = query.toLowerCase().replace('@', '').trim();
-  if (!q) return [];
-  return MOCK_PROFILES.filter(
-    (p) =>
-      !p.isCurrentUser &&
-      (p.username.toLowerCase().replace('@', '').includes(q) ||
-        p.name.toLowerCase().includes(q))
-  );
-}
 
 export default function CommunityScreen() {
   const router = useRouter();
@@ -149,11 +137,13 @@ export default function CommunityScreen() {
     }, [submitPost])
   );
 
-  // Initialise follow states from mock data
+  // Load real follow states from Supabase
   useEffect(() => {
-    const states: Record<string, boolean> = {};
-    MOCK_PROFILES.forEach((p) => { states[p.id] = p.isFollowing; });
-    setFollowStates(states);
+    getFollowingIds().then(ids => {
+      const states: Record<string, boolean> = {};
+      ids.forEach(id => { states[id] = true; });
+      setFollowStates(states);
+    }).catch(() => {});
   }, []);
 
   function openSearch() {
@@ -171,21 +161,18 @@ export default function CommunityScreen() {
 
   function handleSearchChange(text: string) {
     setSearchQuery(text);
-    setSearchResults(searchProfiles(text));
+    if (text.trim().length < 2) { setSearchResults([]); return; }
+    searchUsers(text).then(setSearchResults).catch(() => setSearchResults([]));
   }
 
   async function handleToggleFollow(userId: string) {
     const nowFollowing = !followStates[userId];
-    // Optimistic UI update
     setFollowStates((prev) => ({ ...prev, [userId]: nowFollowing }));
-    setFollowing(userId, nowFollowing);
     try {
       if (nowFollowing) { await followUser(userId); }
       else { await unfollowUser(userId); }
     } catch {
-      // Revert on failure
       setFollowStates((prev) => ({ ...prev, [userId]: !nowFollowing }));
-      setFollowing(userId, !nowFollowing);
     }
   }
 
