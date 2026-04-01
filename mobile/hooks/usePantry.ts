@@ -8,8 +8,8 @@ export function usePantry() {
     loadPantryItems().then(setItems);
   }, []);
 
-  const add = useCallback(async (name: string) => {
-    const updated = await addPantryItem(name);
+  const add = useCallback(async (name: string, source?: PantryItem['source'], photoUri?: string) => {
+    const updated = await addPantryItem(name, source, photoUri);
     setItems(updated);
   }, []);
 

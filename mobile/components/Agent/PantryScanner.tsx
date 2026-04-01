@@ -28,7 +28,8 @@ type Stage = 'idle' | 'analyzing' | 'confirm' | 'error';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onItemsConfirmed: (items: string[]) => void;
+  /** photoUri is the local device URI of the scanned photo — stored alongside items for thumbnails */
+  onItemsConfirmed: (items: string[], photoUri: string) => void;
 }
 
 export default function PantryScanner({ visible, onClose, onItemsConfirmed }: Props) {
@@ -36,12 +37,14 @@ export default function PantryScanner({ visible, onClose, onItemsConfirmed }: Pr
   const [detectedItems, setDetected] = useState<string[]>([]);
   const [selected, setSelected]     = useState<Set<string>>(new Set());
   const [errorMsg, setErrorMsg]     = useState('');
+  const [photoUri, setPhotoUri]     = useState('');
 
   const reset = () => {
     setStage('idle');
     setDetected([]);
     setSelected(new Set());
     setErrorMsg('');
+    setPhotoUri('');
   };
 
   const handleClose = () => {
@@ -49,7 +52,8 @@ export default function PantryScanner({ visible, onClose, onItemsConfirmed }: Pr
     onClose();
   };
 
-  const scanImage = async (base64: string, mimeType: string) => {
+  const scanImage = async (base64: string, mimeType: string, uri: string) => {
+    setPhotoUri(uri);
     setStage('analyzing');
     try {
       const result = await apiPost<{ items: string[]; error?: string }>(
@@ -78,12 +82,12 @@ export default function PantryScanner({ visible, onClose, onItemsConfirmed }: Pr
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       quality: 0.7,
       base64: true,
     });
     if (!result.canceled && result.assets[0].base64) {
-      await scanImage(result.assets[0].base64, 'image/jpeg');
+      await scanImage(result.assets[0].base64, 'image/jpeg', result.assets[0].uri);
     }
   };
 
@@ -95,13 +99,13 @@ export default function PantryScanner({ visible, onClose, onItemsConfirmed }: Pr
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       quality: 0.7,
       base64: true,
     });
     if (!result.canceled && result.assets[0].base64) {
       const mimeType = result.assets[0].uri.endsWith('.png') ? 'image/png' : 'image/jpeg';
-      await scanImage(result.assets[0].base64, mimeType);
+      await scanImage(result.assets[0].base64, mimeType, result.assets[0].uri);
     }
   };
 
@@ -115,7 +119,7 @@ export default function PantryScanner({ visible, onClose, onItemsConfirmed }: Pr
 
   const confirmItems = () => {
     const confirmed = detectedItems.filter(i => selected.has(i));
-    if (confirmed.length > 0) onItemsConfirmed(confirmed);
+    if (confirmed.length > 0) onItemsConfirmed(confirmed, photoUri);
     handleClose();
   };
 
