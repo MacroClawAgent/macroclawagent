@@ -66,7 +66,7 @@ function SingleGenerating({ mealType }: { mealType: string }) {
 
 export default function AgentScreen() {
   const ctx = useAgentContext();
-  const { preferences, hasAnyPreferences, completeOnboarding, training, pantry, nutrition, targets, goal, prefTags } = ctx;
+  const { preferences, hasAnyPreferences, completeOnboarding, refreshPreferences, training, pantry, nutrition, targets, goal, prefTags } = ctx;
 
   const {
     state,
@@ -616,6 +616,7 @@ export default function AgentScreen() {
         onClose={() => {
           setShowPreferences(false);
           completeOnboarding();
+          refreshPreferences();
         }}
       />
 
@@ -777,14 +778,16 @@ const s = StyleSheet.create({
 
   // Cart strip (plan_ready, at top)
   cartStrip: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: 16, marginBottom: 12, marginTop: 4,
-    backgroundColor: GOLD, borderRadius: 14,
-    paddingVertical: 12, paddingHorizontal: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginBottom: 14, marginTop: 4,
+    backgroundColor: GOLD, borderRadius: 18,
+    paddingVertical: 16, paddingHorizontal: 20,
+    shadowColor: GOLD, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 10, elevation: 4,
   },
-  cartStripText:      { flex: 1, fontSize: 14, fontWeight: '700', color: BG },
-  cartStripBadge:     { backgroundColor: 'rgba(28,22,18,0.15)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
-  cartStripBadgeText: { fontSize: 11, fontWeight: '700', color: BG },
+  cartStripText:      { flex: 1, fontSize: 16, fontWeight: '800', color: BG },
+  cartStripBadge:     { backgroundColor: 'rgba(28,22,18,0.18)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
+  cartStripBadgeText: { fontSize: 12, fontWeight: '800', color: BG },
 
   // Day selector
   daySelector:       { marginBottom: 6 },

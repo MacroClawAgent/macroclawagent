@@ -34,6 +34,7 @@ export interface AgentContextData {
   preferences: UserPreferences;
   hasAnyPreferences: boolean;
   completeOnboarding: () => void;
+  refreshPreferences: () => void;
   prefTags: string[];
   isLoading: boolean;
   refresh: () => void;
@@ -41,7 +42,7 @@ export interface AgentContextData {
 
 export function useAgentContext(): AgentContextData {
   const { userProfile } = useAuth();
-  const { preferences, hasAnyPreferences, completeOnboarding } = usePreferences();
+  const { preferences, hasAnyPreferences, completeOnboarding, refreshPreferences } = usePreferences();
   const { summary: hkSummary } = useHealthKit();
   const { items: pantryItems, add: addPantryItem, remove: removePantryItem } = usePantry();
 
@@ -133,6 +134,7 @@ export function useAgentContext(): AgentContextData {
     preferences,
     hasAnyPreferences,
     completeOnboarding,
+    refreshPreferences,
     prefTags,
     isLoading,
     refresh: fetchNutrition,

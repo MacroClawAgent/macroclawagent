@@ -7,6 +7,10 @@ export const usePreferences = () => {
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_PREFERENCES);
   const [loading, setLoading] = useState(true);
 
+  const refreshPreferences = useCallback(() => {
+    loadPreferences().then(setPreferences);
+  }, []);
+
   useEffect(() => {
     loadPreferences().then(prefs => {
       setPreferences(prefs);
@@ -75,5 +79,6 @@ export const usePreferences = () => {
     toggleAllergy,
     toggleCuisine,
     completeOnboarding,
+    refreshPreferences,
   };
 };
