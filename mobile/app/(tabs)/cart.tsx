@@ -387,27 +387,8 @@ export default function CartScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* ── Plan banner ── */}
-          {sc.cartMeta?.source === 'agent' && (
-            <View style={s.planBanner}>
-              <Text style={s.planBannerIcon}>✦</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={s.planBannerTitle}>
-                  {`From Jonno's ${sc.cartMeta.planType === 'week' ? "This Week's" : "Today's"} Plan`}
-                </Text>
-                <Text style={s.planBannerSub}>
-                  {sc.cartMeta.mealCount} meals · {ingredientCount} ingredients
-                  {sc.cartMeta.pantrySkipped > 0 ? ` · ${sc.cartMeta.pantrySkipped} pantry items skipped` : ''}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={sc.refreshFromPlan} activeOpacity={0.7}>
-                <Text style={s.planBannerUpdate}>Update</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* ── Store selector card ── */}
-          <View style={s.card}>
+          {/* ── Location + Store selector ── */}
+          <View style={s.storeCard}>
             <StoreSelector
               nearbyStores={sc.cart.nearbyStores}
               selectedNearbyStore={sc.cart.selectedNearbyStore ?? null}
@@ -581,22 +562,10 @@ const s = StyleSheet.create({
 
   scroll: { paddingHorizontal: 16, paddingTop: 8, gap: 12 },
 
-  // Plan banner
-  planBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(248,213,97,0.08)',
-    borderRadius: 16, borderWidth: 1, borderColor: 'rgba(248,213,97,0.15)',
-    padding: 14,
-  },
-  planBannerIcon: { fontSize: 18, color: GOLD },
-  planBannerTitle: { fontSize: 13, fontWeight: '600', color: GOLD },
-  planBannerSub: { fontSize: 11, color: TEXT_MUTED, marginTop: 2 },
-  planBannerUpdate: { fontSize: 12, color: TEXT_DIM },
-
   // Store selector card wrapper
-  card: {
-    backgroundColor: CARD, borderRadius: 18, borderWidth: 1, borderColor: BORDER,
-    padding: 16, gap: 10,
+  storeCard: {
+    backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
+    padding: 16,
   },
 
   // Total card
