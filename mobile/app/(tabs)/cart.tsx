@@ -388,7 +388,7 @@ export default function CartScreen() {
                 <TouchableOpacity
                   key={cart.id}
                   style={s.cartCard}
-                  onPress={() => setShowDetail(true)}
+                  onPress={() => { sc.loadCartById(cart.id); setShowDetail(true); }}
                   activeOpacity={0.8}
                 >
                   <View style={{ flex: 1 }}>

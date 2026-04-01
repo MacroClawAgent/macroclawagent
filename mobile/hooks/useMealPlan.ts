@@ -173,6 +173,44 @@ export const useMealPlan = () => {
       const updatedIndex = [...newEntries, ...existingIndex].slice(0, 20);
       await AsyncStorage.setItem('jonno_carts_index', JSON.stringify(updatedIndex));
 
+      // Save full cart data per meal so each can be loaded independently
+      for (let i = 0; i < allMeals.length; i++) {
+        const meal = allMeals[i];
+        const mealIngredients = consolidated
+          .filter(c => meal.ingredients.some(ing =>
+            c.name.toLowerCase().includes(ing.toLowerCase()) || ing.toLowerCase().includes(c.name.toLowerCase())
+          ))
+          .map(c => ({
+            id: c.id,
+            name: c.name,
+            quantity: c.totalQuantity,
+            unit: c.unit,
+            category: c.category === 'produce' ? 'vegetables' : c.category === 'pantry' || c.category === 'bakery' ? 'carbs' : c.category === 'frozen' ? 'other' : c.category,
+            isChecked: false,
+            woolworthsProducts: [],
+            colesProducts: [],
+            selectedProductId: null,
+            isLoadingProducts: false,
+            usedIn: c.usedIn,
+            estimatedPrice: c.estimatedPrice,
+            displayQuantity: c.displayQuantity,
+          }));
+        const cartData = {
+          cart: {
+            id: newEntries[i].id,
+            createdAt: now,
+            ingredients: mealIngredients,
+            selectedStore: null,
+            selectedNearbyStore: null,
+            nearbyStores: [],
+            estimatedTotal: 0,
+            lastUpdated: now,
+          },
+          meta: { source: 'agent', planType, mealCount: 1, pantrySkipped: 0, generatedAt: now, label: meal.name },
+        };
+        await AsyncStorage.setItem(`jonno_cart_${newEntries[i].id}`, JSON.stringify(cartData));
+      }
+
       // Main label for the combined cart
       const label = allMeals.length === 1
         ? allMeals[0].name

@@ -78,8 +78,9 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
       router.push('/(tabs)/cart' as any);
       return;
     }
+    const cartId = `community-${post.id}`;
     const entry = {
-      id: `community-${post.id}`,
+      id: cartId,
       label: post.mealName,
       source: 'community' as const,
       ingredientCount: ingredients.length,
@@ -87,6 +88,36 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
       createdAt: new Date().toISOString(),
     };
     await AsyncStorage.setItem('jonno_carts_index', JSON.stringify([entry, ...existing].slice(0, 20)));
+
+    // Save full cart data so it can be loaded by id
+    const mapped = ingredients.map((name, i) => ({
+      id: `${cartId}-${i}`,
+      name,
+      quantity: 0,
+      unit: '',
+      category: 'other',
+      isChecked: false,
+      woolworthsProducts: [],
+      colesProducts: [],
+      selectedProductId: null,
+      isLoadingProducts: false,
+      usedIn: [post.mealName],
+      estimatedPrice: 3,
+    }));
+    const cartData = {
+      cart: {
+        id: cartId,
+        createdAt: new Date().toISOString(),
+        ingredients: mapped,
+        selectedStore: null,
+        selectedNearbyStore: null,
+        nearbyStores: [],
+        estimatedTotal: 0,
+        lastUpdated: new Date().toISOString(),
+      },
+      meta: { source: 'community', planType: 'single', mealCount: 1, pantrySkipped: 0, generatedAt: new Date().toISOString(), label: post.mealName },
+    };
+    await AsyncStorage.setItem(`jonno_cart_${cartId}`, JSON.stringify(cartData));
 
     Toast.show({ type: 'success', text1: `${post.mealName} added to Smart Cart`, visibilityTime: 2000 });
     router.push('/(tabs)/cart' as any);

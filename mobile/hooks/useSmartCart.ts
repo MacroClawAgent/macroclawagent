@@ -54,6 +54,16 @@ async function addCartToIndex(summary: CartSummary): Promise<void> {
 async function removeCartFromIndex(id: string): Promise<void> {
   const carts = await loadCartsIndex();
   await saveCartsIndex(carts.filter(c => c.id !== id));
+  await AsyncStorage.removeItem(`jonno_cart_${id}`).catch(() => {});
+}
+
+async function saveCartData(id: string, data: any): Promise<void> {
+  await AsyncStorage.setItem(`jonno_cart_${id}`, JSON.stringify(data));
+}
+
+async function loadCartData(id: string): Promise<any | null> {
+  const raw = await AsyncStorage.getItem(`jonno_cart_${id}`);
+  return raw ? JSON.parse(raw) : null;
 }
 
 // Map consolidation categories → SmartCart categories
@@ -290,6 +300,7 @@ export function useSmartCart() {
           createdAt: newCart.createdAt,
         };
         addCartToIndex(summary).then(() => loadCartsIndex().then(setCartsIndex));
+        saveCartData(newCart.id, { cart: newCart, meta });
 
         loadNearbyStores(newCart.id);
         loadProductsForIngredients(mapped, newCart.id);
@@ -492,6 +503,16 @@ export function useSmartCart() {
     } catch {}
   }, [initializeCart]);
 
+  const loadCartById = useCallback(async (id: string) => {
+    const data = await loadCartData(id);
+    if (data?.cart) {
+      setCart(data.cart);
+      setCartMeta(data.meta ?? null);
+      persistCart(data.cart);
+      loadNearbyStores(data.cart.id);
+    }
+  }, [loadNearbyStores]);
+
   const deleteCartById = useCallback(async (id: string) => {
     await removeCartFromIndex(id);
     if (cart?.id === id) {
@@ -522,6 +543,7 @@ export function useSmartCart() {
     initializeCart,
     refreshFromPlan,
     refreshCartsIndex,
+    loadCartById,
     deleteCartById,
     toggleIngredient,
     toggleAll,
