@@ -482,6 +482,29 @@ export default function CartScreen() {
             />
           </View>
 
+          {/* ── Total + Shop ── */}
+          <View style={s.totalCard}>
+            <View style={s.totalRow}>
+              <Text style={s.totalLabel}>Estimated total</Text>
+              <Text style={s.totalNum}>${total.toFixed(2)}</Text>
+            </View>
+            <Text style={s.totalSub}>
+              {checkedCount} of {ingredientCount} items selected
+            </Text>
+            <TouchableOpacity
+              onPress={sc.openInStore}
+              disabled={!sc.cart.selectedStore}
+              activeOpacity={0.85}
+              style={[s.shopBtn, !sc.cart.selectedStore && s.shopBtnDisabled]}
+            >
+              <Text style={s.shopBtnLabel}>
+                {sc.cart.selectedNearbyStore
+                  ? `Shop at ${storeName} →`
+                  : 'Select a store first'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* ── Select all + ingredients ── */}
           <View style={s.selectAllCard}>
             <TouchableOpacity
@@ -517,29 +540,6 @@ export default function CartScreen() {
                 ) : null}
               </TouchableOpacity>
             ))}
-          </View>
-
-          {/* ── Total ── */}
-          <View style={s.totalCard}>
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Estimated total</Text>
-              <Text style={s.totalNum}>${total.toFixed(2)}</Text>
-            </View>
-            <Text style={s.totalSub}>
-              {checkedCount} of {ingredientCount} items selected
-            </Text>
-            <TouchableOpacity
-              onPress={sc.openInStore}
-              disabled={!sc.cart.selectedStore}
-              activeOpacity={0.85}
-              style={[s.shopBtn, !sc.cart.selectedStore && s.shopBtnDisabled]}
-            >
-              <Text style={s.shopBtnLabel}>
-                {sc.cart.selectedNearbyStore
-                  ? `Shop at ${storeName} →`
-                  : 'Select a store first'}
-              </Text>
-            </TouchableOpacity>
           </View>
 
           {/* ── Pantry items section ── */}
