@@ -506,12 +506,19 @@ export function useSmartCart() {
   const loadCartById = useCallback(async (id: string) => {
     const data = await loadCartData(id);
     if (data?.cart) {
-      setCart(data.cart);
+      // Mark ingredients as loading products
+      const cart = {
+        ...data.cart,
+        ingredients: data.cart.ingredients.map((i: any) => ({ ...i, isLoadingProducts: true })),
+      };
+      setCart(cart);
       setCartMeta(data.meta ?? null);
-      persistCart(data.cart);
-      loadNearbyStores(data.cart.id);
+      persistCart(cart);
+      setProductsLoading(true);
+      loadNearbyStores(cart.id);
+      loadProductsForIngredients(cart.ingredients, cart.id);
     }
-  }, [loadNearbyStores]);
+  }, [loadNearbyStores, loadProductsForIngredients]);
 
   const deleteCartById = useCallback(async (id: string) => {
     await removeCartFromIndex(id);

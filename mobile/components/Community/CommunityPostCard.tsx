@@ -84,7 +84,7 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
       label: post.mealName,
       source: 'community' as const,
       ingredientCount: ingredients.length,
-      estimatedTotal: ingredients.length * 3,
+      estimatedTotal: 0,
       createdAt: new Date().toISOString(),
     };
     await AsyncStorage.setItem('jonno_carts_index', JSON.stringify([entry, ...existing].slice(0, 20)));
@@ -100,9 +100,8 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
       woolworthsProducts: [],
       colesProducts: [],
       selectedProductId: null,
-      isLoadingProducts: false,
+      isLoadingProducts: true,
       usedIn: [post.mealName],
-      estimatedPrice: 3,
     }));
     const cartData = {
       cart: {

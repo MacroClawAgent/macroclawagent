@@ -309,10 +309,20 @@ export default function CartScreen() {
   const checkedCount = sc.cart?.ingredients.filter((i) => i.isChecked).length ?? 0;
   const ingredientCount = sc.cart?.ingredients.length ?? 0;
 
-  // Total = sum of checked items' estimated prices
+  // Get the best price for an ingredient from the selected store
+  function getIngPrice(ing: SmartCartIngredient): number | null {
+    const store = sc.cart?.selectedStore;
+    if (store === 'woolworths' && ing.woolworthsProducts?.length > 0) return ing.woolworthsProducts[0].price;
+    if (store === 'coles' && ing.colesProducts?.length > 0) return ing.colesProducts[0].price;
+    if (ing.woolworthsProducts?.length > 0) return ing.woolworthsProducts[0].price;
+    if (ing.colesProducts?.length > 0) return ing.colesProducts[0].price;
+    return ing.estimatedPrice ?? null;
+  }
+
+  // Total = sum of checked items' best available prices
   const total = sc.cart?.ingredients
     .filter(i => i.isChecked)
-    .reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0) ?? 0;
+    .reduce((sum, i) => sum + (getIngPrice(i) ?? 0), 0) ?? 0;
 
   function toggleCollapse(cat: IngredientCategory) {
     setCollapsed((prev) => {
@@ -486,7 +496,14 @@ export default function CartScreen() {
           <View style={s.totalCard}>
             <View style={s.totalRow}>
               <Text style={s.totalLabel}>Estimated total</Text>
-              <Text style={s.totalNum}>${total.toFixed(2)}</Text>
+              {sc.productsLoading ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <ActivityIndicator size="small" color={GOLD} />
+                  <Text style={[s.totalNum, { fontSize: 16 }]}>Loading...</Text>
+                </View>
+              ) : (
+                <Text style={s.totalNum}>${total.toFixed(2)}</Text>
+              )}
             </View>
             <Text style={s.totalSub}>
               {checkedCount} of {ingredientCount} items selected
@@ -521,25 +538,30 @@ export default function CartScreen() {
               <Text style={s.selectAllCount}>{checkedCount}/{ingredientCount}</Text>
             </TouchableOpacity>
 
-            {sc.cart.ingredients.map(ing => (
-              <TouchableOpacity
-                key={ing.id}
-                style={s.ingRow}
-                onPress={() => sc.toggleIngredient(ing.id)}
-                activeOpacity={0.75}
-              >
-                <View style={[s.checkbox, ing.isChecked && s.checkboxOn]}>
-                  {ing.isChecked && <Ionicons name="checkmark" size={12} color={BG} />}
-                </View>
-                <Text style={[s.ingName, !ing.isChecked && s.ingNameOff]} numberOfLines={1}>{ing.name}</Text>
-                {ing.displayQuantity ? (
-                  <Text style={s.ingQty}>{ing.displayQuantity}</Text>
-                ) : null}
-                {ing.estimatedPrice ? (
-                  <Text style={s.ingPrice}>${ing.estimatedPrice.toFixed(2)}</Text>
-                ) : null}
-              </TouchableOpacity>
-            ))}
+            {sc.cart.ingredients.map(ing => {
+              const price = getIngPrice(ing);
+              return (
+                <TouchableOpacity
+                  key={ing.id}
+                  style={s.ingRow}
+                  onPress={() => sc.toggleIngredient(ing.id)}
+                  activeOpacity={0.75}
+                >
+                  <View style={[s.checkbox, ing.isChecked && s.checkboxOn]}>
+                    {ing.isChecked && <Ionicons name="checkmark" size={12} color={BG} />}
+                  </View>
+                  <Text style={[s.ingName, !ing.isChecked && s.ingNameOff]} numberOfLines={1}>{ing.name}</Text>
+                  {ing.displayQuantity ? (
+                    <Text style={s.ingQty}>{ing.displayQuantity}</Text>
+                  ) : null}
+                  {ing.isLoadingProducts ? (
+                    <ActivityIndicator size="small" color={GOLD} style={{ width: 45 }} />
+                  ) : price ? (
+                    <Text style={s.ingPrice}>${price.toFixed(2)}</Text>
+                  ) : null}
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* ── Pantry items section ── */}
