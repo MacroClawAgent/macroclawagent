@@ -301,11 +301,6 @@ export default function CartScreen() {
     }, [sc.checkForAgentCart, sc.refreshCartsIndex])
   );
 
-  // When a new cart loads, auto-show detail
-  useEffect(() => {
-    if (sc.cart && sc.cart.ingredients.length > 0) setShowDetail(true);
-  }, [sc.cart?.id]);
-
   const [collapsed, setCollapsed] = useState<Set<IngredientCategory>>(new Set());
   const [addText, setAddText] = useState('');
   const [pickerIngredient, setPickerIngredient] = useState<SmartCartIngredient | null>(null);
@@ -341,7 +336,25 @@ export default function CartScreen() {
     ? sc.cart.selectedNearbyStore.store === 'woolworths' ? 'Woolworths' : 'Coles'
     : 'store';
 
-  // ── Carts Overview (list of all carts) ──────────────────────────────────────
+  // Build visible carts list — active cart first, then any indexed carts not already shown
+  const visibleCarts: { id: string; label: string; source: string; count: number; total: number; isActive: boolean }[] = [];
+  if (sc.cart && sc.cart.ingredients.length > 0) {
+    visibleCarts.push({
+      id: sc.cart.id,
+      label: sc.cartMeta?.label ?? 'Current Cart',
+      source: sc.cartMeta?.source ?? 'agent',
+      count: sc.cart.ingredients.length,
+      total: sc.cart.ingredients.reduce((sum, i) => sum + (i.estimatedPrice ?? 0), 0),
+      isActive: true,
+    });
+  }
+  for (const c of sc.cartsIndex) {
+    if (!visibleCarts.some(v => v.id === c.id)) {
+      visibleCarts.push({ id: c.id, label: c.label, source: c.source, count: c.ingredientCount, total: c.estimatedTotal, isActive: false });
+    }
+  }
+
+  // ── Carts Overview ──────────────────────────────────────────────────────────
   if (!showDetail) {
     return (
       <SafeAreaView style={s.safe} edges={['top']}>
@@ -349,7 +362,7 @@ export default function CartScreen() {
           <Text style={s.title}>Smart Cart</Text>
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, gap: 10, paddingTop: 8 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, gap: 12, paddingTop: 8 }} showsVerticalScrollIndicator={false}>
           {/* Location + Store */}
           <View style={s.storeCard}>
             <StoreSelector
@@ -362,29 +375,40 @@ export default function CartScreen() {
             />
           </View>
 
+          {/* Section label */}
+          {visibleCarts.length > 0 && (
+            <Text style={s.sectionLabel}>YOUR CARTS</Text>
+          )}
+
           {/* Cart cards */}
-          {sc.cartsIndex.length > 0 ? (
-            sc.cartsIndex.map(cart => (
-              <TouchableOpacity
-                key={cart.id}
-                style={s.cartCard}
-                onPress={() => { setShowDetail(true); }}
-                activeOpacity={0.8}
-              >
-                <View style={s.cartCardIcon}>
-                  <Ionicons
-                    name={cart.source === 'agent' ? 'sparkles' : cart.source === 'community' ? 'people' : 'cart'}
-                    size={20}
-                    color={cart.source === 'agent' ? GOLD : cart.source === 'community' ? SAGE : CORAL}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.cartCardTitle}>{cart.label}</Text>
-                  <Text style={s.cartCardSub}>{cart.ingredientCount} items · ${cart.estimatedTotal.toFixed(2)} est.</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={DIM} />
-              </TouchableOpacity>
-            ))
+          {visibleCarts.length > 0 ? (
+            visibleCarts.map(cart => {
+              const iconName = cart.source === 'agent' ? 'sparkles' as const
+                : cart.source === 'community' ? 'people' as const
+                : 'cart' as const;
+              const iconColor = cart.source === 'agent' ? GOLD
+                : cart.source === 'community' ? SAGE
+                : CORAL;
+              return (
+                <TouchableOpacity
+                  key={cart.id}
+                  style={s.cartCard}
+                  onPress={() => setShowDetail(true)}
+                  activeOpacity={0.8}
+                >
+                  <View style={[s.cartCardIcon, { borderColor: iconColor + '30' }]}>
+                    <Ionicons name={iconName} size={20} color={iconColor} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.cartCardTitle}>{cart.label}</Text>
+                    <Text style={s.cartCardSub}>
+                      {cart.count} item{cart.count !== 1 ? 's' : ''} · ${cart.total.toFixed(2)} est.
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={DIM} />
+                </TouchableOpacity>
+              );
+            })
           ) : (
             <View style={s.centred}>
               <Ionicons name="cart-outline" size={48} color={DIM} />
@@ -646,6 +670,7 @@ const s = StyleSheet.create({
   },
   cartCardTitle: { fontSize: 15, fontWeight: '700', color: TEXT },
   cartCardSub: { fontSize: 12, color: TEXT_MUTED, marginTop: 2 },
+  sectionLabel: { fontSize: 11, fontWeight: '700', color: DIM, letterSpacing: 1, marginTop: 4 },
 
   // Total card
   totalCard: {
