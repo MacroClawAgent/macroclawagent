@@ -6,7 +6,6 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { setDefaultFont } from '@/lib/setDefaultFont';
 import Toast from 'react-native-toast-message';
 
 import { AuthProvider } from '@/context/AuthContext';
@@ -37,10 +36,7 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      setDefaultFont();
-      SplashScreen.hideAsync();
-    }
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
   if (!loaded) return null;
