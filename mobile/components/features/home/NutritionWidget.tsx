@@ -86,7 +86,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
   const weekBest = weekDays.length > 0 ? Math.max(...weekDays.map(d => d.kcal)) : 0;
   const todayDow = (new Date().getDay() + 6) % 7; // 0=Mon
 
-  // Monthly: build weeks for the current month (Mon–Sun weeks)
+  // Monthly: build weeks starting from the first Monday of the current month
   const target = calorieProgress.target;
   const now = new Date();
   const monthName = now.toLocaleDateString('en-US', { month: 'long' });
@@ -94,36 +94,40 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
   const moMonth = now.getMonth();
   const daysInMo = new Date(moYear, moMonth + 1, 0).getDate();
 
-  // Find all Mondays that start a week touching this month
+  // Find the first Monday on or after the 1st of the month
+  const firstOfMonth = new Date(moYear, moMonth, 1);
+  const firstDow = (firstOfMonth.getDay() + 6) % 7; // 0=Mon
+  const firstMonday = new Date(firstOfMonth);
+  if (firstDow > 0) firstMonday.setDate(firstMonday.getDate() + (7 - firstDow));
+
+  // Build weeks: each starts on a Monday, only within this month
   const moWeekStarts: Date[] = [];
-  const firstDay = new Date(moYear, moMonth, 1);
-  const firstDow = (firstDay.getDay() + 6) % 7; // 0=Mon
-  let startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDow); // back to Monday
-  while (startDate.getMonth() <= moMonth || (startDate.getMonth() > moMonth && startDate.getFullYear() < moYear)) {
-    moWeekStarts.push(new Date(startDate));
-    startDate = new Date(startDate);
-    startDate.setDate(startDate.getDate() + 7);
-    if (moWeekStarts.length >= 6) break; // safety
-    if (startDate.getMonth() > moMonth && startDate.getFullYear() >= moYear) break;
+  let ws = new Date(firstMonday);
+  while (ws.getMonth() === moMonth) {
+    moWeekStarts.push(new Date(ws));
+    ws.setDate(ws.getDate() + 7);
   }
 
-  // Mock data per week (current week uses real data)
-  const mockWeeks = [
-    [0, 1920, 2100, 0, 1800, 0, 0],
-    [2050, 1980, 0, 2100, 1900, 2200, 0],
-    [0, 1880, 2000, 1950, 0, 1800, 0],
-    [0, 0, 1750, 0, 2050, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-  ];
-  const moWeeks: { label: string; days: number[] }[] = moWeekStarts.map((ws, i) => {
-    const isCurrentWeek = now >= ws && now < new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + 7);
-    const days = isCurrentWeek && weekDays.length === 7
-      ? weekDays.map(d => d.kcal)
-      : mockWeeks[i] ?? [0,0,0,0,0,0,0];
-    const d = ws.getDate();
-    const m = ws.toLocaleDateString('en-US', { month: 'short' });
-    return { label: `${d} ${m}`, days };
+  // For each week: only show real data. Current week uses weeklyCalories.
+  // Past and future weeks with no real data show all zeros (no faking).
+  const moWeeks: { label: string; days: number[]; isPast: boolean; isCurrent: boolean; isFuture: boolean }[] = moWeekStarts.map(monday => {
+    const weekEnd = new Date(monday);
+    weekEnd.setDate(weekEnd.getDate() + 6); // Sunday
+    const isCurrent = now >= monday && now <= weekEnd;
+    const isFuture = monday > now;
+    const isPast = weekEnd < now && !isCurrent;
+
+    let days: number[];
+    if (isCurrent && weekDays.length === 7) {
+      days = weekDays.map(d => d.kcal);
+    } else {
+      // No real data for past/future weeks — show zeros
+      days = [0, 0, 0, 0, 0, 0, 0];
+    }
+
+    const d = monday.getDate();
+    const m = monday.toLocaleDateString('en-US', { month: 'short' });
+    return { label: `${d} ${m}`, days, isPast, isCurrent, isFuture };
   });
 
   const moAllDays = moWeeks.flatMap(w => w.days);
@@ -284,10 +288,11 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
           const carbPct = macros.carbs.target > 0 ? Math.round((macros.carbs.consumed / macros.carbs.target) * 100) : 0;
           const fatPct = macros.fat.target > 0 ? Math.round((macros.fat.consumed / macros.fat.target) * 100) : 0;
 
-          const isCurrentBest = bestWeekIdx === moWeeks.length - 1;
+          const bestWeek = moWeeks[bestWeekIdx];
           const insight = moTotalLogged === 0 ? 'Start logging to see your monthly trend'
-            : isCurrentBest ? '✦ This is your best week so far — keep it up'
-            : `✦ w/c ${moWeeks[bestWeekIdx]?.label ?? 'earlier'} was your best week`;
+            : bestWeek?.isCurrent ? '✦ This is your best week so far — keep it up'
+            : bestWeekIdx >= 0 && bestWeek ? `✦ w/c ${bestWeek.label} was your best week`
+            : 'Keep logging to build your trend';
 
           return (
             <View style={s.moWrap}>
@@ -297,9 +302,8 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
               <View style={s.moWeeks}>
                 {moWeeks.map((w, wi) => {
                   const st = weekStats[wi];
-                  const isCurrent = wi === moWeeks.length - 1;
                   return (
-                    <View key={wi} style={[s.moWeekRow, isCurrent && s.moWeekRowCurrent]}>
+                    <View key={wi} style={[s.moWeekRow, w.isCurrent && s.moWeekRowCurrent]}>
                       <Text style={s.moWeekLabel}>{w.label}</Text>
                       <View style={s.moHeatDots}>
                         {w.days.map((v, di) => (
