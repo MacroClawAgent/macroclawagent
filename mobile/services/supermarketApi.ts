@@ -281,6 +281,63 @@ export async function smartSearchIngredient(
     }
   }
 
-  console.log('[SmartCart] No results for:', searchTerm);
-  return { woolworths: [], coles: [] };
+  // Fallback: generate estimated price from search term
+  console.log('[SmartCart] Using estimated price for:', searchTerm);
+  return estimatePrice(searchTerm);
+}
+
+// ── Price estimation fallback (when API unavailable) ────────────────────────
+const PRICE_ESTIMATES: [RegExp, number, number][] = [
+  // [pattern, woolworths price, coles price]
+  [/chicken/i, 10.00, 9.50],
+  [/salmon/i, 12.00, 11.50],
+  [/beef|steak/i, 14.00, 13.50],
+  [/lamb/i, 15.00, 14.50],
+  [/pork/i, 10.00, 9.50],
+  [/prawn/i, 16.00, 15.50],
+  [/egg/i, 5.50, 5.00],
+  [/tofu/i, 4.50, 4.20],
+  [/tuna/i, 7.00, 6.80],
+  [/milk/i, 3.20, 3.00],
+  [/yoghurt|yogurt/i, 5.00, 4.50],
+  [/cheese/i, 6.00, 5.50],
+  [/butter/i, 5.50, 5.20],
+  [/rice/i, 3.00, 2.80],
+  [/pasta|spaghetti|penne/i, 2.50, 2.20],
+  [/bread/i, 3.50, 3.30],
+  [/oat/i, 4.50, 2.80],
+  [/quinoa/i, 6.00, 5.50],
+  [/potato/i, 3.90, 3.70],
+  [/broccoli/i, 2.90, 2.70],
+  [/spinach/i, 3.50, 3.30],
+  [/avocado/i, 2.50, 2.30],
+  [/capsicum/i, 3.00, 2.80],
+  [/onion/i, 2.00, 1.80],
+  [/garlic/i, 1.50, 1.30],
+  [/tomato/i, 3.50, 3.20],
+  [/mushroom/i, 4.00, 3.80],
+  [/carrot/i, 2.00, 1.80],
+  [/zucchini/i, 3.00, 2.80],
+  [/olive oil/i, 9.00, 5.50],
+  [/coconut/i, 4.00, 3.80],
+  [/soy sauce/i, 3.50, 3.20],
+  [/honey/i, 6.00, 5.50],
+  [/peanut butter/i, 5.00, 4.50],
+  [/almond|walnut|cashew/i, 6.00, 5.80],
+  [/banana/i, 3.90, 3.70],
+  [/berr/i, 5.00, 4.50],
+  [/lemon|lime/i, 1.00, 0.90],
+  [/protein powder/i, 35.00, 33.00],
+];
+
+function estimatePrice(term: string): { woolworths: SupermarketProduct[]; coles: SupermarketProduct[] } {
+  let wwPrice = 4.00;
+  let colesPrice = 3.80;
+  for (const [pattern, ww, cl] of PRICE_ESTIMATES) {
+    if (pattern.test(term)) { wwPrice = ww; colesPrice = cl; break; }
+  }
+  return {
+    woolworths: [{ id: `est-ww-${term}`, name: term.charAt(0).toUpperCase() + term.slice(1), brand: 'Estimated', price: wwPrice, size: '', productUrl: '', store: 'woolworths' }],
+    coles: [{ id: `est-cl-${term}`, name: term.charAt(0).toUpperCase() + term.slice(1), brand: 'Estimated', price: colesPrice, size: '', productUrl: '', store: 'coles' }],
+  };
 }

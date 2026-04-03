@@ -348,13 +348,6 @@ export default function AgentScreen() {
           <Text style={s.title}>Jonno</Text>
           <View style={s.headerActions}>
             <TouchableOpacity
-              style={s.headerIconBtn}
-              onPress={() => router.push('/recipes' as any)}
-              activeOpacity={0.75}
-            >
-              <Ionicons name="book-outline" size={20} color={MUTED} />
-            </TouchableOpacity>
-            <TouchableOpacity
               style={[s.headerIconBtn, hasAnyPreferences && s.filterBtnActive]}
               onPress={() => setShowPreferences(true)}
               activeOpacity={0.8}

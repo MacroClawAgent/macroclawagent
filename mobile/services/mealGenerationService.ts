@@ -158,7 +158,7 @@ function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets, pan
   return (
     `You are a professional nutritionist creating a personalised meal plan for an Australian user.\n\n` +
     `${goalPreamble}\n\n` +
-    (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
+    (constraints ? `${constraints}\n\nBEFORE GENERATING ANY MEAL: Re-check every ingredient against the constraints above. If a meal violates ANY hard constraint, discard it and generate a replacement.\n\n` : '') +
     `USER NUTRITION TARGETS:\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
     `Servings: ${prefs.servings} person(s)\n` +
@@ -196,7 +196,7 @@ function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targe
   return (
     `You are a professional nutritionist. Suggest ONE ${mealType} meal for an Australian user.\n\n` +
     `${goalPreamble}\n\n` +
-    (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
+    (constraints ? `${constraints}\n\nBEFORE GENERATING: Re-check every ingredient against the constraints above. If ANY hard constraint is violated, discard and regenerate.\n\n` : '') +
     `Target for this meal: ~${calTarget} kcal, ${proTarget}g protein\n` +
     consumedCtx + buildWeeklyContextBlock(targets) + recentBlock + buildPlannedMealsBlock(targets.plannedMealsToday) + activityLine + equipLine + pantryContext + `\n` +
     `Return a single JSON object (not an array) with this structure:\n${MEAL_JSON_SPEC}\n\n` +
@@ -270,7 +270,7 @@ function buildWeekPrompt(prefs: UserPreferences, targets: NutritionTargets): str
   return (
     `You are a professional nutritionist creating a personalised meal plan for an Australian user.\n\n` +
     `${goalPreamble}\n\n` +
-    (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
+    (constraints ? `${constraints}\n\nCRITICAL: Every single meal in this plan MUST comply with ALL hard constraints above. Check every ingredient. If ANY meal violates a constraint, replace it.\n\n` : '') +
     `USER NUTRITION TARGETS:\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
     `Servings: ${prefs.servings} person(s)\n\n` +
