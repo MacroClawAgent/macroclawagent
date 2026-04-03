@@ -86,15 +86,47 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
   const weekBest = weekDays.length > 0 ? Math.max(...weekDays.map(d => d.kcal)) : 0;
   const todayDow = (new Date().getDay() + 6) % 7; // 0=Mon
 
-  // Monthly: 4-week structure (mock using weekly data shifted)
-  const moWeeks = [
-    [0, 1920, 2100, 0, 1800, 0, 0],      // Week 1
-    [2050, 1980, 0, 2100, 1900, 2200, 0], // Week 2
-    [0, 1880, 2000, 1950, 0, 1800, 0],    // Week 3
-    weekDays.length === 7 ? weekDays.map(d => d.kcal) : [0,0,0,0,0,0,0],
-  ];
+  // Monthly: build weeks for the current month (Mon–Sun weeks)
   const target = calorieProgress.target;
-  const moAllDays = moWeeks.flat();
+  const now = new Date();
+  const monthName = now.toLocaleDateString('en-US', { month: 'long' });
+  const moYear = now.getFullYear();
+  const moMonth = now.getMonth();
+  const daysInMo = new Date(moYear, moMonth + 1, 0).getDate();
+
+  // Find all Mondays that start a week touching this month
+  const moWeekStarts: Date[] = [];
+  const firstDay = new Date(moYear, moMonth, 1);
+  const firstDow = (firstDay.getDay() + 6) % 7; // 0=Mon
+  let startDate = new Date(firstDay);
+  startDate.setDate(startDate.getDate() - firstDow); // back to Monday
+  while (startDate.getMonth() <= moMonth || (startDate.getMonth() > moMonth && startDate.getFullYear() < moYear)) {
+    moWeekStarts.push(new Date(startDate));
+    startDate = new Date(startDate);
+    startDate.setDate(startDate.getDate() + 7);
+    if (moWeekStarts.length >= 6) break; // safety
+    if (startDate.getMonth() > moMonth && startDate.getFullYear() >= moYear) break;
+  }
+
+  // Mock data per week (current week uses real data)
+  const mockWeeks = [
+    [0, 1920, 2100, 0, 1800, 0, 0],
+    [2050, 1980, 0, 2100, 1900, 2200, 0],
+    [0, 1880, 2000, 1950, 0, 1800, 0],
+    [0, 0, 1750, 0, 2050, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+  ];
+  const moWeeks: { label: string; days: number[] }[] = moWeekStarts.map((ws, i) => {
+    const isCurrentWeek = now >= ws && now < new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + 7);
+    const days = isCurrentWeek && weekDays.length === 7
+      ? weekDays.map(d => d.kcal)
+      : mockWeeks[i] ?? [0,0,0,0,0,0,0];
+    const d = ws.getDate();
+    const m = ws.toLocaleDateString('en-US', { month: 'short' });
+    return { label: `${d} ${m}`, days };
+  });
+
+  const moAllDays = moWeeks.flatMap(w => w.days);
   const moLoggedDays = moAllDays.filter(v => v > 0);
   const moTotalLogged = moLoggedDays.length;
   const moAvg = moTotalLogged > 0 ? Math.round(moLoggedDays.reduce((a, b) => a + b, 0) / moTotalLogged) : 0;
@@ -240,9 +272,8 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
 
         {/* ── MONTHLY — Trend Snapshot ── */}
         {mode === 'monthly' && (() => {
-          const weekLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
           const weekStats = moWeeks.map(w => {
-            const logged = w.filter(v => v > 0);
+            const logged = w.days.filter(v => v > 0);
             return { daysLogged: logged.length, avg: logged.length > 0 ? Math.round(logged.reduce((a, b) => a + b, 0) / logged.length) : 0 };
           });
           const prevAvgs = weekStats.map(w => w.avg);
@@ -253,21 +284,25 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
           const carbPct = macros.carbs.target > 0 ? Math.round((macros.carbs.consumed / macros.carbs.target) * 100) : 0;
           const fatPct = macros.fat.target > 0 ? Math.round((macros.fat.consumed / macros.fat.target) * 100) : 0;
 
+          const isCurrentBest = bestWeekIdx === moWeeks.length - 1;
           const insight = moTotalLogged === 0 ? 'Start logging to see your monthly trend'
-            : bestWeekIdx === 3 ? '✦ This is your best week so far — keep it up'
-            : `✦ ${weekLabels[bestWeekIdx]} was your best — most consistent logging`;
+            : isCurrentBest ? '✦ This is your best week so far — keep it up'
+            : `✦ w/c ${moWeeks[bestWeekIdx]?.label ?? 'earlier'} was your best week`;
 
           return (
             <View style={s.moWrap}>
+              {/* Month title */}
+              <Text style={s.moTitle}>{monthName}</Text>
               {/* Week rows with heatmap */}
               <View style={s.moWeeks}>
                 {moWeeks.map((w, wi) => {
                   const st = weekStats[wi];
+                  const isCurrent = wi === moWeeks.length - 1;
                   return (
-                    <View key={wi} style={[s.moWeekRow, wi === 3 && s.moWeekRowCurrent]}>
-                      <Text style={s.moWeekLabel}>{weekLabels[wi]}</Text>
+                    <View key={wi} style={[s.moWeekRow, isCurrent && s.moWeekRowCurrent]}>
+                      <Text style={s.moWeekLabel}>{w.label}</Text>
                       <View style={s.moHeatDots}>
-                        {w.map((v, di) => (
+                        {w.days.map((v, di) => (
                           <View key={di} style={[s.moHeatDot,
                             { backgroundColor: v >= target * 0.85 ? SAGE : v > 0 ? GOLD : 'rgba(232,224,208,0.08)' }
                           ]} />
@@ -289,7 +324,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
                   <Text style={s.moSumLabel}>avg/day</Text>
                 </View>
                 <View style={s.moSumItem}>
-                  <Text style={s.moSumVal}>{moTotalLogged}/28</Text>
+                  <Text style={s.moSumVal}>{moTotalLogged}/{daysInMo}</Text>
                   <Text style={s.moSumLabel}>logged</Text>
                 </View>
                 <View style={[s.moSumItem]}>
@@ -365,11 +400,12 @@ const s = StyleSheet.create({
   wkInsight: { fontSize: 12, fontStyle: 'italic', color: GOLD, marginTop: 12 },
 
   // Monthly — Trend Snapshot
-  moWrap: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, flex: 1, justifyContent: 'space-between' },
-  moWeeks: { gap: 6 },
+  moWrap: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 14, flex: 1, justifyContent: 'space-between' },
+  moTitle: { fontSize: 18, fontWeight: '800', color: CREAM, marginBottom: 8 },
+  moWeeks: { gap: 5 },
   moWeekRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   moWeekRowCurrent: { backgroundColor: 'rgba(245,200,66,0.06)', borderRadius: 10, paddingVertical: 4, paddingHorizontal: 6, marginHorizontal: -6 },
-  moWeekLabel: { fontSize: 11, fontWeight: '600', color: 'rgba(232,224,208,0.45)', width: 48 },
+  moWeekLabel: { fontSize: 10, fontWeight: '600', color: 'rgba(232,224,208,0.45)', width: 42 },
   moHeatDots: { flexDirection: 'row', gap: 4, flex: 1 },
   moHeatDot: { width: 10, height: 10, borderRadius: 3 },
   moWeekAvg: { fontSize: 13, fontWeight: '700', color: CREAM, width: 38, textAlign: 'right' },
