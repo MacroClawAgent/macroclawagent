@@ -10,12 +10,21 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useTheme } from "@/context/ThemeContext";
-import { apiPost } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { setPendingCommunityPost } from "@/lib/communityStore";
 
 const COMMUNITY_TOGGLE_KEY = "jonno_auto_post_community";
 
-type Stage = "picking" | "analyzing" | "review" | "saving" | "error";
+type Stage = "picking" | "analyzing" | "match_prompt" | "review" | "saving" | "error";
+
+interface StoredDish {
+  name: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  times_logged: number;
+}
 
 const MEAL_TAGS = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 type MealTag = (typeof MEAL_TAGS)[number];
@@ -76,13 +85,19 @@ export default function PhotoConfirmScreen() {
   const [pickedImageBase64, setPickedImageBase64] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [postToCommunity, setPostToCommunity] = useState(true);
+  const [pastDishes, setPastDishes] = useState<StoredDish[]>([]);
+  const [matchedDish, setMatchedDish] = useState<StoredDish | null>(null);
+  // AI-detected foods stashed while showing match prompt
+  const stashedAiFoods = useRef<DetectedFood[]>([]);
 
-
-  // Load persisted community toggle preference
+  // Load persisted community toggle + past dishes
   useEffect(() => {
     AsyncStorage.getItem(COMMUNITY_TOGGLE_KEY).then(val => {
       if (val !== null) setPostToCommunity(val === "true");
     }).catch(() => {});
+    apiGet<{ dishes: StoredDish[] }>("/api/nutrition/food-items?distinct=true")
+      .then(res => setPastDishes(res.dishes ?? []))
+      .catch(() => {});
   }, []);
 
   const toggleCommunity = (val: boolean) => {
@@ -161,12 +176,76 @@ export default function PhotoConfirmScreen() {
 
       setFoods(data.foods);
       setGramInputs(data.foods.map((f) => String(f.grams)));
-      setStage("review");
+
+      // Check if this looks like a previously logged dish
+      const detectedName = data.foods.length === 1
+        ? data.foods[0].name
+        : [...data.foods].sort((a, b) => b.calories - a.calories).slice(0, 2).map(f => f.name).join(" & ");
+      const match = findMatchingDish(detectedName, pastDishes);
+      if (match) {
+        stashedAiFoods.current = data.foods;
+        setMatchedDish(match);
+        setStage("match_prompt");
+      } else {
+        setStage("review");
+      }
     } catch {
       setErrorMsg("Analysis failed. Check your connection and try again.");
       setStage("error");
     }
-  }, [mode, router]);
+  }, [mode, router, pastDishes]);
+
+  /** Fuzzy match: check if detected dish name is similar to a stored one */
+  function findMatchingDish(detected: string, stored: StoredDish[]): StoredDish | null {
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+    const dNorm = norm(detected);
+    const dWords = new Set(dNorm.split(/\s+/));
+    for (const dish of stored) {
+      const sNorm = norm(dish.name);
+      // Exact match
+      if (dNorm === sNorm) return dish;
+      // One contains the other
+      if (dNorm.includes(sNorm) || sNorm.includes(dNorm)) return dish;
+      // Word overlap ≥ 60%
+      const sWords = new Set(sNorm.split(/\s+/));
+      const overlap = [...dWords].filter(w => sWords.has(w)).length;
+      const maxLen = Math.max(dWords.size, sWords.size);
+      if (maxLen > 0 && overlap / maxLen >= 0.6) return dish;
+    }
+    return null;
+  }
+
+  /** User confirms: use stored macros */
+  const handleUseStored = () => {
+    if (!matchedDish) return;
+    // Create a single food entry from the stored dish macros
+    const stored: DetectedFood = {
+      name: matchedDish.name,
+      grams: 100,
+      calories: matchedDish.calories,
+      protein_g: matchedDish.protein_g,
+      carbs_g: matchedDish.carbs_g,
+      fat_g: matchedDish.fat_g,
+      per100g: {
+        calories: matchedDish.calories,
+        protein_g: matchedDish.protein_g,
+        carbs_g: matchedDish.carbs_g,
+        fat_g: matchedDish.fat_g,
+      },
+    };
+    setFoods([stored]);
+    setGramInputs(["100"]);
+    setMatchedDish(null);
+    setStage("review");
+  };
+
+  /** User rejects: use AI analysis instead */
+  const handleUseNewScan = () => {
+    setFoods(stashedAiFoods.current);
+    setGramInputs(stashedAiFoods.current.map(f => String(f.grams)));
+    setMatchedDish(null);
+    setStage("review");
+  };
 
   useEffect(() => {
     if (!launched.current) {
@@ -288,6 +367,57 @@ export default function PhotoConfirmScreen() {
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { launched.current = false; setStage("picking"); launch(); }} style={styles.tryAgainBtn}>
             <Text style={styles.tryAgainText}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      </Screen>
+    );
+  }
+
+  // Match prompt — "Is this the same dish?"
+  if (stage === "match_prompt" && matchedDish) {
+    return (
+      <Screen style={{ backgroundColor: "#1C1612" }}>
+        <AppHeader title="AI Scan" showBack textColor="#E8E0D0" />
+        <View style={mp.container}>
+          <View style={mp.iconWrap}>
+            <Ionicons name="checkmark-circle-outline" size={40} color="#F5C842" />
+          </View>
+          <Text style={mp.heading}>Looks familiar</Text>
+          <Text style={mp.sub}>
+            This looks like a dish you've logged{matchedDish.times_logged > 1 ? ` ${matchedDish.times_logged} times` : ""} before
+          </Text>
+
+          <View style={mp.card}>
+            <Text style={mp.dishName}>{matchedDish.name}</Text>
+            <View style={mp.macroRow}>
+              <View style={mp.macroItem}>
+                <Text style={mp.macroVal}>{matchedDish.calories}</Text>
+                <Text style={mp.macroLbl}>kcal</Text>
+              </View>
+              <View style={mp.divider} />
+              <View style={mp.macroItem}>
+                <Text style={[mp.macroVal, { color: "#E07B54" }]}>{matchedDish.protein_g}g</Text>
+                <Text style={mp.macroLbl}>Protein</Text>
+              </View>
+              <View style={mp.divider} />
+              <View style={mp.macroItem}>
+                <Text style={[mp.macroVal, { color: "#F5C842" }]}>{matchedDish.carbs_g}g</Text>
+                <Text style={mp.macroLbl}>Carbs</Text>
+              </View>
+              <View style={mp.divider} />
+              <View style={mp.macroItem}>
+                <Text style={[mp.macroVal, { color: "#8B9E6E" }]}>{matchedDish.fat_g}g</Text>
+                <Text style={mp.macroLbl}>Fat</Text>
+              </View>
+            </View>
+          </View>
+
+          <TouchableOpacity style={mp.yesBtn} onPress={handleUseStored} activeOpacity={0.85}>
+            <Ionicons name="checkmark" size={20} color="#1C1612" />
+            <Text style={mp.yesTxt}>Yes, same dish</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={mp.noBtn} onPress={handleUseNewScan} activeOpacity={0.7}>
+            <Text style={mp.noTxt}>No, use new scan</Text>
           </TouchableOpacity>
         </View>
       </Screen>
@@ -491,5 +621,32 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5C842", borderRadius: 16, paddingVertical: 16, alignItems: "center",
   },
   confirmText: { color: "#1C1612", fontWeight: "800", fontSize: 16 },
+});
+
+const mp = StyleSheet.create({
+  container: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, gap: 16 },
+  iconWrap: {
+    width: 88, height: 88, borderRadius: 28, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(245,200,66,0.12)", borderWidth: 1, borderColor: "rgba(245,200,66,0.25)",
+  },
+  heading: { fontSize: 24, fontWeight: "800", color: "#E8E0D0", letterSpacing: -0.5 },
+  sub: { fontSize: 14, color: "rgba(232,224,208,0.55)", fontWeight: "500", textAlign: "center", marginTop: -4 },
+  card: {
+    width: "100%", backgroundColor: "rgba(232,224,208,0.06)", borderRadius: 20,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.1)", padding: 18, gap: 14, marginVertical: 4,
+  },
+  dishName: { color: "#E8E0D0", fontSize: 17, fontWeight: "700" },
+  macroRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  macroItem: { alignItems: "center", flex: 1, gap: 2 },
+  macroVal: { color: "#E8E0D0", fontSize: 17, fontWeight: "800" },
+  macroLbl: { color: "rgba(232,224,208,0.4)", fontSize: 11, fontWeight: "500" },
+  divider: { width: 1, height: 32, backgroundColor: "rgba(232,224,208,0.08)" },
+  yesBtn: {
+    width: "100%", backgroundColor: "#F5C842", borderRadius: 16, paddingVertical: 16,
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+  },
+  yesTxt: { color: "#1C1612", fontWeight: "800", fontSize: 16 },
+  noBtn: { paddingVertical: 12 },
+  noTxt: { color: "rgba(232,224,208,0.4)", fontSize: 15, fontWeight: "600" },
 });
 
