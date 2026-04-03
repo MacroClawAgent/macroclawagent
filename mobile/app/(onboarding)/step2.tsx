@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 
 const GOALS = [
@@ -51,6 +52,11 @@ export default function OnboardingStep2() {
       contentContainerStyle={styles.inner}
       keyboardShouldPersistTaps="handled"
     >
+      {/* Back */}
+      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }} activeOpacity={0.7}>
+        <Ionicons name="chevron-back" size={24} color="#E8E0D0" />
+      </TouchableOpacity>
+
       {/* Progress */}
       <View style={styles.progressRow}>
         <View style={[styles.progressDot, styles.progressDone]} />

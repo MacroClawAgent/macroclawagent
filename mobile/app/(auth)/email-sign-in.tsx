@@ -38,7 +38,7 @@ export default function EmailSignInScreen() {
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) Alert.alert("Sign in failed", error);
-    else router.replace("/(tabs)/home");
+    else router.replace("/");
   }
 
   return (

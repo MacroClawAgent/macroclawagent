@@ -35,7 +35,7 @@ export default function SignUpScreen() {
       if (credential.identityToken) {
         const { error } = await supabase.auth.signInWithIdToken({ provider: "apple", token: credential.identityToken });
         if (error) throw error;
-        router.replace("/(onboarding)/step1");
+        router.replace("/");
       }
     } catch (e: any) {
       if (e.code !== "ERR_REQUEST_CANCELED") Alert.alert("Apple Sign In failed", e.message ?? "Please try again.");
@@ -49,7 +49,7 @@ export default function SignUpScreen() {
     const { error } = await signUp(email.trim(), password);
     setLoading(false);
     if (error) Alert.alert("Sign up failed", error);
-    else router.replace("/(onboarding)/step1");
+    else router.replace("/");
   }
 
   return (

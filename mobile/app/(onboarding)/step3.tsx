@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { apiPost } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -76,6 +77,11 @@ export default function OnboardingStep3() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
+        {/* Back */}
+        <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={24} color="#E8E0D0" />
+        </TouchableOpacity>
+
         {/* Progress */}
         <View style={styles.progressRow}>
           <View style={[styles.progressDot, styles.progressDone]} />

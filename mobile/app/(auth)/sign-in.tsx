@@ -35,7 +35,7 @@ export default function LandingScreen() {
       if (credential.identityToken) {
         const { error } = await supabase.auth.signInWithIdToken({ provider: "apple", token: credential.identityToken });
         if (error) throw error;
-        router.replace("/(tabs)/home");
+        router.replace("/");
       }
     } catch (e: any) {
       if (e.code !== "ERR_REQUEST_CANCELED") Alert.alert("Apple Sign In failed", e.message ?? "Please try again.");
