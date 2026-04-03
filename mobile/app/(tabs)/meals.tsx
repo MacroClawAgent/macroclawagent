@@ -78,17 +78,20 @@ export default function MealsScreen() {
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
 
   async function fetchPlan() {
-    const res = await apiGet<{ plan: Plan | null }>("/api/optimizer/create");
-    setPlan(res?.plan ?? null);
-    setLoading(false);
-    setRefreshing(false);
+    try {
+      const res = await apiGet<{ plan: Plan | null }>("/api/optimizer/create");
+      setPlan(res?.plan ?? null);
+    } catch { /* silent */ }
+    finally { setLoading(false); setRefreshing(false); }
   }
 
   async function generatePlan() {
     setGenerating(true);
-    const res = await apiPost<{ plan: Plan }>("/api/optimizer/create", {});
-    if (res?.plan) setPlan(res.plan);
-    setGenerating(false);
+    try {
+      const res = await apiPost<{ plan: Plan }>("/api/optimizer/create", {});
+      if (res?.plan) setPlan(res.plan);
+    } catch { /* silent */ }
+    finally { setGenerating(false); }
   }
 
   useEffect(() => { fetchPlan(); }, []);

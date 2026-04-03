@@ -370,7 +370,7 @@ export async function generateMealPlan(
       );
     }
   } catch (error) {
-    console.warn('Meal generation fell back to mock:', error);
+    if (__DEV__) console.warn('Meal generation fell back to mock:', error);
     return getMockMealPlan(type, preferences);
   }
 }

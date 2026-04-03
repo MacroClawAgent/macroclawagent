@@ -210,7 +210,7 @@ export async function updateAvatar(imageUri: string): Promise<void> {
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
     await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', user.id);
   } catch (e) {
-    console.error('Avatar upload failed', e);
+    if (__DEV__) console.error('Avatar upload failed', e);
   }
 }
 

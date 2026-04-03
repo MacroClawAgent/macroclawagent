@@ -1,5 +1,4 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-f
 # dependencies
 node_modules/
 
@@ -31,6 +30,7 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript

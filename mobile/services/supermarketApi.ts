@@ -14,23 +14,23 @@ function getRapidApiKey(): string { return RAPIDAPI_KEY; }
 
 export function logApiDebug(): void {
   const key = getRapidApiKey();
-  console.log('=== SMART CART API DEBUG ===');
-  console.log('RapidAPI Key exists:', !!key);
-  console.log('RapidAPI Key first 8 chars:', key.substring(0, 8) || '(empty)');
+  if (__DEV__) console.log('=== SMART CART API DEBUG ===');
+  if (__DEV__) console.log('RapidAPI Key exists:', !!key);
+  if (__DEV__) console.log('RapidAPI Key first 8 chars:', key.substring(0, 8) || '(empty)');
 }
 
 export async function testRapidAPIConnection(): Promise<void> {
   const key = getRapidApiKey();
-  console.log('=== TESTING RAPIDAPI CONNECTION ===');
+  if (__DEV__) console.log('=== TESTING RAPIDAPI CONNECTION ===');
 
   if (!key) {
-    console.error('❌ EXPO_PUBLIC_RAPIDAPI_KEY is undefined or empty');
-    console.error('Fix: restart Metro with --clear flag after adding to .env');
+    if (__DEV__) console.error('❌ EXPO_PUBLIC_RAPIDAPI_KEY is undefined or empty');
+    if (__DEV__) console.error('Fix: restart Metro with --clear flag after adding to .env');
     return;
   }
 
   try {
-    console.log('Making test request to RapidAPI...');
+    if (__DEV__) console.log('Making test request to RapidAPI...');
     const res = await fetch(
       'https://woolworths-products-api.p.rapidapi.com/api/products/search?query=chicken&pageSize=3&pageNumber=1',
       {
@@ -41,17 +41,19 @@ export async function testRapidAPIConnection(): Promise<void> {
         },
       }
     );
-    console.log('Response status:', res.status, res.statusText);
+    if (__DEV__) console.log('Response status:', res.status, res.statusText);
     const text = await res.text();
-    console.log('Raw response (first 500 chars):', text.substring(0, 500));
+    if (__DEV__) console.log('Raw response (first 500 chars):', text.substring(0, 500));
 
-    if (res.status === 200)       console.log('✅ RapidAPI connection working!');
-    else if (res.status === 401)  console.error('❌ 401 — API key invalid or not subscribed to this API on rapidapi.com');
-    else if (res.status === 403)  console.error('❌ 403 — Subscribed but quota exceeded or wrong plan');
-    else if (res.status === 404)  console.error('❌ 404 — Endpoint URL wrong');
-    else if (res.status === 429)  console.error('❌ 429 — Rate limit hit');
+    if (__DEV__) {
+      if (res.status === 200)       console.log('✅ RapidAPI connection working!');
+      else if (res.status === 401)  console.error('❌ 401 — API key invalid or not subscribed');
+      else if (res.status === 403)  console.error('❌ 403 — Quota exceeded or wrong plan');
+      else if (res.status === 404)  console.error('❌ 404 — Endpoint URL wrong');
+      else if (res.status === 429)  console.error('❌ 429 — Rate limit hit');
+    }
   } catch (e: unknown) {
-    console.error('❌ Network error:', e instanceof Error ? e.message : String(e));
+    if (__DEV__) console.error('❌ Network error:', e instanceof Error ? e.message : String(e));
   }
 }
 
@@ -69,12 +71,12 @@ async function searchWoolworthsProducts(query: string): Promise<SupermarketProdu
     const res = await fetch(url.toString(), {
       headers: { 'x-rapidapi-key': key, 'x-rapidapi-host': 'woolworths-api1.p.rapidapi.com' },
     });
-    if (!res.ok) { console.warn('[Woolworths API]', res.status, await res.text().catch(() => '')); return []; }
+    if (!res.ok) { if (__DEV__) console.warn('[Woolworths API]', res.status); return []; }
     const data = await res.json() as Record<string, unknown>;
     const products = (data?.products ?? data?.results ?? data?.items ?? []) as Record<string, unknown>[];
     return products.slice(0, 3).map(mapWoolworthsProduct);
   } catch (e) {
-    console.warn('[Woolworths API] error:', e);
+    if (__DEV__) console.warn('[Woolworths API] error:', e);
     return [];
   }
 }
@@ -106,12 +108,12 @@ async function searchColesProducts(query: string): Promise<SupermarketProduct[]>
     const res = await fetch(url.toString(), {
       headers: { 'x-rapidapi-key': key, 'x-rapidapi-host': 'coles1.p.rapidapi.com' },
     });
-    if (!res.ok) { console.warn('[Coles API]', res.status, await res.text().catch(() => '')); return []; }
+    if (!res.ok) { if (__DEV__) console.warn('[Coles API]', res.status); return []; }
     const data = await res.json() as Record<string, unknown>;
     const products = (data?.products ?? data?.results ?? data?.data ?? []) as Record<string, unknown>[];
     return products.slice(0, 3).map(mapColesProduct);
   } catch (e) {
-    console.warn('[Coles API] error:', e);
+    if (__DEV__) console.warn('[Coles API] error:', e);
     return [];
   }
 }
@@ -252,37 +254,37 @@ export async function smartSearchIngredient(
 ): Promise<{ woolworths: SupermarketProduct[]; coles: SupermarketProduct[] }> {
   const searchTerm = getSearchTerm(ingredient.name);
   if (!searchTerm) {
-    console.log('[SmartCart] Empty search term for:', ingredient.name);
+    if (__DEV__) console.log('[SmartCart] Empty search term for:', ingredient.name);
     return { woolworths: [], coles: [] };
   }
 
-  console.log('[SmartCart] Searching:', searchTerm, '(from:', ingredient.name, ')');
+  if (__DEV__) console.log('[SmartCart] Searching:', searchTerm, '(from:', ingredient.name, ')');
 
   const key = getRapidApiKey();
   if (key && key.length > 10) {
     try {
       const results = await searchBothStores(searchTerm);
       if (results.woolworths.length > 0 || results.coles.length > 0) {
-        console.log('[SmartCart] ✅ Live results for:', searchTerm);
+        if (__DEV__) console.log('[SmartCart] ✅ Live results for:', searchTerm);
         return results;
       }
       // If exact term fails, try just the first word as a broader search
       const firstWord = searchTerm.split(' ')[0];
       if (firstWord !== searchTerm && firstWord.length > 2) {
-        console.log('[SmartCart] Retrying with:', firstWord);
+        if (__DEV__) console.log('[SmartCart] Retrying with:', firstWord);
         const retry = await searchBothStores(firstWord);
         if (retry.woolworths.length > 0 || retry.coles.length > 0) {
-          console.log('[SmartCart] ✅ Retry results for:', firstWord);
+          if (__DEV__) console.log('[SmartCart] ✅ Retry results for:', firstWord);
           return retry;
         }
       }
     } catch (e) {
-      console.warn('[SmartCart] API failed for:', searchTerm, e);
+      if (__DEV__) console.warn('[SmartCart] API failed for:', searchTerm, e);
     }
   }
 
   // Fallback: generate estimated price from search term
-  console.log('[SmartCart] Using estimated price for:', searchTerm);
+  if (__DEV__) console.log('[SmartCart] Using estimated price for:', searchTerm);
   return estimatePrice(searchTerm);
 }
 

@@ -87,10 +87,12 @@ export default function NutritionScreen() {
 
   async function addHydration(ml: number) {
     setHydrationLoading(true);
-    const current = nutrition?.hydration_ml ?? 0;
-    await apiPatch("/api/nutrition/today", { hydration_ml: current + ml });
-    await fetchData();
-    setHydrationLoading(false);
+    try {
+      const current = nutrition?.hydration_ml ?? 0;
+      await apiPatch("/api/nutrition/today", { hydration_ml: current + ml });
+      await fetchData();
+    } catch { /* silent */ }
+    finally { setHydrationLoading(false); }
   }
 
   const consumed = {

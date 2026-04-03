@@ -15,13 +15,13 @@ export const GOOGLE_PLACES_KEY: string =
   '';
 
 if (!RAPIDAPI_KEY) {
-  console.warn('⚠️  RAPIDAPI_KEY is empty — Smart Cart will use mock data');
+  if (__DEV__) console.warn('⚠️  RAPIDAPI_KEY is empty — Smart Cart will use mock data');
 } else {
-  console.log('✅ RAPIDAPI_KEY loaded, first 8 chars:', RAPIDAPI_KEY.substring(0, 8));
+  if (__DEV__) console.log('✅ RAPIDAPI_KEY loaded, first 8 chars:', RAPIDAPI_KEY.substring(0, 8));
 }
 
 if (!GOOGLE_PLACES_KEY) {
-  console.warn('⚠️  GOOGLE_PLACES_KEY is empty — store finder disabled');
+  if (__DEV__) console.warn('⚠️  GOOGLE_PLACES_KEY is empty — store finder disabled');
 } else {
-  console.log('✅ GOOGLE_PLACES_KEY loaded');
+  if (__DEV__) console.log('✅ GOOGLE_PLACES_KEY loaded');
 }
