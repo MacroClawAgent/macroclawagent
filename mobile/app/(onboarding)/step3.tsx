@@ -115,7 +115,7 @@ export default function OnboardingStep3() {
       <Text style={s.subtitle}>Jonno uses this to personalise every meal plan and recommendation.</Text>
 
       {/* Goal cards */}
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: 8 }}>
         {GOALS.map(g => (
           <TouchableOpacity
             key={g.id}
@@ -166,7 +166,6 @@ export default function OnboardingStep3() {
             </View>
           </View>
 
-          <Text style={s.targetHint}>Jonno will adjust these based on your activity and progress</Text>
         </View>
       )}
 
@@ -195,32 +194,30 @@ const s = StyleSheet.create({
   lineDone: { backgroundColor: GOLD },
   step: { fontSize: 12, fontWeight: "600", color: GOLD, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
   title: { fontSize: 28, fontWeight: "800", color: TEXT_C, marginBottom: 8 },
-  subtitle: { fontSize: 15, color: MUTED, marginBottom: 24, lineHeight: 22 },
+  subtitle: { fontSize: 15, color: MUTED, marginBottom: 16, lineHeight: 22 },
 
   goalCard: {
     flexDirection: "row", alignItems: "center", gap: 12,
-    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 16,
-    borderWidth: 1.5, borderColor: "rgba(232,224,208,0.08)", padding: 16,
+    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 14,
+    borderWidth: 1.5, borderColor: "rgba(232,224,208,0.08)", padding: 13,
   },
-  goalIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  goalIcon: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   goalLabel: { fontSize: 16, fontWeight: "700", color: MUTED },
   goalDesc: { fontSize: 12, color: DIM, marginTop: 2 },
 
   targetCard: {
-    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 18,
-    borderWidth: 1, borderColor: "rgba(232,224,208,0.08)", padding: 18, marginTop: 20, gap: 12,
+    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 16,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.08)", padding: 14, marginTop: 14, gap: 8,
   },
   targetHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
   targetTagline: { fontSize: 14, fontWeight: "700" },
   targetDetail: { fontSize: 13, color: MUTED },
-  macroRow: { flexDirection: "row", paddingVertical: 8 },
+  macroRow: { flexDirection: "row", paddingVertical: 4 },
   macroItem: { flex: 1, alignItems: "center", gap: 2 },
-  macroVal: { fontSize: 18, fontWeight: "800", color: TEXT_C },
+  macroVal: { fontSize: 16, fontWeight: "800", color: TEXT_C },
   macroLabel: { fontSize: 10, color: DIM },
   macroDivider: { width: 1, backgroundColor: "rgba(232,224,208,0.06)" },
-  targetHint: { fontSize: 11, color: DIM, textAlign: "center" },
-
-  btn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 20 },
+  btn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 14 },
   btnDisabled: { opacity: 0.4 },
   btnText: { color: BG, fontWeight: "800", fontSize: 16 },
 });

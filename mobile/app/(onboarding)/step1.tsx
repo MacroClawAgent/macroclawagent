@@ -136,7 +136,7 @@ export default function OnboardingStep1() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG },
-  inner: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingVertical: 48 },
+  inner: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 60, paddingBottom: 40 },
   progressRow: { flexDirection: "row", alignItems: "center", marginBottom: 32 },
   dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(232,224,208,0.1)" },
   dotActive: { backgroundColor: GOLD },
