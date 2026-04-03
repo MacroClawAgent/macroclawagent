@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+
 import { BlurView } from "expo-blur";
 import { useFocusEffect, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
@@ -94,17 +94,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <Screen style={{ backgroundColor: isDark ? "#0D0A07" : "#C8DFF0" }}>
-      {/* Full-screen gradient backdrop */}
-      <LinearGradient
-        colors={isDark
-          ? ['#000000', '#080603', '#120D08', '#1C1410', '#2E1A0A']
-          : ['#E8F2F8', '#D4E7F3', '#C8DFF0']}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        pointerEvents="none"
-      />
+    <Screen style={{ backgroundColor: isDark ? "#1C1612" : "#C8DFF0" }}>
       {/* Top header: greeting left, avatar + goal right */}
       <View style={styles.topHeader}>
         <View style={styles.greetingBlock}>
