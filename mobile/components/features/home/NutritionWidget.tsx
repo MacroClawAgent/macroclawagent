@@ -86,21 +86,29 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
   const weekBest = weekDays.length > 0 ? Math.max(...weekDays.map(d => d.kcal)) : 0;
   const todayDow = (new Date().getDay() + 6) % 7; // 0=Mon
 
-  // Monthly: build weeks starting from the first Monday of the current month
+  // Monthly: determine active month based on which Monday the current week started
   const target = calorieProgress.target;
   const now = new Date();
-  const monthName = now.toLocaleDateString('en-US', { month: 'long' });
-  const moYear = now.getFullYear();
-  const moMonth = now.getMonth();
+
+  // Find this week's Monday
+  const currentDow = (now.getDay() + 6) % 7; // 0=Mon
+  const thisMonday = new Date(now);
+  thisMonday.setDate(thisMonday.getDate() - currentDow);
+  thisMonday.setHours(0, 0, 0, 0);
+
+  // The active month = the month this Monday belongs to
+  const moYear = thisMonday.getFullYear();
+  const moMonth = thisMonday.getMonth();
+  const monthName = thisMonday.toLocaleDateString('en-US', { month: 'long' });
   const daysInMo = new Date(moYear, moMonth + 1, 0).getDate();
 
-  // Find the first Monday on or after the 1st of the month
+  // Find the first Monday on or after the 1st of that month
   const firstOfMonth = new Date(moYear, moMonth, 1);
   const firstDow = (firstOfMonth.getDay() + 6) % 7; // 0=Mon
   const firstMonday = new Date(firstOfMonth);
   if (firstDow > 0) firstMonday.setDate(firstMonday.getDate() + (7 - firstDow));
 
-  // Build weeks: each starts on a Monday, only within this month
+  // Build weeks: each Monday within the active month
   const moWeekStarts: Date[] = [];
   let ws = new Date(firstMonday);
   while (ws.getMonth() === moMonth) {
