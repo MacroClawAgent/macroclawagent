@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
-import Svg, { Circle, Line, Polyline, Text as SvgText } from "react-native-svg";
+import Svg, { Line, Polyline, Text as SvgText } from "react-native-svg";
 
 interface MacroStat {
   consumed: number;
@@ -66,27 +66,6 @@ const mb = StyleSheet.create({
   target: { fontSize: 11, fontWeight: "500", color: "#94A3B8" },
 });
 
-// ── Ring Chart (weekly view) ──────────────────────────────────────────────
-
-function RingChart({ pct, size, stroke, color, bgColor, children }: {
-  pct: number; size: number; stroke: number; color: string; bgColor: string; children?: React.ReactNode;
-}) {
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - Math.min(1, pct));
-  return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <Svg width={size} height={size} style={{ position: 'absolute' }}>
-        <Circle cx={size/2} cy={size/2} r={r} stroke={bgColor} strokeWidth={stroke} fill="none" />
-        <Circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
-          strokeDasharray={`${circ}`} strokeDashoffset={offset}
-          strokeLinecap="round" rotation={-90} origin={`${size/2},${size/2}`} />
-      </Svg>
-      {children}
-    </View>
-  );
-}
-
 // ── Main Widget ───────────────────────────────────────────────────────────
 
 export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalories = [] }: NutritionWidgetProps) {
@@ -100,12 +79,13 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
 
   const calPct = Math.round(calorieProgress.ratio * 100);
 
-  // Weekly averages
+  // Weekly data
   const weekDays = weeklyCalories.length > 0 ? weeklyCalories : [];
-  const weekAvgCal = weekDays.length > 0 ? Math.round(weekDays.reduce((s, d) => s + d.kcal, 0) / weekDays.length) : 0;
-  const weekTotalCal = weekDays.reduce((s, d) => s + d.kcal, 0);
-  const weekTargetTotal = calorieProgress.target * 7;
-  const weekPct = weekTargetTotal > 0 ? weekTotalCal / weekTargetTotal : 0;
+  const weekLogged = weekDays.filter(d => d.kcal > 0);
+  const weekDaysLogged = weekLogged.length;
+  const weekAvgCal = weekDaysLogged > 0 ? Math.round(weekLogged.reduce((s, d) => s + d.kcal, 0) / weekDaysLogged) : 0;
+  const weekBest = weekDays.length > 0 ? Math.max(...weekDays.map(d => d.kcal)) : 0;
+  const todayDow = (new Date().getDay() + 6) % 7; // 0=Mon
 
   // Monthly mock (last 30 days from weekly data repeated)
   const monthDays = weekDays.length > 0
@@ -180,42 +160,61 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
 
         {/* ── WEEKLY ── */}
         {mode === 'weekly' && (
-          <View style={s.weeklyContent}>
-            <View style={s.weeklyRings}>
-              <RingChart pct={weekPct} size={100} stroke={8} color={GOLD} bgColor="rgba(245,200,66,0.15)">
-                <Text style={[s.ringValue, isDark && { color: CREAM }]}>{Math.round(weekPct * 100)}%</Text>
-                <Text style={s.ringLabel}>of goal</Text>
-              </RingChart>
-              <View style={s.weeklyStats}>
-                <View style={s.weekStat}>
-                  <Text style={[s.weekStatValue, { color: CORAL }]}>{weekAvgCal}</Text>
-                  <Text style={s.weekStatLabel}>avg kcal/day</Text>
-                </View>
-                <View style={s.weekStat}>
-                  <Text style={[s.weekStatValue, { color: GOLD }]}>{weekTotalCal.toLocaleString()}</Text>
-                  <Text style={s.weekStatLabel}>total kcal</Text>
-                </View>
-                <View style={s.weekStat}>
-                  <Text style={[s.weekStatValue, { color: SAGE }]}>{weekDays.filter(d => d.kcal > 0).length}/7</Text>
-                  <Text style={s.weekStatLabel}>days logged</Text>
-                </View>
+          <View style={s.wkWrap}>
+            {/* 7-day bar chart */}
+            <View style={s.wkChart}>
+              <View style={s.wkTargetLine}><Text style={s.wkTargetLabel}>target</Text></View>
+              <View style={s.wkBars}>
+                {['M','T','W','T','F','S','S'].map((d, i) => {
+                  const kcal = weekDays[i]?.kcal ?? 0;
+                  const pct = calorieProgress.target > 0 ? Math.min(1, kcal / calorieProgress.target) : 0;
+                  const isToday = i === todayDow;
+                  const isSage = pct >= 0.85 && !isToday;
+                  const isGold = (pct >= 0.4 && pct < 0.85) || isToday;
+                  return (
+                    <View key={i} style={s.wkBarCol}>
+                      <View style={s.wkBarTrack}>
+                        {pct > 0 || isToday ? (
+                          <LinearGradient
+                            colors={isToday ? [GOLD, '#D4A820'] : isSage ? [SAGE, '#6B7E4E'] : [GOLD, '#D4A820']}
+                            style={[s.wkBar, { height: `${Math.max(5, pct * 100)}%` as DimensionValue }, isToday && s.wkBarGlow]}
+                          />
+                        ) : (
+                          <View style={[s.wkBar, s.wkBarStub]} />
+                        )}
+                      </View>
+                      <Text style={[s.wkDayLabel, isToday && s.wkDayToday]}>{d}</Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
-            {/* Mini bars per day */}
-            <View style={s.weekBars}>
-              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => {
-                const kcal = weekDays[i]?.kcal ?? 0;
-                const pct = calorieProgress.target > 0 ? Math.min(1, kcal / calorieProgress.target) : 0;
-                return (
-                  <View key={i} style={s.weekBarCol}>
-                    <View style={s.weekBarTrack}>
-                      <View style={[s.weekBar, { height: `${Math.max(4, pct * 100)}%` as DimensionValue, backgroundColor: pct >= 0.9 ? SAGE : pct > 0 ? GOLD : 'rgba(232,224,208,0.08)' }]} />
-                    </View>
-                    <Text style={s.weekBarDay}>{d}</Text>
-                  </View>
-                );
-              })}
+
+            {/* Stats row */}
+            <View style={s.wkStats}>
+              <View style={s.wkStatItem}>
+                <Text style={s.wkStatVal}>{weekAvgCal}</Text>
+                <Text style={s.wkStatSub}>avg/day</Text>
+              </View>
+              <View style={s.wkStatItem}>
+                <Text style={[s.wkStatVal, { color: weekDaysLogged >= 5 ? SAGE : weekDaysLogged >= 3 ? GOLD : CORAL }]}>{weekDaysLogged}/7</Text>
+                <Text style={s.wkStatSub}>days logged</Text>
+              </View>
+              <View style={s.wkStatItem}>
+                <Text style={[s.wkStatVal, { color: GOLD }]}>{weekBest}</Text>
+                <Text style={s.wkStatSub}>best day</Text>
+              </View>
             </View>
+
+            {/* Motivational line */}
+            <Text style={[s.wkMotivation, {
+              color: weekDaysLogged === 7 ? SAGE : weekDaysLogged >= 5 ? GOLD : weekDaysLogged >= 3 ? 'rgba(232,224,208,0.5)' : CORAL
+            }]}>
+              {weekDaysLogged === 7 ? '🔥 Perfect week — every day logged!'
+                : weekDaysLogged >= 5 ? `✦ Strong week — ${weekDaysLogged} days logged`
+                : weekDaysLogged >= 3 ? `Keep going — log ${7 - weekDaysLogged} more days`
+                : 'Log today to start your streak'}
+            </Text>
           </View>
         )}
 
@@ -297,19 +296,23 @@ const s = StyleSheet.create({
   macroRow: { flex: 1, flexDirection: "row", justifyContent: "space-around", alignItems: "stretch", paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 },
 
   // Weekly
-  weeklyContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16, flex: 1, justifyContent: 'space-between' },
-  weeklyRings: { flexDirection: 'row', alignItems: 'center', gap: 20 },
-  ringValue: { fontSize: 22, fontWeight: '900', color: '#0F172A' },
-  ringLabel: { fontSize: 10, fontWeight: '500', color: 'rgba(232,224,208,0.4)' },
-  weeklyStats: { flex: 1, gap: 8 },
-  weekStat: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-  weekStatValue: { fontSize: 18, fontWeight: '800' },
-  weekStatLabel: { fontSize: 11, fontWeight: '500', color: 'rgba(232,224,208,0.45)' },
-  weekBars: { flexDirection: 'row', gap: 6, marginTop: 14, height: 60 },
-  weekBarCol: { flex: 1, alignItems: 'center' },
-  weekBarTrack: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 3, overflow: 'hidden' },
-  weekBar: { width: '100%', borderRadius: 3, minHeight: 3 },
-  weekBarDay: { fontSize: 10, fontWeight: '600', color: 'rgba(232,224,208,0.3)', marginTop: 4 },
+  wkWrap: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, flex: 1, justifyContent: 'space-between' },
+  wkChart: { height: 100 },
+  wkTargetLine: { position: 'absolute', top: 0, left: 0, right: 0, borderTopWidth: 1, borderTopColor: 'rgba(248,213,97,0.2)', borderStyle: 'dashed', flexDirection: 'row', justifyContent: 'flex-end' },
+  wkTargetLabel: { fontSize: 9, color: 'rgba(248,213,97,0.4)', marginTop: -12 },
+  wkBars: { flexDirection: 'row', flex: 1, gap: 6 },
+  wkBarCol: { flex: 1, alignItems: 'center' },
+  wkBarTrack: { flex: 1, width: '100%', justifyContent: 'flex-end' },
+  wkBar: { width: '100%', borderRadius: 6, minHeight: 4 },
+  wkBarStub: { height: 4, backgroundColor: 'rgba(232,224,208,0.08)' },
+  wkBarGlow: { shadowColor: GOLD, shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } },
+  wkDayLabel: { fontSize: 10, color: 'rgba(232,224,208,0.35)', marginTop: 4, textAlign: 'center' },
+  wkDayToday: { color: GOLD, fontWeight: '600' },
+  wkStats: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 },
+  wkStatItem: { alignItems: 'center', flex: 1 },
+  wkStatVal: { fontSize: 22, fontWeight: '800', color: CREAM },
+  wkStatSub: { fontSize: 11, fontWeight: '500', color: 'rgba(232,224,208,0.4)', marginTop: 2 },
+  wkMotivation: { fontSize: 12, fontStyle: 'italic', marginTop: 10 },
 
   // Monthly
   monthlyContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16, flex: 1, justifyContent: 'space-between' },
