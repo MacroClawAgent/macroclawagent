@@ -38,7 +38,7 @@ export function AppHeader({
 
   return (
     <View style={styles.header}>
-      {/* Left */}
+      {/* Left — back button */}
       <View style={styles.left}>
         {showBack ? (
           <TouchableOpacity onPress={handleBack} activeOpacity={0.7} style={styles.backBtn}>
@@ -46,13 +46,17 @@ export function AppHeader({
             <Text style={[styles.backLabel, { color: resolvedText }]}>Back</Text>
           </TouchableOpacity>
         ) : null}
+      </View>
+
+      {/* Center — title */}
+      <View style={styles.center}>
         {wordmark ? (
           <View style={styles.wordmark}>
             <View style={[styles.wordmarkDot, { backgroundColor: resolvedDot }]} />
             <Text style={[styles.wordmarkText, { color: resolvedText }]}>JONNO</Text>
           </View>
         ) : title ? (
-          <Text style={[styles.title, { color: resolvedText }]}>{title}</Text>
+          <Text style={[styles.title, { color: resolvedText }]} numberOfLines={1}>{title}</Text>
         ) : null}
       </View>
 
@@ -76,19 +80,23 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 10,
   },
   left: {
+    width: 70,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+  },
+  center: {
     flex: 1,
+    alignItems: "center",
   },
   right: {
+    width: 70,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "flex-end",
     gap: 10,
   },
   title: {
