@@ -62,6 +62,103 @@ function SingleGenerating({ mealType }: { mealType: string }) {
   );
 }
 
+// ── Dynamic Insight ──────────────────────────────────────────────────────────
+
+function AgentInsight({ nutrition, targets, training, pantry, goal }: {
+  nutrition: { consumed: { calories: number; protein: number; carbs: number; fat: number } | null; remaining: { calories: number; protein: number; carbs: number; fat: number } | null; progressPct: number };
+  targets: { calories: number; protein: number; carbs: number; fat: number };
+  training: { label: string; caloriesBurned: number } | null;
+  pantry: { count: number };
+  goal: string;
+}) {
+  const hour = new Date().getHours();
+  const consumed = nutrition.consumed;
+  const remaining = nutrition.remaining;
+  const pct = nutrition.progressPct;
+
+  // Determine time context
+  const timeOfDay = hour < 11 ? 'morning' : hour < 14 ? 'midday' : hour < 17 ? 'afternoon' : 'evening';
+  const nextMeal = hour < 10 ? 'breakfast' : hour < 13 ? 'lunch' : hour < 16 ? 'snack' : 'dinner';
+
+  // Build dynamic badge + body
+  let badge = 'INSIGHT';
+  let badgeColor = CORAL;
+  let lines: string[] = [];
+
+  if (!consumed || pct === 0) {
+    // Nothing eaten yet
+    badge = timeOfDay === 'morning' ? 'GOOD MORNING' : 'GET STARTED';
+    badgeColor = SAGE;
+    lines.push(`You haven't logged any food yet today. Your target is ${targets.calories.toLocaleString()} kcal with ${targets.protein}g protein.`);
+    if (training) lines.push(`You did ${training.label} — fuel up for recovery.`);
+    lines.push(`Tap below to generate a ${nextMeal} suggestion.`);
+  } else if (pct < 40) {
+    // Early in the day, under-eaten
+    badge = 'ON TRACK';
+    badgeColor = SAGE;
+    const calLeft = remaining!.calories;
+    const proLeft = remaining!.protein;
+    lines.push(`${consumed.calories.toLocaleString()} kcal logged so far — ${calLeft.toLocaleString()} kcal remaining.`);
+    if (proLeft > targets.protein * 0.6) {
+      lines.push(`Still need ${proLeft}g protein — aim for high-protein ${nextMeal}.`);
+    }
+    if (training) lines.push(`${training.label} today — good time to refuel.`);
+  } else if (pct < 75) {
+    // Mid-day, decent progress
+    badge = 'HALFWAY THERE';
+    badgeColor = GOLD;
+    const proRatio = consumed.protein / targets.protein;
+    const calRatio = consumed.calories / targets.calories;
+    lines.push(`${Math.round(pct)}% of daily calories done. ${remaining!.calories.toLocaleString()} kcal left for ${nextMeal}${hour < 17 ? ' and dinner' : ''}.`);
+    if (proRatio < calRatio - 0.15) {
+      lines.push(`Protein is lagging (${consumed.protein}g / ${targets.protein}g) — prioritise lean protein for your next meal.`);
+    } else if (proRatio > calRatio + 0.1) {
+      lines.push(`Great protein intake so far — ${consumed.protein}g of ${targets.protein}g target.`);
+    }
+  } else if (pct < 100) {
+    // Almost there
+    badge = 'NEARLY DONE';
+    badgeColor = GOLD;
+    lines.push(`${Math.round(pct)}% of daily target — just ${remaining!.calories} kcal and ${remaining!.protein}g protein to go.`);
+    if (remaining!.protein > 20) {
+      lines.push(`A protein shake or yoghurt could close the gap.`);
+    } else {
+      lines.push(`You're close to hitting all targets — strong day.`);
+    }
+  } else {
+    // Over target
+    badge = 'TARGET HIT';
+    badgeColor = SAGE;
+    const over = consumed.calories - targets.calories;
+    if (over > 200) {
+      lines.push(`You've gone ${over} kcal over target today. ${goal === 'Lose Weight' ? "Tomorrow's plan will compensate." : "No stress — your weekly average matters more."}`);
+    } else {
+      lines.push(`All targets hit for today — well done. ${consumed.protein}g protein, ${consumed.carbs}g carbs, ${consumed.fat}g fat.`);
+    }
+  }
+
+  if (pantry.count > 0 && pct < 75) {
+    lines.push(`${pantry.count} pantry items available — Jonno can build a meal around them.`);
+  }
+
+  return (
+    <View style={s.insightCard}>
+      <View style={s.insightHeader}>
+        <Ionicons name="sparkles" size={14} color={badgeColor} />
+        <Text style={[s.insightBadge, { color: badgeColor }]}>{badge}</Text>
+        {consumed && <Text style={s.insightPct}>{Math.round(pct)}%</Text>}
+      </View>
+      {/* Mini progress bar */}
+      {consumed && (
+        <View style={s.insightBar}>
+          <View style={[s.insightBarFill, { width: `${Math.min(100, pct)}%`, backgroundColor: badgeColor }]} />
+        </View>
+      )}
+      <Text style={s.insightBody}>{lines.join(' ')}</Text>
+    </View>
+  );
+}
+
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function AgentScreen() {
@@ -362,20 +459,7 @@ export default function AgentScreen() {
         </View>
 
         {/* ── Agent Insight ────────────────────────────────────────────────── */}
-        <View style={s.insightCard}>
-          <View style={s.insightHeader}>
-            <Ionicons name="sparkles" size={14} color={CORAL} />
-            <Text style={s.insightBadge}>TODAY'S PLAN</Text>
-          </View>
-          <Text style={s.insightBody}>
-            {nutrition.remaining
-              ? `You have ${nutrition.remaining.calories.toLocaleString()} kcal and ${nutrition.remaining.protein}g protein left today.`
-              : `Your daily target is ${targets.calories.toLocaleString()} kcal with ${targets.protein}g protein.`}
-            {training ? ` ${training.label} — adjust for recovery.` : ''}
-            {pantry.count > 0 ? ` ${pantry.count} items in your kitchen ready to use.` : ''}
-            {hasAnyPreferences && prefTags.length > 0 ? ` Preferences: ${prefTags.slice(0, 2).join(', ')}.` : ''}
-          </Text>
-        </View>
+        <AgentInsight nutrition={nutrition} targets={targets} training={training} pantry={pantry} goal={goal} />
 
         {/* ── Error ──────────────────────────────────────────────────────────── */}
         {error && (
@@ -671,8 +755,11 @@ const s = StyleSheet.create({
     backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     padding: 16,
   },
-  insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
-  insightBadge: { fontSize: 11, fontWeight: '700', color: CORAL, letterSpacing: 1 },
+  insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+  insightBadge: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+  insightPct: { fontSize: 12, fontWeight: '700', color: TEXT, marginLeft: 'auto' },
+  insightBar: { height: 3, borderRadius: 2, backgroundColor: 'rgba(232,224,208,0.06)', marginBottom: 8 },
+  insightBarFill: { height: 3, borderRadius: 2 },
   insightBody: { fontSize: 14, color: MUTED, lineHeight: 21 },
 
   // Error
