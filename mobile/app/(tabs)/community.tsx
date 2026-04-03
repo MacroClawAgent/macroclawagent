@@ -559,7 +559,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, gap: 10,
   },
-  headerTitle: { flex: 1, fontSize: 36, fontWeight: '800', fontFamily: 'BebasNeue_400Regular', letterSpacing: -0.6, color: CREAM },
+  headerTitle: { flex: 1, fontSize: 28, fontWeight: '900', letterSpacing: -0.5, color: CREAM },
   headerRight: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 40, height: 40, borderRadius: 13,
@@ -618,7 +618,7 @@ const tb = StyleSheet.create({
     borderBottomColor: 'rgba(255,220,150,0.1)',
   },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 10, position: 'relative' },
-  tabText: { fontSize: 18, fontWeight: '600', color: MUTED, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.3 },
+  tabText: { fontSize: 16, fontWeight: '600', color: MUTED },
   tabTextActive: { color: CREAM },
   indicator: {
     position: 'absolute', bottom: 0, left: '20%', right: '20%',
@@ -648,7 +648,7 @@ const ts = StyleSheet.create({
   fireLabel: { fontSize: 14, marginRight: 2 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   rank: { fontSize: 12, fontWeight: '800', color: GOLD, fontFamily: 'BebasNeue_400Regular' },
-  name: { fontSize: 12, fontWeight: '600', color: CREAM, fontFamily: 'BebasNeue_400Regular', marginRight: 10 },
+  name: { fontSize: 12, fontWeight: '600', color: CREAM, marginRight: 10 },
   dismiss: { paddingHorizontal: 6, paddingVertical: 4 },
   dismissText: { fontSize: 12, color: MUTED },
 });
@@ -663,7 +663,7 @@ const fs = StyleSheet.create({
     borderTopWidth: 1, borderTopColor: BORDER,
   },
   handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(232,224,208,0.2)', alignSelf: 'center', marginBottom: 16 },
-  title: { fontSize: 18, fontWeight: '800', color: CREAM, fontFamily: 'BebasNeue_400Regular', marginBottom: 16 },
+  title: { fontSize: 18, fontWeight: '800', color: CREAM, marginBottom: 16 },
   options: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
   option: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
