@@ -376,53 +376,46 @@ export default function LogFoodScreen() {
           {/* ── Section label (fixed) ── */}
           <Text style={s.sectionLabel}>{isSearching ? "RESULTS" : "YOUR DISHES"}</Text>
 
-          {/* ── Dish list (scrolls within its own card) ── */}
-          {loadingDishes && !isSearching ? (
-            <View style={s.emptyState}>
-              <Ionicons name="hourglass-outline" size={36} color={MUTED} />
-              <Text style={[s.emptyTitle, { color: MUTED }]}>Loading your dishes...</Text>
-            </View>
-          ) : noResults ? (
-            <View style={s.emptyState}>
-              <Ionicons name="search-outline" size={36} color={MUTED} />
-              <Text style={s.emptyTitle}>No dishes found for "{query.trim()}"</Text>
-              <TouchableOpacity onPress={() => openCustom(query.trim())} style={s.emptyLink}>
-                <Text style={s.emptyLinkText}>+ Add "{query.trim()}" as custom dish</Text>
-              </TouchableOpacity>
-            </View>
-          ) : !isSearching && filteredDishes.length === 0 ? (
-            <View style={s.emptyState}>
-              <Ionicons name="restaurant-outline" size={36} color={MUTED} />
-              <Text style={s.emptyTitle}>No dishes yet</Text>
-              <Text style={[s.emptyTitle, { fontSize: 13, color: MUTED, fontWeight: "400", marginTop: 4 }]}>
-                Scan a meal or create a custom dish to get started
-              </Text>
-              <TouchableOpacity onPress={() => openCustom()} style={s.emptyLink}>
-                <Text style={s.emptyLinkText}>+ Create custom dish</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={s.dishListCard}>
-              <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={s.listContent}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-              >
-                {filteredDishes.map((d, idx) => (
+          {/* ── Dish list card (always visible) ── */}
+          <View style={s.dishListCard}>
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={[s.listContent, filteredDishes.length === 0 && { flex: 1 }]}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {loadingDishes && !isSearching ? (
+                <View style={s.cardEmpty}>
+                  <Ionicons name="hourglass-outline" size={32} color={MUTED} />
+                  <Text style={s.cardEmptyText}>Loading your dishes...</Text>
+                </View>
+              ) : noResults ? (
+                <View style={s.cardEmpty}>
+                  <Ionicons name="search-outline" size={32} color={MUTED} />
+                  <Text style={s.cardEmptyTitle}>No dishes found for "{query.trim()}"</Text>
+                </View>
+              ) : filteredDishes.length === 0 ? (
+                <View style={s.cardEmpty}>
+                  <Ionicons name="camera-outline" size={32} color={MUTED} />
+                  <Text style={s.cardEmptyTitle}>No dishes yet</Text>
+                  <Text style={s.cardEmptyText}>Scan a meal to see your history here</Text>
+                </View>
+              ) : (
+                filteredDishes.map((d, idx) => (
                   <SwipeableDishRow
                     key={`${d.name}-${idx}`}
                     dish={d}
                     onAdd={() => openDishQty(d)}
                     onDelete={() => handleDeleteSavedDish(d.name)}
                   />
-                ))}
-                <TouchableOpacity style={s.createCustom} onPress={() => openCustom()} activeOpacity={0.7}>
-                  <Text style={s.createCustomText}>+ Create custom dish</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </View>
-          )}
+                ))
+              )}
+            </ScrollView>
+            {/* Always pinned at bottom of card */}
+            <TouchableOpacity style={s.createCustom} onPress={() => openCustom()} activeOpacity={0.7}>
+              <Text style={s.createCustomText}>+ Create custom dish</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
       {/* ═══════════════════ QUANTITY SHEET ═══════════════════ */}
@@ -624,15 +617,14 @@ const s = StyleSheet.create({
     letterSpacing: 1.2, marginLeft: 20, marginTop: 16, marginBottom: 8,
      },
 
-  // ── Empty state ──────────────────────────────────────────────────────────────
-  emptyState: { alignItems: "center", paddingTop: 60, paddingHorizontal: 32, gap: 4 },
-  emptyTitle: { fontSize: 16, fontWeight: "600", color: CREAM, marginTop: 12, textAlign: "center",  },
-  emptyLink:  { marginTop: 8 },
-  emptyLinkText: { fontSize: 14, color: GOLD,  },
+  // ── Empty state (inside card) ────────────────────────────────────────────────
+  cardEmpty:      { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 6, paddingVertical: 40 },
+  cardEmptyTitle: { fontSize: 15, fontWeight: "600", color: CREAM, textAlign: "center" },
+  cardEmptyText:  { fontSize: 13, color: MUTED, textAlign: "center" },
 
-  // ── Create custom ────────────────────────────────────────────────────────────
-  createCustom:    { alignItems: "center", paddingVertical: 20 },
-  createCustomText:{ fontSize: 14, color: GOLD,  },
+  // ── Create custom (pinned bottom of card) ──────────────────────────────────
+  createCustom:    { alignItems: "center", paddingVertical: 14, borderTopWidth: 1, borderTopColor: "rgba(232,224,208,0.06)" },
+  createCustomText:{ fontSize: 14, color: GOLD },
 
   // ── Quantity sheet ───────────────────────────────────────────────────────────
   overlay:     { flex: 1, justifyContent: "flex-end" },
