@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Check if user has completed their health profile
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: profile } = await supabase
@@ -26,9 +25,9 @@ export async function GET(request: NextRequest) {
           .eq("id", user.id)
           .single();
 
-        // New users or incomplete profiles → onboarding
+        // New users confirming email → thank you page (mobile app polls for this)
         if (!profile || !profile.profile_complete) {
-          return NextResponse.redirect(`${origin}/onboarding`);
+          return NextResponse.redirect(`${origin}/auth/confirmed`);
         }
       }
       return NextResponse.redirect(`${origin}${next}`);

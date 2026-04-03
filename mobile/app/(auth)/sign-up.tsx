@@ -48,8 +48,10 @@ export default function SignUpScreen() {
     setLoading(true);
     const { error } = await signUp(email.trim(), password);
     setLoading(false);
-    if (error) Alert.alert("Sign up failed", error);
-    else router.replace("/");
+    if (error) { Alert.alert("Sign up failed", error); }
+    else {
+      router.replace({ pathname: "/(auth)/confirm-email", params: { email: email.trim() } });
+    }
   }
 
   return (
