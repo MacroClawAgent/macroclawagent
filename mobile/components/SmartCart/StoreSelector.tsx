@@ -21,11 +21,19 @@ const SAGE    = '#8B9E6E';
 const TEXT_C  = '#E8E0D0';
 const MUTED   = 'rgba(232,224,208,0.5)';
 const DIM     = 'rgba(232,224,208,0.3)';
-const WW_GREEN = '#007837';
-const COLES_RED = '#E31837';
+const STORE_BRAND: Record<StoreType, { color: string; letter: string }> = {
+  woolworths: { color: '#007837', letter: 'W' },
+  coles:      { color: '#E31837', letter: 'C' },
+  aldi:       { color: '#00529B', letter: 'A' },
+  iga:        { color: '#D4001A', letter: 'I' },
+  costco:     { color: '#E31837', letter: 'Co' },
+};
 
 function storeColor(store: StoreType): string {
-  return store === 'woolworths' ? WW_GREEN : COLES_RED;
+  return STORE_BRAND[store]?.color ?? GOLD;
+}
+function storeLetter(store: StoreType): string {
+  return STORE_BRAND[store]?.letter ?? '?';
 }
 
 function formatDistance(m: number): string {
@@ -76,7 +84,7 @@ export function StoreSelector({
           <Ionicons name="location-outline" size={18} color={CORAL} />
           <View style={{ flex: 1 }}>
             <Text style={ss.enableTitle}>Enable location</Text>
-            <Text style={ss.enableSub}>To find Woolworths and Coles near you</Text>
+            <Text style={ss.enableSub}>To find supermarkets near you</Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color={DIM} />
         </TouchableOpacity>
@@ -157,9 +165,7 @@ export function StoreSelector({
                   activeOpacity={0.75}
                 >
                   <View style={[ss.avatar, { backgroundColor: sc }]}>
-                    <Text style={ss.avatarText}>
-                      {store.store === 'woolworths' ? 'W' : 'C'}
-                    </Text>
+                    <Text style={ss.avatarText}>{storeLetter(store.store)}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={ss.rowName} numberOfLines={1}>{store.name}</Text>
