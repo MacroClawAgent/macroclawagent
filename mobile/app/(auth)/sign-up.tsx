@@ -11,17 +11,34 @@ import { supabase } from "@/lib/supabase";
 
 const BG = "#1C1612";
 const GOLD = "#F5C842";
+const CORAL = "#E07B54";
+const SAGE = "#8B9E6E";
 const TEXT_C = "#E8E0D0";
 const MUTED = "rgba(232,224,208,0.5)";
 const DIM = "rgba(232,224,208,0.25)";
+
+function isValidEmail(e: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+}
 
 export default function SignUpScreen() {
   const { signUp } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+
+  const emailValid = isValidEmail(email.trim());
+  const pwLong = password.length >= 6;
+  const pwMatch = password === confirmPw && confirmPw.length > 0;
+  const canSubmit = emailValid && pwLong && pwMatch && !loading;
+
+  // Inline validation hints
+  const emailHint = email.length > 0 && !emailValid ? "Enter a valid email address" : null;
+  const pwHint = password.length > 0 && !pwLong ? "At least 6 characters" : null;
+  const confirmHint = confirmPw.length > 0 && !pwMatch ? "Passwords don't match" : null;
 
   async function handleApple() {
     try {
@@ -43,14 +60,19 @@ export default function SignUpScreen() {
   }
 
   async function handleSignUp() {
-    if (!email || !password) { Alert.alert("Required", "Please enter your email and password."); return; }
-    if (password.length < 6) { Alert.alert("Weak password", "Password must be at least 6 characters."); return; }
+    if (!canSubmit) return;
     setLoading(true);
     const { error } = await signUp(email.trim(), password);
     setLoading(false);
-    if (error) { Alert.alert("Sign up failed", error); }
-    else {
-      router.replace({ pathname: "/(auth)/confirm-email", params: { email: email.trim() } });
+    if (error) {
+      // Supabase returns specific error for duplicate emails
+      if (error.toLowerCase().includes("already registered") || error.toLowerCase().includes("already been registered")) {
+        Alert.alert("Email taken", "An account with this email already exists. Try signing in instead.");
+      } else {
+        Alert.alert("Sign up failed", error);
+      }
+    } else {
+      router.replace("/");
     }
   }
 
@@ -83,33 +105,54 @@ export default function SignUpScreen() {
 
         {/* Email form */}
         <View style={s.form}>
-          <TextInput
-            style={s.input}
-            placeholder="Email address"
-            placeholderTextColor={DIM}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoCorrect={false}
-          />
-          <View style={s.pwWrap}>
+          <View>
             <TextInput
-              style={[s.input, { flex: 1 }]}
-              placeholder="Password (min. 6 characters)"
+              style={[s.input, emailHint ? s.inputError : null]}
+              placeholder="Email address"
               placeholderTextColor={DIM}
-              value={password}
-              onChangeText={setPassword}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoCorrect={false}
+            />
+            {emailHint && <Text style={s.hint}>{emailHint}</Text>}
+          </View>
+
+          <View>
+            <View style={s.pwWrap}>
+              <TextInput
+                style={[s.input, { flex: 1 }, pwHint ? s.inputError : null]}
+                placeholder="Password (min. 6 characters)"
+                placeholderTextColor={DIM}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPw}
+              />
+              <TouchableOpacity onPress={() => setShowPw(v => !v)} style={s.eyeBtn}>
+                <Ionicons name={showPw ? "eye-off-outline" : "eye-outline"} size={20} color={DIM} />
+              </TouchableOpacity>
+            </View>
+            {pwHint && <Text style={s.hint}>{pwHint}</Text>}
+          </View>
+
+          <View>
+            <TextInput
+              style={[s.input, confirmHint ? s.inputError : null, pwMatch && confirmPw.length > 0 ? s.inputSuccess : null]}
+              placeholder="Confirm password"
+              placeholderTextColor={DIM}
+              value={confirmPw}
+              onChangeText={setConfirmPw}
               secureTextEntry={!showPw}
             />
-            <TouchableOpacity onPress={() => setShowPw(v => !v)} style={s.eyeBtn}>
-              <Ionicons name={showPw ? "eye-off-outline" : "eye-outline"} size={20} color={DIM} />
-            </TouchableOpacity>
+            {confirmHint && <Text style={s.hint}>{confirmHint}</Text>}
+            {pwMatch && confirmPw.length > 0 && <Text style={[s.hint, { color: SAGE }]}>Passwords match</Text>}
           </View>
+
           <TouchableOpacity
-            style={[s.submitBtn, loading && { opacity: 0.6 }]}
+            style={[s.submitBtn, !canSubmit && { opacity: 0.4 }]}
             onPress={handleSignUp}
-            disabled={loading}
+            disabled={!canSubmit}
             activeOpacity={0.85}
           >
             {loading ? <ActivityIndicator color={BG} /> : <Text style={s.submitTxt}>Create Account</Text>}
@@ -148,8 +191,11 @@ const s = StyleSheet.create({
     backgroundColor: "rgba(232,224,208,0.06)", borderWidth: 1, borderColor: "rgba(232,224,208,0.1)",
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: TEXT_C,
   },
+  inputError: { borderColor: "rgba(224,123,84,0.4)" },
+  inputSuccess: { borderColor: "rgba(139,158,110,0.4)" },
   pwWrap: { flexDirection: "row", alignItems: "center", gap: 8 },
   eyeBtn: { padding: 8 },
+  hint: { fontSize: 12, color: CORAL, marginTop: 4, marginLeft: 4 },
   submitBtn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 4 },
   submitTxt: { color: BG, fontWeight: "800", fontSize: 16 },
   legal: { fontSize: 11, color: DIM, textAlign: "center", lineHeight: 16 },
