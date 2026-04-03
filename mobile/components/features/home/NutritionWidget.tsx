@@ -158,64 +158,76 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
           </>
         )}
 
-        {/* ── WEEKLY ── */}
-        {mode === 'weekly' && (
-          <View style={s.wkWrap}>
-            {/* 7-day bar chart */}
-            <View style={s.wkChart}>
-              <View style={s.wkTargetLine}><Text style={s.wkTargetLabel}>target</Text></View>
-              <View style={s.wkBars}>
-                {['M','T','W','T','F','S','S'].map((d, i) => {
-                  const kcal = weekDays[i]?.kcal ?? 0;
-                  const pct = calorieProgress.target > 0 ? Math.min(1, kcal / calorieProgress.target) : 0;
-                  const isToday = i === todayDow;
-                  const isSage = pct >= 0.85 && !isToday;
-                  const isGold = (pct >= 0.4 && pct < 0.85) || isToday;
+        {/* ── WEEKLY — Scorecard ── */}
+        {mode === 'weekly' && (() => {
+          const target = calorieProgress.target;
+          const calPctWeek = target > 0 && weekDaysLogged > 0 ? Math.round((weekAvgCal / target) * 100) : 0;
+          const proPct = macros.protein.target > 0 ? Math.round((macros.protein.consumed / macros.protein.target) * 100) : 0;
+          const carbPct = macros.carbs.target > 0 ? Math.round((macros.carbs.consumed / macros.carbs.target) * 100) : 0;
+          const fatPct = macros.fat.target > 0 ? Math.round((macros.fat.consumed / macros.fat.target) * 100) : 0;
+
+          // Grade calculation: avg of all %s capped at 100, weighted by logged days
+          const rawScore = weekDaysLogged > 0
+            ? (Math.min(calPctWeek, 110) + Math.min(proPct, 110) + Math.min(carbPct, 110) + Math.min(fatPct, 110)) / 4 * (weekDaysLogged / 7)
+            : 0;
+          const grade = rawScore >= 90 ? 'A' : rawScore >= 80 ? 'A-' : rawScore >= 70 ? 'B+' : rawScore >= 60 ? 'B' : rawScore >= 50 ? 'B-' : rawScore >= 40 ? 'C+' : rawScore >= 25 ? 'C' : 'D';
+          const gradeColor = rawScore >= 70 ? SAGE : rawScore >= 50 ? GOLD : CORAL;
+
+          function statusLabel(pct: number): { text: string; color: string; icon: string } {
+            if (pct >= 85) return { text: 'on track', color: SAGE, icon: '✓' };
+            if (pct >= 60) return { text: 'close', color: GOLD, icon: '✓' };
+            if (pct > 0) return { text: 'low', color: CORAL, icon: '✗' };
+            return { text: '--', color: 'rgba(232,224,208,0.3)', icon: '–' };
+          }
+
+          const rows = [
+            { label: 'Calories', pct: calPctWeek, color: CREAM },
+            { label: 'Protein', pct: proPct, color: CORAL },
+            { label: 'Carbs', pct: carbPct, color: GOLD },
+            { label: 'Fat', pct: fatPct, color: SAGE },
+          ];
+
+          // Insight line
+          const bestMacro = rows.slice(1).sort((a, b) => b.pct - a.pct)[0];
+          const worstMacro = rows.slice(1).sort((a, b) => a.pct - b.pct)[0];
+          const insight = weekDaysLogged === 0 ? 'Log meals to see your weekly score'
+            : worstMacro.pct < 60 && bestMacro.pct >= 80 ? `✦ Strong ${bestMacro.label.toLowerCase()} — bring ${worstMacro.label.toLowerCase()} up`
+            : rawScore >= 70 ? `✦ Great balance this week`
+            : `Keep logging — ${7 - weekDaysLogged} days left`;
+
+          return (
+            <View style={s.wkWrap}>
+              {/* Grade + score header */}
+              <View style={s.wkGradeRow}>
+                <View style={[s.wkGradeBadge, { borderColor: gradeColor + '40', backgroundColor: gradeColor + '12' }]}>
+                  <Text style={[s.wkGradeText, { color: gradeColor }]}>{grade}</Text>
+                </View>
+                <View style={{ flex: 1, marginLeft: 14 }}>
+                  <Text style={s.wkGradeTitle}>Week score</Text>
+                  <Text style={s.wkGradeSub}>{weekDaysLogged}/7 days logged</Text>
+                </View>
+              </View>
+
+              {/* Macro rows */}
+              <View style={s.wkRows}>
+                {rows.map(row => {
+                  const st = statusLabel(row.pct);
                   return (
-                    <View key={i} style={s.wkBarCol}>
-                      <View style={s.wkBarTrack}>
-                        {pct > 0 || isToday ? (
-                          <LinearGradient
-                            colors={isToday ? [GOLD, '#D4A820'] : isSage ? [SAGE, '#6B7E4E'] : [GOLD, '#D4A820']}
-                            style={[s.wkBar, { height: `${Math.max(5, pct * 100)}%` as DimensionValue }, isToday && s.wkBarGlow]}
-                          />
-                        ) : (
-                          <View style={[s.wkBar, s.wkBarStub]} />
-                        )}
-                      </View>
-                      <Text style={[s.wkDayLabel, isToday && s.wkDayToday]}>{d}</Text>
+                    <View key={row.label} style={s.wkRow}>
+                      <Text style={[s.wkRowIcon, { color: st.color }]}>{st.icon}</Text>
+                      <Text style={s.wkRowLabel}>{row.label}</Text>
+                      <Text style={[s.wkRowStatus, { color: st.color }]}>{st.text}</Text>
+                      <Text style={[s.wkRowPct, { color: row.color }]}>{row.pct > 0 ? `${row.pct}%` : '--'}</Text>
                     </View>
                   );
                 })}
               </View>
-            </View>
 
-            {/* Stats row */}
-            <View style={s.wkStats}>
-              <View style={s.wkStatItem}>
-                <Text style={s.wkStatVal}>{weekAvgCal}</Text>
-                <Text style={s.wkStatSub}>avg/day</Text>
-              </View>
-              <View style={s.wkStatItem}>
-                <Text style={[s.wkStatVal, { color: weekDaysLogged >= 5 ? SAGE : weekDaysLogged >= 3 ? GOLD : CORAL }]}>{weekDaysLogged}/7</Text>
-                <Text style={s.wkStatSub}>days logged</Text>
-              </View>
-              <View style={s.wkStatItem}>
-                <Text style={[s.wkStatVal, { color: GOLD }]}>{weekBest}</Text>
-                <Text style={s.wkStatSub}>best day</Text>
-              </View>
+              {/* Insight */}
+              <Text style={s.wkInsight}>{insight}</Text>
             </View>
-
-            {/* Motivational line */}
-            <Text style={[s.wkMotivation, {
-              color: weekDaysLogged === 7 ? SAGE : weekDaysLogged >= 5 ? GOLD : weekDaysLogged >= 3 ? 'rgba(232,224,208,0.5)' : CORAL
-            }]}>
-              {weekDaysLogged === 7 ? '🔥 Perfect week — every day logged!'
-                : weekDaysLogged >= 5 ? `✦ Strong week — ${weekDaysLogged} days logged`
-                : weekDaysLogged >= 3 ? `Keep going — log ${7 - weekDaysLogged} more days`
-                : 'Log today to start your streak'}
-            </Text>
-          </View>
+          );
+        })()}
         )}
 
         {/* ── MONTHLY ── */}
@@ -295,24 +307,20 @@ const s = StyleSheet.create({
   calBarFill: { height: 6, borderRadius: 3 },
   macroRow: { flex: 1, flexDirection: "row", justifyContent: "space-around", alignItems: "stretch", paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 },
 
-  // Weekly
-  wkWrap: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, flex: 1, justifyContent: 'space-between' },
-  wkChart: { height: 100 },
-  wkTargetLine: { position: 'absolute', top: 0, left: 0, right: 0, borderTopWidth: 1, borderTopColor: 'rgba(248,213,97,0.2)', borderStyle: 'dashed', flexDirection: 'row', justifyContent: 'flex-end' },
-  wkTargetLabel: { fontSize: 9, color: 'rgba(248,213,97,0.4)', marginTop: -12 },
-  wkBars: { flexDirection: 'row', flex: 1, gap: 6 },
-  wkBarCol: { flex: 1, alignItems: 'center' },
-  wkBarTrack: { flex: 1, width: '100%', justifyContent: 'flex-end' },
-  wkBar: { width: '100%', borderRadius: 6, minHeight: 4 },
-  wkBarStub: { height: 4, backgroundColor: 'rgba(232,224,208,0.08)' },
-  wkBarGlow: { shadowColor: GOLD, shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } },
-  wkDayLabel: { fontSize: 10, color: 'rgba(232,224,208,0.35)', marginTop: 4, textAlign: 'center' },
-  wkDayToday: { color: GOLD, fontWeight: '600' },
-  wkStats: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 },
-  wkStatItem: { alignItems: 'center', flex: 1 },
-  wkStatVal: { fontSize: 22, fontWeight: '800', color: CREAM },
-  wkStatSub: { fontSize: 11, fontWeight: '500', color: 'rgba(232,224,208,0.4)', marginTop: 2 },
-  wkMotivation: { fontSize: 12, fontStyle: 'italic', marginTop: 10 },
+  // Weekly — Scorecard
+  wkWrap: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 14, flex: 1, justifyContent: 'space-between' },
+  wkGradeRow: { flexDirection: 'row', alignItems: 'center' },
+  wkGradeBadge: { width: 52, height: 52, borderRadius: 14, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  wkGradeText: { fontSize: 24, fontWeight: '900' },
+  wkGradeTitle: { fontSize: 16, fontWeight: '700', color: CREAM },
+  wkGradeSub: { fontSize: 12, color: 'rgba(232,224,208,0.45)', marginTop: 2 },
+  wkRows: { marginTop: 14, gap: 6 },
+  wkRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  wkRowIcon: { fontSize: 13, fontWeight: '700', width: 16, textAlign: 'center' },
+  wkRowLabel: { fontSize: 13, fontWeight: '600', color: CREAM, width: 70 },
+  wkRowStatus: { flex: 1, fontSize: 12, fontWeight: '600' },
+  wkRowPct: { fontSize: 14, fontWeight: '700', textAlign: 'right', minWidth: 40 },
+  wkInsight: { fontSize: 12, fontStyle: 'italic', color: GOLD, marginTop: 12 },
 
   // Monthly
   monthlyContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16, flex: 1, justifyContent: 'space-between' },
