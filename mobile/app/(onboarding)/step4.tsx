@@ -78,7 +78,9 @@ export default function OnboardingStep4() {
       // Save all onboarding data in one call
       await apiPost("/api/profile/update", {
         full_name: `${params.first_name} ${params.last_name}`.trim(),
-        date_of_birth: params.dob || undefined,
+        date_of_birth: params.dob && params.dob.length === 10
+          ? `${params.dob.slice(6, 10)}-${params.dob.slice(3, 5)}-${params.dob.slice(0, 2)}`
+          : undefined,
         fitness_goal: params.goal,
         weight_kg: params.weight_kg ? parseFloat(params.weight_kg) : undefined,
         height_cm: params.height_cm ? parseFloat(params.height_cm) : undefined,
