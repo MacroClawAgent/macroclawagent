@@ -21,40 +21,94 @@ const GOALS = [
   { id: "maintain", icon: "heart-outline", color: SAGE, label: "Stay Healthy", desc: "Balanced nutrition every day" },
 ];
 
-function calcTargets(goal: string, weightKg: number, metabolism: string) {
+// ── Mifflin-St Jeor BMR + activity/goal adjustment ──────────────────────────
+// BMR = 10 × weight(kg) + 6.25 × height(cm) − 5 × age(years) + s
+// where s = +5 for male (default), −161 for female
+// We don't ask gender yet so we use the average: s = −78
+
+const SPORT_ACTIVITY: Record<string, number> = {
+  "Running":         1.55,  // moderate-high cardio
+  "Cycling":         1.55,
+  "Gym / Strength":  1.50,  // moderate lifting
+  "Swimming":        1.60,  // full-body high output
+  "Triathlon":       1.725, // very active
+  "Other":           1.45,  // light-moderate
+};
+
+function calcAge(dob: string): number {
+  if (!dob || dob.length !== 10) return 25; // default
+  const [dd, mm, yyyy] = dob.split("/").map(Number);
+  const birth = new Date(yyyy, mm - 1, dd);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
+  return Math.max(13, Math.min(80, age));
+}
+
+function calcTargets(goal: string, weightKg: number, heightCm: number, dob: string, sport: string, metabolism: string) {
   const w = weightKg > 0 ? weightKg : 70;
-  const metaMul = metabolism === "fast" ? 1.1 : metabolism === "slow" ? 0.9 : 1;
+  const h = heightCm > 0 ? heightCm : 175;
+  const age = calcAge(dob);
+
+  // Mifflin-St Jeor (gender-neutral average)
+  const bmr = 10 * w + 6.25 * h - 5 * age - 78;
+
+  // Activity multiplier from sport
+  const activityMul = SPORT_ACTIVITY[sport] ?? 1.45;
+
+  // Metabolism adjustment
+  const metaMul = metabolism === "fast" ? 1.08 : metabolism === "slow" ? 0.92 : 1;
+
+  // TDEE (Total Daily Energy Expenditure)
+  const tdee = Math.round(bmr * activityMul * metaMul);
+
   let cal: number, pro: number, carbs: number, fat: number;
   switch (goal) {
     case "lose_weight":
-      cal = Math.round((w * 28 - 350) * metaMul);
-      pro = Math.round(w * 2.0); carbs = Math.round(cal * 0.35 / 4); fat = Math.round(cal * 0.25 / 9);
+      // 20% deficit for ~0.5kg/week loss
+      cal = Math.round(tdee * 0.80);
+      pro = Math.round(w * 2.0);   // high protein to preserve muscle
+      fat = Math.round(w * 0.9);   // ~0.9g/kg
+      carbs = Math.round((cal - pro * 4 - fat * 9) / 4);
       break;
     case "build_muscle":
-      cal = Math.round((w * 32 + 200) * metaMul);
-      pro = Math.round(w * 2.2); carbs = Math.round(cal * 0.45 / 4); fat = Math.round(cal * 0.25 / 9);
+      // 10-15% surplus
+      cal = Math.round(tdee * 1.12);
+      pro = Math.round(w * 2.2);   // peak muscle protein synthesis
+      fat = Math.round(w * 1.0);   // healthy hormones
+      carbs = Math.round((cal - pro * 4 - fat * 9) / 4);
       break;
     case "performance":
-      cal = Math.round(w * 35 * metaMul);
-      pro = Math.round(w * 2.0); carbs = Math.round(cal * 0.50 / 4); fat = Math.round(cal * 0.20 / 9);
+      // Maintenance + slightly higher carbs
+      cal = Math.round(tdee * 1.05);
+      pro = Math.round(w * 1.8);
+      fat = Math.round(w * 0.8);
+      carbs = Math.round((cal - pro * 4 - fat * 9) / 4);
       break;
-    default:
-      cal = Math.round(w * 30 * metaMul);
-      pro = Math.round(w * 1.8); carbs = Math.round(cal * 0.40 / 4); fat = Math.round(cal * 0.30 / 9);
+    default: // maintain / stay healthy
+      cal = tdee;
+      pro = Math.round(w * 1.6);
+      fat = Math.round(w * 0.9);
+      carbs = Math.round((cal - pro * 4 - fat * 9) / 4);
   }
-  return { calories: cal, protein: pro, carbs, fat };
+  // Safety: ensure carbs don't go negative
+  if (carbs < 50) { carbs = 50; cal = pro * 4 + fat * 9 + carbs * 4; }
+
+  return { calories: cal, protein: pro, carbs, fat, tdee, bmr: Math.round(bmr), age };
 }
 
 function goalDetail(goal: string, targets: ReturnType<typeof calcTargets>) {
+  const deficit = targets.tdee - targets.calories;
+  const surplus = targets.calories - targets.tdee;
   switch (goal) {
     case "lose_weight":
-      return { tagline: "Healthy deficit for sustainable fat loss", detail: `~0.5 kg per week · ${targets.calories} kcal/day`, icon: "trending-down-outline", color: CORAL };
+      return { tagline: "20% deficit for sustainable fat loss", detail: `${deficit} kcal deficit · ~${(deficit * 7 / 7700).toFixed(1)} kg/week`, icon: "trending-down-outline", color: CORAL };
     case "build_muscle":
-      return { tagline: "Calorie surplus for lean gains", detail: `+200 kcal surplus · ${targets.protein}g protein/day`, icon: "barbell-outline", color: SAGE };
+      return { tagline: "Controlled surplus for lean gains", detail: `+${surplus} kcal surplus · ${targets.protein}g protein/day`, icon: "barbell-outline", color: SAGE };
     case "performance":
-      return { tagline: "Fuel your training and recovery", detail: `High carbs (${targets.carbs}g) · ${targets.calories} kcal/day`, icon: "flash-outline", color: GOLD };
+      return { tagline: "Fuel your training and recovery", detail: `High carbs (${targets.carbs}g) for energy + endurance`, icon: "flash-outline", color: GOLD };
     default:
-      return { tagline: "Balanced nutrition for long-term health", detail: `${targets.calories} kcal · ${targets.protein}g protein/day`, icon: "heart-outline", color: SAGE };
+      return { tagline: "Balanced nutrition for long-term health", detail: `Maintenance at ${targets.tdee} TDEE`, icon: "heart-outline", color: SAGE };
   }
 }
 
@@ -66,8 +120,11 @@ export default function OnboardingStep3() {
 
   const [goal, setGoal] = useState("");
   const weightKg = parseInt(params.weight_kg ?? "70");
+  const heightCm = parseInt(params.height_cm ?? "175");
+  const dob = params.dob ?? "";
+  const sport = params.sport ?? "Other";
   const metabolism = params.metabolism ?? "normal";
-  const targets = goal ? calcTargets(goal, weightKg, metabolism) : null;
+  const targets = goal ? calcTargets(goal, weightKg, heightCm, dob, sport, metabolism) : null;
   const detail = goal && targets ? goalDetail(goal, targets) : null;
 
   function handleNext() {
