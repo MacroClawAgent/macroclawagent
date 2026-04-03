@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { DeviceEventEmitter } from 'react-native';
+import { AppState, DeviceEventEmitter } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { usePreferences } from './usePreferences';
 import { useHealthKit } from './useHealthKit';
@@ -142,6 +142,14 @@ export function useAgentContext(): AgentContextData {
   // Auto-refresh when food is logged from anywhere in the app
   useEffect(() => {
     const sub = DeviceEventEmitter.addListener('nutrition_updated', fetchNutrition);
+    return () => sub.remove();
+  }, [fetchNutrition]);
+
+  // Refresh when app returns to foreground
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') fetchNutrition();
+    });
     return () => sub.remove();
   }, [fetchNutrition]);
 

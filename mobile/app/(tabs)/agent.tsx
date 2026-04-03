@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMealPlan } from '@/hooks/useMealPlan';
 import { useAgentContext } from '@/hooks/useAgentContext';
@@ -164,6 +164,9 @@ function AgentInsight({ nutrition, targets, training, pantry, goal }: {
 export default function AgentScreen() {
   const ctx = useAgentContext();
   const { preferences, hasAnyPreferences, completeOnboarding, refreshPreferences, training, pantry, nutrition, targets, goal, prefTags } = ctx;
+
+  // Refresh nutrition data every time the agent tab is focused
+  useFocusEffect(useCallback(() => { ctx.refresh(); }, []));
 
   const {
     state,
