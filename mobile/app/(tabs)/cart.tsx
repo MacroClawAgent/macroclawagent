@@ -509,14 +509,13 @@ export default function CartScreen() {
               {checkedCount} of {ingredientCount} items selected
             </Text>
             <TouchableOpacity
-              onPress={sc.openInStore}
-              disabled={!sc.cart.selectedStore}
+              onPress={() => Alert.alert('Coming Soon', 'In-app ordering and checkout is coming soon. For now, use the ingredient list to shop in store or online.')}
               activeOpacity={0.85}
-              style={[s.shopBtn, !sc.cart.selectedStore && s.shopBtnDisabled]}
+              style={s.shopBtn}
             >
               <Text style={s.shopBtnLabel}>
                 {sc.cart.selectedNearbyStore
-                  ? `Shop at ${storeName} →`
+                  ? `Shop at ${storeName}`
                   : 'Select a store first'}
               </Text>
             </TouchableOpacity>

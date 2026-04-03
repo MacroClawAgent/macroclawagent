@@ -230,7 +230,7 @@ export async function smartSearchIngredient(
 
   console.log('[SmartCart] Searching:', query);
 
-  // Try real API if key available — never block on failure
+  // Try real API if key available
   const key = getRapidApiKey();
   if (key && key.length > 10) {
     try {
@@ -240,12 +240,11 @@ export async function smartSearchIngredient(
         return results;
       }
     } catch (e) {
-      console.warn('[SmartCart] API failed, falling back to mock for:', query, e);
+      console.warn('[SmartCart] API failed for:', query, e);
     }
   }
 
-  // Always fall through to mock — never return empty
-  const mock = getMockProducts(query);
-  console.log('[SmartCart] 📦 Mock data for:', query);
-  return mock;
+  // No mock fallback — return empty so UI shows "price unavailable" instead of fake data
+  console.log('[SmartCart] No results for:', query);
+  return { woolworths: [], coles: [] };
 }
