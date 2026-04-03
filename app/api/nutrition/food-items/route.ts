@@ -64,22 +64,41 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Step 2: group meals by normalized dish name → deduplicate
+      // Step 2: group meals by fuzzy dish name → deduplicate similar dishes
+      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+      const wordSet = (s: string) => new Set(norm(s).split(" ").filter(Boolean));
+      function findSimilarKey(name: string, existing: Map<string, unknown>): string | null {
+        const nName = norm(name);
+        const nWords = wordSet(name);
+        for (const [key] of existing) {
+          const kNorm = norm(key);
+          // Exact normalized match
+          if (nName === kNorm) return key;
+          // One contains the other
+          if (nName.includes(kNorm) || kNorm.includes(nName)) return key;
+          // Word overlap >= 60%
+          const kWords = wordSet(key);
+          const overlap = [...nWords].filter(w => kWords.has(w)).length;
+          const maxLen = Math.max(nWords.size, kWords.size);
+          if (maxLen > 0 && overlap / maxLen >= 0.6) return key;
+        }
+        return null;
+      }
+
       const dishMap = new Map<string, {
         name: string; meal_tag: string;
         calories: number; protein_g: number; carbs_g: number; fat_g: number;
         last_logged: string; times_logged: number;
       }>();
       for (const meal of batchMap.values()) {
-        const key = (meal.name || "").toLowerCase().trim();
-        if (!key) continue;
-        const existing = dishMap.get(key);
-        if (existing) {
-          existing.times_logged += 1;
-          // Keep the most recent entry's macros (first seen = most recent due to desc order)
+        const mealName = (meal.name || "").trim();
+        if (!mealName) continue;
+        const matchKey = findSimilarKey(mealName, dishMap);
+        if (matchKey) {
+          dishMap.get(matchKey)!.times_logged += 1;
         } else {
-          dishMap.set(key, {
-            name: meal.name,
+          dishMap.set(mealName, {
+            name: mealName,
             meal_tag: meal.meal_tag,
             calories: Math.round(meal.calories),
             protein_g: Math.round(meal.protein_g),
