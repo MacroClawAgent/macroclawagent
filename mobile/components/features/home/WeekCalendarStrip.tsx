@@ -8,13 +8,12 @@ import {
   StyleSheet,
   ActivityIndicator,
   Pressable,
-  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
-import { apiGet, apiDelete } from "@/lib/api";
+import { apiGet } from "@/lib/api";
 import type { WeeklyDay } from "@/lib/viewModels/useHomeViewModel";
 
 interface FoodItem {
@@ -133,8 +132,6 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
   const [isFutureSelected, setIsFutureSelected] = useState(false);
   const [detail, setDetail] = useState<DayDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [expandedDishes, setExpandedDishes] = useState<Set<string>>(new Set());
-  const [deletingBatch, setDeletingBatch] = useState<string | null>(null);
 
   const todayDate = useMemo(() => {
     const d = new Date();
@@ -166,7 +163,7 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
     return `${start.getDate()} ${MONTH_NAMES[start.getMonth()]} – ${end.getDate()} ${MONTH_NAMES[end.getMonth()]}`;
   }, [weekDays]);
 
-  /** Group food items into dish cards: shared batch_id → dish, no batch_id → solo per item */
+  /** Group food items into dish summaries */
   const groupIntoDishes = (items: FoodItem[]) => {
     const map = new Map<string, FoodItem[]>();
     for (const item of items) {
@@ -179,61 +176,8 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
       const dishName =
         groupItems[0].dish_name ??
         groupItems.reduce((best, i) => (i.calories > best.calories ? i : best), groupItems[0]).name;
-      return { key, dishName, totalCals, items: groupItems, batchId: groupItems[0].batch_id ?? null };
+      return { key, dishName, totalCals, items: groupItems };
     });
-  };
-
-  const toggleDish = (key: string) => {
-    setExpandedDishes((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  };
-
-  const deleteDish = (key: string, batchId: string | null, dateStr: string) => {
-    Alert.alert("Delete dish?", "This will remove the entire dish from this day.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          setDeletingBatch(key);
-          try {
-            if (batchId) {
-              await apiDelete(`/api/nutrition/food-items?batch_id=${batchId}&date=${dateStr}`);
-            } else {
-              // solo item — extract the item id from key = "solo_<id>"
-              const itemId = key.replace("solo_", "");
-              await apiDelete(`/api/nutrition/food-items/${itemId}`);
-            }
-            // Remove from local state
-            setDetail((prev) => {
-              if (!prev) return prev;
-              const remaining = batchId
-                ? prev.foodItems.filter((i) => i.batch_id !== batchId)
-                : prev.foodItems.filter((i) => i.id !== key.replace("solo_", ""));
-              return {
-                ...prev,
-                foodItems: remaining,
-                totalCals: remaining.reduce((s, i) => s + (i.calories ?? 0), 0),
-                totalProtein: remaining.reduce((s, i) => s + (i.protein_g ?? 0), 0),
-              };
-            });
-            setExpandedDishes((prev) => {
-              const next = new Set(prev);
-              next.delete(key);
-              return next;
-            });
-          } catch {
-            Alert.alert("Error", "Failed to delete dish. Please try again.");
-          } finally {
-            setDeletingBatch(null);
-          }
-        },
-      },
-    ]);
   };
 
   const handleDayPress = async (dateStr: string, date: Date) => {
@@ -266,7 +210,6 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
     setSelectedDate(null);
     setDetail(null);
     setIsFutureSelected(false);
-    setExpandedDishes(new Set());
   };
 
   const selectedLabel = useMemo(() => {
@@ -456,10 +399,10 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                 </View>
               )}
 
-              {/* Food logged — grouped by dish */}
+              {/* Food logged — display only */}
               {detail.foodItems.length > 0 ? (
                 <>
-                  <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>FOOD LOGGED</Text>
+                  <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>MEALS LOGGED</Text>
                   {MEAL_TAGS.map((tag) => {
                     const tagItems = detail.foodItems.filter((f) => f.meal_tag === tag);
                     if (tagItems.length === 0) return null;
@@ -467,67 +410,18 @@ export function WeekCalendarStrip({ weeklyCalories, goals }: Props) {
                     return (
                       <View key={tag} style={styles.mealGroup}>
                         <Text style={[styles.mealTagLabel, { color: isDark ? '#F5C842' : BLUE }]}>{tag}</Text>
-                        {dishes.map((dish) => {
-                          const isExpanded = expandedDishes.has(dish.key);
-                          const isDeleting = deletingBatch === dish.key;
-                          return (
-                            <View key={dish.key} style={[styles.dishCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                              {/* Dish header row */}
-                              <TouchableOpacity
-                                style={styles.dishHeader}
-                                activeOpacity={0.7}
-                                onPress={() => toggleDish(dish.key)}
-                              >
-                                <View style={styles.dishLeft}>
-                                  <SymbolView
-                                    name={{ ios: isExpanded ? "chevron.down" : "chevron.right", android: isExpanded ? "expand_more" : "chevron_right", web: "chevron_right" }}
-                                    tintColor={colors.textMuted}
-                                    size={11}
-                                  />
-                                  <Text style={[styles.dishName, { color: colors.text }]} numberOfLines={1}>
-                                    {dish.dishName}
-                                  </Text>
-                                </View>
-                                <View style={styles.dishRight}>
-                                  <Text style={[styles.dishCal, { color: colors.textMuted }]}>
-                                    {+dish.totalCals.toFixed(1)} kcal
-                                  </Text>
-                                  <TouchableOpacity
-                                    onPress={() => deleteDish(dish.key, dish.batchId, selectedDate!)}
-                                    hitSlop={10}
-                                    disabled={isDeleting}
-                                    style={styles.trashBtn}
-                                  >
-                                    {isDeleting ? (
-                                      <ActivityIndicator size="small" color={colors.textMuted} />
-                                    ) : (
-                                      <SymbolView
-                                        name={{ ios: "trash", android: "delete", web: "delete" }}
-                                        tintColor="#EF4444"
-                                        size={14}
-                                      />
-                                    )}
-                                  </TouchableOpacity>
-                                </View>
-                              </TouchableOpacity>
-                              {/* Expanded ingredient rows */}
-                              {isExpanded && (
-                                <View style={[styles.ingredientList, { borderTopColor: colors.border }]}>
-                                  {dish.items.map((item) => (
-                                    <View key={item.id} style={[styles.ingredientRow, { borderBottomColor: colors.border }]}>
-                                      <Text style={[styles.ingredientName, { color: colors.textSecondary }]} numberOfLines={1}>
-                                        {item.name}
-                                      </Text>
-                                      <Text style={[styles.ingredientMacros, { color: colors.textMuted }]}>
-                                        {+item.calories.toFixed(1)} kcal · P {+item.protein_g.toFixed(1)}g
-                                      </Text>
-                                    </View>
-                                  ))}
-                                </View>
-                              )}
+                        {dishes.map((dish) => (
+                          <View key={dish.key} style={[styles.dishCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                            <View style={styles.dishHeader}>
+                              <Text style={[styles.dishName, { color: colors.text, flex: 1 }]} numberOfLines={1}>
+                                {dish.dishName}
+                              </Text>
+                              <Text style={[styles.dishCal, { color: colors.textMuted }]}>
+                                {+dish.totalCals.toFixed(0)} kcal
+                              </Text>
                             </View>
-                          );
-                        })}
+                          </View>
+                        ))}
                       </View>
                     );
                   })}
@@ -806,36 +700,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
-  dishLeft: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginRight: 8,
-  },
-  dishName: { flex: 1, fontSize: 16, fontWeight: "700", letterSpacing: 0.8 },
-  dishRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
+  dishName: { fontSize: 16, fontWeight: "700", letterSpacing: 0.8 },
   dishCal: { fontSize: 15, fontWeight: "700", letterSpacing: 0.8 },
-  trashBtn: { padding: 2 },
-  ingredientList: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 12,
-    paddingTop: 4,
-    paddingBottom: 6,
-  },
-  ingredientRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 5,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  ingredientName: { flex: 1, fontSize: 14, fontWeight: "700", marginRight: 8 },
-  ingredientMacros: { fontSize: 13, fontWeight: "700", letterSpacing: 0.5 },
   // Activity
   actRow: { borderRadius: 12, padding: 12, marginBottom: 8, gap: 3 },
   actName: { fontSize: 17, fontWeight: "700", letterSpacing: 1 },

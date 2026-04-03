@@ -17,12 +17,25 @@ export async function GET(request: NextRequest) {
 
     // ── Distinct dishes mode ─────────────────────────────────────────────────
     if (request.nextUrl.searchParams.get("distinct") === "true") {
-      const { data: rows, error: distErr } = await supabase
+      let { data: rows, error: distErr } = await supabase
         .from("food_log_items")
         .select("batch_id,dish_name,name,meal_tag,calories,protein_g,carbs_g,fat_g,log_date,created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1000);
+
+      // Fallback if batch_id/dish_name columns don't exist yet
+      if (distErr?.code === "42703") {
+        const fb = await supabase
+          .from("food_log_items")
+          .select("name,meal_tag,calories,protein_g,carbs_g,fat_g,log_date,created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1000);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rows = (fb.data ?? []).map((r: any) => ({ ...r, batch_id: null, dish_name: null })) as any;
+        distErr = fb.error;
+      }
 
       if (distErr) throw distErr;
 
@@ -207,28 +220,34 @@ export async function DELETE(request: NextRequest) {
 
     // ── Delete by dish_name (remove saved dish across all dates) ────────────
     if (dish_name) {
-      // Find affected dates before deleting so we can recompute their totals
-      const { data: affected } = await supabase
+      // Try dish_name column first, fall back to name column if dish_name doesn't exist
+      let hasDishNameCol = true;
+      const { data: affected, error: affErr } = await supabase
         .from("food_log_items")
         .select("log_date")
         .eq("user_id", user.id)
         .ilike("dish_name", dish_name);
-      // Also match rows where name matches (for items without dish_name)
-      const { data: affected2 } = await supabase
-        .from("food_log_items")
-        .select("log_date")
-        .eq("user_id", user.id)
-        .ilike("name", dish_name)
-        .is("dish_name", null);
+      if (affErr?.code === "42703") hasDishNameCol = false;
+
+      // Also match by name column (always exists)
+      const nameQuery = hasDishNameCol
+        ? supabase.from("food_log_items").select("log_date").eq("user_id", user.id).ilike("name", dish_name).is("dish_name", null)
+        : supabase.from("food_log_items").select("log_date").eq("user_id", user.id).ilike("name", dish_name);
+      const { data: affected2 } = await nameQuery;
 
       const affectedDates = [...new Set([
-        ...(affected ?? []).map(r => r.log_date),
-        ...(affected2 ?? []).map(r => r.log_date),
+        ...(affected ?? []).map((r: { log_date: string }) => r.log_date),
+        ...(affected2 ?? []).map((r: { log_date: string }) => r.log_date),
       ])];
 
       // Delete matching rows
-      await supabase.from("food_log_items").delete().eq("user_id", user.id).ilike("dish_name", dish_name);
-      await supabase.from("food_log_items").delete().eq("user_id", user.id).ilike("name", dish_name).is("dish_name", null);
+      if (hasDishNameCol) {
+        await supabase.from("food_log_items").delete().eq("user_id", user.id).ilike("dish_name", dish_name);
+        await supabase.from("food_log_items").delete().eq("user_id", user.id).ilike("name", dish_name).is("dish_name", null);
+      } else {
+        // dish_name column doesn't exist — match on name only
+        await supabase.from("food_log_items").delete().eq("user_id", user.id).ilike("name", dish_name);
+      }
 
       // Recompute totals for each affected date
       for (const date of affectedDates) {
