@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -10,26 +10,21 @@ import { apiGet } from '@/lib/api';
 // ── Theme ────────────────────────────────────────────────────────────────────
 const BG = '#1C1612';
 const CARD = '#252018';
-const TEXT = '#E8E0D0';
+const TEXT_C = '#E8E0D0';
 const GOLD = '#F5C842';
 const CORAL = '#E07B54';
 const SAGE = '#8B9E6E';
 const MUTED = 'rgba(232,224,208,0.5)';
 const DIM = 'rgba(232,224,208,0.25)';
+const SCREEN_W = Dimensions.get('window').width;
 
 // ── Types ────────────────────────────────────────────────────────────────────
-interface DayEntry {
-  date: string; day: string;
-  kcal: number; protein: number; carbs: number; fat: number;
-  target: number;
-}
-interface Summary {
-  daysLogged: number; daysInRange: number;
-  avgCalories: number; avgProtein: number; avgCarbs: number; avgFat: number;
-  goalHitDays: number; proteinHitDays: number; streak: number;
-}
+interface DayEntry { date: string; day: string; kcal: number; protein: number; carbs: number; fat: number; target: number; }
+interface Summary { daysLogged: number; daysInRange: number; avgCalories: number; avgProtein: number; avgCarbs: number; avgFat: number; goalHitDays: number; proteinHitDays: number; streak: number; }
 interface Goals { calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number; }
 interface HistoryData { days: DayEntry[]; goals: Goals; summary: Summary; }
+interface WeekGroup { label: string; days: DayEntry[]; avgKcal: number; avgPro: number; logged: number; goalHit: number; }
+interface MonthGroup { label: string; days: DayEntry[]; avgKcal: number; avgPro: number; avgCarbs: number; avgFat: number; logged: number; goalHit: number; }
 
 const RANGES: { label: string; value: number }[] = [
   { label: '7 days', value: 7 },
@@ -37,174 +32,441 @@ const RANGES: { label: string; value: number }[] = [
   { label: '3 months', value: 90 },
 ];
 
-// ── Line Chart Component ─────────────────────────────────────────────────────
-const CHART_W = 320;
-const CHART_H = 140;
+// ── Shared Components ────────────────────────────────────────────────────────
+
+// Line chart
+const CHART_H = 130;
 const CHART_PAD_L = 36;
 const CHART_PAD_R = 8;
-const CHART_PAD_T = 12;
-const CHART_PAD_B = 24;
+const CHART_PAD_T = 10;
+const CHART_PAD_B = 20;
 
-function LineChart({ data, color, label, goalLine, maxOverride }: {
-  data: number[]; color: string; label: string;
-  goalLine?: number; maxOverride?: number;
-}) {
+function LineChart({ data, color, label, goalLine }: { data: number[]; color: string; label: string; goalLine?: number }) {
+  const chartW = SCREEN_W - 64;
   if (data.length === 0) return null;
   const logged = data.filter(v => v > 0);
-  if (logged.length === 0) return (
-    <View style={lc.empty}>
-      <Text style={lc.emptyText}>No data yet</Text>
-    </View>
-  );
+  if (logged.length === 0) return <View style={{ height: 60, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 13, color: DIM }}>No data yet</Text></View>;
 
-  const maxVal = maxOverride ?? Math.max(...data.filter(v => v > 0), goalLine ?? 0) * 1.15;
-  const minVal = 0;
-  const usableW = CHART_W - CHART_PAD_L - CHART_PAD_R;
+  const maxVal = Math.max(...logged, goalLine ?? 0) * 1.15;
+  const usableW = chartW - CHART_PAD_L - CHART_PAD_R;
   const usableH = CHART_H - CHART_PAD_T - CHART_PAD_B;
 
-  // Only plot points where kcal > 0 to skip unlogged days
-  const points: { x: number; y: number; val: number }[] = [];
+  const points: { x: number; y: number }[] = [];
   data.forEach((val, i) => {
     if (val > 0) {
       const x = CHART_PAD_L + (i / Math.max(data.length - 1, 1)) * usableW;
-      const y = CHART_PAD_T + usableH - ((val - minVal) / (maxVal - minVal)) * usableH;
-      points.push({ x, y, val });
+      const y = CHART_PAD_T + usableH - (val / maxVal) * usableH;
+      points.push({ x, y });
     }
   });
 
-  // Smooth path
-  const pathD = points.length > 1
-    ? points.reduce((acc, p, i) => {
-        if (i === 0) return `M${p.x},${p.y}`;
-        const prev = points[i - 1];
-        const cx = (prev.x + p.x) / 2;
-        return `${acc} C${cx},${prev.y} ${cx},${p.y} ${p.x},${p.y}`;
-      }, '')
-    : `M${points[0].x},${points[0].y}`;
+  const pathD = points.reduce((acc, p, i) => {
+    if (i === 0) return `M${p.x},${p.y}`;
+    const prev = points[i - 1];
+    const cx = (prev.x + p.x) / 2;
+    return `${acc} C${cx},${prev.y} ${cx},${p.y} ${p.x},${p.y}`;
+  }, '');
+  const fillD = points.length > 1 ? `${pathD} L${points[points.length - 1].x},${CHART_H - CHART_PAD_B} L${points[0].x},${CHART_H - CHART_PAD_B} Z` : '';
 
-  // Fill area
-  const lastP = points[points.length - 1];
-  const firstP = points[0];
-  const fillD = `${pathD} L${lastP.x},${CHART_H - CHART_PAD_B} L${firstP.x},${CHART_H - CHART_PAD_B} Z`;
-
-  // Y-axis labels
   const yLabels = [0, Math.round(maxVal / 2), Math.round(maxVal)];
-
-  // Goal line Y
-  const goalY = goalLine ? CHART_PAD_T + usableH - ((goalLine - minVal) / (maxVal - minVal)) * usableH : null;
+  const goalY = goalLine ? CHART_PAD_T + usableH - (goalLine / maxVal) * usableH : null;
 
   return (
-    <View style={lc.wrap}>
-      <Text style={lc.label}>{label}</Text>
-      <Svg width={CHART_W} height={CHART_H}>
+    <View style={{ marginTop: 4 }}>
+      <Text style={{ fontSize: 11, fontWeight: '600', color: MUTED, marginBottom: 4, marginLeft: 4 }}>{label}</Text>
+      <Svg width={chartW} height={CHART_H}>
         <Defs>
-          <LinearGradient id={`grad_${label}`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={color} stopOpacity="0.25" />
+          <LinearGradient id={`g_${label}`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={color} stopOpacity="0.2" />
             <Stop offset="1" stopColor={color} stopOpacity="0" />
           </LinearGradient>
         </Defs>
-        {/* Y-axis labels */}
         {yLabels.map((v, i) => {
           const y = CHART_PAD_T + usableH - (i / 2) * usableH;
-          return (
-            <React.Fragment key={i}>
-              <SvgText x={CHART_PAD_L - 6} y={y + 4} fontSize={9} fill={DIM} textAnchor="end">{v}</SvgText>
-              <Line x1={CHART_PAD_L} y1={y} x2={CHART_W - CHART_PAD_R} y2={y} stroke={DIM} strokeWidth={0.5} strokeDasharray="4,4" />
-            </React.Fragment>
-          );
+          return (<React.Fragment key={i}>
+            <SvgText x={CHART_PAD_L - 6} y={y + 3} fontSize={8} fill={DIM} textAnchor="end">{v}</SvgText>
+            <Line x1={CHART_PAD_L} y1={y} x2={chartW - CHART_PAD_R} y2={y} stroke={DIM} strokeWidth={0.5} strokeDasharray="4,4" />
+          </React.Fragment>);
         })}
-        {/* Goal line */}
-        {goalY != null && (
-          <Line x1={CHART_PAD_L} y1={goalY} x2={CHART_W - CHART_PAD_R} y2={goalY} stroke={GOLD} strokeWidth={1} strokeDasharray="6,4" opacity={0.5} />
-        )}
-        {/* Fill area */}
-        <Path d={fillD} fill={`url(#grad_${label})`} />
-        {/* Line */}
-        <Path d={pathD} fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-        {/* Dots */}
-        {points.map((p, i) => (
-          <Circle key={i} cx={p.x} cy={p.y} r={3} fill={color} stroke={BG} strokeWidth={1.5} />
-        ))}
+        {goalY != null && <Line x1={CHART_PAD_L} y1={goalY} x2={chartW - CHART_PAD_R} y2={goalY} stroke={GOLD} strokeWidth={1} strokeDasharray="6,4" opacity={0.4} />}
+        {fillD ? <Path d={fillD} fill={`url(#g_${label})`} /> : null}
+        <Path d={pathD} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        {points.map((p, i) => <Circle key={i} cx={p.x} cy={p.y} r={2.5} fill={color} stroke={BG} strokeWidth={1} />)}
       </Svg>
     </View>
   );
 }
 
-const lc = StyleSheet.create({
-  wrap: { marginTop: 4 },
-  label: { fontSize: 12, fontWeight: '600', color: MUTED, marginBottom: 6, marginLeft: 4 },
-  empty: { height: 80, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontSize: 13, color: DIM },
+// Macro ring
+const RING_SZ = 54;
+function MacroRing({ value, target, color, label, unit }: { value: number; target: number; color: string; label: string; unit: string }) {
+  const pct = target > 0 ? Math.min(1, value / target) : 0;
+  const r = 21; const sw = 4.5;
+  const circ = 2 * Math.PI * r;
+  return (
+    <View style={{ alignItems: 'center', flex: 1, gap: 3 }}>
+      <View style={{ width: RING_SZ, height: RING_SZ, alignItems: 'center', justifyContent: 'center' }}>
+        <Svg width={RING_SZ} height={RING_SZ}>
+          <Circle cx={RING_SZ / 2} cy={RING_SZ / 2} r={r} fill="none" stroke="rgba(232,224,208,0.06)" strokeWidth={sw} />
+          <Circle cx={RING_SZ / 2} cy={RING_SZ / 2} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={`${circ}`} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round" rotation={-90} origin={`${RING_SZ / 2},${RING_SZ / 2}`} />
+        </Svg>
+        <Text style={{ position: 'absolute', fontSize: 11, fontWeight: '700', color: TEXT_C }}>{Math.round(pct * 100)}%</Text>
+      </View>
+      <Text style={{ fontSize: 13, fontWeight: '700', color: TEXT_C, textAlign: 'center' }}>{value}{unit}</Text>
+      <Text style={{ fontSize: 9, color: DIM, textAlign: 'center' }}>{label}</Text>
+    </View>
+  );
+}
+
+// Stat card
+function StatBadge({ icon, color, value, sub, label }: { icon: string; color: string; value: string; sub?: string; label: string }) {
+  return (
+    <View style={st.card}>
+      <Ionicons name={icon as any} size={18} color={color} />
+      <Text style={st.val}>{value}{sub ? <Text style={st.sub}>{sub}</Text> : null}</Text>
+      <Text style={st.label}>{label}</Text>
+    </View>
+  );
+}
+const st = StyleSheet.create({
+  card: { flex: 1, backgroundColor: CARD, borderRadius: 14, padding: 12, alignItems: 'center', gap: 4 },
+  val: { fontSize: 20, fontWeight: '800', color: TEXT_C },
+  sub: { fontSize: 12, fontWeight: '500', color: DIM },
+  label: { fontSize: 9, color: DIM, textAlign: 'center' },
 });
 
-// ── Bar Chart for Weekly ─────────────────────────────────────────────────────
-function WeekBar({ data, goal }: { data: DayEntry[]; goal: number }) {
-  const maxVal = Math.max(...data.map(d => d.kcal), goal) * 1.1;
+// Heatmap row (7 dots)
+function HeatDots({ days, goal }: { days: DayEntry[]; goal: number }) {
   return (
-    <View style={bc.wrap}>
-      {data.map((d, i) => {
-        const pct = maxVal > 0 ? (d.kcal / maxVal) * 100 : 0;
+    <View style={{ flexDirection: 'row', gap: 3 }}>
+      {days.slice(0, 7).map((d, i) => {
         const hit = d.kcal >= goal * 0.75;
-        return (
-          <View key={i} style={bc.col}>
-            <View style={bc.track}>
-              <View style={[bc.bar, { height: `${Math.max(3, pct)}%`, backgroundColor: d.kcal === 0 ? 'rgba(232,224,208,0.06)' : hit ? SAGE : GOLD }]} />
-            </View>
-            <Text style={[bc.dayLabel, d.day === 'Today' && { color: GOLD }]}>{d.day.slice(0, 1)}</Text>
-            {d.kcal > 0 && <Text style={bc.valLabel}>{d.kcal}</Text>}
-          </View>
-        );
+        const logged = d.kcal > 0;
+        return <View key={i} style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: hit ? SAGE : logged ? GOLD : 'rgba(232,224,208,0.08)' }} />;
       })}
     </View>
   );
 }
 
-const bc = StyleSheet.create({
-  wrap: { flexDirection: 'row', gap: 6, height: 120, alignItems: 'flex-end', marginTop: 8 },
-  col: { flex: 1, alignItems: 'center' },
-  track: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 4, overflow: 'hidden' },
-  bar: { width: '100%', borderRadius: 4, minHeight: 3 },
-  dayLabel: { fontSize: 10, color: DIM, marginTop: 4 },
-  valLabel: { fontSize: 8, color: MUTED, marginTop: 1 },
-});
+// ── Helper: group days into weeks ────────────────────────────────────────────
+function groupByWeek(days: DayEntry[], goal: number): WeekGroup[] {
+  const weeks: WeekGroup[] = [];
+  for (let i = 0; i < days.length; i += 7) {
+    const chunk = days.slice(i, i + 7);
+    const logged = chunk.filter(d => d.kcal > 0);
+    const monday = new Date(chunk[0].date);
+    weeks.push({
+      label: `${monday.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][monday.getMonth()]}`,
+      days: chunk,
+      avgKcal: logged.length > 0 ? Math.round(logged.reduce((s, d) => s + d.kcal, 0) / logged.length) : 0,
+      avgPro: logged.length > 0 ? Math.round(logged.reduce((s, d) => s + d.protein, 0) / logged.length) : 0,
+      logged: logged.length,
+      goalHit: logged.filter(d => d.kcal >= goal * 0.75).length,
+    });
+  }
+  return weeks;
+}
 
-// ── Macro Ring ───────────────────────────────────────────────────────────────
-const RING_SIZE = 58;
-function MacroRing({ value, target, color, label, unit }: {
-  value: number; target: number; color: string; label: string; unit: string;
-}) {
-  const pct = target > 0 ? Math.min(1, value / target) : 0;
-  const r = 24; const stroke = 5;
-  const circ = 2 * Math.PI * r;
-  const dashOffset = circ * (1 - pct);
+// ── Helper: group days into months ───────────────────────────────────────────
+function groupByMonth(days: DayEntry[], goal: number): MonthGroup[] {
+  const map = new Map<string, DayEntry[]>();
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  for (const d of days) {
+    const dt = new Date(d.date);
+    const key = `${dt.getFullYear()}-${dt.getMonth()}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(d);
+  }
+  return [...map.entries()].map(([key, chunk]) => {
+    const logged = chunk.filter(d => d.kcal > 0);
+    const [y, m] = key.split('-').map(Number);
+    return {
+      label: MONTHS[m],
+      days: chunk,
+      avgKcal: logged.length > 0 ? Math.round(logged.reduce((s, d) => s + d.kcal, 0) / logged.length) : 0,
+      avgPro: logged.length > 0 ? Math.round(logged.reduce((s, d) => s + d.protein, 0) / logged.length) : 0,
+      avgCarbs: logged.length > 0 ? Math.round(logged.reduce((s, d) => s + d.carbs, 0) / logged.length) : 0,
+      avgFat: logged.length > 0 ? Math.round(logged.reduce((s, d) => s + d.fat, 0) / logged.length) : 0,
+      logged: logged.length,
+      goalHit: logged.filter(d => d.kcal >= goal * 0.75).length,
+    };
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── 7 DAY VIEW ──────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+function WeekView({ days, goals, summary }: { days: DayEntry[]; goals: Goals; summary: Summary }) {
+  const today = days.length > 0 ? days[days.length - 1] : null;
+  const adherence = summary.daysLogged > 0 ? Math.round((summary.goalHitDays / summary.daysLogged) * 100) : 0;
+
   return (
-    <View style={mr.wrap}>
-      <View style={mr.ringWrap}>
-        <Svg width={RING_SIZE} height={RING_SIZE}>
-          <Circle cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={r} fill="none" stroke="rgba(232,224,208,0.06)" strokeWidth={stroke} />
-          <Circle
-            cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-            strokeDasharray={`${circ}`} strokeDashoffset={dashOffset}
-            strokeLinecap="round" rotation={-90} origin={`${RING_SIZE / 2},${RING_SIZE / 2}`}
-          />
-        </Svg>
-        <Text style={mr.pctText}>{Math.round(pct * 100)}%</Text>
+    <>
+      {/* Today snapshot */}
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>TODAY</Text>
+        <View style={{ flexDirection: 'row' }}>
+          {[
+            { l: 'Calories', v: `${today?.kcal ?? 0}`, su: `/${goals.calorie_goal}`, c: TEXT_C },
+            { l: 'Protein', v: `${today?.protein ?? 0}g`, su: `/${goals.protein_goal}g`, c: CORAL },
+            { l: 'Carbs', v: `${today?.carbs ?? 0}g`, su: `/${goals.carbs_goal}g`, c: GOLD },
+            { l: 'Fat', v: `${today?.fat ?? 0}g`, su: `/${goals.fat_goal}g`, c: SAGE },
+          ].map((it, i) => (
+            <React.Fragment key={it.l}>
+              {i > 0 && <View style={{ width: 1, backgroundColor: 'rgba(232,224,208,0.06)' }} />}
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ fontSize: 17, fontWeight: '800', color: it.c }}>{it.v}</Text>
+                <Text style={{ fontSize: 9, color: DIM }}>{it.su}</Text>
+                <Text style={{ fontSize: 9, color: MUTED, marginTop: 3 }}>{it.l}</Text>
+              </View>
+            </React.Fragment>
+          ))}
+        </View>
       </View>
-      <Text style={mr.val}>{value}{unit}</Text>
-      <Text style={mr.label}>{label}</Text>
-    </View>
+
+      {/* Stats */}
+      <View style={{ flexDirection: 'row', gap: 8, marginHorizontal: 16, marginBottom: 10 }}>
+        <StatBadge icon="flame-outline" color={GOLD} value={`${summary.streak}`} label="Day streak" />
+        <StatBadge icon="calendar-outline" color={SAGE} value={`${summary.daysLogged}`} sub={`/${summary.daysInRange}`} label="Days logged" />
+        <StatBadge icon="checkmark-circle-outline" color={adherence >= 70 ? SAGE : CORAL} value={`${adherence}%`} label="Goal hit" />
+      </View>
+
+      {/* Daily bar chart */}
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>DAILY CALORIES</Text>
+        <View style={{ flexDirection: 'row', gap: 4, height: 110, alignItems: 'flex-end', marginTop: 8 }}>
+          {days.slice(-7).map((d, i) => {
+            const max = Math.max(...days.slice(-7).map(x => x.kcal), goals.calorie_goal) * 1.1;
+            const pct = max > 0 ? (d.kcal / max) * 100 : 0;
+            const hit = d.kcal >= goals.calorie_goal * 0.75;
+            return (
+              <View key={i} style={{ flex: 1, alignItems: 'center' }}>
+                <View style={{ flex: 1, width: '100%', justifyContent: 'flex-end' }}>
+                  <View style={{ width: '100%', height: `${Math.max(3, pct)}%`, borderRadius: 4, backgroundColor: d.kcal === 0 ? 'rgba(232,224,208,0.06)' : hit ? SAGE : GOLD }} />
+                </View>
+                <Text style={{ fontSize: 9, color: DIM, marginTop: 4 }}>{d.day.slice(0, 1)}</Text>
+                {d.kcal > 0 && <Text style={{ fontSize: 7, color: MUTED }}>{d.kcal}</Text>}
+              </View>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Macro rings */}
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>DAILY AVERAGES</Text>
+        <View style={{ flexDirection: 'row', marginTop: 8 }}>
+          <MacroRing value={summary.avgCalories} target={goals.calorie_goal} color={TEXT_C} label="Calories" unit="" />
+          <MacroRing value={summary.avgProtein} target={goals.protein_goal} color={CORAL} label="Protein" unit="g" />
+          <MacroRing value={summary.avgCarbs} target={goals.carbs_goal} color={GOLD} label="Carbs" unit="g" />
+          <MacroRing value={summary.avgFat} target={goals.fat_goal} color={SAGE} label="Fat" unit="g" />
+        </View>
+      </View>
+    </>
   );
 }
 
-const mr = StyleSheet.create({
-  wrap: { alignItems: 'center', gap: 4, flex: 1 },
-  ringWrap: { width: RING_SIZE, height: RING_SIZE, alignItems: 'center', justifyContent: 'center' },
-  pctText: { position: 'absolute', fontSize: 12, fontWeight: '700', color: TEXT, textAlign: 'center' },
-  val: { fontSize: 14, fontWeight: '700', color: TEXT, textAlign: 'center' },
-  label: { fontSize: 10, color: DIM, textAlign: 'center' },
-});
+// ══════════════════════════════════════════════════════════════════════════════
+// ── 30 DAY VIEW ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+function MonthView({ days, goals, summary }: { days: DayEntry[]; goals: Goals; summary: Summary }) {
+  const weeks = useMemo(() => groupByWeek(days, goals.calorie_goal), [days, goals.calorie_goal]);
+  const adherence = summary.daysLogged > 0 ? Math.round((summary.goalHitDays / summary.daysLogged) * 100) : 0;
 
-// ── Main Screen ──────────────────────────────────────────────────────────────
+  // Week-over-week delta
+  const thisWeek = weeks.length > 0 ? weeks[weeks.length - 1] : null;
+  const lastWeek = weeks.length > 1 ? weeks[weeks.length - 2] : null;
+  const calDelta = thisWeek && lastWeek && lastWeek.avgKcal > 0
+    ? Math.round(((thisWeek.avgKcal - lastWeek.avgKcal) / lastWeek.avgKcal) * 100) : null;
+
+  return (
+    <>
+      {/* Month overview */}
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>MONTH OVERVIEW</Text>
+        <View style={{ flexDirection: 'row', marginTop: 10 }}>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: TEXT_C }}>{summary.avgCalories}</Text>
+            <Text style={{ fontSize: 10, color: DIM }}>avg kcal/day</Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: 'rgba(232,224,208,0.06)' }} />
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: SAGE }}>{summary.daysLogged}<Text style={{ fontSize: 14, color: DIM }}>/{summary.daysInRange}</Text></Text>
+            <Text style={{ fontSize: 10, color: DIM }}>days logged</Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: 'rgba(232,224,208,0.06)' }} />
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: adherence >= 70 ? SAGE : CORAL }}>{adherence}%</Text>
+            <Text style={{ fontSize: 10, color: DIM }}>goal hit</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Week-over-week */}
+      {calDelta !== null && (
+        <View style={[s.sectionCard, { flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
+          <Ionicons name={calDelta >= 0 ? 'trending-up-outline' : 'trending-down-outline'} size={22} color={calDelta >= 0 ? SAGE : CORAL} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: TEXT_C }}>
+              {Math.abs(calDelta)}% {calDelta >= 0 ? 'more' : 'fewer'} calories this week
+            </Text>
+            <Text style={{ fontSize: 12, color: MUTED }}>
+              {thisWeek?.avgKcal} avg vs {lastWeek?.avgKcal} last week
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Week cards */}
+      <Text style={s.sectionTitle}>WEEKLY BREAKDOWN</Text>
+      {weeks.map((wk, i) => (
+        <View key={i} style={s.sectionCard}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: TEXT_C }}>Week of {wk.label}</Text>
+            <Text style={{ fontSize: 12, color: MUTED }}>{wk.logged} days</Text>
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 10, gap: 12, alignItems: 'center' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 11, color: DIM }}>Avg calories</Text>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: TEXT_C }}>{wk.avgKcal}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 11, color: DIM }}>Avg protein</Text>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: CORAL }}>{wk.avgPro}g</Text>
+            </View>
+            <View>
+              <Text style={{ fontSize: 11, color: DIM, marginBottom: 4 }}>Goal hit</Text>
+              <HeatDots days={wk.days} goal={goals.calorie_goal} />
+            </View>
+          </View>
+        </View>
+      ))}
+
+      {/* Calorie + Protein trend */}
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>CALORIE TREND</Text>
+        <LineChart data={days.map(d => d.kcal)} color={TEXT_C} label="kcal" goalLine={goals.calorie_goal} />
+      </View>
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>PROTEIN TREND</Text>
+        <LineChart data={days.map(d => d.protein)} color={CORAL} label="grams" goalLine={goals.protein_goal} />
+      </View>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── 90 DAY VIEW ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+function QuarterView({ days, goals, summary }: { days: DayEntry[]; goals: Goals; summary: Summary }) {
+  const months = useMemo(() => groupByMonth(days, goals.calorie_goal), [days, goals.calorie_goal]);
+  const adherence = summary.daysLogged > 0 ? Math.round((summary.goalHitDays / summary.daysLogged) * 100) : 0;
+
+  // Best & worst month
+  const best = months.reduce((a, b) => a.avgKcal > 0 && (a.goalHit / Math.max(a.logged, 1)) >= (b.goalHit / Math.max(b.logged, 1)) ? a : b, months[0]);
+  const worst = months.reduce((a, b) => a.logged > 0 && (a.goalHit / Math.max(a.logged, 1)) <= (b.goalHit / Math.max(b.logged, 1)) ? a : b, months[0]);
+
+  return (
+    <>
+      {/* Quarter overview */}
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>QUARTER OVERVIEW</Text>
+        <View style={{ flexDirection: 'row', marginTop: 10 }}>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: TEXT_C }}>{summary.avgCalories}</Text>
+            <Text style={{ fontSize: 10, color: DIM }}>avg kcal/day</Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: 'rgba(232,224,208,0.06)' }} />
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: TEXT_C }}>{summary.daysLogged}</Text>
+            <Text style={{ fontSize: 10, color: DIM }}>days logged</Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: 'rgba(232,224,208,0.06)' }} />
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: adherence >= 70 ? SAGE : CORAL }}>{adherence}%</Text>
+            <Text style={{ fontSize: 10, color: DIM }}>goal hit</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Monthly cards */}
+      <Text style={s.sectionTitle}>MONTHLY BREAKDOWN</Text>
+      {months.map((mo, i) => {
+        const prev = i > 0 ? months[i - 1] : null;
+        const delta = prev && prev.avgKcal > 0 ? Math.round(((mo.avgKcal - prev.avgKcal) / prev.avgKcal) * 100) : null;
+        const goalPct = mo.logged > 0 ? Math.round((mo.goalHit / mo.logged) * 100) : 0;
+        return (
+          <View key={i} style={s.sectionCard}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: TEXT_C }}>{mo.label}</Text>
+              {delta !== null && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Ionicons name={delta >= 0 ? 'arrow-up' : 'arrow-down'} size={12} color={delta >= 0 ? SAGE : CORAL} />
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: delta >= 0 ? SAGE : CORAL }}>{Math.abs(delta)}%</Text>
+                </View>
+              )}
+            </View>
+            <View style={{ flexDirection: 'row', marginTop: 12, gap: 4 }}>
+              <View style={{ flex: 1, backgroundColor: 'rgba(232,224,208,0.04)', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                <Text style={{ fontSize: 18, fontWeight: '800', color: TEXT_C }}>{mo.avgKcal}</Text>
+                <Text style={{ fontSize: 9, color: DIM }}>avg kcal</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: 'rgba(232,224,208,0.04)', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                <Text style={{ fontSize: 18, fontWeight: '800', color: CORAL }}>{mo.avgPro}g</Text>
+                <Text style={{ fontSize: 9, color: DIM }}>avg protein</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: 'rgba(232,224,208,0.04)', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                <Text style={{ fontSize: 18, fontWeight: '800', color: goalPct >= 70 ? SAGE : GOLD }}>{goalPct}%</Text>
+                <Text style={{ fontSize: 9, color: DIM }}>goal hit</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: 'rgba(232,224,208,0.04)', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                <Text style={{ fontSize: 18, fontWeight: '800', color: SAGE }}>{mo.logged}</Text>
+                <Text style={{ fontSize: 9, color: DIM }}>days</Text>
+              </View>
+            </View>
+            {/* Mini macro bar */}
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 10 }}>
+              <Text style={{ fontSize: 11, color: CORAL, fontWeight: '600' }}>P {mo.avgPro}g</Text>
+              <Text style={{ fontSize: 11, color: GOLD, fontWeight: '600' }}>C {mo.avgCarbs}g</Text>
+              <Text style={{ fontSize: 11, color: SAGE, fontWeight: '600' }}>F {mo.avgFat}g</Text>
+            </View>
+          </View>
+        );
+      })}
+
+      {/* Best/worst month highlight */}
+      {months.length > 1 && (
+        <View style={[s.sectionCard, { flexDirection: 'row', gap: 10 }]}>
+          <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+            <Ionicons name="trophy-outline" size={20} color={GOLD} />
+            <Text style={{ fontSize: 13, fontWeight: '700', color: TEXT_C }}>{best?.label}</Text>
+            <Text style={{ fontSize: 10, color: SAGE }}>Best month</Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: 'rgba(232,224,208,0.06)' }} />
+          <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+            <Ionicons name="alert-circle-outline" size={20} color={CORAL} />
+            <Text style={{ fontSize: 13, fontWeight: '700', color: TEXT_C }}>{worst?.label}</Text>
+            <Text style={{ fontSize: 10, color: CORAL }}>Needs work</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Calorie trend 90 days */}
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>3-MONTH CALORIE TREND</Text>
+        <LineChart data={days.map(d => d.kcal)} color={TEXT_C} label="kcal" goalLine={goals.calorie_goal} />
+      </View>
+      <View style={s.sectionCard}>
+        <Text style={s.cardLabel}>3-MONTH PROTEIN TREND</Text>
+        <LineChart data={days.map(d => d.protein)} color={CORAL} label="grams" goalLine={goals.protein_goal} />
+      </View>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── MAIN SCREEN ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
 export default function ProgressScreen() {
   const router = useRouter();
   const { userProfile } = useAuth();
@@ -212,154 +474,44 @@ export default function ProgressScreen() {
   const [data, setData] = useState<HistoryData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchHistory = useCallback(async (days: number) => {
+  const fetchHistory = useCallback(async (d: number) => {
     setLoading(true);
-    try {
-      const res = await apiGet<HistoryData>(`/api/nutrition/history?days=${days}`);
-      setData(res);
-    } catch { /* silent */ }
+    try { setData(await apiGet<HistoryData>(`/api/nutrition/history?days=${d}`)); }
+    catch { /* silent */ }
     finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchHistory(range); }, [range, fetchHistory]);
 
-  const goals = data?.goals ?? {
-    calorie_goal: userProfile?.calorie_goal ?? 2000,
-    protein_goal: userProfile?.protein_goal ?? 120,
-    carbs_goal: userProfile?.carbs_goal ?? 250,
-    fat_goal: userProfile?.fat_goal ?? 70,
-  };
-  const s_ = data?.summary;
+  const goals = data?.goals ?? { calorie_goal: userProfile?.calorie_goal ?? 2000, protein_goal: userProfile?.protein_goal ?? 120, carbs_goal: userProfile?.carbs_goal ?? 250, fat_goal: userProfile?.fat_goal ?? 70 };
+  const summary = data?.summary ?? { daysLogged: 0, daysInRange: range, avgCalories: 0, avgProtein: 0, avgCarbs: 0, avgFat: 0, goalHitDays: 0, proteinHitDays: 0, streak: 0 };
   const days = data?.days ?? [];
-
-  // Today's data (last entry)
-  const today = days.length > 0 ? days[days.length - 1] : null;
-
-  // Compute calorie adherence % (goal hit rate)
-  const adherencePct = s_ && s_.daysLogged > 0
-    ? Math.round((s_.goalHitDays / s_.daysLogged) * 100) : 0;
-
-  // Data for line charts
-  const calData = days.map(d => d.kcal);
-  const proData = days.map(d => d.protein);
-  const carbData = days.map(d => d.carbs);
-  const fatData = days.map(d => d.fat);
-
-  // Last 7 days for weekly bar chart
-  const last7 = days.slice(-7);
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
-            <Ionicons name="chevron-back" size={24} color={TEXT} />
+            <Ionicons name="chevron-back" size={24} color={TEXT_C} />
           </TouchableOpacity>
           <Text style={s.title}>My Progress</Text>
         </View>
 
-        {/* Range selector */}
         <View style={s.rangeRow}>
           {RANGES.map(r => (
-            <TouchableOpacity
-              key={r.value}
-              style={[s.rangePill, range === r.value && s.rangePillActive]}
-              onPress={() => setRange(r.value)}
-              activeOpacity={0.75}
-            >
+            <TouchableOpacity key={r.value} style={[s.rangePill, range === r.value && s.rangePillActive]} onPress={() => setRange(r.value)} activeOpacity={0.75}>
               <Text style={[s.rangeText, range === r.value && s.rangeTextActive]}>{r.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {loading ? (
-          <View style={{ paddingVertical: 80, alignItems: 'center' }}>
-            <ActivityIndicator color={GOLD} size="large" />
-          </View>
+          <View style={{ paddingVertical: 80, alignItems: 'center' }}><ActivityIndicator color={GOLD} size="large" /></View>
         ) : (
           <>
-            {/* ── Today's snapshot ── */}
-            <View style={s.todayCard}>
-              <Text style={s.todayLabel}>Today</Text>
-              <View style={s.todayRow}>
-                {[
-                  { label: 'Calories', val: `${today?.kcal ?? 0}`, sub: `/ ${goals.calorie_goal}`, color: TEXT },
-                  { label: 'Protein', val: `${today?.protein ?? 0}g`, sub: `/ ${goals.protein_goal}g`, color: CORAL },
-                  { label: 'Carbs', val: `${today?.carbs ?? 0}g`, sub: `/ ${goals.carbs_goal}g`, color: GOLD },
-                  { label: 'Fat', val: `${today?.fat ?? 0}g`, sub: `/ ${goals.fat_goal}g`, color: SAGE },
-                ].map((item, i) => (
-                  <React.Fragment key={item.label}>
-                    {i > 0 && <View style={s.todayDiv} />}
-                    <View style={s.todayItem}>
-                      <Text style={[s.todayVal, { color: item.color }]}>{item.val}</Text>
-                      <Text style={s.todaySub}>{item.sub}</Text>
-                      <Text style={s.todayItemLabel}>{item.label}</Text>
-                    </View>
-                  </React.Fragment>
-                ))}
-              </View>
-            </View>
-
-            {/* ── Summary stats ── */}
-            <View style={s.statsRow}>
-              <View style={s.statCard}>
-                <Ionicons name="flame-outline" size={20} color={GOLD} />
-                <Text style={s.statVal}>{s_?.streak ?? 0}</Text>
-                <Text style={s.statLabel}>Day streak</Text>
-              </View>
-              <View style={s.statCard}>
-                <Ionicons name="calendar-outline" size={20} color={SAGE} />
-                <Text style={s.statVal}>{s_?.daysLogged ?? 0}<Text style={s.statSub}>/{s_?.daysInRange ?? range}</Text></Text>
-                <Text style={s.statLabel}>Days logged</Text>
-              </View>
-              <View style={s.statCard}>
-                <Ionicons name="checkmark-circle-outline" size={20} color={adherencePct >= 70 ? SAGE : CORAL} />
-                <Text style={s.statVal}>{adherencePct}%</Text>
-                <Text style={s.statLabel}>Goal hit rate</Text>
-              </View>
-            </View>
-
-            {/* ── Averages with rings ── */}
-            <View style={s.ringCard}>
-              <Text style={s.cardTitle}>Daily averages</Text>
-              <View style={s.ringRow}>
-                <MacroRing value={s_?.avgCalories ?? 0} target={goals.calorie_goal} color={TEXT} label="Calories" unit="" />
-                <MacroRing value={s_?.avgProtein ?? 0} target={goals.protein_goal} color={CORAL} label="Protein" unit="g" />
-                <MacroRing value={s_?.avgCarbs ?? 0} target={goals.carbs_goal} color={GOLD} label="Carbs" unit="g" />
-                <MacroRing value={s_?.avgFat ?? 0} target={goals.fat_goal} color={SAGE} label="Fat" unit="g" />
-              </View>
-            </View>
-
-            {/* ── Weekly bar chart ── */}
-            <View style={s.chartCard}>
-              <Text style={s.cardTitle}>This week</Text>
-              <WeekBar data={last7} goal={goals.calorie_goal} />
-            </View>
-
-            {/* ── Calorie trend line ── */}
-            <View style={s.chartCard}>
-              <Text style={s.cardTitle}>Calorie trend</Text>
-              <LineChart data={calData} color={TEXT} label="kcal" goalLine={goals.calorie_goal} />
-            </View>
-
-            {/* ── Protein trend ── */}
-            <View style={s.chartCard}>
-              <Text style={s.cardTitle}>Protein trend</Text>
-              <LineChart data={proData} color={CORAL} label="grams" goalLine={goals.protein_goal} />
-            </View>
-
-            {/* ── Carbs trend ── */}
-            <View style={s.chartCard}>
-              <Text style={s.cardTitle}>Carbs trend</Text>
-              <LineChart data={carbData} color={GOLD} label="grams" goalLine={goals.carbs_goal} />
-            </View>
-
-            {/* ── Fat trend ── */}
-            <View style={s.chartCard}>
-              <Text style={s.cardTitle}>Fat trend</Text>
-              <LineChart data={fatData} color={SAGE} label="grams" goalLine={goals.fat_goal} />
-            </View>
+            {range === 7 && <WeekView days={days} goals={goals} summary={summary} />}
+            {range === 30 && <MonthView days={days} goals={goals} summary={summary} />}
+            {range === 90 && <QuarterView days={days} goals={goals} summary={summary} />}
           </>
         )}
       </ScrollView>
@@ -367,40 +519,16 @@ export default function ProgressScreen() {
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 },
-  title: { fontSize: 20, fontWeight: '800', color: TEXT },
-
+  title: { fontSize: 20, fontWeight: '800', color: TEXT_C },
   rangeRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 16 },
   rangePill: { backgroundColor: CARD, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(232,224,208,0.1)' },
   rangePillActive: { backgroundColor: GOLD, borderColor: GOLD },
   rangeText: { fontSize: 13, color: MUTED },
   rangeTextActive: { color: BG, fontWeight: '700' },
-
-  // Today card
-  todayCard: { backgroundColor: CARD, borderRadius: 20, padding: 16, marginHorizontal: 16, marginBottom: 12 },
-  todayLabel: { fontSize: 11, fontWeight: '700', color: DIM, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 12 },
-  todayRow: { flexDirection: 'row' },
-  todayDiv: { width: 1, backgroundColor: 'rgba(232,224,208,0.06)', marginVertical: 2 },
-  todayItem: { flex: 1, alignItems: 'center' },
-  todayVal: { fontSize: 18, fontWeight: '800' },
-  todaySub: { fontSize: 10, color: DIM, marginTop: 1 },
-  todayItemLabel: { fontSize: 10, color: MUTED, marginTop: 4 },
-
-  // Stats row
-  statsRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 12 },
-  statCard: { flex: 1, backgroundColor: CARD, borderRadius: 16, padding: 14, alignItems: 'center', gap: 6 },
-  statVal: { fontSize: 22, fontWeight: '800', color: TEXT },
-  statSub: { fontSize: 14, fontWeight: '500', color: DIM },
-  statLabel: { fontSize: 10, color: DIM },
-
-  // Ring card
-  ringCard: { backgroundColor: CARD, borderRadius: 20, padding: 16, marginHorizontal: 16, marginBottom: 12 },
-  ringRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 8 },
-  cardTitle: { fontSize: 13, fontWeight: '700', color: MUTED, letterSpacing: 0.5 },
-
-  // Chart cards
-  chartCard: { backgroundColor: CARD, borderRadius: 20, padding: 16, marginHorizontal: 16, marginBottom: 12 },
+  sectionCard: { backgroundColor: CARD, borderRadius: 18, padding: 14, marginHorizontal: 16, marginBottom: 10 },
+  cardLabel: { fontSize: 10, fontWeight: '700', color: DIM, letterSpacing: 0.8, marginBottom: 4 },
+  sectionTitle: { fontSize: 10, fontWeight: '700', color: DIM, letterSpacing: 0.8, marginLeft: 20, marginBottom: 8, marginTop: 4 },
 });
