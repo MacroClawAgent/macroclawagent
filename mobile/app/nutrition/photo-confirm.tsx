@@ -490,34 +490,6 @@ export default function PhotoConfirmScreen() {
             </View>
           </View>
 
-          {/* Detected foods */}
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Detected foods — edit grams to adjust</Text>
-            {foods.map((food, idx) => (
-              <View key={idx} style={styles.foodRow}>
-                <View style={styles.foodInfo}>
-                  <Text style={styles.foodName}>{food.name}</Text>
-                  <Text style={styles.foodMacros}>
-                    {+food.calories.toFixed(1)} kcal · P {+food.protein_g.toFixed(1)}g · C {+food.carbs_g.toFixed(1)}g · F {+food.fat_g.toFixed(1)}g
-                  </Text>
-                </View>
-                <View style={styles.foodRight}>
-                  <TextInput
-                    style={styles.gramInput}
-                    value={gramInputs[idx]}
-                    onChangeText={(v) => handleGramChange(idx, v)}
-                    keyboardType="decimal-pad"
-                    selectTextOnFocus
-                  />
-                  <Text style={styles.gramLabel}>g</Text>
-                  <TouchableOpacity onPress={() => handleRemove(idx)} style={styles.removeBtn}>
-                    <Text style={styles.removeText}>×</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </View>
-
           {/* Totals */}
           <View style={styles.totalsCard}>
             <Text style={styles.totalsTitle}>Total</Text>
@@ -554,6 +526,34 @@ export default function PhotoConfirmScreen() {
               <Text style={styles.confirmText}>Save Meal</Text>
             )}
           </TouchableOpacity>
+
+          {/* Detected foods */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Detected foods — edit grams to adjust</Text>
+            {foods.map((food, idx) => (
+              <View key={idx} style={styles.foodRow}>
+                <View style={styles.foodInfo}>
+                  <Text style={styles.foodName}>{food.name}</Text>
+                  <Text style={styles.foodMacros}>
+                    {+food.calories.toFixed(1)} kcal · P {+food.protein_g.toFixed(1)}g · C {+food.carbs_g.toFixed(1)}g · F {+food.fat_g.toFixed(1)}g
+                  </Text>
+                </View>
+                <View style={styles.foodRight}>
+                  <TextInput
+                    style={styles.gramInput}
+                    value={gramInputs[idx]}
+                    onChangeText={(v) => handleGramChange(idx, v)}
+                    keyboardType="decimal-pad"
+                    selectTextOnFocus
+                  />
+                  <Text style={styles.gramLabel}>g</Text>
+                  <TouchableOpacity onPress={() => handleRemove(idx)} style={styles.removeBtn}>
+                    <Text style={styles.removeText}>×</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
 
           <View style={{ height: 32 }} />
         </ScrollView>
