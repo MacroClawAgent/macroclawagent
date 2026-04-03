@@ -159,7 +159,7 @@ export function TodayActivitiesCard({ activities }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 20, flex: 1 },
+  card: { marginHorizontal: 16, flex: 1 },
 
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },

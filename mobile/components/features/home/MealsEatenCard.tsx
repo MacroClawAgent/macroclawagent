@@ -99,7 +99,7 @@ export function MealsEatenCard() {
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 20, gap: 12, flex: 1 },
+  card: { marginHorizontal: 16, gap: 12, flex: 1 },
 
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },

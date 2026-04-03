@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    paddingTop: 10,
+    paddingTop: 4,
   },
   dot: {
     width: 6,

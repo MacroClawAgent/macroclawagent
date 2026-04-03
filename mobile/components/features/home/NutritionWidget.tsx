@@ -271,7 +271,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
 }
 
 const s = StyleSheet.create({
-  outerCard: { marginHorizontal: 16, marginBottom: 14, flex: 1, borderRadius: 28, borderWidth: 1, overflow: "hidden" },
+  outerCard: { marginHorizontal: 16, flex: 1, borderRadius: 28, borderWidth: 1, overflow: "hidden" },
   outerCardLight: { backgroundColor: "rgba(255,255,255,0.22)", borderColor: "rgba(255,255,255,0.62)", shadowColor: "#7BAAC8", shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.22, shadowRadius: 28, elevation: 8 },
   outerCardDark: { backgroundColor: "#1C1410", borderColor: "rgba(255,220,150,0.12)", shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 20, elevation: 10 },
   specular: { position: "absolute", top: 0, left: 0, right: 0, height: 72, borderTopLeftRadius: 27, borderTopRightRadius: 27 },
