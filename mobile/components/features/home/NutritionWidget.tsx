@@ -91,7 +91,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
     [0, 1920, 2100, 0, 1800, 0, 0],      // Week 1
     [2050, 1980, 0, 2100, 1900, 2200, 0], // Week 2
     [0, 1880, 2000, 1950, 0, 1800, 0],    // Week 3
-    wk,                                     // Week 4 = current week
+    weekDays.length === 7 ? weekDays.map(d => d.kcal) : [0,0,0,0,0,0,0],
   ];
   const target = calorieProgress.target;
   const moAllDays = moWeeks.flat();
