@@ -633,7 +633,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 6, paddingBottom: 10,
   },
-  title: { fontSize: 28, fontWeight: '800', fontFamily: 'BebasNeue_400Regular', letterSpacing: 1, color: TEXT },
+  title: { fontSize: 28, fontWeight: '800', color: TEXT },
   refreshBtn: {
     width: 36, height: 36, borderRadius: 11, backgroundColor: CARD,
     borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center',
@@ -665,7 +665,7 @@ const s = StyleSheet.create({
     backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER,
     paddingHorizontal: 16, paddingVertical: 14,
   },
-  locationText: { fontSize: 15, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.8, color: TEXT, flex: 1 },
+  locationText: { fontSize: 15, color: TEXT, flex: 1 },
 
   // Jonno message
   jonnoMsg: {
@@ -680,8 +680,8 @@ const s = StyleSheet.create({
     backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     padding: 18,
   },
-  cartCardTitle: { fontSize: 20, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.8, color: TEXT },
-  cartCardSub: { fontSize: 13, fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.5, color: TEXT_MUTED, marginTop: 3 },
+  cartCardTitle: { fontSize: 20, color: TEXT },
+  cartCardSub: { fontSize: 13, color: TEXT_MUTED, marginTop: 3 },
   cartCardDelete: {
     width: 30, height: 30, borderRadius: 10,
     backgroundColor: 'rgba(239,68,68,0.08)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.15)',
@@ -797,7 +797,7 @@ const s = StyleSheet.create({
   // Pantry section
   pantryHeader: {
     fontSize: 12, fontWeight: '700', color: 'rgba(139,158,110,0.8)',
-    letterSpacing: 1, marginLeft: 0, marginTop: 8, marginBottom: 8,
+    marginLeft: 0, marginTop: 8, marginBottom: 8,
     textTransform: 'uppercase',
   },
   pantryRow: {

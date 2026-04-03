@@ -305,7 +305,7 @@ const s = StyleSheet.create({
     height: 70, justifyContent: 'flex-end',
     paddingHorizontal: 14, paddingBottom: 10,
   },
-  imageDishName: { fontSize: 17, fontWeight: '800', color: '#FFFFFF', fontFamily: 'BebasNeue_400Regular', letterSpacing: 0.2 },
+  imageDishName: { fontSize: 17, fontWeight: '800', color: '#FFFFFF' },
   imagePlaceholder: { height: 200, width: '100%', alignItems: 'center', justifyContent: 'center' },
   imageEmoji: { fontSize: 64 },
   restaurantPill: {
