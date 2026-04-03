@@ -8,6 +8,15 @@ import { router, useLocalSearchParams } from "expo-router";
 import { apiPost } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
+const BG = "#1C1612";
+const CARD = "#252018";
+const GOLD = "#F5C842";
+const SAGE = "#8B9E6E";
+const CORAL = "#E07B54";
+const TEXT_C = "#E8E0D0";
+const MUTED = "rgba(232,224,208,0.5)";
+const DIM = "rgba(232,224,208,0.25)";
+
 const BASE_URL: string = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://jonnoai.com");
 
 function validateUsername(u: string): string | null {
@@ -18,14 +27,16 @@ function validateUsername(u: string): string | null {
 }
 
 export default function OnboardingStep4() {
-  const params = useLocalSearchParams<{ full_name: string; goal: string }>();
+  const params = useLocalSearchParams<{
+    first_name: string; last_name: string; dob?: string; sport?: string;
+    weight_kg?: string; height_cm?: string; metabolism?: string; unit?: string;
+    goal: string; calorie_goal?: string; protein_goal?: string; carbs_goal?: string; fat_goal?: string;
+  }>();
   const { refreshProfile } = useAuth();
 
   const [username, setUsername] = useState("");
-  const [bio, setBio] = useState("");
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
-  const [checkError, setCheckError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const validationError = username ? validateUsername(username) : null;
@@ -34,17 +45,12 @@ export default function OnboardingStep4() {
     if (validateUsername(value)) { setAvailable(null); return; }
     setChecking(true);
     setAvailable(null);
-    setCheckError(null);
     try {
       const res = await fetch(`${BASE_URL}/api/users/check-username?username=${encodeURIComponent(value)}`);
       const json = await res.json();
-      setAvailable(json.available);
-      if (json.error) setCheckError(json.error);
-    } catch {
-      setCheckError("Couldn't check availability");
-    } finally {
-      setChecking(false);
-    }
+      setAvailable(json.available ?? false);
+    } catch { setAvailable(null); }
+    finally { setChecking(false); }
   }, []);
 
   function handleChange(value: string) {
@@ -52,18 +58,26 @@ export default function OnboardingStep4() {
     setUsername(clean);
     setAvailable(null);
     if (clean.length >= 3) {
-      const timer = setTimeout(() => checkAvailability(clean), 600);
-      return () => clearTimeout(timer);
+      setTimeout(() => checkAvailability(clean), 600);
     }
   }
 
   async function handleFinish() {
-    if (!username || available !== true) return;
     setLoading(true);
     try {
+      // Save all onboarding data in one call
       await apiPost("/api/profile/update", {
-        username,
-        bio: bio.trim() || undefined,
+        full_name: `${params.first_name} ${params.last_name}`.trim(),
+        date_of_birth: params.dob || undefined,
+        fitness_goal: params.goal,
+        weight_kg: params.weight_kg ? parseFloat(params.weight_kg) : undefined,
+        height_cm: params.height_cm ? parseFloat(params.height_cm) : undefined,
+        unit_preference: params.unit ?? "metric",
+        calorie_goal: parseInt(params.calorie_goal ?? "2000"),
+        protein_goal: parseInt(params.protein_goal ?? "120"),
+        carbs_goal: parseInt(params.carbs_goal ?? "250"),
+        fat_goal: parseInt(params.fat_goal ?? "70"),
+        username: username || undefined,
         is_public: true,
         profile_complete: true,
       });
@@ -76,108 +90,108 @@ export default function OnboardingStep4() {
     }
   }
 
-  function getStatusText() {
+  const canContinue = !loading && (!username || (available === true && !validationError));
+
+  function getStatus() {
     if (!username || username.length < 3) return null;
-    if (validationError) return { text: validationError, color: "#FF453A" };
-    if (checking) return { text: "Checking...", color: "#9CA3AF" };
-    if (checkError) return { text: checkError, color: "#FF453A" };
-    if (available === true) return { text: `@${username} is available ✓`, color: "#34C759" };
-    if (available === false) return { text: "Username already taken", color: "#FF453A" };
+    if (validationError) return { text: validationError, color: CORAL };
+    if (checking) return { text: "Checking...", color: MUTED };
+    if (available === true) return { text: `@${username} is available`, color: SAGE };
+    if (available === false) return { text: "Already taken", color: CORAL };
     return null;
   }
-
-  const status = getStatusText();
-  const canContinue = !loading && available === true && !validationError;
+  const status = getStatus();
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={s.inner} keyboardShouldPersistTaps="handled">
         {/* Back */}
         <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }} activeOpacity={0.7}>
-          <Ionicons name="chevron-back" size={24} color="#E8E0D0" />
+          <Ionicons name="chevron-back" size={24} color={TEXT_C} />
         </TouchableOpacity>
 
         {/* Progress */}
-        <View style={styles.progressRow}>
-          <View style={[styles.progressDot, styles.progressDone]} />
-          <View style={[styles.progressLine, styles.progressLineDone]} />
-          <View style={[styles.progressDot, styles.progressDone]} />
-          <View style={[styles.progressLine, styles.progressLineDone]} />
-          <View style={[styles.progressDot, styles.progressDone]} />
-          <View style={[styles.progressLine, styles.progressLineDone]} />
-          <View style={[styles.progressDot, styles.progressActive]} />
+        <View style={s.progressRow}>
+          <View style={[s.dot, s.dotDone]} />
+          <View style={[s.line, s.lineDone]} />
+          <View style={[s.dot, s.dotDone]} />
+          <View style={[s.line, s.lineDone]} />
+          <View style={[s.dot, s.dotDone]} />
+          <View style={[s.line, s.lineDone]} />
+          <View style={[s.dot, s.dotActive]} />
         </View>
 
-        <Text style={styles.step}>Step 4 of 4</Text>
-        <Text style={styles.title}>Choose your username</Text>
-        <Text style={styles.subtitle}>
-          This is how others find you in the community. You can change it later.
-        </Text>
+        <Text style={s.step}>Step 4 of 4</Text>
+        <Text style={s.title}>Almost there</Text>
+        <Text style={s.subtitle}>Pick a username for the community. You can change it later.</Text>
 
-        <View style={styles.form}>
-          <View style={styles.field}>
-            <Text style={styles.label}>Username</Text>
-            <View style={styles.inputRow}>
-              <Text style={styles.atSign}>@</Text>
+        <View style={s.form}>
+          <View style={s.field}>
+            <Text style={s.label}>Username</Text>
+            <View style={s.inputRow}>
+              <Text style={s.atSign}>@</Text>
               <TextInput
-                style={[styles.input, styles.inputWithAt]}
+                style={s.inputWithAt}
                 placeholder="your_handle"
-                placeholderTextColor="rgba(245,245,247,0.35)"
+                placeholderTextColor={DIM}
                 value={username}
                 onChangeText={handleChange}
                 autoCapitalize="none"
                 autoCorrect={false}
                 maxLength={20}
+                autoFocus
               />
-              {checking && (
-                <ActivityIndicator size="small" color="#9CA3AF" style={styles.inputIcon} />
-              )}
+              {checking && <ActivityIndicator size="small" color={MUTED} style={{ paddingRight: 12 }} />}
             </View>
-            {status && (
-              <Text style={[styles.statusText, { color: status.color }]}>{status.text}</Text>
-            )}
-            <Text style={styles.hint}>3–20 characters · letters, numbers, underscores</Text>
+            {status && <Text style={[s.statusText, { color: status.color }]}>{status.text}</Text>}
+            <Text style={s.hint}>3-20 characters, letters, numbers, underscores</Text>
           </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Bio <Text style={styles.optional}>(optional)</Text></Text>
-            <TextInput
-              style={[styles.input, styles.bioInput]}
-              placeholder="Tell the community a bit about yourself..."
-              placeholderTextColor="rgba(245,245,247,0.35)"
-              value={bio}
-              onChangeText={setBio}
-              multiline
-              maxLength={150}
-              numberOfLines={3}
-            />
-            <Text style={styles.charCount}>{bio.length}/150</Text>
+          {/* Summary */}
+          <View style={s.summaryCard}>
+            <Text style={s.summaryTitle}>Your profile</Text>
+            <View style={s.summaryRow}>
+              <Text style={s.summaryLabel}>Name</Text>
+              <Text style={s.summaryVal}>{params.first_name} {params.last_name}</Text>
+            </View>
+            <View style={s.summaryRow}>
+              <Text style={s.summaryLabel}>Goal</Text>
+              <Text style={s.summaryVal}>{params.goal?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</Text>
+            </View>
+            <View style={s.summaryRow}>
+              <Text style={s.summaryLabel}>Daily target</Text>
+              <Text style={s.summaryVal}>{params.calorie_goal} kcal · {params.protein_goal}g protein</Text>
+            </View>
           </View>
 
           <TouchableOpacity
-            style={[styles.button, !canContinue && styles.buttonDisabled]}
+            style={[s.btn, !canContinue && s.btnDisabled]}
             onPress={handleFinish}
             disabled={!canContinue}
             activeOpacity={0.85}
           >
-            {loading
-              ? <ActivityIndicator color="#1C1612" />
-              : <Text style={styles.buttonText}>Start using Jonno 🎉</Text>
-            }
+            {loading ? <ActivityIndicator color={BG} /> : <Text style={s.btnText}>Start using Jonno</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity onPress={async () => {
             setLoading(true);
             try {
-              await apiPost("/api/profile/update", { profile_complete: true });
+              await apiPost("/api/profile/update", {
+                full_name: `${params.first_name} ${params.last_name}`.trim(),
+                fitness_goal: params.goal,
+                weight_kg: params.weight_kg ? parseFloat(params.weight_kg) : undefined,
+                height_cm: params.height_cm ? parseFloat(params.height_cm) : undefined,
+                calorie_goal: parseInt(params.calorie_goal ?? "2000"),
+                protein_goal: parseInt(params.protein_goal ?? "120"),
+                carbs_goal: parseInt(params.carbs_goal ?? "250"),
+                fat_goal: parseInt(params.fat_goal ?? "70"),
+                profile_complete: true,
+              });
               await refreshProfile();
               router.replace("/(tabs)/home");
             } catch { router.replace("/(tabs)/home"); }
           }} activeOpacity={0.7}>
-            <Text style={styles.skip}>Skip for now</Text>
+            <Text style={s.skip}>Skip username for now</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -185,40 +199,41 @@ export default function OnboardingStep4() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1C1612" },
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BG },
   inner: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingVertical: 48 },
   progressRow: { flexDirection: "row", alignItems: "center", marginBottom: 32 },
-  progressDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(255,255,255,0.1)" },
-  progressActive: { backgroundColor: "#F5C842" },
-  progressDone: { backgroundColor: "#F5C842" },
-  progressLine: { flex: 1, height: 2, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 6 },
-  progressLineDone: { backgroundColor: "#F5C842" },
-  step: { fontSize: 12, fontWeight: "600", color: "#F5C842", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
-  title: { fontSize: 28, fontWeight: "800", color: "#E8E0D0", marginBottom: 8 },
-  subtitle: { fontSize: 15, color: "rgba(245,245,247,0.55)", marginBottom: 32, lineHeight: 22 },
+  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(232,224,208,0.1)" },
+  dotActive: { backgroundColor: GOLD },
+  dotDone: { backgroundColor: GOLD },
+  line: { flex: 1, height: 2, backgroundColor: "rgba(232,224,208,0.1)", marginHorizontal: 6 },
+  lineDone: { backgroundColor: GOLD },
+  step: { fontSize: 12, fontWeight: "600", color: GOLD, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: "800", color: TEXT_C, marginBottom: 8 },
+  subtitle: { fontSize: 15, color: MUTED, marginBottom: 28, lineHeight: 22 },
   form: { gap: 20 },
   field: { gap: 6 },
-  label: { fontSize: 12, fontWeight: "600", color: "rgba(245,245,247,0.55)", textTransform: "uppercase", letterSpacing: 0.5 },
-  optional: { fontWeight: "400", textTransform: "none" },
-  inputRow: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", borderRadius: 12 },
-  atSign: { paddingLeft: 16, fontSize: 15, color: "rgba(245,245,247,0.55)", fontWeight: "600" },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
-    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, color: "#E8E0D0",
+  label: { fontSize: 12, fontWeight: "600", color: MUTED, textTransform: "uppercase", letterSpacing: 0.5 },
+  inputRow: {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "rgba(232,224,208,0.06)", borderWidth: 1, borderColor: "rgba(232,224,208,0.1)", borderRadius: 12,
   },
-  inputWithAt: {
-    flex: 1, backgroundColor: "transparent", borderWidth: 0,
-    paddingLeft: 4,
-  },
-  inputIcon: { paddingRight: 12 },
-  bioInput: { minHeight: 80, textAlignVertical: "top", paddingTop: 14 },
+  atSign: { paddingLeft: 16, fontSize: 15, color: MUTED, fontWeight: "600" },
+  inputWithAt: { flex: 1, paddingHorizontal: 4, paddingVertical: 14, fontSize: 15, color: TEXT_C },
   statusText: { fontSize: 13, fontWeight: "600", marginTop: 2 },
-  hint: { fontSize: 11, color: "rgba(245,245,247,0.3)", marginTop: 2 },
-  charCount: { fontSize: 11, color: "rgba(245,245,247,0.3)", alignSelf: "flex-end" },
-  button: { backgroundColor: "#F5C842", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
-  buttonDisabled: { opacity: 0.4 },
-  buttonText: { color: "#1C1612", fontWeight: "800", fontSize: 16 },
-  skip: { textAlign: "center", color: "rgba(245,245,247,0.35)", fontSize: 14, fontWeight: "500", marginTop: 4 },
+  hint: { fontSize: 11, color: DIM },
+
+  summaryCard: {
+    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 16,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.08)", padding: 16, gap: 10,
+  },
+  summaryTitle: { fontSize: 13, fontWeight: "700", color: GOLD, letterSpacing: 0.5 },
+  summaryRow: { flexDirection: "row", justifyContent: "space-between" },
+  summaryLabel: { fontSize: 13, color: DIM },
+  summaryVal: { fontSize: 13, fontWeight: "600", color: TEXT_C },
+
+  btn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
+  btnDisabled: { opacity: 0.4 },
+  btnText: { color: BG, fontWeight: "800", fontSize: 16 },
+  skip: { textAlign: "center", color: DIM, fontSize: 14, fontWeight: "500", marginTop: 8 },
 });

@@ -1,214 +1,226 @@
 import { useEffect, useState } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert,
+  View, Text, TouchableOpacity, StyleSheet, ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { apiPost } from "@/lib/api";
-import { useAuth } from "@/context/AuthContext";
 
-const GOAL_LABELS: Record<string, string> = {
-  lose_weight: "Lose Weight 🔥",
-  build_muscle: "Build Muscle 💪",
-  performance: "Performance 🏃",
-  maintain: "Stay Healthy ✅",
-};
+const BG = "#1C1612";
+const CARD = "#252018";
+const GOLD = "#F5C842";
+const CORAL = "#E07B54";
+const SAGE = "#8B9E6E";
+const TEXT_C = "#E8E0D0";
+const MUTED = "rgba(232,224,208,0.5)";
+const DIM = "rgba(232,224,208,0.25)";
 
-function calcTargets(goal: string, weightKg: number): { calories: number; protein: number } {
+const GOALS = [
+  { id: "lose_weight", icon: "trending-down-outline", color: CORAL, label: "Lose Weight", desc: "Burn fat while preserving muscle" },
+  { id: "build_muscle", icon: "barbell-outline", color: SAGE, label: "Build Muscle", desc: "Fuel growth with the right surplus" },
+  { id: "performance", icon: "flash-outline", color: GOLD, label: "Performance", desc: "Optimise fuelling and recovery" },
+  { id: "maintain", icon: "heart-outline", color: SAGE, label: "Stay Healthy", desc: "Balanced nutrition every day" },
+];
+
+function calcTargets(goal: string, weightKg: number, metabolism: string) {
   const w = weightKg > 0 ? weightKg : 70;
+  const metaMul = metabolism === "fast" ? 1.1 : metabolism === "slow" ? 0.9 : 1;
+  let cal: number, pro: number, carbs: number, fat: number;
   switch (goal) {
-    case "lose_weight":  return { calories: Math.round(w * 28 - 350), protein: Math.round(w * 2.0) };
-    case "build_muscle": return { calories: Math.round(w * 32 + 200), protein: Math.round(w * 2.2) };
-    case "performance":  return { calories: Math.round(w * 35),       protein: Math.round(w * 2.2) };
-    default:             return { calories: Math.round(w * 30),       protein: Math.round(w * 1.8) };
+    case "lose_weight":
+      cal = Math.round((w * 28 - 350) * metaMul);
+      pro = Math.round(w * 2.0); carbs = Math.round(cal * 0.35 / 4); fat = Math.round(cal * 0.25 / 9);
+      break;
+    case "build_muscle":
+      cal = Math.round((w * 32 + 200) * metaMul);
+      pro = Math.round(w * 2.2); carbs = Math.round(cal * 0.45 / 4); fat = Math.round(cal * 0.25 / 9);
+      break;
+    case "performance":
+      cal = Math.round(w * 35 * metaMul);
+      pro = Math.round(w * 2.0); carbs = Math.round(cal * 0.50 / 4); fat = Math.round(cal * 0.20 / 9);
+      break;
+    default:
+      cal = Math.round(w * 30 * metaMul);
+      pro = Math.round(w * 1.8); carbs = Math.round(cal * 0.40 / 4); fat = Math.round(cal * 0.30 / 9);
+  }
+  return { calories: cal, protein: pro, carbs, fat };
+}
+
+function goalDetail(goal: string, targets: ReturnType<typeof calcTargets>) {
+  switch (goal) {
+    case "lose_weight":
+      return { tagline: "Healthy deficit for sustainable fat loss", detail: `~0.5 kg per week · ${targets.calories} kcal/day`, icon: "trending-down-outline", color: CORAL };
+    case "build_muscle":
+      return { tagline: "Calorie surplus for lean gains", detail: `+200 kcal surplus · ${targets.protein}g protein/day`, icon: "barbell-outline", color: SAGE };
+    case "performance":
+      return { tagline: "Fuel your training and recovery", detail: `High carbs (${targets.carbs}g) · ${targets.calories} kcal/day`, icon: "flash-outline", color: GOLD };
+    default:
+      return { tagline: "Balanced nutrition for long-term health", detail: `${targets.calories} kcal · ${targets.protein}g protein/day`, icon: "heart-outline", color: SAGE };
   }
 }
 
 export default function OnboardingStep3() {
-  const params = useLocalSearchParams<{ full_name: string; sport?: string; goal: string }>();
-  const { refreshProfile } = useAuth();
+  const params = useLocalSearchParams<{
+    first_name: string; last_name: string; dob?: string; sport?: string;
+    weight_kg: string; height_cm: string; metabolism?: string; unit?: string;
+  }>();
 
-  const [weightKg, setWeightKg] = useState("");
-  const [heightCm, setHeightCm] = useState("");
-  const [calorieGoal, setCalorieGoal] = useState("2000");
-  const [proteinGoal, setProteinGoal] = useState("120");
-  const [loading, setLoading] = useState(false);
-  const [autoCalced, setAutoCalced] = useState(false);
+  const [goal, setGoal] = useState("");
+  const weightKg = parseInt(params.weight_kg ?? "70");
+  const metabolism = params.metabolism ?? "normal";
+  const targets = goal ? calcTargets(goal, weightKg, metabolism) : null;
+  const detail = goal && targets ? goalDetail(goal, targets) : null;
 
-  // Auto-calculate when both weight and goal are present
-  useEffect(() => {
-    const w = parseFloat(weightKg);
-    if (w > 0 && params.goal) {
-      const t = calcTargets(params.goal, w);
-      setCalorieGoal(String(t.calories));
-      setProteinGoal(String(t.protein));
-      setAutoCalced(true);
-    }
-  }, [weightKg, params.goal]);
-
-  async function handleFinish() {
-    setLoading(true);
-    try {
-      await apiPost("/api/profile/update", {
-        full_name: params.full_name,
-        weight_kg: weightKg ? parseFloat(weightKg) : undefined,
-        height_cm: heightCm ? parseFloat(heightCm) : undefined,
-        calorie_goal: parseInt(calorieGoal) || 2000,
-        protein_goal: parseInt(proteinGoal) || 120,
-        fitness_goal: params.goal,
-      });
-      router.push({
-        pathname: "/(onboarding)/step4",
-        params: { full_name: params.full_name, goal: params.goal },
-      });
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Something went wrong.";
-      Alert.alert("Error", message);
-      setLoading(false);
-    }
+  function handleNext() {
+    if (!goal || !targets) return;
+    router.push({
+      pathname: "/(onboarding)/step4",
+      params: {
+        first_name: params.first_name,
+        last_name: params.last_name,
+        dob: params.dob ?? "",
+        sport: params.sport ?? "",
+        weight_kg: params.weight_kg,
+        height_cm: params.height_cm,
+        metabolism,
+        unit: params.unit ?? "metric",
+        goal,
+        calorie_goal: String(targets.calories),
+        protein_goal: String(targets.protein),
+        carbs_goal: String(targets.carbs),
+        fat_goal: String(targets.fat),
+      },
+    });
   }
 
-  const goalLabel = GOAL_LABELS[params.goal] ?? "Your goal";
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
-        {/* Back */}
-        <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }} activeOpacity={0.7}>
-          <Ionicons name="chevron-back" size={24} color="#E8E0D0" />
-        </TouchableOpacity>
+    <ScrollView style={s.container} contentContainerStyle={s.inner} showsVerticalScrollIndicator={false}>
+      {/* Back */}
+      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }} activeOpacity={0.7}>
+        <Ionicons name="chevron-back" size={24} color={TEXT_C} />
+      </TouchableOpacity>
 
-        {/* Progress */}
-        <View style={styles.progressRow}>
-          <View style={[styles.progressDot, styles.progressDone]} />
-          <View style={[styles.progressLine, styles.progressLineDone]} />
-          <View style={[styles.progressDot, styles.progressDone]} />
-          <View style={[styles.progressLine, styles.progressLineDone]} />
-          <View style={[styles.progressDot, styles.progressActive]} />
-          <View style={styles.progressLine} />
-          <View style={styles.progressDot} />
-        </View>
+      {/* Progress */}
+      <View style={s.progressRow}>
+        <View style={[s.dot, s.dotDone]} />
+        <View style={[s.line, s.lineDone]} />
+        <View style={[s.dot, s.dotDone]} />
+        <View style={[s.line, s.lineDone]} />
+        <View style={[s.dot, s.dotActive]} />
+        <View style={s.line} />
+        <View style={s.dot} />
+      </View>
 
-        <Text style={styles.step}>Step 3 of 4</Text>
-        <Text style={styles.title}>Your body stats</Text>
-        <Text style={styles.subtitle}>
-          Jonno will calculate accurate targets for{" "}
-          <Text style={styles.goalHighlight}>{goalLabel}</Text>.
-          {" "}All optional — update anytime.
-        </Text>
+      <Text style={s.step}>Step 3 of 4</Text>
+      <Text style={s.title}>What's your goal?</Text>
+      <Text style={s.subtitle}>Jonno uses this to personalise every meal plan and recommendation.</Text>
 
-        <View style={styles.form}>
-          {/* Body stats */}
-          <View style={styles.row}>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>Weight (kg)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="70"
-                placeholderTextColor="rgba(245,245,247,0.35)"
-                value={weightKg}
-                onChangeText={setWeightKg}
-                keyboardType="decimal-pad"
-              />
-            </View>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>Height (cm)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="175"
-                placeholderTextColor="rgba(245,245,247,0.35)"
-                value={heightCm}
-                onChangeText={setHeightCm}
-                keyboardType="decimal-pad"
-              />
-            </View>
-          </View>
-
-          {/* Macro targets */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Daily targets</Text>
-            <Text style={styles.sectionHint}>
-              {autoCalced
-                ? "Calculated for your goal & weight — you can adjust below"
-                : "Jonno will adjust these based on your training"}
-            </Text>
-          </View>
-
-          <View style={styles.row}>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>Calories (kcal)</Text>
-              <TextInput
-                style={[styles.input, autoCalced && styles.inputHighlighted]}
-                value={calorieGoal}
-                onChangeText={(v) => { setCalorieGoal(v); setAutoCalced(false); }}
-                keyboardType="number-pad"
-              />
-            </View>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>Protein (g)</Text>
-              <TextInput
-                style={[styles.input, autoCalced && styles.inputHighlighted]}
-                value={proteinGoal}
-                onChangeText={(v) => { setProteinGoal(v); setAutoCalced(false); }}
-                keyboardType="number-pad"
-              />
-            </View>
-          </View>
-
+      {/* Goal cards */}
+      <View style={{ gap: 10 }}>
+        {GOALS.map(g => (
           <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleFinish}
-            disabled={loading}
-            activeOpacity={0.85}
+            key={g.id}
+            style={[s.goalCard, goal === g.id && { borderColor: g.color, backgroundColor: g.color + "08" }]}
+            onPress={() => setGoal(g.id)}
+            activeOpacity={0.75}
           >
-            {loading
-              ? <ActivityIndicator color="#1C1612" />
-              : <Text style={styles.buttonText}>Continue →</Text>
-            }
+            <View style={[s.goalIcon, { backgroundColor: g.color + "15" }]}>
+              <Ionicons name={g.icon as any} size={22} color={g.color} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.goalLabel, goal === g.id && { color: TEXT_C }]}>{g.label}</Text>
+              <Text style={s.goalDesc}>{g.desc}</Text>
+            </View>
+            {goal === g.id && <Ionicons name="checkmark-circle" size={22} color={g.color} />}
           </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Goal-specific targets */}
+      {detail && targets && (
+        <View style={s.targetCard}>
+          <View style={s.targetHeader}>
+            <Ionicons name={detail.icon as any} size={18} color={detail.color} />
+            <Text style={[s.targetTagline, { color: detail.color }]}>{detail.tagline}</Text>
+          </View>
+          <Text style={s.targetDetail}>{detail.detail}</Text>
+
+          <View style={s.macroRow}>
+            <View style={s.macroItem}>
+              <Text style={s.macroVal}>{targets.calories}</Text>
+              <Text style={s.macroLabel}>kcal</Text>
+            </View>
+            <View style={s.macroDivider} />
+            <View style={s.macroItem}>
+              <Text style={[s.macroVal, { color: CORAL }]}>{targets.protein}g</Text>
+              <Text style={s.macroLabel}>Protein</Text>
+            </View>
+            <View style={s.macroDivider} />
+            <View style={s.macroItem}>
+              <Text style={[s.macroVal, { color: GOLD }]}>{targets.carbs}g</Text>
+              <Text style={s.macroLabel}>Carbs</Text>
+            </View>
+            <View style={s.macroDivider} />
+            <View style={s.macroItem}>
+              <Text style={[s.macroVal, { color: SAGE }]}>{targets.fat}g</Text>
+              <Text style={s.macroLabel}>Fat</Text>
+            </View>
+          </View>
+
+          <Text style={s.targetHint}>Jonno will adjust these based on your activity and progress</Text>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      )}
+
+      <TouchableOpacity
+        style={[s.btn, !goal && s.btnDisabled]}
+        onPress={handleNext}
+        disabled={!goal}
+        activeOpacity={0.85}
+      >
+        <Text style={s.btnText}>Continue</Text>
+      </TouchableOpacity>
+
+      <View style={{ height: 40 }} />
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1C1612" },
-  inner: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingVertical: 48 },
-
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BG },
+  inner: { paddingHorizontal: 24, paddingTop: 60, paddingBottom: 40 },
   progressRow: { flexDirection: "row", alignItems: "center", marginBottom: 32 },
-  progressDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(255,255,255,0.1)" },
-  progressActive: { backgroundColor: "#F5C842" },
-  progressDone: { backgroundColor: "#F5C842" },
-  progressLine: { flex: 1, height: 2, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 6 },
-  progressLineDone: { backgroundColor: "#F5C842" },
+  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(232,224,208,0.1)" },
+  dotActive: { backgroundColor: GOLD },
+  dotDone: { backgroundColor: GOLD },
+  line: { flex: 1, height: 2, backgroundColor: "rgba(232,224,208,0.1)", marginHorizontal: 6 },
+  lineDone: { backgroundColor: GOLD },
+  step: { fontSize: 12, fontWeight: "600", color: GOLD, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: "800", color: TEXT_C, marginBottom: 8 },
+  subtitle: { fontSize: 15, color: MUTED, marginBottom: 24, lineHeight: 22 },
 
-  step: { fontSize: 12, fontWeight: "600", color: "#F5C842", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
-  title: { fontSize: 28, fontWeight: "800", color: "#E8E0D0", marginBottom: 8 },
-  subtitle: { fontSize: 15, color: "rgba(245,245,247,0.55)", marginBottom: 28, lineHeight: 22 },
-  goalHighlight: { color: "#F5C842", fontWeight: "700" },
+  goalCard: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 16,
+    borderWidth: 1.5, borderColor: "rgba(232,224,208,0.08)", padding: 16,
+  },
+  goalIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  goalLabel: { fontSize: 16, fontWeight: "700", color: MUTED },
+  goalDesc: { fontSize: 12, color: DIM, marginTop: 2 },
 
-  form: { gap: 16 },
-  row: { flexDirection: "row", gap: 12 },
-  field: { gap: 6 },
-  label: { fontSize: 12, fontWeight: "600", color: "rgba(245,245,247,0.55)", textTransform: "uppercase", letterSpacing: 0.5 },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
-    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, color: "#E8E0D0",
+  targetCard: {
+    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 18,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.08)", padding: 18, marginTop: 20, gap: 12,
   },
-  inputHighlighted: {
-    borderColor: "rgba(212,255,0,0.4)",
-    backgroundColor: "rgba(212,255,0,0.05)",
-  },
-  sectionHeader: { gap: 2, marginTop: 4 },
-  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#E8E0D0" },
-  sectionHint: { fontSize: 12, color: "rgba(245,245,247,0.35)" },
-  button: { backgroundColor: "#F5C842", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#1C1612", fontWeight: "800", fontSize: 16 },
+  targetHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
+  targetTagline: { fontSize: 14, fontWeight: "700" },
+  targetDetail: { fontSize: 13, color: MUTED },
+  macroRow: { flexDirection: "row", paddingVertical: 8 },
+  macroItem: { flex: 1, alignItems: "center", gap: 2 },
+  macroVal: { fontSize: 18, fontWeight: "800", color: TEXT_C },
+  macroLabel: { fontSize: 10, color: DIM },
+  macroDivider: { width: 1, backgroundColor: "rgba(232,224,208,0.06)" },
+  targetHint: { fontSize: 11, color: DIM, textAlign: "center" },
+
+  btn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 20 },
+  btnDisabled: { opacity: 0.4 },
+  btnText: { color: BG, fontWeight: "800", fontSize: 16 },
 });
