@@ -21,10 +21,18 @@ async function saveMealToHistory(meal: Meal) {
     type: meal.type,
     calories: meal.calories,
     protein: meal.protein,
+    carbs: meal.carbs ?? 0,
+    fat: meal.fat ?? 0,
+    cookTime: meal.cookTime ?? 0,
+    difficulty: meal.difficulty ?? 'Easy',
+    ingredients: meal.ingredients ?? '',
+    ingredientsList: meal.ingredientsList ?? [],
+    recipeSteps: meal.recipeSteps ?? [],
+    reason: meal.reason ?? '',
     savedAt: new Date().toISOString(),
   });
-  // Keep last 50
-  if (history.length > 50) history.length = 50;
+  // Keep last 100
+  if (history.length > 100) history.length = 100;
   await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 

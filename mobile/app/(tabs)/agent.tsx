@@ -348,7 +348,7 @@ export default function AgentScreen() {
               onPress={() => router.push('/recipes' as any)}
               activeOpacity={0.75}
             >
-              <Ionicons name="time-outline" size={20} color={MUTED} />
+              <Ionicons name="book-outline" size={20} color={MUTED} />
             </TouchableOpacity>
             <TouchableOpacity
               style={[s.headerIconBtn, hasAnyPreferences && s.filterBtnActive]}
