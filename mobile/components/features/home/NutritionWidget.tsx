@@ -5,7 +5,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
-import Svg, { Line, Polyline, Text as SvgText } from "react-native-svg";
 
 interface MacroStat {
   consumed: number;
@@ -87,11 +86,20 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
   const weekBest = weekDays.length > 0 ? Math.max(...weekDays.map(d => d.kcal)) : 0;
   const todayDow = (new Date().getDay() + 6) % 7; // 0=Mon
 
-  // Monthly mock (last 30 days from weekly data repeated)
-  const monthDays = weekDays.length > 0
-    ? [...weekDays, ...weekDays, ...weekDays, ...weekDays].slice(0, 30)
-    : [];
-  const monthAvgCal = monthDays.length > 0 ? Math.round(monthDays.reduce((s, d) => s + d.kcal, 0) / monthDays.length) : 0;
+  // Monthly: 4-week structure (mock using weekly data shifted)
+  const moWeeks = [
+    [0, 1920, 2100, 0, 1800, 0, 0],      // Week 1
+    [2050, 1980, 0, 2100, 1900, 2200, 0], // Week 2
+    [0, 1880, 2000, 1950, 0, 1800, 0],    // Week 3
+    wk,                                     // Week 4 = current week
+  ];
+  const target = calorieProgress.target;
+  const moAllDays = moWeeks.flat();
+  const moLoggedDays = moAllDays.filter(v => v > 0);
+  const moTotalLogged = moLoggedDays.length;
+  const moAvg = moTotalLogged > 0 ? Math.round(moLoggedDays.reduce((a, b) => a + b, 0) / moTotalLogged) : 0;
+  const moGoalHits = target > 0 ? moLoggedDays.filter(v => v >= target * 0.85).length : 0;
+  const moGoalPct = moTotalLogged > 0 ? Math.round((moGoalHits / moTotalLogged) * 100) : 0;
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={cycleMode} style={{ flex: 1 }}>
@@ -230,52 +238,86 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
         })()}
         )}
 
-        {/* ── MONTHLY ── */}
-        {mode === 'monthly' && (
-          <View style={s.monthlyContent}>
-            <View style={s.monthHeader}>
-              <Text style={[s.monthAvg, isDark && { color: CREAM }]}>{monthAvgCal}</Text>
-              <Text style={s.monthAvgLabel}>avg kcal/day this month</Text>
-            </View>
-            {/* Line graph */}
-            <View style={s.monthGraph}>
-              <Svg width="100%" height={100} viewBox="0 0 300 100">
-                {/* Target line */}
-                <Line x1={0} y1={20} x2={300} y2={20} stroke="rgba(245,200,66,0.2)" strokeWidth={1} strokeDasharray="4,4" />
-                {/* Data line */}
-                {monthDays.length > 1 && (
-                  <Polyline
-                    points={monthDays.map((d, i) => {
-                      const x = (i / (monthDays.length - 1)) * 300;
-                      const y = 90 - (calorieProgress.target > 0 ? Math.min(1, d.kcal / calorieProgress.target) : 0) * 70;
-                      return `${x},${y}`;
-                    }).join(' ')}
-                    fill="none"
-                    stroke={CORAL}
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                )}
-                <SvgText x={295} y={18} fill="rgba(232,224,208,0.3)" fontSize={8} textAnchor="end">target</SvgText>
-              </Svg>
-            </View>
-            {/* Month macro averages */}
-            <View style={s.monthMacros}>
-              {[
-                { label: 'Protein', color: CORAL, value: `${Math.round(macros.protein.consumed)}g` },
-                { label: 'Carbs', color: GOLD, value: `${Math.round(macros.carbs.consumed)}g` },
-                { label: 'Fat', color: SAGE, value: `${Math.round(macros.fat.consumed)}g` },
-              ].map(m => (
-                <View key={m.label} style={s.monthMacroItem}>
-                  <View style={[s.monthMacroDot, { backgroundColor: m.color }]} />
-                  <Text style={s.monthMacroValue}>{m.value}</Text>
-                  <Text style={s.monthMacroLabel}>{m.label}</Text>
+        {/* ── MONTHLY — Trend Snapshot ── */}
+        {mode === 'monthly' && (() => {
+          const weekLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+          const weekStats = moWeeks.map(w => {
+            const logged = w.filter(v => v > 0);
+            return { daysLogged: logged.length, avg: logged.length > 0 ? Math.round(logged.reduce((a, b) => a + b, 0) / logged.length) : 0 };
+          });
+          const prevAvgs = weekStats.map(w => w.avg);
+          const bestWeekIdx = prevAvgs.indexOf(Math.max(...prevAvgs.filter(v => v > 0)));
+          const trendArrows = weekStats.map((w, i) => i === 0 ? '–' : w.avg > weekStats[i-1].avg ? '↑' : w.avg < weekStats[i-1].avg ? '↓' : '–');
+
+          const proPct = macros.protein.target > 0 ? Math.round((macros.protein.consumed / macros.protein.target) * 100) : 0;
+          const carbPct = macros.carbs.target > 0 ? Math.round((macros.carbs.consumed / macros.carbs.target) * 100) : 0;
+          const fatPct = macros.fat.target > 0 ? Math.round((macros.fat.consumed / macros.fat.target) * 100) : 0;
+
+          const insight = moTotalLogged === 0 ? 'Start logging to see your monthly trend'
+            : bestWeekIdx === 3 ? '✦ This is your best week so far — keep it up'
+            : `✦ ${weekLabels[bestWeekIdx]} was your best — most consistent logging`;
+
+          return (
+            <View style={s.moWrap}>
+              {/* Week rows with heatmap */}
+              <View style={s.moWeeks}>
+                {moWeeks.map((w, wi) => {
+                  const st = weekStats[wi];
+                  return (
+                    <View key={wi} style={[s.moWeekRow, wi === 3 && s.moWeekRowCurrent]}>
+                      <Text style={s.moWeekLabel}>{weekLabels[wi]}</Text>
+                      <View style={s.moHeatDots}>
+                        {w.map((v, di) => (
+                          <View key={di} style={[s.moHeatDot,
+                            { backgroundColor: v >= target * 0.85 ? SAGE : v > 0 ? GOLD : 'rgba(232,224,208,0.08)' }
+                          ]} />
+                        ))}
+                      </View>
+                      <Text style={s.moWeekAvg}>{st.avg > 0 ? st.avg : '--'}</Text>
+                      <Text style={[s.moTrend, {
+                        color: trendArrows[wi] === '↑' ? SAGE : trendArrows[wi] === '↓' ? CORAL : 'rgba(232,224,208,0.2)'
+                      }]}>{trendArrows[wi]}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+
+              {/* Month summary */}
+              <View style={s.moSummary}>
+                <View style={s.moSumItem}>
+                  <Text style={s.moSumVal}>{moAvg > 0 ? moAvg.toLocaleString() : '--'}</Text>
+                  <Text style={s.moSumLabel}>avg/day</Text>
                 </View>
-              ))}
+                <View style={s.moSumItem}>
+                  <Text style={s.moSumVal}>{moTotalLogged}/28</Text>
+                  <Text style={s.moSumLabel}>logged</Text>
+                </View>
+                <View style={[s.moSumItem]}>
+                  <Text style={[s.moSumVal, { color: moGoalPct >= 60 ? SAGE : moGoalPct >= 30 ? GOLD : CORAL }]}>{moGoalPct}%</Text>
+                  <Text style={s.moSumLabel}>goal hit</Text>
+                </View>
+              </View>
+
+              {/* Macro averages */}
+              <View style={s.moMacros}>
+                {[
+                  { label: 'Pro', color: CORAL, val: proPct > 0 ? `${Math.round(macros.protein.consumed)}g` : '--' },
+                  { label: 'Carb', color: GOLD, val: carbPct > 0 ? `${Math.round(macros.carbs.consumed)}g` : '--' },
+                  { label: 'Fat', color: SAGE, val: fatPct > 0 ? `${Math.round(macros.fat.consumed)}g` : '--' },
+                ].map(m => (
+                  <View key={m.label} style={s.moMacroItem}>
+                    <View style={[s.moMacroDot, { backgroundColor: m.color }]} />
+                    <Text style={[s.moMacroVal, { color: m.val === '--' ? 'rgba(232,224,208,0.3)' : m.color }]}>{m.val}</Text>
+                    <Text style={s.moMacroLabel}>{m.label}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* Insight */}
+              <Text style={s.moInsight}>{insight}</Text>
             </View>
-          </View>
-        )}
+          );
+        })()}
       </BlurView>
     </TouchableOpacity>
   );
@@ -322,15 +364,24 @@ const s = StyleSheet.create({
   wkRowPct: { fontSize: 14, fontWeight: '700', textAlign: 'right', minWidth: 40 },
   wkInsight: { fontSize: 12, fontStyle: 'italic', color: GOLD, marginTop: 12 },
 
-  // Monthly
-  monthlyContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16, flex: 1, justifyContent: 'space-between' },
-  monthHeader: { gap: 2 },
-  monthAvg: { fontSize: 32, fontWeight: '900', letterSpacing: -0.5, color: '#0F172A' },
-  monthAvgLabel: { fontSize: 12, fontWeight: '500', color: 'rgba(232,224,208,0.45)' },
-  monthGraph: { marginTop: 8 },
-  monthMacros: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 },
-  monthMacroItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  monthMacroDot: { width: 6, height: 6, borderRadius: 3 },
-  monthMacroValue: { fontSize: 13, fontWeight: '700', color: CREAM },
-  monthMacroLabel: { fontSize: 11, fontWeight: '500', color: 'rgba(232,224,208,0.4)' },
+  // Monthly — Trend Snapshot
+  moWrap: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, flex: 1, justifyContent: 'space-between' },
+  moWeeks: { gap: 6 },
+  moWeekRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  moWeekRowCurrent: { backgroundColor: 'rgba(245,200,66,0.06)', borderRadius: 10, paddingVertical: 4, paddingHorizontal: 6, marginHorizontal: -6 },
+  moWeekLabel: { fontSize: 11, fontWeight: '600', color: 'rgba(232,224,208,0.45)', width: 48 },
+  moHeatDots: { flexDirection: 'row', gap: 4, flex: 1 },
+  moHeatDot: { width: 10, height: 10, borderRadius: 3 },
+  moWeekAvg: { fontSize: 13, fontWeight: '700', color: CREAM, width: 38, textAlign: 'right' },
+  moTrend: { fontSize: 14, fontWeight: '700', width: 16, textAlign: 'center' },
+  moSummary: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 12, backgroundColor: 'rgba(232,224,208,0.04)', borderRadius: 12, paddingVertical: 10 },
+  moSumItem: { alignItems: 'center' },
+  moSumVal: { fontSize: 16, fontWeight: '800', color: CREAM },
+  moSumLabel: { fontSize: 10, color: 'rgba(232,224,208,0.4)', marginTop: 2 },
+  moMacros: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 },
+  moMacroItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  moMacroDot: { width: 8, height: 8, borderRadius: 4 },
+  moMacroVal: { fontSize: 13, fontWeight: '600' },
+  moMacroLabel: { fontSize: 11, color: 'rgba(232,224,208,0.4)' },
+  moInsight: { fontSize: 12, fontStyle: 'italic', color: GOLD, marginTop: 10 },
 });
