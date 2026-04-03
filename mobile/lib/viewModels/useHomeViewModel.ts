@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { DeviceEventEmitter } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { apiGet, apiPost } from "../api";
 import { getCache, setCache } from "../cache";
@@ -159,6 +160,12 @@ export function useHomeViewModel(): HomeViewModel {
   }, [userProfile]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Auto-refresh when food is logged from anywhere
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener('nutrition_updated', () => fetchData(false));
+    return () => sub.remove();
+  }, [fetchData]);
 
   const refresh = useCallback(() => { fetchData(true); }, [fetchData]);
   const silentRefresh = useCallback(() => { fetchData(false); }, [fetchData]);

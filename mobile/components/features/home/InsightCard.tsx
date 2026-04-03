@@ -58,7 +58,7 @@ export function InsightCard({ insight }: InsightCardProps) {
       </View>
 
       {/* Insight body */}
-      <Text style={[s.body, isDark && { color: '#E8E0D0' }]}>{body}</Text>
+      <Text style={[s.body, isDark && { color: '#E8E0D0' }]} numberOfLines={2}>{body}</Text>
 
       {/* CTA */}
       <TouchableOpacity
