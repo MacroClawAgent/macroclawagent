@@ -280,7 +280,6 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
             </View>
           );
         })()}
-        )}
 
         {/* ── MONTHLY — Trend Snapshot ── */}
         {mode === 'monthly' && (() => {
