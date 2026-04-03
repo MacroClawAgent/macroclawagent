@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         .single(),
       supabase
         .from("nutrition_logs")
-        .select("date,calories_consumed")
+        .select("date,calories_consumed,protein_g,carbs_g,fat_g")
         .eq("user_id", user.id)
         .gte("date", sevenDaysAgo)
         .lte("date", today)
@@ -55,18 +55,27 @@ export async function GET(request: NextRequest) {
       fat_goal:     goalsRes.data?.fat_goal      ?? 70,
     };
 
-    // Build 7-day weekly chart filling gaps with 0
-    const logMap = new Map<string, number>(
-      (weeklyRes.data ?? []).map((r) => [r.date, r.calories_consumed])
+    // Build 7-day weekly chart filling gaps with 0 — includes full macros
+    const logMap = new Map<string, { kcal: number; protein: number; carbs: number; fat: number }>(
+      (weeklyRes.data ?? []).map((r) => [r.date, {
+        kcal: r.calories_consumed ?? 0,
+        protein: r.protein_g ?? 0,
+        carbs: r.carbs_g ?? 0,
+        fat: r.fat_g ?? 0,
+      }])
     );
-    const weeklyCalories: WeeklyDay[] = [];
+    const weeklyCalories: (WeeklyDay & { protein: number; carbs: number; fat: number })[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(Date.now() - i * 86400000);
       const dateStr = d.toISOString().split("T")[0];
+      const entry = logMap.get(dateStr);
       weeklyCalories.push({
         date: dateStr,
         day: DAY_NAMES[d.getDay()],
-        kcal: logMap.get(dateStr) ?? 0,
+        kcal: entry?.kcal ?? 0,
+        protein: entry?.protein ?? 0,
+        carbs: entry?.carbs ?? 0,
+        fat: entry?.fat ?? 0,
         target: goals.calorie_goal,
       });
     }

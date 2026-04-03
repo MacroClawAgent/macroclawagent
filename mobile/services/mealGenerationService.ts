@@ -5,6 +5,16 @@ import { getPantryString } from './pantryService';
 import type { PantryItem } from './pantryService';
 import { apiPost } from '@/lib/api';
 
+interface WeekDayEntry {
+  date: string;
+  day: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  target: number;
+}
+
 interface NutritionTargets {
   calories: number;
   protein: number;
@@ -18,6 +28,15 @@ interface NutritionTargets {
     steps?: number;
   };
   equipment?: string[];
+  weeklyHistory?: {
+    days: WeekDayEntry[];
+    weekSoFar: {
+      daysLogged: number;
+      cumulativeCalorieDelta: number;
+      cumulativeProteinDelta: number;
+    };
+  };
+  plannedMealsToday?: { type: string; name: string; calories: number; protein: number }[];
 }
 
 function buildActivityLine(activityContext?: NutritionTargets['activityContext']): string {
@@ -52,6 +71,54 @@ function buildGoalPreamble(goal: string): string {
   return goalMap[goal] ?? `PRIMARY OBJECTIVE: ${goal}. Optimise every meal to serve this goal.`;
 }
 
+function buildWeeklyContextBlock(targets: NutritionTargets): string {
+  const wh = targets.weeklyHistory;
+  if (!wh || wh.weekSoFar.daysLogged === 0) return '';
+
+  const lines: string[] = ['\nWEEKLY EATING HISTORY (this Mon–Sun):'];
+  for (const d of wh.days) {
+    if (d.kcal === 0) continue;
+    const delta = d.kcal - d.target;
+    lines.push(`${d.day} ${d.date}: ${d.kcal} kcal (${delta >= 0 ? '+' : ''}${delta}), ${d.protein}g P, ${d.carbs}g C, ${d.fat}g F`);
+  }
+
+  const { cumulativeCalorieDelta, cumulativeProteinDelta, daysLogged } = wh.weekSoFar;
+  const daysRemaining = 7 - daysLogged;
+
+  if (daysRemaining > 0 && Math.abs(cumulativeCalorieDelta) > 100) {
+    const compensation = Math.round(-cumulativeCalorieDelta / daysRemaining);
+    lines.push('');
+    lines.push(`WEEKLY BALANCE: ${cumulativeCalorieDelta > 0 ? '+' : ''}${cumulativeCalorieDelta} kcal over ${daysLogged} days.`);
+    lines.push(`COMPENSATION: ${compensation > 0 ? 'add' : 'reduce'} ~${Math.abs(compensation)} kcal/day over remaining ${daysRemaining} days.`);
+
+    if (targets.goal === 'Build Muscle' || targets.goal === 'build_muscle') {
+      lines.push(`PROTEIN FLOOR: Never drop protein below ${targets.protein}g/day even when reducing calories. Cut carbs or fat instead.`);
+    }
+    if (targets.goal === 'Lose Weight' || targets.goal === 'lose_weight') {
+      lines.push(`DEFICIT GUARD: Do not exceed ${Math.round(targets.calories * 0.25)} kcal daily deficit to prevent metabolic slowdown.`);
+    }
+  }
+
+  if (Math.abs(cumulativeProteinDelta) > 30 && daysRemaining > 0) {
+    const proComp = Math.round(-cumulativeProteinDelta / daysRemaining);
+    if (proComp > 0) {
+      lines.push(`PROTEIN RECOVERY: You are ${Math.abs(Math.round(cumulativeProteinDelta))}g short on protein this week. Add ~${proComp}g/day extra.`);
+    }
+  }
+
+  return lines.join('\n') + '\n';
+}
+
+function buildPlannedMealsBlock(planned?: NutritionTargets['plannedMealsToday']): string {
+  if (!planned || planned.length === 0) return '';
+  const lines = ['\nALREADY PLANNED FOR LATER TODAY:'];
+  for (const m of planned) {
+    lines.push(`- ${m.type}: ${m.name} (${m.calories} kcal, ${m.protein}g protein)`);
+  }
+  lines.push('Account for these when calculating the remaining budget for this meal.\n');
+  return lines.join('\n');
+}
+
 // ── Prompt builders ────────────────────────────────────────────────────────────
 
 const MEAL_JSON_SPEC = `{"type":"breakfast","name":"meal name (max 5 words)","ingredients":"Ingredient 1 (150g), Ingredient 2 (100g)","ingredientsList":["ingredient 1","ingredient 2"],"calories":520,"protein":42,"carbs":48,"fat":14,"time":"7:30 AM","emoji":"🍗","cookTime":20,"difficulty":"Easy","reason":"One sentence max 15 words explaining why this meal is right for this user right now. Be specific — reference their goal, remaining macros, or pantry items.","recipeSteps":["Step 1.","Step 2.","Step 3.","Step 4.","Step 5."]}`;
@@ -72,7 +139,7 @@ function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets, pan
     `USER NUTRITION TARGETS:\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
     `Servings: ${prefs.servings} person(s)\n` +
-    consumedCtx + activityLine + equipLine + pantryContext + `\n` +
+    consumedCtx + buildWeeklyContextBlock(targets) + activityLine + equipLine + pantryContext + `\n` +
     `Generate exactly 4 meals for today: breakfast, lunch, snack, dinner.\n\n` +
     `For EACH meal return this exact JSON structure:\n${MEAL_JSON_SPEC}\n\n` +
     `Return a JSON array of exactly 4 meal objects.\n` +
@@ -85,12 +152,20 @@ function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targe
   const constraints = buildConstraintString(prefs);
   const pantryContext = pantryItems && pantryItems.length > 0 ? `\n${getPantryString(pantryItems)}\n` : '';
   const consumedCtx = targets.consumed
-    ? `\nALREADY EATEN TODAY: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein.\nRemaining today: ${targets.calories - targets.consumed.calories} kcal, ${targets.protein - targets.consumed.protein}g protein.\n`
+    ? `\nALREADY EATEN TODAY: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein, ${targets.consumed.carbs}g carbs, ${targets.consumed.fat}g fat.\nRemaining today: ${targets.calories - targets.consumed.calories} kcal, ${targets.protein - targets.consumed.protein}g protein.\n`
     : '';
-  const calTarget = mealType === 'breakfast' ? Math.round(targets.calories * 0.25)
-    : mealType === 'lunch' ? Math.round(targets.calories * 0.30)
-    : mealType === 'dinner' ? Math.round(targets.calories * 0.30)
-    : Math.round(targets.calories * 0.15);
+  // Smart calorie target: account for consumed + planned meals
+  const eaten = targets.consumed ?? { calories: 0, protein: 0 };
+  const planned = (targets.plannedMealsToday ?? []).reduce(
+    (acc, m) => ({ calories: acc.calories + m.calories, protein: acc.protein + m.protein }),
+    { calories: 0, protein: 0 }
+  );
+  const remainingBudget = Math.max(200, targets.calories - eaten.calories - planned.calories);
+  const defaultSplit = mealType === 'breakfast' ? 0.25 : mealType === 'lunch' ? 0.30 : mealType === 'dinner' ? 0.30 : 0.15;
+  const calTarget = eaten.calories > 0 || planned.calories > 0
+    ? Math.round(remainingBudget * 0.5) // give this meal a fair share of what's left
+    : Math.round(targets.calories * defaultSplit);
+  const proTarget = Math.round(targets.protein * (calTarget / targets.calories));
   const activityLine = buildActivityLine(targets.activityContext);
   const equipLine = buildEquipmentLine(targets.equipment);
   const goalPreamble = buildGoalPreamble(targets.goal);
@@ -98,8 +173,8 @@ function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targe
     `You are a professional nutritionist. Suggest ONE ${mealType} meal for an Australian user.\n\n` +
     `${goalPreamble}\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
-    `Target for this meal: ~${calTarget} kcal, ${Math.round(targets.protein * (calTarget / targets.calories))}g protein\n` +
-    consumedCtx + activityLine + equipLine + pantryContext + `\n` +
+    `Target for this meal: ~${calTarget} kcal, ${proTarget}g protein\n` +
+    consumedCtx + buildWeeklyContextBlock(targets) + buildPlannedMealsBlock(targets.plannedMealsToday) + activityLine + equipLine + pantryContext + `\n` +
     `Return a single JSON object (not an array) with this structure:\n${MEAL_JSON_SPEC}\n\n` +
     `JSON only — no other text.`
   );
@@ -108,25 +183,79 @@ function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targe
 function buildWeekPrompt(prefs: UserPreferences, targets: NutritionTargets): string {
   const constraints = buildConstraintString(prefs);
   const today = new Date();
+  const dayOfWeek = (today.getDay() + 6) % 7; // 0=Mon
   const monday = new Date(today);
-  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  monday.setDate(today.getDate() - dayOfWeek);
+  const dayLabels = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
   const activityLine = buildActivityLine(targets.activityContext);
   const equipLine = buildEquipmentLine(targets.equipment);
   const goalPreamble = buildGoalPreamble(targets.goal);
+  const wh = targets.weeklyHistory;
+
+  // Build "already eaten" block for past days
+  let pastDaysBlock = '';
+  let weekBudgetBlock = '';
+  const daysToGenerate = 7 - dayOfWeek;
+
+  if (wh && wh.weekSoFar.daysLogged > 0 && dayOfWeek > 0) {
+    const pastLines: string[] = ['DAYS ALREADY EATEN (do NOT re-plan these — they are actual consumption):'];
+    for (let i = 0; i < dayOfWeek; i++) {
+      const dayDate = new Date(monday);
+      dayDate.setDate(monday.getDate() + i);
+      const dateStr = dayDate.toISOString().split('T')[0];
+      const dayData = wh.days.find(d => d.date === dateStr);
+      if (dayData && dayData.kcal > 0) {
+        pastLines.push(`${dayLabels[i]} (${dateStr}): ${dayData.kcal} kcal, ${dayData.protein}g P, ${dayData.carbs}g C, ${dayData.fat}g F`);
+      } else {
+        pastLines.push(`${dayLabels[i]} (${dateStr}): not logged`);
+      }
+    }
+    pastDaysBlock = pastLines.join('\n') + '\n\n';
+
+    // Compute remaining weekly budget
+    const weeklyCalTarget = targets.calories * 7;
+    const weeklyProTarget = targets.protein * 7;
+    const usedCal = wh.days.reduce((s, d) => s + d.kcal, 0);
+    const usedPro = wh.days.reduce((s, d) => s + d.protein, 0);
+    const remainCal = weeklyCalTarget - usedCal;
+    const remainPro = weeklyProTarget - usedPro;
+    const perDayCal = daysToGenerate > 0 ? Math.round(remainCal / daysToGenerate) : targets.calories;
+    const perDayPro = daysToGenerate > 0 ? Math.round(remainPro / daysToGenerate) : targets.protein;
+
+    weekBudgetBlock =
+      `WEEKLY BUDGET REMAINING: ${remainCal} kcal, ${remainPro}g protein across ${daysToGenerate} days.\n` +
+      `ADJUSTED TARGET PER DAY: ~${perDayCal} kcal, ~${perDayPro}g protein.\n`;
+
+    if (targets.goal === 'Build Muscle' || targets.goal === 'build_muscle') {
+      weekBudgetBlock += `MUSCLE RULE: Never drop any day below ${targets.protein}g protein even when compensating.\n`;
+    }
+    if (targets.goal === 'Lose Weight' || targets.goal === 'lose_weight') {
+      weekBudgetBlock += `DEFICIT GUARD: No day should exceed ${Math.round(targets.calories * 0.25)} kcal deficit.\n`;
+    }
+    weekBudgetBlock += '\n';
+  }
+
+  // Today's consumed context
+  const todayCtx = targets.consumed
+    ? `TODAY (${dayLabels[dayOfWeek]}) ALREADY EATEN: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein. Plan only remaining meals for today.\n\n`
+    : '';
+
   return (
-    `You are a professional nutritionist creating a personalised 7-day meal plan for an Australian user.\n\n` +
+    `You are a professional nutritionist creating a personalised meal plan for an Australian user.\n\n` +
     `${goalPreamble}\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
     `USER NUTRITION TARGETS:\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
-    `Servings: ${prefs.servings} person(s)\n` + activityLine + equipLine + `\n` +
-    `Generate 7 days of meals (Monday to Sunday). Each day has 4 meals: breakfast, lunch, snack, dinner.\n\n` +
+    `Servings: ${prefs.servings} person(s)\n\n` +
+    pastDaysBlock + weekBudgetBlock + todayCtx +
+    activityLine + equipLine +
+    `Generate meals for ${daysToGenerate} days (${dayLabels[dayOfWeek]} to Sunday). Each day has 4 meals: breakfast, lunch, snack, dinner.\n\n` +
     `VARIETY RULES:\n- Never repeat the same meal twice in the week\n` +
     `- Rotate protein sources: chicken, fish, beef/lamb, eggs, legumes throughout the week\n` +
     `- Vary cuisines and cooking methods\n\n` +
     `Return this exact JSON structure:\n` +
-    `{"days":[{"dayLabel":"Monday","date":"${monday.toISOString().split('T')[0]}","meals":{"breakfast":{...meal},"lunch":{...meal},"snack":{...meal},"dinner":{...meal}}}]}\n\n` +
+    `{"days":[{"dayLabel":"${dayLabels[dayOfWeek]}","date":"${today.toISOString().split('T')[0]}","meals":{"breakfast":{...meal},"lunch":{...meal},"snack":{...meal},"dinner":{...meal}}}]}\n\n` +
     `Each meal object: type, name, ingredients, ingredientsList, calories, protein, carbs, fat, time, emoji, cookTime, difficulty, recipeSteps.\n` +
     `JSON only — no other text.`
   );

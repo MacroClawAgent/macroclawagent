@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { usePreferences } from './usePreferences';
 import { useHealthKit } from './useHealthKit';
@@ -15,6 +16,27 @@ export interface TrainingData {
   type: 'strength' | 'cardio' | 'steps';
 }
 
+export interface WeekDayData {
+  date: string;
+  day: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  target: number;
+}
+
+export interface WeeklyHistory {
+  days: WeekDayData[];
+  weekSoFar: {
+    daysLogged: number;
+    totalKcal: number;
+    totalProtein: number;
+    cumulativeCalorieDelta: number;
+    cumulativeProteinDelta: number;
+  };
+}
+
 export interface AgentContextData {
   name: string;
   goal: string;
@@ -24,6 +46,7 @@ export interface AgentContextData {
     remaining: { calories: number; protein: number; carbs: number; fat: number } | null;
     progressPct: number;
   };
+  weeklyHistory: WeeklyHistory | null;
   training: TrainingData | null;
   pantry: {
     items: PantryItem[];
@@ -49,40 +72,69 @@ export function useAgentContext(): AgentContextData {
   const [nutritionConsumed, setNutritionConsumed] = useState<{
     calories: number; protein: number; carbs: number; fat: number;
   } | null>(null);
+  const [weeklyHistory, setWeeklyHistory] = useState<WeeklyHistory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchNutrition = useCallback(async () => {
-    try {
-      const d = await apiGet<{
-        calories_consumed?: number; protein_g?: number; carbs_g?: number; fat_g?: number;
-      }>('/api/nutrition/today');
-      if (d.calories_consumed != null) {
-        setNutritionConsumed({
-          calories: d.calories_consumed ?? 0,
-          protein: d.protein_g ?? 0,
-          carbs: d.carbs_g ?? 0,
-          fat: d.fat_g ?? 0,
-        });
-      }
-    } catch {
-      // No nutrition log yet — leave null
-    }
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => { fetchNutrition(); }, [fetchNutrition]);
-
-  // Identity from userProfile with safe defaults
   const targets = {
     calories: userProfile?.calorie_goal ?? 2000,
     protein:  userProfile?.protein_goal ?? 120,
     carbs:    userProfile?.carbs_goal ?? 250,
     fat:      userProfile?.fat_goal ?? 70,
   };
+
+  const fetchNutrition = useCallback(async () => {
+    try {
+      const d = await apiGet<{
+        today: { calories_consumed?: number; protein_g?: number; carbs_g?: number; fat_g?: number } | null;
+        goals: { calorie_goal: number; protein_goal: number };
+        weeklyCalories?: WeekDayData[];
+      }>('/api/nutrition/today');
+
+      // Today's consumed
+      const t = d.today;
+      if (t && t.calories_consumed != null) {
+        setNutritionConsumed({
+          calories: t.calories_consumed ?? 0,
+          protein: t.protein_g ?? 0,
+          carbs: t.carbs_g ?? 0,
+          fat: t.fat_g ?? 0,
+        });
+      }
+
+      // Weekly history
+      const wc = d.weeklyCalories ?? [];
+      if (wc.length > 0) {
+        const logged = wc.filter(day => day.kcal > 0);
+        const calTarget = d.goals?.calorie_goal ?? targets.calories;
+        const proTarget = userProfile?.protein_goal ?? targets.protein;
+        setWeeklyHistory({
+          days: wc,
+          weekSoFar: {
+            daysLogged: logged.length,
+            totalKcal: logged.reduce((s, day) => s + day.kcal, 0),
+            totalProtein: logged.reduce((s, day) => s + day.protein, 0),
+            cumulativeCalorieDelta: logged.reduce((s, day) => s + (day.kcal - calTarget), 0),
+            cumulativeProteinDelta: logged.reduce((s, day) => s + (day.protein - proTarget), 0),
+          },
+        });
+      }
+    } catch {
+      // No nutrition log yet
+    }
+    setIsLoading(false);
+  }, [targets.calories, targets.protein, userProfile?.protein_goal]);
+
+  useEffect(() => { fetchNutrition(); }, [fetchNutrition]);
+
+  // Auto-refresh when food is logged from anywhere in the app
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener('nutrition_updated', fetchNutrition);
+    return () => sub.remove();
+  }, [fetchNutrition]);
+
   const name = userProfile?.full_name?.split(' ')[0] ?? 'there';
   const goal = userProfile?.fitness_goal ?? 'Build Muscle';
 
-  // Nutrition context
   const consumed = nutritionConsumed;
   const remaining = consumed
     ? {
@@ -96,7 +148,6 @@ export function useAgentContext(): AgentContextData {
     ? Math.min(100, Math.round((consumed.calories / targets.calories) * 100))
     : 0;
 
-  // Training data from HealthKit (iOS only, permission-gated)
   let training: TrainingData | null = null;
   if (hkSummary) {
     const workout = hkSummary.recentWorkouts?.[0];
@@ -129,6 +180,7 @@ export function useAgentContext(): AgentContextData {
     goal,
     targets,
     nutrition: { consumed, remaining, progressPct },
+    weeklyHistory,
     training,
     pantry: { items: pantryItems, count: pantryItems.length, add: addPantryItem, remove: removePantryItem },
     preferences,

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert, KeyboardAvoidingView, Modal, Platform,
+  Alert, DeviceEventEmitter, KeyboardAvoidingView, Modal, Platform,
   SafeAreaView, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from "react-native";
@@ -239,6 +239,7 @@ export default function LogFoodScreen() {
         ]
       );
       setShowQty(false);
+      DeviceEventEmitter.emit('nutrition_updated');
       showToast(`${selectedDish.name} added to ${mealTag} ✓`);
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed to add.");
@@ -276,6 +277,7 @@ export default function LogFoodScreen() {
         lastLogged: `Today, ${mealTag}`, timesLogged: 1,
       };
       setPreviousDishes(prev => [newDish, ...prev]);
+      DeviceEventEmitter.emit('nutrition_updated');
       setShowCustom(false);
       showToast(`${customName} added to ${mealTag} ✓`);
     } catch (e: unknown) {

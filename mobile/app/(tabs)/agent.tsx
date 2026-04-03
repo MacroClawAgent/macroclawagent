@@ -128,6 +128,7 @@ export default function AgentScreen() {
       ? { workoutLabel: training.label, caloriesBurned: training.caloriesBurned }
       : undefined,
     equipment: equipment.size > 0 ? [...equipment] : undefined,
+    weeklyHistory: ctx.weeklyHistory ?? undefined,
   };
 
   const handleGenerate = useCallback(
