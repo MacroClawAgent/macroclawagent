@@ -86,6 +86,8 @@ export default function PhotoConfirmScreen() {
   const [errorMsg, setErrorMsg] = useState("");
   const [postToCommunity, setPostToCommunity] = useState(true);
   const [isRelog, setIsRelog] = useState(false);
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  const [duplicateInfo, setDuplicateInfo] = useState<{ name: string; times: number } | null>(null);
   const [pastDishes, setPastDishes] = useState<StoredDish[]>([]);
   const [matchedDish, setMatchedDish] = useState<StoredDish | null>(null);
   // AI-detected foods stashed while showing match prompt
@@ -188,6 +190,13 @@ export default function PhotoConfirmScreen() {
         setMatchedDish(match);
         setStage("match_prompt");
       } else {
+        // Check ingredient-level similarity against past dishes
+        const ingredientMatch = findIngredientMatch(data.foods, pastDishes);
+        if (ingredientMatch) {
+          setIsDuplicate(true);
+          setDuplicateInfo({ name: ingredientMatch.name, times: ingredientMatch.times_logged });
+          setPostToCommunity(false);
+        }
         setStage("review");
       }
     } catch {
@@ -212,6 +221,20 @@ export default function PhotoConfirmScreen() {
       const overlap = [...dWords].filter(w => sWords.has(w)).length;
       const maxLen = Math.max(dWords.size, sWords.size);
       if (maxLen > 0 && overlap / maxLen >= 0.6) return dish;
+    }
+    return null;
+  }
+
+  /** Check ingredient-level similarity: if detected foods overlap significantly with a stored dish's calorie profile */
+  function findIngredientMatch(detected: DetectedFood[], stored: StoredDish[]): StoredDish | null {
+    const totalCal = detected.reduce((s, f) => s + f.calories, 0);
+    if (totalCal === 0) return null;
+    for (const dish of stored) {
+      if (dish.calories === 0) continue;
+      const calDiff = Math.abs(totalCal - dish.calories) / dish.calories;
+      const proDiff = Math.abs(detected.reduce((s, f) => s + f.protein_g, 0) - dish.protein_g) / Math.max(dish.protein_g, 1);
+      // Within 20% on both calories and protein = likely same meal
+      if (calDiff < 0.2 && proDiff < 0.2) return dish;
     }
     return null;
   }
@@ -241,14 +264,15 @@ export default function PhotoConfirmScreen() {
     setStage("review");
   };
 
-  // Track if AI detected a similar dish (for hint in review)
-  const similarDishRef = useRef<string | null>(null);
-
-  /** User rejects: use AI analysis instead */
+  /** User rejects: use AI analysis instead — still a duplicate, no community */
   const handleUseNewScan = () => {
     setFoods(stashedAiFoods.current);
     setGramInputs(stashedAiFoods.current.map(f => String(f.grams)));
-    similarDishRef.current = matchedDish?.name ?? null;
+    if (matchedDish) {
+      setIsDuplicate(true);
+      setDuplicateInfo({ name: matchedDish.name, times: matchedDish.times_logged });
+      setPostToCommunity(false);
+    }
     setMatchedDish(null);
     setStage("review");
   };
@@ -447,25 +471,37 @@ export default function PhotoConfirmScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.toggleLabel}>Post to Community</Text>
               <Text style={styles.toggleHint}>
-                {isRelog ? "Re-logged dishes aren't shared" : postToCommunity ? "Dish will be shared publicly" : "Dish stays private"}
+                {isRelog || isDuplicate
+                  ? "Similar dish already shared"
+                  : postToCommunity ? "Dish will be shared publicly" : "Dish stays private"}
               </Text>
             </View>
             <Switch
               value={postToCommunity}
-              onValueChange={isRelog ? undefined : toggleCommunity}
-              disabled={isRelog}
+              onValueChange={(isRelog || isDuplicate) ? undefined : toggleCommunity}
+              disabled={isRelog || isDuplicate}
               trackColor={{ false: "rgba(232,224,208,0.12)", true: "rgba(245,200,66,0.35)" }}
               thumbColor={postToCommunity ? "#F5C842" : "rgba(232,224,208,0.4)"}
             />
           </View>
 
-          {/* Similar dish hint */}
-          {similarDishRef.current && !isRelog && (
-            <View style={styles.similarHint}>
-              <Ionicons name="information-circle-outline" size={16} color="#F5C842" />
-              <Text style={styles.similarHintText}>
-                Similar to "{similarDishRef.current}" in your dishes
+          {/* Status badge */}
+          {isRelog ? (
+            <View style={styles.badgeRow}>
+              <Ionicons name="repeat-outline" size={15} color="#F5C842" />
+              <Text style={styles.badgeText}>Re-logging from your dishes</Text>
+            </View>
+          ) : isDuplicate && duplicateInfo ? (
+            <View style={styles.badgeRow}>
+              <Ionicons name="copy-outline" size={15} color="#E07B54" />
+              <Text style={styles.badgeText}>
+                Logged {duplicateInfo.times}x before — similar to "{duplicateInfo.name}"
               </Text>
+            </View>
+          ) : (
+            <View style={[styles.badgeRow, styles.badgeNew]}>
+              <Ionicons name="sparkles-outline" size={15} color="#8B9E6E" />
+              <Text style={[styles.badgeText, { color: "#8B9E6E" }]}>New dish</Text>
             </View>
           )}
 
@@ -633,12 +669,14 @@ const styles = StyleSheet.create({
   },
   toggleLabel: { color: "#E8E0D0", fontSize: 15, fontWeight: "700" },
   toggleHint: { color: "rgba(232,224,208,0.4)", fontSize: 12, fontWeight: "500", marginTop: 2 },
-  similarHint: {
+  badgeRow: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: "rgba(245,200,66,0.08)", borderRadius: 12,
-    padding: 12, borderWidth: 1, borderColor: "rgba(245,200,66,0.15)",
+    backgroundColor: "rgba(232,224,208,0.05)", borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 9,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.08)",
   },
-  similarHintText: { color: "rgba(232,224,208,0.6)", fontSize: 13, fontWeight: "500", flex: 1 },
+  badgeNew: { backgroundColor: "rgba(139,158,110,0.08)", borderColor: "rgba(139,158,110,0.2)" },
+  badgeText: { color: "rgba(232,224,208,0.55)", fontSize: 13, fontWeight: "500", flex: 1 },
 
   confirmBtn: {
     backgroundColor: "#F5C842", borderRadius: 16, paddingVertical: 16, alignItems: "center",
