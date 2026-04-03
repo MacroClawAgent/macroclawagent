@@ -14,9 +14,24 @@ const DIM = "rgba(232,224,208,0.25)";
 
 const SPORTS = ["Running", "Cycling", "Gym / Strength", "Swimming", "Triathlon", "Other"];
 
-// Auto-format DOB as DD/MM/YYYY
+// Auto-format DOB as DD/MM/YYYY with validation
 function formatDOB(raw: string): string {
-  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  let digits = raw.replace(/\D/g, "").slice(0, 8);
+  // Clamp day (01-31)
+  if (digits.length >= 2) {
+    const dd = Math.min(31, Math.max(0, parseInt(digits.slice(0, 2))));
+    digits = String(dd).padStart(2, "0") + digits.slice(2);
+  }
+  // Clamp month (01-12)
+  if (digits.length >= 4) {
+    const mm = Math.min(12, Math.max(0, parseInt(digits.slice(2, 4))));
+    digits = digits.slice(0, 2) + String(mm).padStart(2, "0") + digits.slice(4);
+  }
+  // Clamp year (max 2026)
+  if (digits.length >= 8) {
+    const yyyy = Math.min(2026, parseInt(digits.slice(4, 8)));
+    digits = digits.slice(0, 4) + String(yyyy);
+  }
   if (digits.length <= 2) return digits;
   if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
   return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
