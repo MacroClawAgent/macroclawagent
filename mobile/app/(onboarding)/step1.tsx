@@ -27,7 +27,8 @@ export default function OnboardingStep1() {
   const [dob, setDob] = useState("");
   const [sport, setSport] = useState("");
 
-  const canContinue = firstName.trim().length > 0 && lastName.trim().length > 0;
+  const dobValid = dob.length === 10; // DD/MM/YYYY
+  const canContinue = firstName.trim().length > 0 && lastName.trim().length > 0 && dobValid;
 
   function handleNext() {
     if (!canContinue) return;

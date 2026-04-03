@@ -89,81 +89,66 @@ export default function OnboardingStep2() {
         </TouchableOpacity>
       </View>
 
-      {/* Weight picker */}
-      <View style={s.pickerSection}>
-        <Text style={s.label}>Weight</Text>
-        <View style={s.pickerCard}>
-          {isMetric ? (
-            <View style={s.pickerRow}>
-              <Picker
-                selectedValue={weightKg}
-                onValueChange={setWeightKg}
-                style={s.picker}
-                itemStyle={s.pickerItem}
-              >
-                {KG_RANGE.map(v => <Picker.Item key={v} label={`${v}`} value={v} />)}
-              </Picker>
-              <Text style={s.pickerUnit}>kg</Text>
-            </View>
-          ) : (
-            <View style={s.pickerRow}>
-              <Picker
-                selectedValue={weightLb}
-                onValueChange={setWeightLb}
-                style={s.picker}
-                itemStyle={s.pickerItem}
-              >
-                {LB_RANGE.map(v => <Picker.Item key={v} label={`${v}`} value={v} />)}
-              </Picker>
-              <Text style={s.pickerUnit}>lb</Text>
-            </View>
-          )}
+      {/* Weight + Height side by side */}
+      <View style={s.pickersRow}>
+        {/* Weight */}
+        <View style={s.pickerCol}>
+          <Text style={s.label}>Weight</Text>
+          <View style={s.pickerCard}>
+            <Picker
+              selectedValue={isMetric ? weightKg : weightLb}
+              onValueChange={(v: number) => isMetric ? setWeightKg(v) : setWeightLb(v)}
+              style={s.picker}
+              itemStyle={s.pickerItem}
+            >
+              {(isMetric ? KG_RANGE : LB_RANGE).map(v => <Picker.Item key={v} label={`${v}`} value={v} />)}
+            </Picker>
+            <Text style={s.pickerUnit}>{isMetric ? "kg" : "lb"}</Text>
+          </View>
         </View>
-      </View>
 
-      {/* Height picker */}
-      <View style={s.pickerSection}>
-        <Text style={s.label}>Height</Text>
-        <View style={s.pickerCard}>
-          {isMetric ? (
-            <View style={s.pickerRow}>
-              <Picker
-                selectedValue={heightCm}
-                onValueChange={setHeightCm}
-                style={s.picker}
-                itemStyle={s.pickerItem}
-              >
-                {CM_RANGE.map(v => <Picker.Item key={v} label={`${v}`} value={v} />)}
-              </Picker>
-              <Text style={s.pickerUnit}>cm</Text>
-            </View>
-          ) : (
-            <View style={s.pickerRow}>
-              <Picker
-                selectedValue={heightFt}
-                onValueChange={setHeightFt}
-                style={[s.picker, { flex: 1 }]}
-                itemStyle={s.pickerItem}
-              >
-                {FT_RANGE.map(v => <Picker.Item key={v} label={`${v}`} value={v} />)}
-              </Picker>
-              <Text style={s.pickerUnit}>ft</Text>
-              <Picker
-                selectedValue={heightIn}
-                onValueChange={setHeightIn}
-                style={[s.picker, { flex: 1 }]}
-                itemStyle={s.pickerItem}
-              >
-                {IN_RANGE.map(v => <Picker.Item key={v} label={`${v}`} value={v} />)}
-              </Picker>
-              <Text style={s.pickerUnit}>in</Text>
-            </View>
-          )}
+        {/* Height */}
+        <View style={s.pickerCol}>
+          <Text style={s.label}>Height</Text>
+          <View style={s.pickerCard}>
+            {isMetric ? (
+              <>
+                <Picker
+                  selectedValue={heightCm}
+                  onValueChange={setHeightCm}
+                  style={s.picker}
+                  itemStyle={s.pickerItem}
+                >
+                  {CM_RANGE.map(v => <Picker.Item key={v} label={`${v}`} value={v} />)}
+                </Picker>
+                <Text style={s.pickerUnit}>cm</Text>
+              </>
+            ) : (
+              <>
+                <Picker
+                  selectedValue={heightFt}
+                  onValueChange={setHeightFt}
+                  style={[s.picker, { flex: 1 }]}
+                  itemStyle={s.pickerItemSmall}
+                >
+                  {FT_RANGE.map(v => <Picker.Item key={v} label={`${v}'`} value={v} />)}
+                </Picker>
+                <Picker
+                  selectedValue={heightIn}
+                  onValueChange={setHeightIn}
+                  style={[s.picker, { flex: 1 }]}
+                  itemStyle={s.pickerItemSmall}
+                >
+                  {IN_RANGE.map(v => <Picker.Item key={v} label={`${v}"`} value={v} />)}
+                </Picker>
+              </>
+            )}
+          </View>
         </View>
       </View>
 
       {/* Metabolism */}
-      <View style={s.pickerSection}>
+      <View style={{ marginBottom: 20, gap: 8 }}>
         <Text style={s.label}>Metabolism</Text>
         <View style={{ gap: 8 }}>
           {METABOLISM.map(m => (
@@ -214,16 +199,18 @@ const s = StyleSheet.create({
   toggleText: { fontSize: 14, fontWeight: "600", color: DIM },
   toggleTextActive: { color: TEXT_C },
 
-  pickerSection: { marginBottom: 20, gap: 8 },
+  pickersRow: { flexDirection: "row", gap: 12, marginBottom: 20 },
+  pickerCol: { flex: 1, gap: 8 },
   label: { fontSize: 12, fontWeight: "600", color: MUTED, textTransform: "uppercase", letterSpacing: 0.5 },
   pickerCard: {
     backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 16,
     borderWidth: 1, borderColor: "rgba(232,224,208,0.08)", overflow: "hidden",
+    flexDirection: "row", alignItems: "center",
   },
-  pickerRow: { flexDirection: "row", alignItems: "center" },
-  picker: { flex: 2, height: 150, color: TEXT_C },
-  pickerItem: { fontSize: 22, fontWeight: "700", color: TEXT_C, height: 150 },
-  pickerUnit: { fontSize: 16, fontWeight: "600", color: MUTED, paddingRight: 16 },
+  picker: { flex: 1, height: 140, color: TEXT_C },
+  pickerItem: { fontSize: 20, fontWeight: "700", color: TEXT_C, height: 140 },
+  pickerItemSmall: { fontSize: 18, fontWeight: "700", color: TEXT_C, height: 140 },
+  pickerUnit: { fontSize: 14, fontWeight: "600", color: MUTED, paddingRight: 12 },
 
   metaCard: {
     flexDirection: "row", alignItems: "center", gap: 12,
