@@ -1,20 +1,11 @@
 import { Platform } from "react-native";
 import type { HealthKitWorkout, DailyActivitySummary } from "@/types/healthKit";
 
-// react-native-health is an iOS-only native module.
-// We import it lazily so Android/web bundles don't crash.
-let AppleHealthKit: any = null;
-let Permissions: any = null;
-
-if (Platform.OS === "ios") {
-  try {
-    const rnh = require("react-native-health");
-    AppleHealthKit = rnh.default ?? rnh;
-    Permissions = rnh.HealthKitPermissions ?? AppleHealthKit?.Constants?.Permissions;
-  } catch {
-    // native module not linked yet (Expo Go) — silently no-op
-  }
-}
+// HealthKit integration — coming soon.
+// react-native-health removed for EAS managed builds.
+// Will be replaced with expo-health or a config plugin in a future update.
+const AppleHealthKit: any = null;
+const Permissions: any = null;
 
 const READ_PERMISSIONS = [
   "ActiveEnergyBurned",
