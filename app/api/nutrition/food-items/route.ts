@@ -19,40 +19,66 @@ export async function GET(request: NextRequest) {
     if (request.nextUrl.searchParams.get("distinct") === "true") {
       const { data: rows, error: distErr } = await supabase
         .from("food_log_items")
-        .select("dish_name,name,meal_tag,calories,protein_g,carbs_g,fat_g,log_date,created_at")
+        .select("batch_id,dish_name,name,meal_tag,calories,protein_g,carbs_g,fat_g,log_date,created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(1000);
 
       if (distErr) throw distErr;
 
-      // Group by dish_name (or name fallback), keep latest entry's macros + count
-      const map = new Map<string, {
-        name: string; meal_tag: string;
-        calories: number; protein_g: number; carbs_g: number; fat_g: number;
-        last_logged: string; times_logged: number;
-      }>();
+      // Step 1: group ingredients by batch_id → sum macros per meal
+      type Meal = { name: string; meal_tag: string; calories: number; protein_g: number; carbs_g: number; fat_g: number; log_date: string; created_at: string };
+      const batchMap = new Map<string, Meal>();
       for (const r of rows ?? []) {
-        const key = (r.dish_name || r.name || "").toLowerCase().trim();
-        if (!key) continue;
-        const existing = map.get(key);
+        const bKey = r.batch_id ?? `solo_${r.created_at}`;
+        const existing = batchMap.get(bKey);
         if (existing) {
-          existing.times_logged += 1;
+          existing.calories  += r.calories ?? 0;
+          existing.protein_g += Number(r.protein_g ?? 0);
+          existing.carbs_g   += Number(r.carbs_g ?? 0);
+          existing.fat_g     += Number(r.fat_g ?? 0);
         } else {
-          map.set(key, {
+          batchMap.set(bKey, {
             name: r.dish_name || r.name,
             meal_tag: r.meal_tag,
             calories: r.calories ?? 0,
             protein_g: Number(r.protein_g ?? 0),
             carbs_g: Number(r.carbs_g ?? 0),
             fat_g: Number(r.fat_g ?? 0),
-            last_logged: r.log_date,
+            log_date: r.log_date,
+            created_at: r.created_at,
+          });
+        }
+      }
+
+      // Step 2: group meals by normalized dish name → deduplicate
+      const dishMap = new Map<string, {
+        name: string; meal_tag: string;
+        calories: number; protein_g: number; carbs_g: number; fat_g: number;
+        last_logged: string; times_logged: number;
+      }>();
+      for (const meal of batchMap.values()) {
+        const key = (meal.name || "").toLowerCase().trim();
+        if (!key) continue;
+        const existing = dishMap.get(key);
+        if (existing) {
+          existing.times_logged += 1;
+          // Keep the most recent entry's macros (first seen = most recent due to desc order)
+        } else {
+          dishMap.set(key, {
+            name: meal.name,
+            meal_tag: meal.meal_tag,
+            calories: Math.round(meal.calories),
+            protein_g: Math.round(meal.protein_g),
+            carbs_g: Math.round(meal.carbs_g),
+            fat_g: Math.round(meal.fat_g),
+            last_logged: meal.log_date,
             times_logged: 1,
           });
         }
       }
 
-      const dishes = Array.from(map.values())
+      const dishes = Array.from(dishMap.values())
         .sort((a, b) => b.times_logged - a.times_logged);
 
       return NextResponse.json({ dishes });
@@ -167,8 +193,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * DELETE /api/nutrition/food-items?batch_id=UUID&date=YYYY-MM-DD
- * Deletes all food_log_items for the given batch_id (or a single item by id),
- * then recomputes nutrition_logs totals for that day.
+ * DELETE /api/nutrition/food-items?dish_name=NAME  (removes saved dish across all dates)
  */
 export async function DELETE(request: NextRequest) {
   try {
@@ -177,11 +202,63 @@ export async function DELETE(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const batch_id = request.nextUrl.searchParams.get("batch_id");
+    const batch_id  = request.nextUrl.searchParams.get("batch_id");
+    const dish_name = request.nextUrl.searchParams.get("dish_name");
+
+    // ── Delete by dish_name (remove saved dish across all dates) ────────────
+    if (dish_name) {
+      // Find affected dates before deleting so we can recompute their totals
+      const { data: affected } = await supabase
+        .from("food_log_items")
+        .select("log_date")
+        .eq("user_id", user.id)
+        .ilike("dish_name", dish_name);
+      // Also match rows where name matches (for items without dish_name)
+      const { data: affected2 } = await supabase
+        .from("food_log_items")
+        .select("log_date")
+        .eq("user_id", user.id)
+        .ilike("name", dish_name)
+        .is("dish_name", null);
+
+      const affectedDates = [...new Set([
+        ...(affected ?? []).map(r => r.log_date),
+        ...(affected2 ?? []).map(r => r.log_date),
+      ])];
+
+      // Delete matching rows
+      await supabase.from("food_log_items").delete().eq("user_id", user.id).ilike("dish_name", dish_name);
+      await supabase.from("food_log_items").delete().eq("user_id", user.id).ilike("name", dish_name).is("dish_name", null);
+
+      // Recompute totals for each affected date
+      for (const date of affectedDates) {
+        const { data: remaining } = await supabase
+          .from("food_log_items")
+          .select("calories,protein_g,carbs_g,fat_g")
+          .eq("user_id", user.id)
+          .eq("log_date", date);
+        const totals = (remaining ?? []).reduce(
+          (acc, r) => ({
+            calories_consumed: acc.calories_consumed + (r.calories ?? 0),
+            protein_g: acc.protein_g + Number(r.protein_g ?? 0),
+            carbs_g: acc.carbs_g + Number(r.carbs_g ?? 0),
+            fat_g: acc.fat_g + Number(r.fat_g ?? 0),
+          }),
+          { calories_consumed: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
+        );
+        await supabase
+          .from("nutrition_logs")
+          .upsert({ user_id: user.id, date, ...totals }, { onConflict: "user_id,date" });
+      }
+
+      return NextResponse.json({ ok: true, deleted_dates: affectedDates.length });
+    }
+
+    // ── Delete by batch_id ──────────────────────────────────────────────────
     const log_date: string = request.nextUrl.searchParams.get("date") ?? new Date().toISOString().split("T")[0];
 
     if (!batch_id) {
-      return NextResponse.json({ error: "batch_id is required" }, { status: 400 });
+      return NextResponse.json({ error: "batch_id or dish_name is required" }, { status: 400 });
     }
 
     const { error: delErr } = await supabase

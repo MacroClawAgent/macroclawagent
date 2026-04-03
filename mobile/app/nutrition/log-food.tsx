@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Alert, DeviceEventEmitter, KeyboardAvoidingView, Modal, Platform,
+  Alert, Animated, DeviceEventEmitter, KeyboardAvoidingView, Modal, PanResponder, Platform,
   SafeAreaView, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from "react-native";
@@ -61,6 +61,103 @@ const MEAL_ICONS: Record<string, string> = {
   Dinner: "moon-outline",
   Snack: "cafe-outline",
 };
+
+// ── Swipeable Dish Row ───────────────────────────────────────────────────────
+const DELETE_THRESHOLD = -80;
+
+function SwipeableDishRow({
+  dish, onAdd, onDelete,
+}: {
+  dish: DishEntry;
+  onAdd: () => void;
+  onDelete: () => void;
+}) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderMove: (_, g) => {
+        if (g.dx < 0) translateX.setValue(g.dx); // only allow left swipe
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < DELETE_THRESHOLD) {
+          // Snap open to show delete
+          Animated.spring(translateX, { toValue: -80, useNativeDriver: true }).start();
+        } else {
+          // Snap back
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
+
+  const handleDelete = () => {
+    Animated.timing(translateX, { toValue: -400, duration: 250, useNativeDriver: true }).start(() => {
+      onDelete();
+    });
+  };
+
+  return (
+    <View style={{ overflow: "hidden" }}>
+      {/* Delete button behind the row */}
+      <View style={swipeStyles.deleteBackground}>
+        <TouchableOpacity onPress={handleDelete} style={swipeStyles.deleteBtn} activeOpacity={0.8}>
+          <Ionicons name="close-circle" size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+      {/* Foreground row */}
+      <Animated.View
+        style={{ transform: [{ translateX }], backgroundColor: CARD }}
+        {...panResponder.panHandlers}
+      >
+        <View style={swipeStyles.row}>
+          <View style={swipeStyles.iconCircle}>
+            <Ionicons name="nutrition-outline" size={22} color={GOLD} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={swipeStyles.title}>{dish.name}</Text>
+            <View style={swipeStyles.macroRow}>
+              <Text style={swipeStyles.cal}>{dish.calories} cal</Text>
+              <Text style={swipeStyles.dot}> · </Text>
+              <Text style={swipeStyles.prot}>{dish.protein}g protein</Text>
+              {dish.timesLogged && dish.timesLogged > 1 && (
+                <Text style={swipeStyles.logged} numberOfLines={1}>{dish.timesLogged}x logged</Text>
+              )}
+            </View>
+          </View>
+          <TouchableOpacity style={swipeStyles.addCircle} onPress={onAdd} activeOpacity={0.8}>
+            <Ionicons name="add" size={20} color={DARK_TXT} />
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+const swipeStyles = StyleSheet.create({
+  deleteBackground: {
+    position: "absolute", top: 0, bottom: 0, right: 0, width: 80,
+    backgroundColor: "#D93025", alignItems: "center", justifyContent: "center",
+  },
+  deleteBtn: { width: 80, height: "100%", alignItems: "center", justifyContent: "center" },
+  row: {
+    paddingHorizontal: 16, paddingVertical: 12,
+    flexDirection: "row", alignItems: "center", gap: 14,
+    borderBottomWidth: 1, borderBottomColor: "rgba(232,224,208,0.06)",
+  },
+  iconCircle: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: "rgba(232,224,208,0.06)",
+    alignItems: "center", justifyContent: "center",
+  },
+  title:    { fontSize: 15, fontWeight: "600", color: CREAM },
+  macroRow: { flexDirection: "row", alignItems: "center", marginTop: 3, flexWrap: "nowrap" },
+  cal:      { fontSize: 12, fontWeight: "600", color: GOLD },
+  dot:      { fontSize: 12, color: "rgba(232,224,208,0.3)" },
+  prot:     { fontSize: 12, color: CORAL },
+  logged:   { fontSize: 11, color: "rgba(232,224,208,0.3)", marginLeft: "auto" as const },
+  addCircle:{ width: 36, height: 36, borderRadius: 18, backgroundColor: GOLD, alignItems: "center", justifyContent: "center" },
+});
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 export default function LogFoodScreen() {
@@ -273,6 +370,21 @@ export default function LogFoodScreen() {
     } finally { setSavingCustom(false); }
   }
 
+  // ── Delete saved dish ───────────────────────────────────────────────────────
+  async function handleDeleteSavedDish(dishName: string) {
+    // Optimistic remove
+    setPreviousDishes(prev => prev.filter(d => d.name.toLowerCase() !== dishName.toLowerCase()));
+    try {
+      await apiDelete(`/api/nutrition/food-items?dish_name=${encodeURIComponent(dishName)}`);
+      DeviceEventEmitter.emit("nutrition_updated");
+      showToast(`${dishName} removed`);
+    } catch {
+      // Re-fetch to restore correct state
+      fetchDishes();
+      Alert.alert("Error", "Failed to delete dish.");
+    }
+  }
+
   // ── Search / filter ────────────────────────────────────────────────────────
   const trimmed    = query.trim().toLowerCase();
   const isSearching = trimmed.length > 0;
@@ -464,25 +576,12 @@ export default function LogFoodScreen() {
                 showsVerticalScrollIndicator={false}
               >
                 {filteredDishes.map((d, idx) => (
-                  <View key={`${d.name}-${idx}`} style={s.dishRow2}>
-                    <View style={s.dishEmoji}>
-                      <Ionicons name="nutrition-outline" size={22} color={GOLD} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.dishTitle}>{d.name}</Text>
-                      <View style={s.dishMacroRow}>
-                        <Text style={s.dishCal}>{d.calories} cal</Text>
-                        <Text style={s.dishDot}> · </Text>
-                        <Text style={s.dishProt}>{d.protein}g protein</Text>
-                        {d.timesLogged && d.timesLogged > 1 && (
-                          <Text style={s.dishLastLog} numberOfLines={1}>{d.timesLogged}x logged</Text>
-                        )}
-                      </View>
-                    </View>
-                    <TouchableOpacity style={s.addCircle} onPress={() => openDishQty(d)} activeOpacity={0.8}>
-                      <Ionicons name="add" size={20} color={DARK_TXT} />
-                    </TouchableOpacity>
-                  </View>
+                  <SwipeableDishRow
+                    key={`${d.name}-${idx}`}
+                    dish={d}
+                    onAdd={() => openDishQty(d)}
+                    onDelete={() => handleDeleteSavedDish(d.name)}
+                  />
                 ))}
                 <TouchableOpacity style={s.createCustom} onPress={() => openCustom()} activeOpacity={0.7}>
                   <Text style={s.createCustomText}>+ Create custom dish</Text>
@@ -691,23 +790,6 @@ const s = StyleSheet.create({
     fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)",
     letterSpacing: 1.2, marginLeft: 20, marginTop: 16, marginBottom: 8,
      },
-  dishRow2: {
-    paddingHorizontal: 16, paddingVertical: 12,
-    flexDirection: "row", alignItems: "center", gap: 14,
-    borderBottomWidth: 1, borderBottomColor: "rgba(232,224,208,0.06)",
-  },
-  dishEmoji: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: "rgba(232,224,208,0.06)",
-    alignItems: "center", justifyContent: "center",
-  },
-  dishTitle:   { fontSize: 15, fontWeight: "600", color: CREAM,  },
-  dishMacroRow:{ flexDirection: "row", alignItems: "center", marginTop: 3, flexWrap: "nowrap" },
-  dishCal:     { fontSize: 12, fontWeight: "600", color: GOLD,  },
-  dishDot:     { fontSize: 12, color: "rgba(232,224,208,0.3)",  },
-  dishProt:    { fontSize: 12, color: CORAL,  },
-  dishLastLog: { fontSize: 11, color: "rgba(232,224,208,0.3)", marginLeft: "auto" as const,  },
-  addCircle:   { width: 36, height: 36, borderRadius: 18, backgroundColor: GOLD, alignItems: "center", justifyContent: "center" },
 
   // ── Empty state ──────────────────────────────────────────────────────────────
   emptyState: { alignItems: "center", paddingTop: 60, paddingHorizontal: 32, gap: 4 },
