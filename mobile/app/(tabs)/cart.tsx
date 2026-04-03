@@ -442,7 +442,7 @@ export default function CartScreen() {
         <TouchableOpacity onPress={() => setShowDetail(false)} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name="chevron-back" size={24} color={TEXT} />
         </TouchableOpacity>
-        <Text style={[s.title, { flex: 1, marginLeft: 8 }]}>{sc.cartMeta?.label ?? 'Cart'}</Text>
+        <Text style={[s.detailTitle, { flex: 1, marginLeft: 8 }]} numberOfLines={1}>{sc.cartMeta?.label ?? 'Cart'}</Text>
         <TouchableOpacity
           onPress={sc.cartMeta?.source === 'agent' ? sc.refreshFromPlan : sc.initializeCart}
           style={s.refreshBtn}
@@ -634,6 +634,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
   },
   title: { fontSize: 28, fontWeight: '800', color: TEXT },
+  detailTitle: { fontSize: 18, fontWeight: '700', color: TEXT },
   refreshBtn: {
     width: 36, height: 36, borderRadius: 11, backgroundColor: CARD,
     borderWidth: 1, borderColor: BORDER, alignItems: 'center', justifyContent: 'center',
@@ -680,8 +681,8 @@ const s = StyleSheet.create({
     backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: BORDER,
     padding: 18,
   },
-  cartCardTitle: { fontSize: 20, color: TEXT },
-  cartCardSub: { fontSize: 13, color: TEXT_MUTED, marginTop: 3 },
+  cartCardTitle: { fontSize: 16, fontWeight: '700', color: TEXT },
+  cartCardSub: { fontSize: 12, color: TEXT_MUTED, marginTop: 2 },
   cartCardDelete: {
     width: 30, height: 30, borderRadius: 10,
     backgroundColor: 'rgba(239,68,68,0.08)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.15)',
