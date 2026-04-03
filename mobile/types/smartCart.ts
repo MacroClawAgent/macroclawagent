@@ -7,7 +7,7 @@ export type IngredientCategory =
   | 'condiments'
   | 'other';
 
-export type StoreType = 'woolworths' | 'coles' | 'aldi' | 'iga' | 'costco';
+export type StoreType = 'woolworths' | 'coles';
 
 export interface SupermarketProduct {
   id: string;

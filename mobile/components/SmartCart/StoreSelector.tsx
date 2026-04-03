@@ -24,9 +24,6 @@ const DIM     = 'rgba(232,224,208,0.3)';
 const STORE_BRAND: Record<StoreType, { color: string; letter: string }> = {
   woolworths: { color: '#007837', letter: 'W' },
   coles:      { color: '#E31837', letter: 'C' },
-  aldi:       { color: '#00529B', letter: 'A' },
-  iga:        { color: '#D4001A', letter: 'I' },
-  costco:     { color: '#E31837', letter: 'Co' },
 };
 
 function storeColor(store: StoreType): string {

@@ -58,9 +58,6 @@ interface StoreChain {
 const AU_CHAINS: StoreChain[] = [
   { keyword: 'Woolworths Supermarket', type: 'woolworths' },
   { keyword: 'Coles Supermarket',     type: 'coles' },
-  { keyword: 'ALDI Supermarket',       type: 'aldi' },
-  { keyword: 'IGA Supermarket',        type: 'iga' },
-  { keyword: 'Costco Wholesale',       type: 'costco' },
 ];
 
 const SEARCH_RADIUS = 10_000; // 10 km
@@ -114,12 +111,9 @@ export const MOCK_STORES: NearbyStore[] = [
   // Sydney
   { id: 'mock-syd-w1', name: 'Woolworths Town Hall', store: 'woolworths', address: '436 George St, Sydney NSW 2000', distance: 500, isOpen: true, lat: -33.8731, lng: 151.2065 },
   { id: 'mock-syd-c1', name: 'Coles World Square', store: 'coles', address: '644 George St, Sydney NSW 2000', distance: 700, isOpen: true, lat: -33.8784, lng: 151.2057 },
-  { id: 'mock-syd-a1', name: 'ALDI Surry Hills', store: 'aldi', address: '153 Elizabeth St, Sydney NSW 2000', distance: 900, isOpen: true, lat: -33.8765, lng: 151.2099 },
-  { id: 'mock-syd-i1', name: 'IGA Darlinghurst', store: 'iga', address: '182 Victoria St, Darlinghurst NSW 2010', distance: 1200, isOpen: true, lat: -33.8785, lng: 151.2175 },
   // Melbourne
   { id: 'mock-mel-w1', name: 'Woolworths Melbourne Central', store: 'woolworths', address: '300 Lonsdale St, Melbourne VIC 3000', distance: 600, isOpen: true, lat: -37.8117, lng: 144.9633 },
   { id: 'mock-mel-c1', name: 'Coles Bourke St', store: 'coles', address: '299 Bourke St, Melbourne VIC 3000', distance: 800, isOpen: true, lat: -37.8136, lng: 144.9653 },
-  { id: 'mock-mel-a1', name: 'ALDI CBD', store: 'aldi', address: '115 Swanston St, Melbourne VIC 3000', distance: 1000, isOpen: true, lat: -37.8129, lng: 144.9656 },
   // Brisbane
   { id: 'mock-bne-w1', name: 'Woolworths Brisbane CBD', store: 'woolworths', address: 'Queen St Mall, Brisbane QLD 4000', distance: 500, isOpen: true, lat: -27.4698, lng: 153.0251 },
   { id: 'mock-bne-c1', name: 'Coles Myer Centre', store: 'coles', address: 'Queen St, Brisbane QLD 4000', distance: 600, isOpen: true, lat: -27.4705, lng: 153.0258 },

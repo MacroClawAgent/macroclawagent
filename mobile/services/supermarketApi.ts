@@ -61,13 +61,13 @@ async function searchWoolworthsProducts(query: string): Promise<SupermarketProdu
   const key = getRapidApiKey();
   if (!key) return [];
   try {
-    const url = new URL('https://woolworths-products-api.p.rapidapi.com/api/products/search');
+    const url = new URL('https://woolworths-api1.p.rapidapi.com/search');
     url.searchParams.set('query', query);
-    url.searchParams.set('pageSize', '5');
-    url.searchParams.set('pageNumber', '1');
+    url.searchParams.set('size', '5');
+    url.searchParams.set('page', '1');
 
     const res = await fetch(url.toString(), {
-      headers: { 'x-rapidapi-key': key, 'x-rapidapi-host': 'woolworths-products-api.p.rapidapi.com' },
+      headers: { 'x-rapidapi-key': key, 'x-rapidapi-host': 'woolworths-api1.p.rapidapi.com' },
     });
     if (!res.ok) { console.warn('[Woolworths API]', res.status, await res.text().catch(() => '')); return []; }
     const data = await res.json() as Record<string, unknown>;
@@ -99,12 +99,12 @@ async function searchColesProducts(query: string): Promise<SupermarketProduct[]>
   const key = getRapidApiKey();
   if (!key) return [];
   try {
-    const url = new URL('https://coles-au.p.rapidapi.com/search');
-    url.searchParams.set('q', query);
+    const url = new URL('https://coles1.p.rapidapi.com/search');
+    url.searchParams.set('query', query);
     url.searchParams.set('page', '1');
 
     const res = await fetch(url.toString(), {
-      headers: { 'x-rapidapi-key': key, 'x-rapidapi-host': 'coles-au.p.rapidapi.com' },
+      headers: { 'x-rapidapi-key': key, 'x-rapidapi-host': 'coles1.p.rapidapi.com' },
     });
     if (!res.ok) { console.warn('[Coles API]', res.status, await res.text().catch(() => '')); return []; }
     const data = await res.json() as Record<string, unknown>;
