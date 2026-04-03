@@ -169,6 +169,7 @@ export default function HomeScreen() {
                   calorieProgress={vm.calorieProgress}
                   macros={vm.macros}
                   goalLabel={vm.goalLabel}
+                  weeklyCalories={vm.weeklyCalories}
                 />
               )}
             </View>

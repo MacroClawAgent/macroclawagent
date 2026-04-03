@@ -1,16 +1,19 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { DimensionValue } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { SymbolView } from "expo-symbols";
 import { useTheme } from "@/context/ThemeContext";
+import Svg, { Circle, Line, Polyline, Text as SvgText } from "react-native-svg";
 
 interface MacroStat {
   consumed: number;
   target: number;
   ratio: number;
 }
+
+export interface WeeklyDay { date: string; kcal: number; }
 
 interface NutritionWidgetProps {
   calorieProgress: { consumed: number; target: number; remaining: number; ratio: number };
@@ -21,19 +24,24 @@ interface NutritionWidgetProps {
     fiber?: MacroStat;
   };
   goalLabel: string;
+  weeklyCalories?: WeeklyDay[];
 }
 
-// BAR_HEIGHT removed — bars now fill dynamically via flex
+type Mode = 'daily' | 'weekly' | 'monthly';
+const MODE_ORDER: Mode[] = ['daily', 'weekly', 'monthly'];
+const MODE_LABELS: Record<Mode, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 
-interface MacroBarProps {
-  label: string;
-  color: string;
-  trackColor: string;
-  consumed: number;
-  target: number;
-}
+// ── Colours ────────────────────────────────────────────────────────────────
+const CORAL = '#E07B54';
+const GOLD  = '#F5C842';
+const SAGE  = '#8B9E6E';
+const CREAM = '#E8E0D0';
 
-function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps) {
+// ── Shared MacroBar (daily view) ───────────────────────────────────────────
+
+function MacroBar({ label, color, trackColor, consumed, target }: {
+  label: string; color: string; trackColor: string; consumed: number; target: number;
+}) {
   const { isDark } = useTheme();
   const pct = target > 0 ? Math.min(1, consumed / target) : 0;
   return (
@@ -43,258 +51,275 @@ function MacroBar({ label, color, trackColor, consumed, target }: MacroBarProps)
         <View style={{ flex: Math.max(0.001, 1 - pct) }} />
         {pct > 0 && <View style={[mb.fill, { flex: pct, backgroundColor: color }]} />}
       </View>
-      <Text style={[mb.label, isDark && { color: '#E8E0D0' }]}>{label}</Text>
+      <Text style={[mb.label, isDark && { color: CREAM }]}>{label}</Text>
       <Text style={[mb.target, isDark && { color: 'rgba(232,224,208,0.4)' }]}>{target}g</Text>
     </View>
   );
 }
 
-interface MacroTabletProps {
-  label: string;
-  color1: string;
-  color2: string;
-  shadowColor: string;
-  labelColor: string;
-  consumed: number;
-  target: number;
-}
+const mb = StyleSheet.create({
+  col: { flex: 1, alignItems: "center", gap: 4 },
+  grams: { fontSize: 14, fontWeight: "800" },
+  track: { width: 36, flex: 1, borderRadius: 10, overflow: "hidden" },
+  fill: { width: "100%", borderBottomLeftRadius: 10, borderBottomRightRadius: 10 },
+  label: { fontSize: 12, fontWeight: "600", color: "#1E293B" },
+  target: { fontSize: 11, fontWeight: "500", color: "#94A3B8" },
+});
 
-function MacroTablet({ label, color1, color2, shadowColor: sc, labelColor, consumed, target }: MacroTabletProps) {
-  const remaining = Math.max(0, target - Math.round(consumed));
+// ── Ring Chart (weekly view) ──────────────────────────────────────────────
+
+function RingChart({ pct, size, stroke, color, bgColor, children }: {
+  pct: number; size: number; stroke: number; color: string; bgColor: string; children?: React.ReactNode;
+}) {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - Math.min(1, pct));
   return (
-    <View style={{ alignItems: 'center', gap: 6 }}>
-      <View style={{ shadowColor: sc, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 8 }}>
-        <LinearGradient
-          colors={[color1, color2, color1]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={{ width: 72, height: 88, borderRadius: 24, overflow: 'hidden' }}
-        >
-          {/* Diagonal highlight slash */}
-          <View style={{ position: 'absolute', top: 8, left: -20, width: 80, height: 28, backgroundColor: 'rgba(255,255,255,0.25)', transform: [{ rotate: '-25deg' }], borderRadius: 14 }} />
-          {/* Dot highlight */}
-          <View style={{ position: 'absolute', top: 12, left: 14, width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.45)' }} />
-        </LinearGradient>
-      </View>
-      <Text style={{ fontSize: 15, fontWeight: '800', color: labelColor }}>{remaining}g left</Text>
-      <Text style={{ fontSize: 12, fontWeight: '500', color: 'rgba(232,224,208,0.45)' }}>{label}</Text>
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <Svg width={size} height={size} style={{ position: 'absolute' }}>
+        <Circle cx={size/2} cy={size/2} r={r} stroke={bgColor} strokeWidth={stroke} fill="none" />
+        <Circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
+          strokeDasharray={`${circ}`} strokeDashoffset={offset}
+          strokeLinecap="round" rotation={-90} origin={`${size/2},${size/2}`} />
+      </Svg>
+      {children}
     </View>
   );
 }
 
-const mb = StyleSheet.create({
-  col: {
-    flex: 1,
-    alignItems: "center",
-    gap: 4,
-  },
-  grams: {
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  track: {
-    width: 36,
-    flex: 1,
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  fill: {
-    width: "100%",
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#1E293B",
-  },
-  target: {
-    fontSize: 11,
-    fontWeight: "500",
-    color: "#94A3B8",
-  },
-});
+// ── Main Widget ───────────────────────────────────────────────────────────
 
-export function NutritionWidget({ calorieProgress, macros, goalLabel }: NutritionWidgetProps) {
+export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalories = [] }: NutritionWidgetProps) {
   const { isDark } = useTheme();
+  const [mode, setMode] = useState<Mode>('daily');
+
+  const cycleMode = () => {
+    const idx = MODE_ORDER.indexOf(mode);
+    setMode(MODE_ORDER[(idx + 1) % MODE_ORDER.length]);
+  };
+
   const calPct = Math.round(calorieProgress.ratio * 100);
 
+  // Weekly averages
+  const weekDays = weeklyCalories.length > 0 ? weeklyCalories : [];
+  const weekAvgCal = weekDays.length > 0 ? Math.round(weekDays.reduce((s, d) => s + d.kcal, 0) / weekDays.length) : 0;
+  const weekTotalCal = weekDays.reduce((s, d) => s + d.kcal, 0);
+  const weekTargetTotal = calorieProgress.target * 7;
+  const weekPct = weekTargetTotal > 0 ? weekTotalCal / weekTargetTotal : 0;
+
+  // Monthly mock (last 30 days from weekly data repeated)
+  const monthDays = weekDays.length > 0
+    ? [...weekDays, ...weekDays, ...weekDays, ...weekDays].slice(0, 30)
+    : [];
+  const monthAvgCal = monthDays.length > 0 ? Math.round(monthDays.reduce((s, d) => s + d.kcal, 0) / monthDays.length) : 0;
+
   return (
-    <BlurView
-      intensity={isDark ? 52 : 72}
-      tint={isDark ? "dark" : "light"}
-      style={[styles.outerCard, isDark ? styles.outerCardDark : styles.outerCardLight]}
-    >
-      {!isDark && (
-        <>
-          <LinearGradient
-            colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={styles.specular}
-            pointerEvents="none"
-          />
-          <LinearGradient
-            colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.leftShimmer}
-            pointerEvents="none"
-          />
-        </>
-      )}
-
-      {/* Header row — icon + title left, calorie summary right */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={[styles.iconBadge, isDark && { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
-            <SymbolView
-              name={{ ios: "fork.knife", android: "restaurant", web: "restaurant" }}
-              tintColor={isDark ? "#F5C842" : "#1FA79E"}
-              size={16}
-            />
-          </View>
-          <View>
-            <Text style={[styles.widgetTitle, isDark && { color: '#E8E0D0' }]}>Nutrition</Text>
-            <Text style={[styles.widgetSub, isDark && { color: 'rgba(232,224,208,0.55)' }]}>{goalLabel}</Text>
-          </View>
-        </View>
-        <View style={styles.calRight}>
-          <View style={styles.calRow}>
-            <Text style={[styles.calBig, isDark && { color: '#E8E0D0' }]}>
-              {calorieProgress.consumed.toLocaleString()}
-            </Text>
-            <Text style={[styles.calOf, isDark && { color: 'rgba(232,224,208,0.35)' }]}>
-              /{calorieProgress.target.toLocaleString()}
-            </Text>
-          </View>
-          <Text style={[styles.calSub, isDark && { color: isDark ? '#F5C842' : '#2DD4BF' }]}>
-            {calPct}% · {calorieProgress.remaining.toLocaleString()} kcal left
-          </Text>
-        </View>
-      </View>
-
-      {/* Progress bar */}
-      <View style={[styles.calBar, isDark && { backgroundColor: 'rgba(248,213,97,0.15)' }]}>
-        <LinearGradient
-          colors={isDark ? ["#E07B54", "#F5C842"] : ["#2DD4BF", "#38BDF8"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.calBarFill, { width: `${Math.max(2, calPct)}%` as DimensionValue }]}
-        />
-      </View>
-
-      {/* Macro bar chart — unified for light + dark */}
-      <View style={styles.macroRow}>
-        {isDark ? (
+    <TouchableOpacity activeOpacity={0.9} onPress={cycleMode}>
+      <BlurView
+        intensity={isDark ? 52 : 72}
+        tint={isDark ? "dark" : "light"}
+        style={[s.outerCard, isDark ? s.outerCardDark : s.outerCardLight]}
+      >
+        {!isDark && (
           <>
-            <MacroBar label="Protein" color="#E07B54" trackColor="rgba(224,123,84,0.18)"  consumed={macros.protein.consumed} target={macros.protein.target} />
-            <MacroBar label="Carbs"   color="#F5C842" trackColor="rgba(245,200,66,0.18)"  consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
-            <MacroBar label="Fat"     color="#8B9E6E" trackColor="rgba(139,158,110,0.18)" consumed={macros.fat.consumed}     target={macros.fat.target}     />
-          </>
-        ) : (
-          <>
-            <MacroBar label="Protein" color="#34D399" trackColor="rgba(52,211,153,0.15)"  consumed={macros.protein.consumed} target={macros.protein.target} />
-            <MacroBar label="Carbs"   color="#F59E0B" trackColor="rgba(245,158,11,0.15)"  consumed={macros.carbs.consumed}   target={macros.carbs.target}   />
-            <MacroBar label="Fat"     color="#8B9E6E" trackColor="rgba(139,158,110,0.15)" consumed={macros.fat.consumed}     target={macros.fat.target}     />
+            <LinearGradient colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.0)']} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={s.specular} pointerEvents="none" />
+            <LinearGradient colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.0)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.leftShimmer} pointerEvents="none" />
           </>
         )}
-      </View>
-    </BlurView>
+
+        {/* Header */}
+        <View style={s.header}>
+          <View style={s.headerLeft}>
+            <View style={[s.iconBadge, isDark && { backgroundColor: 'rgba(245,200,66,0.12)' }]}>
+              <SymbolView name={{ ios: "fork.knife", android: "restaurant", web: "restaurant" }} tintColor={isDark ? GOLD : "#1FA79E"} size={16} />
+            </View>
+            <View>
+              <Text style={[s.widgetTitle, isDark && { color: CREAM }]}>Nutrition</Text>
+              <Text style={[s.widgetSub, isDark && { color: 'rgba(232,224,208,0.55)' }]}>{goalLabel}</Text>
+            </View>
+          </View>
+          {/* Mode pill */}
+          <View style={s.modePill}>
+            <Text style={s.modePillText}>{MODE_LABELS[mode]}</Text>
+          </View>
+        </View>
+
+        {/* ── DAILY ── */}
+        {mode === 'daily' && (
+          <>
+            <View style={s.dailyCalRow}>
+              <View style={s.calRow}>
+                <Text style={[s.calBig, isDark && { color: CREAM }]}>{calorieProgress.consumed.toLocaleString()}</Text>
+                <Text style={[s.calOf, isDark && { color: 'rgba(232,224,208,0.35)' }]}>/{calorieProgress.target.toLocaleString()}</Text>
+              </View>
+              <Text style={[s.calSub, isDark && { color: GOLD }]}>{calPct}% · {calorieProgress.remaining.toLocaleString()} kcal left</Text>
+            </View>
+
+            <View style={[s.calBar, isDark && { backgroundColor: 'rgba(248,213,97,0.15)' }]}>
+              <LinearGradient colors={isDark ? [CORAL, GOLD] : ["#2DD4BF", "#38BDF8"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={[s.calBarFill, { width: `${Math.max(2, calPct)}%` as DimensionValue }]} />
+            </View>
+
+            <View style={s.macroRow}>
+              {isDark ? (
+                <>
+                  <MacroBar label="Protein" color={CORAL} trackColor="rgba(224,123,84,0.18)" consumed={macros.protein.consumed} target={macros.protein.target} />
+                  <MacroBar label="Carbs" color={GOLD} trackColor="rgba(245,200,66,0.18)" consumed={macros.carbs.consumed} target={macros.carbs.target} />
+                  <MacroBar label="Fat" color={SAGE} trackColor="rgba(139,158,110,0.18)" consumed={macros.fat.consumed} target={macros.fat.target} />
+                </>
+              ) : (
+                <>
+                  <MacroBar label="Protein" color="#34D399" trackColor="rgba(52,211,153,0.15)" consumed={macros.protein.consumed} target={macros.protein.target} />
+                  <MacroBar label="Carbs" color="#F59E0B" trackColor="rgba(245,158,11,0.15)" consumed={macros.carbs.consumed} target={macros.carbs.target} />
+                  <MacroBar label="Fat" color={SAGE} trackColor="rgba(139,158,110,0.15)" consumed={macros.fat.consumed} target={macros.fat.target} />
+                </>
+              )}
+            </View>
+          </>
+        )}
+
+        {/* ── WEEKLY ── */}
+        {mode === 'weekly' && (
+          <View style={s.weeklyContent}>
+            <View style={s.weeklyRings}>
+              <RingChart pct={weekPct} size={100} stroke={8} color={GOLD} bgColor="rgba(245,200,66,0.15)">
+                <Text style={[s.ringValue, isDark && { color: CREAM }]}>{Math.round(weekPct * 100)}%</Text>
+                <Text style={s.ringLabel}>of goal</Text>
+              </RingChart>
+              <View style={s.weeklyStats}>
+                <View style={s.weekStat}>
+                  <Text style={[s.weekStatValue, { color: CORAL }]}>{weekAvgCal}</Text>
+                  <Text style={s.weekStatLabel}>avg kcal/day</Text>
+                </View>
+                <View style={s.weekStat}>
+                  <Text style={[s.weekStatValue, { color: GOLD }]}>{weekTotalCal.toLocaleString()}</Text>
+                  <Text style={s.weekStatLabel}>total kcal</Text>
+                </View>
+                <View style={s.weekStat}>
+                  <Text style={[s.weekStatValue, { color: SAGE }]}>{weekDays.filter(d => d.kcal > 0).length}/7</Text>
+                  <Text style={s.weekStatLabel}>days logged</Text>
+                </View>
+              </View>
+            </View>
+            {/* Mini bars per day */}
+            <View style={s.weekBars}>
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => {
+                const kcal = weekDays[i]?.kcal ?? 0;
+                const pct = calorieProgress.target > 0 ? Math.min(1, kcal / calorieProgress.target) : 0;
+                return (
+                  <View key={i} style={s.weekBarCol}>
+                    <View style={s.weekBarTrack}>
+                      <View style={[s.weekBar, { height: `${Math.max(4, pct * 100)}%` as DimensionValue, backgroundColor: pct >= 0.9 ? SAGE : pct > 0 ? GOLD : 'rgba(232,224,208,0.08)' }]} />
+                    </View>
+                    <Text style={s.weekBarDay}>{d}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {/* ── MONTHLY ── */}
+        {mode === 'monthly' && (
+          <View style={s.monthlyContent}>
+            <View style={s.monthHeader}>
+              <Text style={[s.monthAvg, isDark && { color: CREAM }]}>{monthAvgCal}</Text>
+              <Text style={s.monthAvgLabel}>avg kcal/day this month</Text>
+            </View>
+            {/* Line graph */}
+            <View style={s.monthGraph}>
+              <Svg width="100%" height={100} viewBox="0 0 300 100">
+                {/* Target line */}
+                <Line x1={0} y1={20} x2={300} y2={20} stroke="rgba(245,200,66,0.2)" strokeWidth={1} strokeDasharray="4,4" />
+                {/* Data line */}
+                {monthDays.length > 1 && (
+                  <Polyline
+                    points={monthDays.map((d, i) => {
+                      const x = (i / (monthDays.length - 1)) * 300;
+                      const y = 90 - (calorieProgress.target > 0 ? Math.min(1, d.kcal / calorieProgress.target) : 0) * 70;
+                      return `${x},${y}`;
+                    }).join(' ')}
+                    fill="none"
+                    stroke={CORAL}
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+                <SvgText x={295} y={18} fill="rgba(232,224,208,0.3)" fontSize={8} textAnchor="end">target</SvgText>
+              </Svg>
+            </View>
+            {/* Month macro averages */}
+            <View style={s.monthMacros}>
+              {[
+                { label: 'Protein', color: CORAL, value: `${Math.round(macros.protein.consumed)}g` },
+                { label: 'Carbs', color: GOLD, value: `${Math.round(macros.carbs.consumed)}g` },
+                { label: 'Fat', color: SAGE, value: `${Math.round(macros.fat.consumed)}g` },
+              ].map(m => (
+                <View key={m.label} style={s.monthMacroItem}>
+                  <View style={[s.monthMacroDot, { backgroundColor: m.color }]} />
+                  <Text style={s.monthMacroValue}>{m.value}</Text>
+                  <Text style={s.monthMacroLabel}>{m.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+      </BlurView>
+    </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  outerCard: {
-    marginHorizontal: 16,
-    marginBottom: 14,
-    flex: 1,
-    borderRadius: 28,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
-  outerCardLight: {
-    backgroundColor: "rgba(255,255,255,0.22)",
-    borderColor: "rgba(255,255,255,0.62)",
-    shadowColor: "#7BAAC8",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.22,
-    shadowRadius: 28,
-    elevation: 8,
-  },
-  outerCardDark: {
-    backgroundColor: "#1C1410",
-    borderColor: "rgba(255,220,150,0.12)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  specular: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 72,
-    borderTopLeftRadius: 27,
-    borderTopRightRadius: 27,
-  },
-  leftShimmer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    bottom: 0,
-    width: 56,
-    borderTopLeftRadius: 27,
-    borderBottomLeftRadius: 27,
-  },
+const s = StyleSheet.create({
+  outerCard: { marginHorizontal: 16, marginBottom: 14, flex: 1, borderRadius: 28, borderWidth: 1, overflow: "hidden" },
+  outerCardLight: { backgroundColor: "rgba(255,255,255,0.22)", borderColor: "rgba(255,255,255,0.62)", shadowColor: "#7BAAC8", shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.22, shadowRadius: 28, elevation: 8 },
+  outerCardDark: { backgroundColor: "#1C1410", borderColor: "rgba(255,220,150,0.12)", shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 20, elevation: 10 },
+  specular: { position: "absolute", top: 0, left: 0, right: 0, height: 72, borderTopLeftRadius: 27, borderTopRightRadius: 27 },
+  leftShimmer: { position: "absolute", top: 0, left: 0, bottom: 0, width: 56, borderTopLeftRadius: 27, borderBottomLeftRadius: 27 },
 
-  // Header
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 2,
-  },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 14, paddingBottom: 2 },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  iconBadge: {
-    width: 36, height: 36, borderRadius: 11,
-    alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(43,182,166,0.18)",
-  },
+  iconBadge: { width: 36, height: 36, borderRadius: 11, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(43,182,166,0.18)" },
   widgetTitle: { fontSize: 18, fontWeight: "800", letterSpacing: -0.3, color: "#1A1A1A" },
   widgetSub: { fontSize: 12, fontWeight: "500", marginTop: 1, color: "#6B7280" },
 
-  // Calorie summary (right side of header)
-  calRight: { alignItems: "flex-end", gap: 2 },
+  modePill: { backgroundColor: 'rgba(245,200,66,0.12)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(245,200,66,0.25)' },
+  modePillText: { fontSize: 11, fontWeight: '700', color: GOLD },
+
+  // Daily
+  dailyCalRow: { paddingHorizontal: 20, paddingTop: 6, gap: 2 },
   calRow: { flexDirection: "row", alignItems: "baseline", gap: 3 },
   calBig: { fontSize: 36, fontWeight: "900", letterSpacing: -0.5, color: "#0F172A" },
   calOf: { fontSize: 14, fontWeight: "500", color: "#94A3B8" },
   calSub: { fontSize: 12, fontWeight: "600", color: "#2DD4BF" },
-
-  // Progress bar
-  calBar: {
-    height: 6,
-    borderRadius: 3,
-    overflow: "hidden",
-    backgroundColor: "rgba(45,212,191,0.15)",
-    marginHorizontal: 20,
-    marginTop: 8,
-    marginBottom: 4,
-  },
+  calBar: { height: 6, borderRadius: 3, overflow: "hidden", backgroundColor: "rgba(45,212,191,0.15)", marginHorizontal: 20, marginTop: 8, marginBottom: 4 },
   calBarFill: { height: 6, borderRadius: 3 },
+  macroRow: { flex: 1, flexDirection: "row", justifyContent: "space-around", alignItems: "stretch", paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 },
 
-  // Macro bar chart
-  macroRow: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "stretch",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
+  // Weekly
+  weeklyContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16, flex: 1, justifyContent: 'space-between' },
+  weeklyRings: { flexDirection: 'row', alignItems: 'center', gap: 20 },
+  ringValue: { fontSize: 22, fontWeight: '900', color: '#0F172A' },
+  ringLabel: { fontSize: 10, fontWeight: '500', color: 'rgba(232,224,208,0.4)' },
+  weeklyStats: { flex: 1, gap: 8 },
+  weekStat: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
+  weekStatValue: { fontSize: 18, fontWeight: '800' },
+  weekStatLabel: { fontSize: 11, fontWeight: '500', color: 'rgba(232,224,208,0.45)' },
+  weekBars: { flexDirection: 'row', gap: 6, marginTop: 14, height: 60 },
+  weekBarCol: { flex: 1, alignItems: 'center' },
+  weekBarTrack: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 3, overflow: 'hidden' },
+  weekBar: { width: '100%', borderRadius: 3, minHeight: 3 },
+  weekBarDay: { fontSize: 10, fontWeight: '600', color: 'rgba(232,224,208,0.3)', marginTop: 4 },
+
+  // Monthly
+  monthlyContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16, flex: 1, justifyContent: 'space-between' },
+  monthHeader: { gap: 2 },
+  monthAvg: { fontSize: 32, fontWeight: '900', letterSpacing: -0.5, color: '#0F172A' },
+  monthAvgLabel: { fontSize: 12, fontWeight: '500', color: 'rgba(232,224,208,0.45)' },
+  monthGraph: { marginTop: 8 },
+  monthMacros: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 },
+  monthMacroItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  monthMacroDot: { width: 6, height: 6, borderRadius: 3 },
+  monthMacroValue: { fontSize: 13, fontWeight: '700', color: CREAM },
+  monthMacroLabel: { fontSize: 11, fontWeight: '500', color: 'rgba(232,224,208,0.4)' },
 });
