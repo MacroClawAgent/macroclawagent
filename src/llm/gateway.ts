@@ -413,8 +413,51 @@ export async function analyzeFoodImage(
 }
 
 // ── Pantry / Fridge Vision Gateway ────────────────────────────────────────────
-// Sends a fridge or pantry photo to Claude Vision and returns a list of
-// ingredient names for the user to confirm before saving to their pantry.
+
+const PANTRY_SYSTEM = `You are an expert kitchen inventory analyst. You work for an Australian meal planning app. Your job is to identify every usable food ingredient in photos of fridges, pantries, and kitchen shelves with extreme accuracy. You understand Australian brands and products.`;
+
+const PANTRY_PROMPT = `Carefully scan this photo of a fridge, pantry, or kitchen shelf. Follow these steps:
+
+STEP 1 — SCAN SYSTEMATICALLY
+Look at the image shelf-by-shelf, section-by-section. Don't miss items hidden behind others or in corners. Check:
+- Door shelves (condiments, sauces, milk, juice)
+- Main shelves (leftovers, meat, dairy, vegetables)
+- Crisper drawers (produce, fruit, vegetables)
+- Pantry shelves (cans, jars, packets, cereals, rice, pasta)
+- Countertops (fruit bowls, bread, oils)
+
+STEP 2 — IDENTIFY EACH ITEM
+For each food item visible:
+- Name it as a simple, generic ingredient usable in recipes
+- Use Australian English (yoghurt not yogurt, capsicum not bell pepper, coriander not cilantro, mince not ground beef)
+- If a brand is clearly visible AND commonly known (Vegemite, Sriracha, Nutella), use the brand name
+- Otherwise use the generic name (e.g. "Soy sauce" not "Kikkoman Soy Sauce")
+
+STEP 3 — ESTIMATE QUANTITIES WHERE VISIBLE
+- If you can see how much is left, note it: "Milk (~1L)", "Eggs × 8", "Chicken breast (~500g)"
+- If quantity is unclear, just use the name without quantity
+- A nearly empty container should be noted: "Butter (almost empty)"
+
+STEP 4 — CATEGORISE MENTALLY
+Group items by where they'd be in a supermarket:
+- Produce (fruits, vegetables, herbs)
+- Protein (meat, fish, eggs, tofu)
+- Dairy (milk, cheese, yoghurt, cream)
+- Pantry staples (rice, pasta, canned goods, oils, sauces, spices)
+- Beverages
+- Frozen items (if visible)
+
+RULES:
+- One entry per distinct ingredient — don't list "Tomato" three times
+- Maximum 40 items
+- Don't list non-food items (containers, utensils, cleaning products)
+- If packaging is unclear, make your best guess based on shape, colour, and context
+- If the photo doesn't show food, return { "items": [] }
+
+Return ONLY valid JSON (no markdown, no explanation):
+{
+  "items": ["Milk (~2L)", "Eggs × 12", "Chicken breast (~500g)", "Greek yoghurt", "Baby spinach", "Cheddar cheese", "Jasmine rice", "Olive oil", "Soy sauce", "Broccoli", "Capsicum"]
+}`;
 
 export async function scanPantryImage(
   imageBase64: string,
@@ -427,28 +470,18 @@ export async function scanPantryImage(
 
   const client = new Anthropic({ apiKey });
 
-  const prompt = `Look at this photo of a fridge, pantry or kitchen. Identify every visible food item, ingredient, condiment, beverage and produce.
-Return ONLY valid JSON with a single "items" array of clean ingredient name strings. No markdown, no extra text:
-{
-  "items": ["Chicken breast", "Greek yoghurt", "Spinach", "Eggs", "Cheddar cheese", "Milk"]
-}
-Rules:
-- Use simple generic names (not brands unless the item is only known by brand, e.g. "Vegemite")
-- If you can clearly see a quantity, include it briefly e.g. "Eggs × 6"
-- One entry per distinct ingredient type
-- Maximum 30 items
-- If you cannot identify food items in this photo, return { "items": [] }`;
-
   try {
     const response = await client.messages.create({
       model: MODEL,
-      max_tokens: 512,
+      max_tokens: 1024,
+      temperature: 0.15,
+      system: PANTRY_SYSTEM,
       messages: [
         {
           role: "user",
           content: [
             { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
-            { type: "text", text: prompt },
+            { type: "text", text: PANTRY_PROMPT },
           ],
         },
       ],
@@ -463,10 +496,21 @@ Rules:
 
     const parsed = JSON.parse(jsonMatch[0]) as { items?: unknown };
     const items = Array.isArray(parsed.items)
-      ? (parsed.items as unknown[]).filter((i): i is string => typeof i === "string")
+      ? (parsed.items as unknown[])
+          .filter((i): i is string => typeof i === "string" && i.trim().length > 0)
+          .map(i => i.trim())
       : [];
 
-    return { items };
+    // Deduplicate (case-insensitive)
+    const seen = new Set<string>();
+    const unique = items.filter(i => {
+      const key = i.toLowerCase().replace(/[^a-z]/g, '');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return { items: unique };
   } catch (err) {
     console.error("[LLM Gateway] scanPantryImage error:", err);
     return { items: [], error: "Couldn't read this photo — please add items manually." };
