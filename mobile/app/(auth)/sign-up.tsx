@@ -37,9 +37,11 @@ export default function SignUpScreen() {
   const canSubmit = emailValid && pwLong && pwMatch && !loading;
 
   // Inline validation hints
-  const emailHint = email.length > 0 && !emailValid ? "Enter a valid email address" : null;
-  const pwHint = password.length > 0 && !pwLong ? "At least 6 characters" : null;
-  const confirmHint = confirmPw.length > 0 && !pwMatch ? "Passwords don't match" : null;
+  // Only show hints after user has tried to submit or field loses focus
+  const [touched, setTouched] = useState({ email: false, pw: false, confirm: false });
+  const emailHint = touched.email && email.length > 0 && !emailValid ? "Enter a valid email address" : null;
+  const pwHint = touched.pw && password.length > 0 && !pwLong ? "At least 6 characters" : null;
+  const confirmHint = touched.confirm && confirmPw.length > 0 && !pwMatch ? "Passwords don't match" : null;
 
   async function handleApple() {
     try {
@@ -114,6 +116,7 @@ export default function SignUpScreen() {
               placeholderTextColor={DIM}
               value={email}
               onChangeText={(v) => { setEmail(v); setSubmitError(null); }}
+              onBlur={() => setTouched(p => ({ ...p, email: true }))}
               autoCapitalize="none"
               keyboardType="email-address"
               autoCorrect={false}
@@ -129,7 +132,10 @@ export default function SignUpScreen() {
                 placeholderTextColor={DIM}
                 value={password}
                 onChangeText={setPassword}
+                onBlur={() => setTouched(p => ({ ...p, pw: true }))}
                 secureTextEntry={!showPw}
+                textContentType="oneTimeCode"
+                autoComplete="off"
               />
               <TouchableOpacity onPress={() => setShowPw(v => !v)} style={s.eyeBtn}>
                 <Ionicons name={showPw ? "eye-off-outline" : "eye-outline"} size={20} color={DIM} />
@@ -145,7 +151,10 @@ export default function SignUpScreen() {
               placeholderTextColor={DIM}
               value={confirmPw}
               onChangeText={setConfirmPw}
+              onBlur={() => setTouched(p => ({ ...p, confirm: true }))}
               secureTextEntry={!showPw}
+              textContentType="oneTimeCode"
+              autoComplete="off"
             />
             {confirmHint && <Text style={s.hint}>{confirmHint}</Text>}
             {pwMatch && confirmPw.length > 0 && <Text style={[s.hint, { color: SAGE }]}>Passwords match</Text>}
