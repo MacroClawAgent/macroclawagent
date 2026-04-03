@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { SymbolView } from 'expo-symbols';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Screen } from '@/components/ui/Screen';
@@ -410,10 +410,6 @@ export default function CommunityScreen() {
 
   return (
     <Screen style={{ backgroundColor: BG }}>
-      <LinearGradient
-        colors={['#000000', '#080603', '#120D08', '#1C1410', '#2E1A0A']}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} pointerEvents="none" />
 
       {/* Header */}
       <View style={s.header}>
