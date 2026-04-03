@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiPost } from '@/lib/api';
 
 const BG = '#1C1612';
 const CARD = '#252018';
@@ -45,6 +46,8 @@ export default function RecipeBankScreen() {
   const [filter, setFilter] = useState<typeof FILTERS[number]>('All');
   const [query, setQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   const load = useCallback(() => {
     AsyncStorage.getItem('jonno_meal_plan_history').then(raw => {
@@ -79,6 +82,65 @@ export default function RecipeBankScreen() {
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  // Generate full recipe for a card missing details
+  const generateRecipe = useCallback(async (recipe: Recipe, idx: number) => {
+    const id = `${recipe.name}-${idx}`;
+    setGeneratingId(id);
+    setOpenId(id);
+    try {
+      const prompt = `Generate a detailed recipe for: "${recipe.name}" (${recipe.type}).
+Target macros: ${recipe.calories} kcal, ${recipe.protein}g protein, ${recipe.carbs}g carbs, ${recipe.fat}g fat.
+Cook time should be around ${recipe.cookTime || 20} minutes, difficulty ${recipe.difficulty || 'Easy'}.
+Return ONLY valid JSON, no markdown:
+{
+  "ingredientsList": ["Ingredient 1 (150g)", "Ingredient 2 (100g)"],
+  "ingredients": "Ingredient 1 (150g), Ingredient 2 (100g)",
+  "recipeSteps": ["Step 1 instruction.", "Step 2 instruction.", "Step 3 instruction.", "Step 4 instruction.", "Step 5 instruction."],
+  "reason": "One sentence why this meal is good for the user.",
+  "cookTime": 20,
+  "difficulty": "Easy"
+}`;
+      const res = await apiPost<{ response?: string; reply?: string; content?: string }>('/api/agent/chat', { message: prompt });
+      const raw = res.response ?? res.reply ?? (res as any).content ?? '';
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON');
+      const parsed = JSON.parse(jsonMatch[0]);
+
+      // Update recipe in state
+      const updated: Recipe = {
+        ...recipe,
+        ingredientsList: Array.isArray(parsed.ingredientsList) ? parsed.ingredientsList : [],
+        ingredients: parsed.ingredients ?? '',
+        recipeSteps: Array.isArray(parsed.recipeSteps) ? parsed.recipeSteps : [],
+        reason: parsed.reason ?? recipe.reason ?? '',
+        cookTime: parsed.cookTime ?? recipe.cookTime,
+        difficulty: parsed.difficulty ?? recipe.difficulty,
+      };
+
+      setAll(prev => prev.map(r => r.name === recipe.name && r.savedAt === recipe.savedAt ? updated : r));
+
+      // Persist back to AsyncStorage
+      const histRaw = await AsyncStorage.getItem('jonno_meal_plan_history');
+      if (histRaw) {
+        const history: any[] = JSON.parse(histRaw);
+        const match = history.find((h: any) => h.name === recipe.name && h.savedAt === recipe.savedAt);
+        if (match) {
+          match.ingredientsList = updated.ingredientsList;
+          match.ingredients = updated.ingredients;
+          match.recipeSteps = updated.recipeSteps;
+          match.reason = updated.reason;
+          match.cookTime = updated.cookTime;
+          match.difficulty = updated.difficulty;
+          await AsyncStorage.setItem('jonno_meal_plan_history', JSON.stringify(history));
+        }
+      }
+    } catch {
+      // Silent fail — card stays without details
+    } finally {
+      setGeneratingId(null);
+    }
+  }, []);
 
   // Filter + search
   const list = all.filter(r => {
@@ -172,11 +234,19 @@ export default function RecipeBankScreen() {
             const open = openId === id;
             const hasDetails = hasRecipeDetails(r);
 
+            const isGenerating = generatingId === id;
+
             return (
               <TouchableOpacity
                 style={s.card}
-                onPress={() => hasDetails ? setOpenId(open ? null : id) : null}
-                activeOpacity={hasDetails ? 0.8 : 1}
+                onPress={() => {
+                  if (hasDetails) {
+                    setOpenId(open ? null : id);
+                  } else if (!isGenerating) {
+                    generateRecipe(r, idx);
+                  }
+                }}
+                activeOpacity={0.8}
               >
                 {/* Top row: icon + name + chevron */}
                 <View style={s.cardTop}>
@@ -204,7 +274,10 @@ export default function RecipeBankScreen() {
                       ) : null}
                     </View>
                   </View>
-                  {hasDetails && <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={16} color={DIM} />}
+                  {isGenerating
+                    ? <ActivityIndicator size="small" color={GOLD} />
+                    : <Ionicons name={open ? 'chevron-up' : hasDetails ? 'chevron-down' : 'sparkles-outline'} size={16} color={hasDetails ? DIM : GOLD} />
+                  }
                 </View>
 
                 {/* Macro bar */}
@@ -272,11 +345,12 @@ export default function RecipeBankScreen() {
                       </View>
                     )}
 
-                    {/* No details fallback */}
-                    {!r.ingredientsList.length && !r.recipeSteps.length && (
-                      <Text style={{ fontSize: 13, color: DIM, textAlign: 'center', paddingVertical: 12 }}>
-                        Recipe details not available for older meals
-                      </Text>
+                    {/* Generating state */}
+                    {!r.ingredientsList.length && !r.recipeSteps.length && isGenerating && (
+                      <View style={{ alignItems: 'center', paddingVertical: 16, gap: 8 }}>
+                        <ActivityIndicator color={GOLD} />
+                        <Text style={{ fontSize: 13, color: MUTED }}>Generating recipe...</Text>
+                      </View>
                     )}
                   </View>
                 )}
