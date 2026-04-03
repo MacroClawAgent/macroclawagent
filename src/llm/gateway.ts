@@ -277,6 +277,64 @@ export interface FoodAnalysisResult {
   error?: string;
 }
 
+const FOOD_VISION_SYSTEM = `You are an accredited sports dietitian with 15 years of experience in food photography analysis and portion estimation. You use the Australian NUTTAB and USDA FoodData Central databases for nutritional values. You are extremely precise and methodical.`;
+
+const FOOD_VISION_PROMPT = `Analyse this meal photo using the following step-by-step process.
+
+STEP 1 — IDENTIFY
+List every distinct food item visible. Include:
+- Main proteins (chicken breast, salmon fillet, tofu, etc.)
+- Carb sources (rice, pasta, bread, potato, etc.)
+- Vegetables and salads (individual items, not "mixed salad")
+- Sauces, dressings, oils, butter (these are OFTEN missed — look carefully)
+- Beverages if visible
+- Garnishes (cheese, nuts, seeds, avocado)
+
+STEP 2 — ESTIMATE PORTION (grams)
+Use these visual references:
+- Standard dinner plate = 26cm diameter. Estimate what fraction each food fills.
+- A fist-sized portion ≈ 150g cooked rice/pasta, 180g potato
+- A palm-sized portion ≈ 120-150g cooked meat/fish
+- A thumb-sized portion ≈ 15g butter/cheese
+- A cupped hand ≈ 40g nuts, 80g cooked vegetables
+- A thin drizzle of oil ≈ 5-10ml (4.5-9g)
+- Sauce pooled on plate ≈ 30-50g
+- If the portion looks generous, estimate UP. If it looks small, estimate DOWN.
+- Do NOT default to 100g — estimate the ACTUAL visible portion.
+
+STEP 3 — LOOK UP per100g VALUES
+Use standard nutritional reference data (NUTTAB / USDA):
+- Cooked chicken breast: 165 kcal, 31g P, 0g C, 3.6g F per 100g
+- Cooked white rice: 130 kcal, 2.7g P, 28g C, 0.3g F per 100g
+- Cooked salmon: 208 kcal, 20g P, 0g C, 13g F per 100g
+- Raw vegetables (broccoli, spinach): 25-35 kcal per 100g
+- Olive oil: 884 kcal, 0g P, 0g C, 100g F per 100g
+- Use COOKED values for cooked foods (not raw weight).
+
+STEP 4 — COMPUTE ABSOLUTE VALUES
+For each food: absolute = per100g × (grams / 100). Round to 1 decimal.
+CROSS-CHECK: the absolute values MUST equal per100g × grams / 100. If they don't match, fix them.
+
+STEP 5 — COMPUTE TOTALS
+Sum all foods. The totals must equal the sum of individual items exactly.
+Sanity check: a typical meal is 400-800 kcal. A snack is 150-350 kcal. A large restaurant meal can be 800-1200 kcal. If your total seems way off, re-examine portions.
+
+Return ONLY valid JSON (no markdown fences, no explanation):
+{
+  "foods": [
+    {
+      "name": "Grilled chicken breast",
+      "grams": 150,
+      "calories": 247.5,
+      "protein_g": 46.5,
+      "carbs_g": 0.0,
+      "fat_g": 5.4,
+      "per100g": { "calories": 165, "protein_g": 31.0, "carbs_g": 0.0, "fat_g": 3.6 }
+    }
+  ],
+  "totals": { "calories": 247.5, "protein_g": 46.5, "carbs_g": 0.0, "fat_g": 5.4 }
+}`;
+
 export async function analyzeFoodImage(
   imageBase64: string,
   mimeType: "image/jpeg" | "image/png" | "image/webp" | "image/gif" = "image/jpeg"
@@ -288,56 +346,70 @@ export async function analyzeFoodImage(
 
   const client = new Anthropic({ apiKey });
 
-  const prompt = `Analyze this meal photo. Identify every visible food item and ingredient.
-For each food, estimate the portion size in grams and calculate nutrition macros.
-Return ONLY valid JSON, no markdown, no extra text:
-{
-  "foods": [
-    {
-      "name": "food name",
-      "grams": 150,
-      "calories": 248,
-      "protein_g": 46.5,
-      "carbs_g": 0.0,
-      "fat_g": 5.4,
-      "per100g": { "calories": 165, "protein_g": 31.0, "carbs_g": 0.0, "fat_g": 3.6 }
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const response = await client.messages.create({
+        model: MODEL,
+        max_tokens: 2048,
+        temperature: 0.2,
+        system: FOOD_VISION_SYSTEM,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
+              { type: "text", text: FOOD_VISION_PROMPT },
+            ],
+          },
+        ],
+      });
+
+      const textBlock = response.content.find((b) => b.type === "text");
+      if (!textBlock || textBlock.type !== "text") throw new Error("No text response");
+
+      const raw = textBlock.text.trim();
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("No JSON found in response");
+
+      const parsed = JSON.parse(jsonMatch[0]) as FoodAnalysisResult;
+
+      // Validate: cross-check per100g × grams matches absolute values
+      if (parsed.foods?.length > 0) {
+        let valid = true;
+        for (const f of parsed.foods) {
+          if (!f.per100g || !f.grams || f.grams <= 0) { valid = false; break; }
+          const expectedCal = Math.round(f.per100g.calories * f.grams / 100 * 10) / 10;
+          if (Math.abs(expectedCal - f.calories) > f.calories * 0.15) { valid = false; break; }
+        }
+        // Recompute totals from individual foods (don't trust LLM addition)
+        parsed.totals = parsed.foods.reduce(
+          (acc, f) => ({
+            calories: Math.round((acc.calories + f.calories) * 10) / 10,
+            protein_g: Math.round((acc.protein_g + f.protein_g) * 10) / 10,
+            carbs_g: Math.round((acc.carbs_g + f.carbs_g) * 10) / 10,
+            fat_g: Math.round((acc.fat_g + f.fat_g) * 10) / 10,
+          }),
+          { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
+        );
+        if (valid || attempt === 2) return parsed;
+        // Retry on validation failure
+        continue;
+      }
+
+      return parsed;
+    } catch (err) {
+      if (attempt === 2) {
+        console.error("[LLM Gateway] analyzeFoodImage error:", err);
+        return {
+          foods: [],
+          totals: { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
+          error: "Couldn't detect foods in this photo. Please add items manually.",
+        };
+      }
     }
-  ],
-  "totals": { "calories": 248, "protein_g": 46.5, "carbs_g": 0.0, "fat_g": 5.4 }
-}
-Be realistic with portions. Use standard nutritional data. Round values to 1 decimal place.`;
-
-  try {
-    const response = await client.messages.create({
-      model: MODEL,
-      max_tokens: 1024,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
-            { type: "text", text: prompt },
-          ],
-        },
-      ],
-    });
-
-    const textBlock = response.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") throw new Error("No text response");
-
-    const raw = textBlock.text.trim();
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("No JSON found in response");
-
-    return JSON.parse(jsonMatch[0]) as FoodAnalysisResult;
-  } catch (err) {
-    console.error("[LLM Gateway] analyzeFoodImage error:", err);
-    return {
-      foods: [],
-      totals: { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
-      error: "Couldn't detect foods in this photo. Please add items manually.",
-    };
   }
+
+  return { foods: [], totals: { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }, error: "Analysis failed." };
 }
 
 // ── Pantry / Fridge Vision Gateway ────────────────────────────────────────────
