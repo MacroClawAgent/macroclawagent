@@ -22,7 +22,7 @@ function isValidEmail(e: string): boolean {
 }
 
 export default function SignUpScreen() {
-  const { signUp } = useAuth();
+  const { signUp, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
@@ -66,18 +66,29 @@ export default function SignUpScreen() {
     if (!canSubmit) return;
     setSubmitError(null);
     setLoading(true);
+
+    // Sign up
     const { error } = await signUp(email.trim(), password);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       const lower = error.toLowerCase();
       if (lower.includes("already registered") || lower.includes("already been registered") || lower.includes("already exists")) {
         setSubmitError("This email address is already in use");
       } else {
         setSubmitError(error);
       }
-    } else {
-      router.replace("/");
+      return;
     }
+
+    // Immediately sign in so the session is active
+    const { error: signInErr } = await signIn(email.trim(), password);
+    setLoading(false);
+    if (signInErr) {
+      setSubmitError(signInErr);
+      return;
+    }
+
+    router.replace("/(onboarding)/step1");
   }
 
   return (
