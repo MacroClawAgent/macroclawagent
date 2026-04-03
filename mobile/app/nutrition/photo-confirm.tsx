@@ -85,6 +85,7 @@ export default function PhotoConfirmScreen() {
   const [pickedImageBase64, setPickedImageBase64] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [postToCommunity, setPostToCommunity] = useState(true);
+  const [isRelog, setIsRelog] = useState(false);
   const [pastDishes, setPastDishes] = useState<StoredDish[]>([]);
   const [matchedDish, setMatchedDish] = useState<StoredDish | null>(null);
   // AI-detected foods stashed while showing match prompt
@@ -215,10 +216,9 @@ export default function PhotoConfirmScreen() {
     return null;
   }
 
-  /** User confirms: use stored macros */
+  /** User confirms: use stored macros — this is a re-log, no community post */
   const handleUseStored = () => {
     if (!matchedDish) return;
-    // Create a single food entry from the stored dish macros
     const stored: DetectedFood = {
       name: matchedDish.name,
       grams: 100,
@@ -235,14 +235,20 @@ export default function PhotoConfirmScreen() {
     };
     setFoods([stored]);
     setGramInputs(["100"]);
+    setIsRelog(true);
+    setPostToCommunity(false);
     setMatchedDish(null);
     setStage("review");
   };
+
+  // Track if AI detected a similar dish (for hint in review)
+  const similarDishRef = useRef<string | null>(null);
 
   /** User rejects: use AI analysis instead */
   const handleUseNewScan = () => {
     setFoods(stashedAiFoods.current);
     setGramInputs(stashedAiFoods.current.map(f => String(f.grams)));
+    similarDishRef.current = matchedDish?.name ?? null;
     setMatchedDish(null);
     setStage("review");
   };
@@ -436,6 +442,33 @@ export default function PhotoConfirmScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* Community toggle — top of review */}
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.toggleLabel}>Post to Community</Text>
+              <Text style={styles.toggleHint}>
+                {isRelog ? "Re-logged dishes aren't shared" : postToCommunity ? "Dish will be shared publicly" : "Dish stays private"}
+              </Text>
+            </View>
+            <Switch
+              value={postToCommunity}
+              onValueChange={isRelog ? undefined : toggleCommunity}
+              disabled={isRelog}
+              trackColor={{ false: "rgba(232,224,208,0.12)", true: "rgba(245,200,66,0.35)" }}
+              thumbColor={postToCommunity ? "#F5C842" : "rgba(232,224,208,0.4)"}
+            />
+          </View>
+
+          {/* Similar dish hint */}
+          {similarDishRef.current && !isRelog && (
+            <View style={styles.similarHint}>
+              <Ionicons name="information-circle-outline" size={16} color="#F5C842" />
+              <Text style={styles.similarHintText}>
+                Similar to "{similarDishRef.current}" in your dishes
+              </Text>
+            </View>
+          )}
+
           {/* Meal tag selector */}
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Meal</Text>
@@ -506,22 +539,6 @@ export default function PhotoConfirmScreen() {
                 <Text style={styles.totalLabel}>Fat</Text>
               </View>
             </View>
-          </View>
-
-          {/* Community toggle */}
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>Post to Community</Text>
-              <Text style={styles.toggleHint}>
-                {postToCommunity ? "Dish will be shared publicly" : "Dish stays private"}
-              </Text>
-            </View>
-            <Switch
-              value={postToCommunity}
-              onValueChange={toggleCommunity}
-              trackColor={{ false: "rgba(232,224,208,0.12)", true: "rgba(245,200,66,0.35)" }}
-              thumbColor={postToCommunity ? "#F5C842" : "rgba(232,224,208,0.4)"}
-            />
           </View>
 
           {/* Confirm button */}
@@ -616,6 +633,12 @@ const styles = StyleSheet.create({
   },
   toggleLabel: { color: "#E8E0D0", fontSize: 15, fontWeight: "700" },
   toggleHint: { color: "rgba(232,224,208,0.4)", fontSize: 12, fontWeight: "500", marginTop: 2 },
+  similarHint: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    backgroundColor: "rgba(245,200,66,0.08)", borderRadius: 12,
+    padding: 12, borderWidth: 1, borderColor: "rgba(245,200,66,0.15)",
+  },
+  similarHintText: { color: "rgba(232,224,208,0.6)", fontSize: 13, fontWeight: "500", flex: 1 },
 
   confirmBtn: {
     backgroundColor: "#F5C842", borderRadius: 16, paddingVertical: 16, alignItems: "center",

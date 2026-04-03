@@ -150,6 +150,7 @@ export default function LogFoodScreen() {
   const [mealTag,    setMealTag]    = useState<MealTag>(defaultMealTag);
   const [query,      setQuery]      = useState("");
   const [toast,      setToast]      = useState<string | null>(null);
+  const [sortBy,     setSortBy]     = useState<"recent" | "most">("recent");
 
   // Previous dishes (loaded from API — real logged/scanned meals)
   const [previousDishes, setPreviousDishes] = useState<DishEntry[]>([]);
@@ -304,13 +305,19 @@ export default function LogFoodScreen() {
     }
   }
 
-  // ── Search / filter ────────────────────────────────────────────────────────
+  // ── Search / filter / sort ──────────────────────────────────────────────────
   const trimmed    = query.trim().toLowerCase();
   const isSearching = trimmed.length > 0;
 
+  const sortedDishes = [...previousDishes].sort((a, b) => {
+    if (sortBy === "most") return (b.timesLogged ?? 0) - (a.timesLogged ?? 0);
+    // "recent" — API returns newest first by default, keep order
+    return 0;
+  });
+
   const filteredDishes = isSearching
-    ? previousDishes.filter(d => d.name.toLowerCase().includes(trimmed))
-    : previousDishes;
+    ? sortedDishes.filter(d => d.name.toLowerCase().includes(trimmed))
+    : sortedDishes;
 
   const noResults = isSearching && filteredDishes.length === 0;
 
@@ -373,8 +380,28 @@ export default function LogFoodScreen() {
             )}
           </View>
 
-          {/* ── Section label (fixed) ── */}
-          <Text style={s.sectionLabel}>{isSearching ? "RESULTS" : "YOUR DISHES"}</Text>
+          {/* ── Section label + filter pills (fixed) ── */}
+          <View style={s.filterRow}>
+            <Text style={s.sectionLabel}>{isSearching ? "RESULTS" : "YOUR DISHES"}</Text>
+            {!isSearching && (
+              <View style={s.filterPills}>
+                <TouchableOpacity
+                  onPress={() => setSortBy("recent")}
+                  style={[s.filterPill, sortBy === "recent" && s.filterPillActive]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[s.filterPillText, sortBy === "recent" && s.filterPillTextActive]}>Recent</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setSortBy("most")}
+                  style={[s.filterPill, sortBy === "most" && s.filterPillActive]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[s.filterPillText, sortBy === "most" && s.filterPillTextActive]}>Most Logged</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
 
           {/* ── Dish list card (always visible) ── */}
           <View style={s.dishListCard}>
@@ -612,10 +639,22 @@ const s = StyleSheet.create({
     overflow: "hidden",
   },
   listContent:  { paddingVertical: 8 },
+  filterRow: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    marginTop: 16, marginBottom: 8, paddingHorizontal: 20,
+  },
   sectionLabel: {
     fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)",
-    letterSpacing: 1.2, marginLeft: 20, marginTop: 16, marginBottom: 8,
-     },
+    letterSpacing: 1.2,
+  },
+  filterPills: { flexDirection: "row", gap: 6 },
+  filterPill: {
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12,
+    backgroundColor: "rgba(232,224,208,0.06)", borderWidth: 1, borderColor: "rgba(232,224,208,0.08)",
+  },
+  filterPillActive: { backgroundColor: "rgba(245,200,66,0.15)", borderColor: GOLD },
+  filterPillText: { fontSize: 11, fontWeight: "600", color: "rgba(232,224,208,0.35)" },
+  filterPillTextActive: { color: GOLD },
 
   // ── Empty state (inside card) ────────────────────────────────────────────────
   cardEmpty:      { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 6, paddingVertical: 40 },
