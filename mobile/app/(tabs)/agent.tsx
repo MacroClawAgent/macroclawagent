@@ -25,7 +25,7 @@ import PantryScanner from '@/components/Agent/PantryScanner';
 import type { Meal } from '@/types/mealPlan';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-const BG     = '#0D0A07';
+const BG     = '#1C1612';
 const CARD   = '#252018';
 const BORDER = 'rgba(248,213,97,0.10)';
 const GOLD   = '#F5C842';
