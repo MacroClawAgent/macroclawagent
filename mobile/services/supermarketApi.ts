@@ -217,34 +217,145 @@ export async function searchBothStores(
   return { woolworths, coles };
 }
 
-// ── Main search — always returns data (mock fallback guaranteed) ───────────────
+// ── Ingredient → supermarket search term mapping ────────────────────────────
+// Recipe ingredients are verbose ("boneless skinless chicken thigh fillets").
+// Supermarket APIs work best with short, common product names.
+
+const SEARCH_MAP: [RegExp, string][] = [
+  // Protein
+  [/chicken\s*breast/i, 'chicken breast'],
+  [/chicken\s*thigh/i, 'chicken thigh'],
+  [/chicken/i, 'chicken'],
+  [/salmon\s*(fillet|portion|steak)?/i, 'salmon'],
+  [/tuna/i, 'tuna'],
+  [/beef\s*(mince|steak|stir.?fry|strips)?/i, 'beef $1'],
+  [/lamb/i, 'lamb'],
+  [/pork/i, 'pork'],
+  [/prawn|shrimp/i, 'prawns'],
+  [/tofu/i, 'tofu'],
+  [/egg/i, 'eggs'],
+  // Dairy
+  [/greek\s*yogu?r?t/i, 'greek yoghurt'],
+  [/yogu?r?t/i, 'yoghurt'],
+  [/cheddar|cheese/i, 'cheese'],
+  [/milk/i, 'milk'],
+  [/butter/i, 'butter'],
+  [/cream\s*cheese/i, 'cream cheese'],
+  [/parmesan/i, 'parmesan'],
+  // Carbs
+  [/jasmine\s*rice/i, 'jasmine rice'],
+  [/brown\s*rice/i, 'brown rice'],
+  [/basmati/i, 'basmati rice'],
+  [/rice/i, 'rice'],
+  [/pasta|penne|spaghetti|fusilli|fettuccine/i, 'pasta'],
+  [/bread/i, 'bread'],
+  [/oat|porridge/i, 'oats'],
+  [/quinoa/i, 'quinoa'],
+  [/sweet\s*potato/i, 'sweet potato'],
+  [/potato/i, 'potato'],
+  [/wrap|tortilla/i, 'wraps'],
+  // Vegetables
+  [/broccoli/i, 'broccoli'],
+  [/spinach/i, 'baby spinach'],
+  [/avocado/i, 'avocado'],
+  [/capsicum|bell\s*pepper/i, 'capsicum'],
+  [/zucchini|courgette/i, 'zucchini'],
+  [/carrot/i, 'carrots'],
+  [/onion/i, 'onion'],
+  [/garlic/i, 'garlic'],
+  [/tomato\s*(paste|passata|sauce)/i, 'tomato $1'],
+  [/tomato/i, 'tomatoes'],
+  [/mushroom/i, 'mushrooms'],
+  [/lettuce|cos|iceberg/i, 'lettuce'],
+  [/cucumber/i, 'cucumber'],
+  [/corn/i, 'corn'],
+  [/beansprout|bean\s*sprout/i, 'bean sprouts'],
+  [/green\s*bean/i, 'green beans'],
+  // Pantry
+  [/olive\s*oil/i, 'olive oil'],
+  [/coconut\s*(oil|milk|cream)/i, 'coconut $1'],
+  [/soy\s*sauce/i, 'soy sauce'],
+  [/honey/i, 'honey'],
+  [/peanut\s*butter/i, 'peanut butter'],
+  [/almond/i, 'almonds'],
+  [/walnut/i, 'walnuts'],
+  [/cashew/i, 'cashews'],
+  [/protein\s*(powder|shake)/i, 'protein powder'],
+  [/lemon/i, 'lemon'],
+  [/lime/i, 'lime'],
+  [/ginger/i, 'ginger'],
+  [/chilli|chili/i, 'chilli'],
+  [/cumin/i, 'cumin'],
+  [/paprika/i, 'paprika'],
+  [/cinnamon/i, 'cinnamon'],
+  [/banana/i, 'banana'],
+  [/apple/i, 'apple'],
+  [/berr(y|ies)/i, 'berries'],
+  [/blueberr/i, 'blueberries'],
+  [/strawberr/i, 'strawberries'],
+];
+
+function getSearchTerm(rawName: string): string {
+  // Strip units and quantities first
+  const cleaned = rawName
+    .replace(/\(.*?\)/g, '') // remove parentheses e.g. "(150g)"
+    .replace(/\d+(\.\d+)?\s*(g|kg|ml|l|oz|lb|cups?|tbsp|tsp|pc|pieces?|x|slices?|cloves?|sprigs?|handfuls?)\b/gi, '')
+    .replace(/,.*$/, '') // remove everything after comma
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Try mapping first
+  for (const [pattern, term] of SEARCH_MAP) {
+    if (pattern.test(cleaned)) {
+      return cleaned.replace(pattern, term).replace(/\s+/g, ' ').trim();
+    }
+  }
+
+  // Fallback: take first 2-3 meaningful words
+  const words = cleaned.toLowerCase().split(/\s+/).filter(w =>
+    w.length > 2 && !['and', 'the', 'for', 'with', 'fresh', 'raw', 'cooked', 'diced', 'sliced',
+      'chopped', 'minced', 'grated', 'crushed', 'dried', 'ground', 'boneless', 'skinless',
+      'organic', 'free', 'range', 'large', 'small', 'medium', 'thin', 'thick'].includes(w)
+  );
+  return words.slice(0, 3).join(' ');
+}
+
+// ── Main search ──────────────────────────────────────────────────────────────
 
 export async function smartSearchIngredient(
   ingredient: SmartCartIngredient
 ): Promise<{ woolworths: SupermarketProduct[]; coles: SupermarketProduct[] }> {
-  const query = ingredient.name
-    .toLowerCase()
-    .replace(/\d+(\.\d+)?\s*(g|kg|ml|l|oz|lb|cup|tbsp|tsp|pc|piece|pieces|x)\b/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const searchTerm = getSearchTerm(ingredient.name);
+  if (!searchTerm) {
+    console.log('[SmartCart] Empty search term for:', ingredient.name);
+    return { woolworths: [], coles: [] };
+  }
 
-  console.log('[SmartCart] Searching:', query);
+  console.log('[SmartCart] Searching:', searchTerm, '(from:', ingredient.name, ')');
 
-  // Try real API if key available
   const key = getRapidApiKey();
   if (key && key.length > 10) {
     try {
-      const results = await searchBothStores(query);
+      const results = await searchBothStores(searchTerm);
       if (results.woolworths.length > 0 || results.coles.length > 0) {
-        console.log('[SmartCart] ✅ Live results for:', query);
+        console.log('[SmartCart] ✅ Live results for:', searchTerm);
         return results;
       }
+      // If exact term fails, try just the first word as a broader search
+      const firstWord = searchTerm.split(' ')[0];
+      if (firstWord !== searchTerm && firstWord.length > 2) {
+        console.log('[SmartCart] Retrying with:', firstWord);
+        const retry = await searchBothStores(firstWord);
+        if (retry.woolworths.length > 0 || retry.coles.length > 0) {
+          console.log('[SmartCart] ✅ Retry results for:', firstWord);
+          return retry;
+        }
+      }
     } catch (e) {
-      console.warn('[SmartCart] API failed for:', query, e);
+      console.warn('[SmartCart] API failed for:', searchTerm, e);
     }
   }
 
-  // No mock fallback — return empty so UI shows "price unavailable" instead of fake data
-  console.log('[SmartCart] No results for:', query);
+  console.log('[SmartCart] No results for:', searchTerm);
   return { woolworths: [], coles: [] };
 }
