@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert, DeviceEventEmitter, KeyboardAvoidingView, Modal, Platform,
   SafeAreaView, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 
@@ -105,25 +105,25 @@ export default function LogFoodScreen() {
     return () => clearTimeout(t);
   }, []);
 
-  // Fetch real logged dishes from API
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await apiGet<any>("/api/nutrition/food-items?distinct=true");
-        const dishes: DishEntry[] = (res?.dishes ?? []).map((d: any) => ({
-          name: d.name,
-          calories: d.calories,
-          protein: d.protein_g,
-          carbs: d.carbs_g,
-          fat: d.fat_g,
-          lastLogged: d.last_logged,
-          timesLogged: d.times_logged,
-        }));
-        setPreviousDishes(dishes);
-      } catch { /* silently fail — show empty */ }
-      finally { setLoadingDishes(false); }
-    })();
+  // Fetch real logged dishes from API — re-fetches on screen focus
+  const fetchDishes = useCallback(async () => {
+    try {
+      const res = await apiGet<any>("/api/nutrition/food-items?distinct=true");
+      const dishes: DishEntry[] = (res?.dishes ?? []).map((d: any) => ({
+        name: d.name,
+        calories: d.calories,
+        protein: d.protein_g,
+        carbs: d.carbs_g,
+        fat: d.fat_g,
+        lastLogged: d.last_logged,
+        timesLogged: d.times_logged,
+      }));
+      setPreviousDishes(dishes);
+    } catch { /* silently fail — show empty */ }
+    finally { setLoadingDishes(false); }
   }, []);
+
+  useFocusEffect(useCallback(() => { fetchDishes(); }, [fetchDishes]));
 
   // ── Data fetching (unchanged logic) ────────────────────────────────────────
   const fetchData = async (isRefresh = false) => {
