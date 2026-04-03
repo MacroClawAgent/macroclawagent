@@ -19,10 +19,20 @@ const DIM = "rgba(232,224,208,0.25)";
 
 const BASE_URL: string = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://jonnoai.com");
 
+const BLOCKED_WORDS = [
+  'fuck','shit','ass','dick','cock','pussy','bitch','slut','whore',
+  'nigger','nigga','fag','faggot','cunt','bastard','porn','sex','nude',
+  'penis','vagina','anal','rape','cum','dildo','boob','tits',
+];
+
 function validateUsername(u: string): string | null {
   if (u.length < 3) return "At least 3 characters";
   if (u.length > 20) return "Max 20 characters";
   if (!/^[a-z0-9_]+$/.test(u)) return "Letters, numbers and underscores only";
+  const lower = u.toLowerCase();
+  for (const word of BLOCKED_WORDS) {
+    if (lower.includes(word)) return "Username contains inappropriate language";
+  }
   return null;
 }
 
@@ -174,26 +184,6 @@ export default function OnboardingStep4() {
             {loading ? <ActivityIndicator color={BG} /> : <Text style={s.btnText}>Start using Jonno</Text>}
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={async () => {
-            setLoading(true);
-            try {
-              await apiPost("/api/profile/update", {
-                full_name: `${params.first_name} ${params.last_name}`.trim(),
-                fitness_goal: params.goal,
-                weight_kg: params.weight_kg ? parseFloat(params.weight_kg) : undefined,
-                height_cm: params.height_cm ? parseFloat(params.height_cm) : undefined,
-                calorie_goal: parseInt(params.calorie_goal ?? "2000"),
-                protein_goal: parseInt(params.protein_goal ?? "120"),
-                carbs_goal: parseInt(params.carbs_goal ?? "250"),
-                fat_goal: parseInt(params.fat_goal ?? "70"),
-                profile_complete: true,
-              });
-              await refreshProfile();
-              router.replace("/(tabs)/home");
-            } catch { router.replace("/(tabs)/home"); }
-          }} activeOpacity={0.7}>
-            <Text style={s.skip}>Skip username for now</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -236,5 +226,4 @@ const s = StyleSheet.create({
   btn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
   btnDisabled: { opacity: 0.4 },
   btnText: { color: BG, fontWeight: "800", fontSize: 16 },
-  skip: { textAlign: "center", color: DIM, fontSize: 14, fontWeight: "500", marginTop: 8 },
 });

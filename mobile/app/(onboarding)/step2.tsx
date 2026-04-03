@@ -148,9 +148,9 @@ export default function OnboardingStep2() {
       </View>
 
       {/* Metabolism */}
-      <View style={{ marginBottom: 20, gap: 8 }}>
+      <View style={{ marginBottom: 10, gap: 6 }}>
         <Text style={s.label}>Metabolism</Text>
-        <View style={{ gap: 8 }}>
+        <View style={{ gap: 6 }}>
           {METABOLISM.map(m => (
             <TouchableOpacity
               key={m.id}
@@ -174,8 +174,6 @@ export default function OnboardingStep2() {
       <TouchableOpacity style={s.btn} onPress={handleNext} activeOpacity={0.85}>
         <Text style={s.btnText}>Continue</Text>
       </TouchableOpacity>
-
-      <View style={{ height: 40 }} />
     </ScrollView>
   );
 }
@@ -199,7 +197,7 @@ const s = StyleSheet.create({
   toggleText: { fontSize: 14, fontWeight: "600", color: DIM },
   toggleTextActive: { color: TEXT_C },
 
-  pickersRow: { flexDirection: "row", gap: 12, marginBottom: 20 },
+  pickersRow: { flexDirection: "row", gap: 12, marginBottom: 14 },
   pickerCol: { flex: 1, gap: 8 },
   label: { fontSize: 12, fontWeight: "600", color: MUTED, textTransform: "uppercase", letterSpacing: 0.5 },
   pickerCard: {
@@ -207,21 +205,21 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(232,224,208,0.08)", overflow: "hidden",
     flexDirection: "row", alignItems: "center",
   },
-  picker: { flex: 1, height: 140, color: TEXT_C },
-  pickerItem: { fontSize: 20, fontWeight: "700", color: TEXT_C, height: 140 },
-  pickerItemSmall: { fontSize: 18, fontWeight: "700", color: TEXT_C, height: 140 },
+  picker: { flex: 1, height: 120, color: TEXT_C },
+  pickerItem: { fontSize: 20, fontWeight: "700", color: TEXT_C, height: 120 },
+  pickerItemSmall: { fontSize: 18, fontWeight: "700", color: TEXT_C, height: 120 },
   pickerUnit: { fontSize: 14, fontWeight: "600", color: MUTED, paddingRight: 12 },
 
   metaCard: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 14,
-    borderWidth: 1, borderColor: "rgba(232,224,208,0.08)", padding: 14,
+    flexDirection: "row", alignItems: "center", gap: 10,
+    backgroundColor: "rgba(232,224,208,0.04)", borderRadius: 12,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.08)", padding: 11,
   },
   metaCardActive: { borderColor: GOLD, backgroundColor: "rgba(245,200,66,0.06)" },
   metaIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   metaLabel: { fontSize: 15, fontWeight: "700", color: MUTED },
   metaDesc: { fontSize: 12, color: DIM, marginTop: 1 },
 
-  btn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 12 },
+  btn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
   btnText: { color: BG, fontWeight: "800", fontSize: 16 },
 });
