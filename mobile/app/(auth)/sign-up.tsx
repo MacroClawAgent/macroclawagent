@@ -1,10 +1,10 @@
 import { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert, ScrollView,
+  KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -21,9 +21,9 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
-  async function handleAppleSignUp() {
+  async function handleApple() {
     try {
       setAppleLoading(true);
       const credential = await AppleAuthentication.signInAsync({
@@ -33,20 +33,13 @@ export default function SignUpScreen() {
         ],
       });
       if (credential.identityToken) {
-        const { error } = await supabase.auth.signInWithIdToken({
-          provider: "apple",
-          token: credential.identityToken,
-        });
+        const { error } = await supabase.auth.signInWithIdToken({ provider: "apple", token: credential.identityToken });
         if (error) throw error;
-        router.replace("/");
+        router.replace("/(onboarding)/step1");
       }
     } catch (e: any) {
-      if (e.code !== "ERR_REQUEST_CANCELED") {
-        Alert.alert("Apple Sign In failed", e.message ?? "Please try again.");
-      }
-    } finally {
-      setAppleLoading(false);
-    }
+      if (e.code !== "ERR_REQUEST_CANCELED") Alert.alert("Apple Sign In failed", e.message ?? "Please try again.");
+    } finally { setAppleLoading(false); }
   }
 
   async function handleSignUp() {
@@ -56,30 +49,25 @@ export default function SignUpScreen() {
     const { error } = await signUp(email.trim(), password);
     setLoading(false);
     if (error) Alert.alert("Sign up failed", error);
-    else router.replace("/");
+    else router.replace("/(onboarding)/step1");
   }
 
   return (
     <KeyboardAvoidingView style={s.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <View style={s.inner}>
+        {/* Back */}
+        <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={24} color={TEXT_C} />
+        </TouchableOpacity>
 
-        {/* Logo */}
-        <View style={s.logoWrap}>
-          <View style={s.logoDot} />
-          <Text style={s.logoText}>Jonno</Text>
-        </View>
-
-        <Text style={s.title}>Create your account</Text>
+        <Text style={s.title}>Create account</Text>
         <Text style={s.subtitle}>Start your AI nutrition journey — personalised meals, smart tracking, and community.</Text>
 
-        {/* Apple Sign Up */}
+        {/* Apple */}
         {Platform.OS === "ios" && (
-          <TouchableOpacity style={s.appleBtn} onPress={handleAppleSignUp} disabled={appleLoading} activeOpacity={0.85}>
+          <TouchableOpacity style={s.appleBtn} onPress={handleApple} disabled={appleLoading} activeOpacity={0.85}>
             {appleLoading ? <ActivityIndicator color="#000" /> : (
-              <>
-                <Ionicons name="logo-apple" size={20} color="#000" />
-                <Text style={s.appleBtnText}>Sign up with Apple</Text>
-              </>
+              <><Ionicons name="logo-apple" size={20} color="#000" /><Text style={s.appleTxt}>Sign up with Apple</Text></>
             )}
           </TouchableOpacity>
         )}
@@ -105,65 +93,54 @@ export default function SignUpScreen() {
           />
           <View style={s.pwWrap}>
             <TextInput
-              style={[s.input, { flex: 1, marginBottom: 0 }]}
+              style={[s.input, { flex: 1 }]}
               placeholder="Password (min. 6 characters)"
               placeholderTextColor={DIM}
               value={password}
               onChangeText={setPassword}
-              secureTextEntry={!showPassword}
+              secureTextEntry={!showPw}
             />
-            <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={s.eyeBtn}>
-              <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={DIM} />
+            <TouchableOpacity onPress={() => setShowPw(v => !v)} style={s.eyeBtn}>
+              <Ionicons name={showPw ? "eye-off-outline" : "eye-outline"} size={20} color={DIM} />
             </TouchableOpacity>
           </View>
-
           <TouchableOpacity
             style={[s.submitBtn, loading && { opacity: 0.6 }]}
             onPress={handleSignUp}
             disabled={loading}
             activeOpacity={0.85}
           >
-            {loading ? <ActivityIndicator color={BG} /> : <Text style={s.submitBtnText}>Create Account</Text>}
+            {loading ? <ActivityIndicator color={BG} /> : <Text style={s.submitTxt}>Create Account</Text>}
           </TouchableOpacity>
         </View>
 
-        <Text style={s.legal}>
-          By creating an account you agree to our Terms of Service and Privacy Policy. No credit card required.
-        </Text>
+        <Text style={s.legal}>By creating an account you agree to our Terms of Service and Privacy Policy. No credit card required.</Text>
 
-        {/* Footer */}
         <View style={s.footer}>
           <Text style={s.footerText}>Already have an account? </Text>
-          <Link href="/(auth)/sign-in" asChild>
-            <TouchableOpacity><Text style={s.footerLink}>Sign in</Text></TouchableOpacity>
-          </Link>
+          <TouchableOpacity onPress={() => router.replace("/(auth)/sign-in")}>
+            <Text style={s.footerLink}>Sign in</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG },
-  scroll: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 80, paddingBottom: 40, gap: 16 },
-
-  logoWrap: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-  logoDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: GOLD },
-  logoText: { fontSize: 22, fontWeight: "900", color: TEXT_C, letterSpacing: 1 },
-
+  inner: { flex: 1, paddingHorizontal: 28, paddingTop: 60, gap: 16 },
+  backBtn: { marginBottom: 8 },
   title: { fontSize: 28, fontWeight: "900", color: TEXT_C, letterSpacing: -0.5 },
   subtitle: { fontSize: 15, color: MUTED, lineHeight: 22 },
-
   appleBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
     backgroundColor: "#FFFFFF", borderRadius: 14, paddingVertical: 16,
   },
-  appleBtnText: { fontSize: 16, fontWeight: "700", color: "#000" },
-
+  appleTxt: { fontSize: 16, fontWeight: "700", color: "#000" },
   dividerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   dividerLine: { flex: 1, height: 1, backgroundColor: "rgba(232,224,208,0.1)" },
   dividerText: { fontSize: 13, color: DIM, fontWeight: "500" },
-
   form: { gap: 12 },
   input: {
     backgroundColor: "rgba(232,224,208,0.06)", borderWidth: 1, borderColor: "rgba(232,224,208,0.1)",
@@ -172,8 +149,7 @@ const s = StyleSheet.create({
   pwWrap: { flexDirection: "row", alignItems: "center", gap: 8 },
   eyeBtn: { padding: 8 },
   submitBtn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 4 },
-  submitBtnText: { color: BG, fontWeight: "800", fontSize: 16 },
-
+  submitTxt: { color: BG, fontWeight: "800", fontSize: 16 },
   legal: { fontSize: 11, color: DIM, textAlign: "center", lineHeight: 16 },
   footer: { flexDirection: "row", justifyContent: "center", marginTop: 8 },
   footerText: { color: MUTED, fontSize: 14 },

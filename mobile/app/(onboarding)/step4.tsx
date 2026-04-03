@@ -158,7 +158,7 @@ export default function OnboardingStep4() {
             activeOpacity={0.85}
           >
             {loading
-              ? <ActivityIndicator color="#0B0B0B" />
+              ? <ActivityIndicator color="#1C1612" />
               : <Text style={styles.buttonText}>Start using Jonno 🎉</Text>
             }
           </TouchableOpacity>
@@ -180,16 +180,16 @@ export default function OnboardingStep4() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0B0B0B" },
+  container: { flex: 1, backgroundColor: "#1C1612" },
   inner: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingVertical: 48 },
   progressRow: { flexDirection: "row", alignItems: "center", marginBottom: 32 },
   progressDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(255,255,255,0.1)" },
-  progressActive: { backgroundColor: "#D4FF00" },
-  progressDone: { backgroundColor: "#D4FF00" },
+  progressActive: { backgroundColor: "#F5C842" },
+  progressDone: { backgroundColor: "#F5C842" },
   progressLine: { flex: 1, height: 2, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 6 },
-  progressLineDone: { backgroundColor: "#D4FF00" },
-  step: { fontSize: 12, fontWeight: "600", color: "#D4FF00", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
-  title: { fontSize: 28, fontWeight: "800", color: "#F5F5F7", marginBottom: 8 },
+  progressLineDone: { backgroundColor: "#F5C842" },
+  step: { fontSize: 12, fontWeight: "600", color: "#F5C842", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: "800", color: "#E8E0D0", marginBottom: 8 },
   subtitle: { fontSize: 15, color: "rgba(245,245,247,0.55)", marginBottom: 32, lineHeight: 22 },
   form: { gap: 20 },
   field: { gap: 6 },
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, color: "#F5F5F7",
+    fontSize: 15, color: "#E8E0D0",
   },
   inputWithAt: {
     flex: 1, backgroundColor: "transparent", borderWidth: 0,
@@ -211,8 +211,8 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 13, fontWeight: "600", marginTop: 2 },
   hint: { fontSize: 11, color: "rgba(245,245,247,0.3)", marginTop: 2 },
   charCount: { fontSize: 11, color: "rgba(245,245,247,0.3)", alignSelf: "flex-end" },
-  button: { backgroundColor: "#D4FF00", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
+  button: { backgroundColor: "#F5C842", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 8 },
   buttonDisabled: { opacity: 0.4 },
-  buttonText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
+  buttonText: { color: "#1C1612", fontWeight: "800", fontSize: 16 },
   skip: { textAlign: "center", color: "rgba(245,245,247,0.35)", fontSize: 14, fontWeight: "500", marginTop: 4 },
 });

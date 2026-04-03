@@ -106,18 +106,18 @@ export default function OnboardingStep2() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0B0B0B" },
+  container: { flex: 1, backgroundColor: "#1C1612" },
   inner: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 56, paddingBottom: 40 },
 
   progressRow: { flexDirection: "row", alignItems: "center", marginBottom: 32 },
   progressDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "rgba(255,255,255,0.1)" },
-  progressActive: { backgroundColor: "#D4FF00" },
-  progressDone: { backgroundColor: "#D4FF00" },
+  progressActive: { backgroundColor: "#F5C842" },
+  progressDone: { backgroundColor: "#F5C842" },
   progressLine: { flex: 1, height: 2, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 6 },
-  progressLineDone: { backgroundColor: "#D4FF00" },
+  progressLineDone: { backgroundColor: "#F5C842" },
 
-  step: { fontSize: 12, fontWeight: "600", color: "#D4FF00", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
-  title: { fontSize: 28, fontWeight: "800", color: "#F5F5F7", marginBottom: 8 },
+  step: { fontSize: 12, fontWeight: "600", color: "#F5C842", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: "800", color: "#E8E0D0", marginBottom: 8 },
   subtitle: { fontSize: 15, color: "rgba(245,245,247,0.55)", marginBottom: 28, lineHeight: 22 },
 
   goalList: { gap: 12, marginBottom: 28 },
@@ -134,13 +134,13 @@ const styles = StyleSheet.create({
   },
   goalCardActive: {
     backgroundColor: "rgba(212,255,0,0.08)",
-    borderColor: "#D4FF00",
+    borderColor: "#F5C842",
   },
   goalLeft: { flexDirection: "row", alignItems: "center", gap: 14, flex: 1 },
   goalEmoji: { fontSize: 28 },
   goalText: { flex: 1, gap: 2 },
   goalLabel: { fontSize: 16, fontWeight: "700", color: "rgba(245,245,247,0.7)" },
-  goalLabelActive: { color: "#D4FF00" },
+  goalLabelActive: { color: "#F5C842" },
   goalDesc: { fontSize: 12, color: "rgba(245,245,247,0.35)", lineHeight: 17 },
   goalDescActive: { color: "rgba(245,245,247,0.6)" },
   radio: {
@@ -148,10 +148,10 @@ const styles = StyleSheet.create({
     borderWidth: 2, borderColor: "rgba(255,255,255,0.2)",
     alignItems: "center", justifyContent: "center",
   },
-  radioActive: { borderColor: "#D4FF00" },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#D4FF00" },
+  radioActive: { borderColor: "#F5C842" },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#F5C842" },
 
-  button: { backgroundColor: "#D4FF00", borderRadius: 14, paddingVertical: 16, alignItems: "center" },
+  button: { backgroundColor: "#F5C842", borderRadius: 14, paddingVertical: 16, alignItems: "center" },
   buttonDisabled: { opacity: 0.4 },
-  buttonText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
+  buttonText: { color: "#1C1612", fontWeight: "800", fontSize: 16 },
 });
