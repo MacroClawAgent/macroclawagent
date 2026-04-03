@@ -236,12 +236,6 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
           <Text style={[s.actionCount, post.hasLiked && { color: '#F43F5E' }]}>{post.likes}</Text>
         </TouchableOpacity>
 
-        {/* Comment */}
-        <TouchableOpacity style={s.actionBtn} activeOpacity={0.75}>
-          <Text style={s.actionIcon}>💬</Text>
-          <Text style={s.actionCount}>{(post as any).comments ?? 0}</Text>
-        </TouchableOpacity>
-
         {/* Share */}
         <TouchableOpacity style={s.actionBtn} activeOpacity={0.75}>
           <Text style={s.actionIcon}>↗</Text>
