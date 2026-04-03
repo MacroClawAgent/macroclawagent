@@ -91,6 +91,11 @@ export default function SettingsPageScreen() {
         <SectionLabel title="Account" />
         <View style={s.card}>
           <View style={s.row}>
+            <Text style={s.rowLabel}>Username</Text>
+            <Text style={s.rowValue}>@{userProfile?.username || "—"}</Text>
+          </View>
+          <Divider />
+          <View style={s.row}>
             <Text style={s.rowLabel}>Email</Text>
             <Text style={s.rowValue} numberOfLines={1}>{userEmail || "—"}</Text>
           </View>

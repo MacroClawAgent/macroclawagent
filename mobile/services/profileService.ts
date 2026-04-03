@@ -163,6 +163,26 @@ export async function getFollowing(): Promise<UserProfile[]> {
   return Promise.all(data.map((r: any) => buildProfile(r.following, user.id)));
 }
 
+export async function getFollowers(): Promise<UserProfile[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from('follows')
+    .select('follower:users!follows_follower_id_fkey(*)')
+    .eq('following_id', user.id);
+  if (!data) return [];
+  return Promise.all(data.map((r: any) => buildProfile(r.follower, user.id)));
+}
+
+export async function blockUser(userId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  // Remove follow in both directions
+  await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', userId);
+  await supabase.from('follows').delete().eq('follower_id', userId).eq('following_id', user.id);
+  // TODO: Add to blocks table when implemented
+}
+
 export async function updateProfile(updates: Partial<UserProfile>): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;

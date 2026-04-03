@@ -447,7 +447,7 @@ export default function CommunityScreen() {
                 <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
                   tintColor={CREAM} size={20} />
               </TouchableOpacity>
-              <TouchableOpacity style={s.iconBtn} activeOpacity={0.7}>
+              <TouchableOpacity style={s.iconBtn} activeOpacity={0.7} onPress={() => Alert.alert('Coming Soon', 'Notifications are coming in a future update.')}>
                 <SymbolView name={{ ios: 'bell.fill', android: 'notifications', web: 'notifications' }}
                   tintColor={CREAM} size={20} />
               </TouchableOpacity>

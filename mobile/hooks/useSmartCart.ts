@@ -8,7 +8,6 @@ import { getUserLocation, findNearbyStores, getSuburb, MOCK_STORES } from '../se
 import { openInStore as deepLinkOpenInStore } from '../services/deepLinkService';
 import {
   generateCartFromGroceryList,
-  generateDefaultCartFromMacros,
   assignCategory,
 } from '../services/smartCartAI';
 import type {
