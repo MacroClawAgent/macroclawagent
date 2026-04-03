@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Svg, { Circle, Defs, Line, LinearGradient, Path, Rect, Stop, Text as SvgText } from 'react-native-svg';
 import { useAuth } from '@/context/AuthContext';
+import { apiGet } from '@/lib/api';
 
+// ── Theme ────────────────────────────────────────────────────────────────────
 const BG = '#1C1612';
 const CARD = '#252018';
 const TEXT = '#E8E0D0';
@@ -12,40 +15,237 @@ const GOLD = '#F5C842';
 const CORAL = '#E07B54';
 const SAGE = '#8B9E6E';
 const MUTED = 'rgba(232,224,208,0.5)';
-const DIM = 'rgba(232,224,208,0.3)';
+const DIM = 'rgba(232,224,208,0.25)';
 
-const RANGES = ['7 days', '30 days', '3 months'];
+// ── Types ────────────────────────────────────────────────────────────────────
+interface DayEntry {
+  date: string; day: string;
+  kcal: number; protein: number; carbs: number; fat: number;
+  target: number;
+}
+interface Summary {
+  daysLogged: number; daysInRange: number;
+  avgCalories: number; avgProtein: number; avgCarbs: number; avgFat: number;
+  goalHitDays: number; proteinHitDays: number; streak: number;
+}
+interface Goals { calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number; }
+interface HistoryData { days: DayEntry[]; goals: Goals; summary: Summary; }
 
-const MOCK_INSIGHTS = [
-  { color: '#F59E0B', icon: 'warning-outline' as const, title: 'Weekend nutrition dips', body: 'Your calorie intake drops 40% on Saturdays and Sundays. Consider planning weekend meals in advance.', action: 'Plan my weekend' },
-  { color: '#22C55E', icon: 'trending-up-outline' as const, title: 'Protein streak', body: "You've hit your protein target 5 days in a row — your best streak yet.", action: null },
-  { color: '#8B5CF6', icon: 'repeat-outline' as const, title: 'Favourite meal pattern', body: 'You log Chicken Rice Bowl 3x per week. Want Jonno to add variety to your lunch rotation?', action: 'Mix up my lunches' },
+const RANGES: { label: string; value: number }[] = [
+  { label: '7 days', value: 7 },
+  { label: '30 days', value: 30 },
+  { label: '3 months', value: 90 },
 ];
 
-const MOCK_WEEK = [65, 88, 72, 95, 0, 0, 78];
-const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+// ── Line Chart Component ─────────────────────────────────────────────────────
+const CHART_W = 320;
+const CHART_H = 140;
+const CHART_PAD_L = 36;
+const CHART_PAD_R = 8;
+const CHART_PAD_T = 12;
+const CHART_PAD_B = 24;
 
-function barColor(pct: number) {
-  if (pct >= 90) return SAGE;
-  if (pct >= 50) return GOLD;
-  return 'rgba(232,224,208,0.1)';
+function LineChart({ data, color, label, goalLine, maxOverride }: {
+  data: number[]; color: string; label: string;
+  goalLine?: number; maxOverride?: number;
+}) {
+  if (data.length === 0) return null;
+  const logged = data.filter(v => v > 0);
+  if (logged.length === 0) return (
+    <View style={lc.empty}>
+      <Text style={lc.emptyText}>No data yet</Text>
+    </View>
+  );
+
+  const maxVal = maxOverride ?? Math.max(...data.filter(v => v > 0), goalLine ?? 0) * 1.15;
+  const minVal = 0;
+  const usableW = CHART_W - CHART_PAD_L - CHART_PAD_R;
+  const usableH = CHART_H - CHART_PAD_T - CHART_PAD_B;
+
+  // Only plot points where kcal > 0 to skip unlogged days
+  const points: { x: number; y: number; val: number }[] = [];
+  data.forEach((val, i) => {
+    if (val > 0) {
+      const x = CHART_PAD_L + (i / Math.max(data.length - 1, 1)) * usableW;
+      const y = CHART_PAD_T + usableH - ((val - minVal) / (maxVal - minVal)) * usableH;
+      points.push({ x, y, val });
+    }
+  });
+
+  // Smooth path
+  const pathD = points.length > 1
+    ? points.reduce((acc, p, i) => {
+        if (i === 0) return `M${p.x},${p.y}`;
+        const prev = points[i - 1];
+        const cx = (prev.x + p.x) / 2;
+        return `${acc} C${cx},${prev.y} ${cx},${p.y} ${p.x},${p.y}`;
+      }, '')
+    : `M${points[0].x},${points[0].y}`;
+
+  // Fill area
+  const lastP = points[points.length - 1];
+  const firstP = points[0];
+  const fillD = `${pathD} L${lastP.x},${CHART_H - CHART_PAD_B} L${firstP.x},${CHART_H - CHART_PAD_B} Z`;
+
+  // Y-axis labels
+  const yLabels = [0, Math.round(maxVal / 2), Math.round(maxVal)];
+
+  // Goal line Y
+  const goalY = goalLine ? CHART_PAD_T + usableH - ((goalLine - minVal) / (maxVal - minVal)) * usableH : null;
+
+  return (
+    <View style={lc.wrap}>
+      <Text style={lc.label}>{label}</Text>
+      <Svg width={CHART_W} height={CHART_H}>
+        <Defs>
+          <LinearGradient id={`grad_${label}`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={color} stopOpacity="0.25" />
+            <Stop offset="1" stopColor={color} stopOpacity="0" />
+          </LinearGradient>
+        </Defs>
+        {/* Y-axis labels */}
+        {yLabels.map((v, i) => {
+          const y = CHART_PAD_T + usableH - (i / 2) * usableH;
+          return (
+            <React.Fragment key={i}>
+              <SvgText x={CHART_PAD_L - 6} y={y + 4} fontSize={9} fill={DIM} textAnchor="end">{v}</SvgText>
+              <Line x1={CHART_PAD_L} y1={y} x2={CHART_W - CHART_PAD_R} y2={y} stroke={DIM} strokeWidth={0.5} strokeDasharray="4,4" />
+            </React.Fragment>
+          );
+        })}
+        {/* Goal line */}
+        {goalY != null && (
+          <Line x1={CHART_PAD_L} y1={goalY} x2={CHART_W - CHART_PAD_R} y2={goalY} stroke={GOLD} strokeWidth={1} strokeDasharray="6,4" opacity={0.5} />
+        )}
+        {/* Fill area */}
+        <Path d={fillD} fill={`url(#grad_${label})`} />
+        {/* Line */}
+        <Path d={pathD} fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+        {/* Dots */}
+        {points.map((p, i) => (
+          <Circle key={i} cx={p.x} cy={p.y} r={3} fill={color} stroke={BG} strokeWidth={1.5} />
+        ))}
+      </Svg>
+    </View>
+  );
 }
 
+const lc = StyleSheet.create({
+  wrap: { marginTop: 4 },
+  label: { fontSize: 12, fontWeight: '600', color: MUTED, marginBottom: 6, marginLeft: 4 },
+  empty: { height: 80, alignItems: 'center', justifyContent: 'center' },
+  emptyText: { fontSize: 13, color: DIM },
+});
+
+// ── Bar Chart for Weekly ─────────────────────────────────────────────────────
+function WeekBar({ data, goal }: { data: DayEntry[]; goal: number }) {
+  const maxVal = Math.max(...data.map(d => d.kcal), goal) * 1.1;
+  return (
+    <View style={bc.wrap}>
+      {data.map((d, i) => {
+        const pct = maxVal > 0 ? (d.kcal / maxVal) * 100 : 0;
+        const hit = d.kcal >= goal * 0.75;
+        return (
+          <View key={i} style={bc.col}>
+            <View style={bc.track}>
+              <View style={[bc.bar, { height: `${Math.max(3, pct)}%`, backgroundColor: d.kcal === 0 ? 'rgba(232,224,208,0.06)' : hit ? SAGE : GOLD }]} />
+            </View>
+            <Text style={[bc.dayLabel, d.day === 'Today' && { color: GOLD }]}>{d.day.slice(0, 1)}</Text>
+            {d.kcal > 0 && <Text style={bc.valLabel}>{d.kcal}</Text>}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+const bc = StyleSheet.create({
+  wrap: { flexDirection: 'row', gap: 6, height: 120, alignItems: 'flex-end', marginTop: 8 },
+  col: { flex: 1, alignItems: 'center' },
+  track: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 4, overflow: 'hidden' },
+  bar: { width: '100%', borderRadius: 4, minHeight: 3 },
+  dayLabel: { fontSize: 10, color: DIM, marginTop: 4 },
+  valLabel: { fontSize: 8, color: MUTED, marginTop: 1 },
+});
+
+// ── Macro Ring ───────────────────────────────────────────────────────────────
+function MacroRing({ value, target, color, label, unit }: {
+  value: number; target: number; color: string; label: string; unit: string;
+}) {
+  const pct = target > 0 ? Math.min(1, value / target) : 0;
+  const r = 24; const stroke = 5;
+  const circ = 2 * Math.PI * r;
+  const dashOffset = circ * (1 - pct);
+  return (
+    <View style={mr.wrap}>
+      <Svg width={58} height={58}>
+        <Circle cx={29} cy={29} r={r} fill="none" stroke="rgba(232,224,208,0.06)" strokeWidth={stroke} />
+        <Circle
+          cx={29} cy={29} r={r} fill="none" stroke={color} strokeWidth={stroke}
+          strokeDasharray={`${circ}`} strokeDashoffset={dashOffset}
+          strokeLinecap="round" rotation={-90} origin="29,29"
+        />
+        <SvgText x={29} y={31} fontSize={12} fontWeight="700" fill={TEXT} textAnchor="middle">{Math.round(pct * 100)}%</SvgText>
+      </Svg>
+      <Text style={mr.val}>{value}{unit}</Text>
+      <Text style={mr.label}>{label}</Text>
+    </View>
+  );
+}
+
+const mr = StyleSheet.create({
+  wrap: { alignItems: 'center', gap: 4 },
+  val: { fontSize: 14, fontWeight: '700', color: TEXT },
+  label: { fontSize: 10, color: DIM },
+});
+
+// ── Main Screen ──────────────────────────────────────────────────────────────
 export default function ProgressScreen() {
   const router = useRouter();
   const { userProfile } = useAuth();
-  const [range, setRange] = useState('7 days');
+  const [range, setRange] = useState(7);
+  const [data, setData] = useState<HistoryData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const goals = {
-    calories: userProfile?.calorie_goal ?? 2000,
-    protein: userProfile?.protein_goal ?? 120,
-    carbs: userProfile?.carbs_goal ?? 250,
-    fat: userProfile?.fat_goal ?? 70,
+  const fetchHistory = useCallback(async (days: number) => {
+    setLoading(true);
+    try {
+      const res = await apiGet<HistoryData>(`/api/nutrition/history?days=${days}`);
+      setData(res);
+    } catch { /* silent */ }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchHistory(range); }, [range, fetchHistory]);
+
+  const goals = data?.goals ?? {
+    calorie_goal: userProfile?.calorie_goal ?? 2000,
+    protein_goal: userProfile?.protein_goal ?? 120,
+    carbs_goal: userProfile?.carbs_goal ?? 250,
+    fat_goal: userProfile?.fat_goal ?? 70,
   };
+  const s_ = data?.summary;
+  const days = data?.days ?? [];
+
+  // Today's data (last entry)
+  const today = days.length > 0 ? days[days.length - 1] : null;
+
+  // Compute calorie adherence % (goal hit rate)
+  const adherencePct = s_ && s_.daysLogged > 0
+    ? Math.round((s_.goalHitDays / s_.daysLogged) * 100) : 0;
+
+  // Data for line charts
+  const calData = days.map(d => d.kcal);
+  const proData = days.map(d => d.protein);
+  const carbData = days.map(d => d.carbs);
+  const fatData = days.map(d => d.fat);
+
+  // Last 7 days for weekly bar chart
+  const last7 = days.slice(-7);
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
@@ -57,84 +257,112 @@ export default function ProgressScreen() {
         {/* Range selector */}
         <View style={s.rangeRow}>
           {RANGES.map(r => (
-            <TouchableOpacity key={r} style={[s.rangePill, range === r && s.rangePillActive]} onPress={() => setRange(r)} activeOpacity={0.75}>
-              <Text style={[s.rangeText, range === r && s.rangeTextActive]}>{r}</Text>
+            <TouchableOpacity
+              key={r.value}
+              style={[s.rangePill, range === r.value && s.rangePillActive]}
+              onPress={() => setRange(r.value)}
+              activeOpacity={0.75}
+            >
+              <Text style={[s.rangeText, range === r.value && s.rangeTextActive]}>{r.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Today's summary */}
-        <View style={s.summaryCard}>
-          {[
-            { label: 'Calories', value: `0/${goals.calories}`, color: TEXT },
-            { label: 'Protein', value: `0g`, color: CORAL },
-            { label: 'Carbs', value: `0g`, color: GOLD },
-            { label: 'Fat', value: `0g`, color: SAGE },
-          ].map((stat, i) => (
-            <React.Fragment key={stat.label}>
-              {i > 0 && <View style={s.divider} />}
-              <View style={s.summaryItem}>
-                <Text style={[s.summaryValue, { color: stat.color }]}>{stat.value}</Text>
-                <Text style={s.summaryLabel}>{stat.label}</Text>
+        {loading ? (
+          <View style={{ paddingVertical: 80, alignItems: 'center' }}>
+            <ActivityIndicator color={GOLD} size="large" />
+          </View>
+        ) : (
+          <>
+            {/* ── Today's snapshot ── */}
+            <View style={s.todayCard}>
+              <Text style={s.todayLabel}>Today</Text>
+              <View style={s.todayRow}>
+                {[
+                  { label: 'Calories', val: `${today?.kcal ?? 0}`, sub: `/ ${goals.calorie_goal}`, color: TEXT },
+                  { label: 'Protein', val: `${today?.protein ?? 0}g`, sub: `/ ${goals.protein_goal}g`, color: CORAL },
+                  { label: 'Carbs', val: `${today?.carbs ?? 0}g`, sub: `/ ${goals.carbs_goal}g`, color: GOLD },
+                  { label: 'Fat', val: `${today?.fat ?? 0}g`, sub: `/ ${goals.fat_goal}g`, color: SAGE },
+                ].map((item, i) => (
+                  <React.Fragment key={item.label}>
+                    {i > 0 && <View style={s.todayDiv} />}
+                    <View style={s.todayItem}>
+                      <Text style={[s.todayVal, { color: item.color }]}>{item.val}</Text>
+                      <Text style={s.todaySub}>{item.sub}</Text>
+                      <Text style={s.todayItemLabel}>{item.label}</Text>
+                    </View>
+                  </React.Fragment>
+                ))}
               </View>
-            </React.Fragment>
-          ))}
-        </View>
-
-        {/* Jonno Noticed */}
-        <Text style={s.sectionTitle}>✦ Jonno Noticed</Text>
-        {MOCK_INSIGHTS.map((ins, i) => (
-          <View key={i} style={[s.insightCard, { borderLeftColor: ins.color }]}>
-            <Ionicons name={ins.icon} size={18} color={ins.color} style={{ marginTop: 1 }} />
-            <View style={{ flex: 1 }}>
-              <Text style={s.insightTitle}>{ins.title}</Text>
-              <Text style={s.insightBody}>{ins.body}</Text>
-              {ins.action && (
-                <TouchableOpacity style={s.insightAction} onPress={() => router.push('/(tabs)/agent' as any)} activeOpacity={0.75}>
-                  <Text style={s.insightActionText}>{ins.action}</Text>
-                </TouchableOpacity>
-              )}
             </View>
-          </View>
-        ))}
 
-        {/* Streak */}
-        <View style={s.streakCard}>
-          <Text style={{ fontSize: 36 }}>🔥</Text>
-          <View style={{ flex: 1, marginLeft: 14 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <Text style={s.streakNum}>12</Text>
-              <Text style={s.streakLabel}> days</Text>
-            </View>
-            <Text style={s.streakSub}>Logging streak</Text>
-            <Text style={s.streakBest}>Personal best: 18 days</Text>
-          </View>
-          <View style={s.streakDots}>
-            {[1,1,1,1,1,0,0].map((filled, i) => (
-              <View key={i} style={[s.streakDot, filled ? s.streakDotFilled : s.streakDotEmpty]} />
-            ))}
-          </View>
-        </View>
-
-        {/* Weekly chart */}
-        <Text style={s.chartLabel}>This week's calorie goal</Text>
-        <View style={s.chartCard}>
-          <View style={s.chartBars}>
-            {MOCK_WEEK.map((pct, i) => (
-              <View key={i} style={s.barCol}>
-                <View style={s.barTrack}>
-                  <View style={[s.bar, { height: `${Math.max(5, pct)}%`, backgroundColor: barColor(pct) }]} />
-                </View>
-                <Text style={s.barDay}>{DAYS[i]}</Text>
+            {/* ── Summary stats ── */}
+            <View style={s.statsRow}>
+              <View style={s.statCard}>
+                <Ionicons name="flame-outline" size={20} color={GOLD} />
+                <Text style={s.statVal}>{s_?.streak ?? 0}</Text>
+                <Text style={s.statLabel}>Day streak</Text>
               </View>
-            ))}
-          </View>
-        </View>
+              <View style={s.statCard}>
+                <Ionicons name="calendar-outline" size={20} color={SAGE} />
+                <Text style={s.statVal}>{s_?.daysLogged ?? 0}<Text style={s.statSub}>/{s_?.daysInRange ?? range}</Text></Text>
+                <Text style={s.statLabel}>Days logged</Text>
+              </View>
+              <View style={s.statCard}>
+                <Ionicons name="checkmark-circle-outline" size={20} color={adherencePct >= 70 ? SAGE : CORAL} />
+                <Text style={s.statVal}>{adherencePct}%</Text>
+                <Text style={s.statLabel}>Goal hit rate</Text>
+              </View>
+            </View>
+
+            {/* ── Averages with rings ── */}
+            <View style={s.ringCard}>
+              <Text style={s.cardTitle}>Daily averages</Text>
+              <View style={s.ringRow}>
+                <MacroRing value={s_?.avgCalories ?? 0} target={goals.calorie_goal} color={TEXT} label="Calories" unit="" />
+                <MacroRing value={s_?.avgProtein ?? 0} target={goals.protein_goal} color={CORAL} label="Protein" unit="g" />
+                <MacroRing value={s_?.avgCarbs ?? 0} target={goals.carbs_goal} color={GOLD} label="Carbs" unit="g" />
+                <MacroRing value={s_?.avgFat ?? 0} target={goals.fat_goal} color={SAGE} label="Fat" unit="g" />
+              </View>
+            </View>
+
+            {/* ── Weekly bar chart ── */}
+            <View style={s.chartCard}>
+              <Text style={s.cardTitle}>This week</Text>
+              <WeekBar data={last7} goal={goals.calorie_goal} />
+            </View>
+
+            {/* ── Calorie trend line ── */}
+            <View style={s.chartCard}>
+              <Text style={s.cardTitle}>Calorie trend</Text>
+              <LineChart data={calData} color={TEXT} label="kcal" goalLine={goals.calorie_goal} />
+            </View>
+
+            {/* ── Protein trend ── */}
+            <View style={s.chartCard}>
+              <Text style={s.cardTitle}>Protein trend</Text>
+              <LineChart data={proData} color={CORAL} label="grams" goalLine={goals.protein_goal} />
+            </View>
+
+            {/* ── Carbs trend ── */}
+            <View style={s.chartCard}>
+              <Text style={s.cardTitle}>Carbs trend</Text>
+              <LineChart data={carbData} color={GOLD} label="grams" goalLine={goals.carbs_goal} />
+            </View>
+
+            {/* ── Fat trend ── */}
+            <View style={s.chartCard}>
+              <Text style={s.cardTitle}>Fat trend</Text>
+              <LineChart data={fatData} color={SAGE} label="grams" goalLine={goals.fat_goal} />
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// ── Styles ────────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 },
@@ -146,35 +374,28 @@ const s = StyleSheet.create({
   rangeText: { fontSize: 13, color: MUTED },
   rangeTextActive: { color: BG, fontWeight: '700' },
 
-  summaryCard: { flexDirection: 'row', backgroundColor: CARD, borderRadius: 16, padding: 14, marginHorizontal: 16, marginBottom: 12 },
-  summaryItem: { flex: 1, alignItems: 'center' },
-  summaryValue: { fontSize: 14, fontWeight: '700' },
-  summaryLabel: { fontSize: 10, color: DIM, marginTop: 2 },
-  divider: { width: 1, backgroundColor: 'rgba(232,224,208,0.08)', marginVertical: 2 },
+  // Today card
+  todayCard: { backgroundColor: CARD, borderRadius: 20, padding: 16, marginHorizontal: 16, marginBottom: 12 },
+  todayLabel: { fontSize: 11, fontWeight: '700', color: DIM, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 12 },
+  todayRow: { flexDirection: 'row' },
+  todayDiv: { width: 1, backgroundColor: 'rgba(232,224,208,0.06)', marginVertical: 2 },
+  todayItem: { flex: 1, alignItems: 'center' },
+  todayVal: { fontSize: 18, fontWeight: '800' },
+  todaySub: { fontSize: 10, color: DIM, marginTop: 1 },
+  todayItemLabel: { fontSize: 10, color: MUTED, marginTop: 4 },
 
-  sectionTitle: { fontSize: 14, fontWeight: '600', color: GOLD, marginLeft: 20, marginBottom: 10, marginTop: 8 },
+  // Stats row
+  statsRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 12 },
+  statCard: { flex: 1, backgroundColor: CARD, borderRadius: 16, padding: 14, alignItems: 'center', gap: 6 },
+  statVal: { fontSize: 22, fontWeight: '800', color: TEXT },
+  statSub: { fontSize: 14, fontWeight: '500', color: DIM },
+  statLabel: { fontSize: 10, color: DIM },
 
-  insightCard: { flexDirection: 'row', gap: 10, backgroundColor: CARD, borderRadius: 16, borderLeftWidth: 3, padding: 14, marginHorizontal: 16, marginBottom: 8 },
-  insightTitle: { fontSize: 14, fontWeight: '700', color: TEXT },
-  insightBody: { fontSize: 12, color: MUTED, lineHeight: 18, marginTop: 4 },
-  insightAction: { marginTop: 8, backgroundColor: 'rgba(248,213,97,0.08)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(248,213,97,0.2)', paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start' },
-  insightActionText: { fontSize: 12, fontWeight: '600', color: GOLD },
+  // Ring card
+  ringCard: { backgroundColor: CARD, borderRadius: 20, padding: 16, marginHorizontal: 16, marginBottom: 12 },
+  ringRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 8 },
+  cardTitle: { fontSize: 13, fontWeight: '700', color: MUTED, letterSpacing: 0.5 },
 
-  streakCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(248,213,97,0.06)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(248,213,97,0.15)', padding: 20, marginHorizontal: 16, marginTop: 4, marginBottom: 16 },
-  streakNum: { fontSize: 32, fontWeight: '800', color: GOLD },
-  streakLabel: { fontSize: 16, color: MUTED },
-  streakSub: { fontSize: 13, color: MUTED, marginTop: 2 },
-  streakBest: { fontSize: 11, color: DIM, marginTop: 2 },
-  streakDots: { flexDirection: 'row', gap: 4, alignItems: 'center' },
-  streakDot: { width: 8, height: 8, borderRadius: 4 },
-  streakDotFilled: { backgroundColor: GOLD },
-  streakDotEmpty: { backgroundColor: 'transparent', borderWidth: 1, borderColor: DIM },
-
-  chartLabel: { fontSize: 13, fontWeight: '600', color: MUTED, marginLeft: 20, marginBottom: 10 },
-  chartCard: { backgroundColor: CARD, borderRadius: 20, padding: 16, marginHorizontal: 16 },
-  chartBars: { flexDirection: 'row', gap: 8, height: 100, alignItems: 'flex-end' },
-  barCol: { flex: 1, alignItems: 'center' },
-  barTrack: { flex: 1, width: '100%', justifyContent: 'flex-end' },
-  bar: { width: '100%', borderRadius: 4, minHeight: 4 },
-  barDay: { fontSize: 10, color: DIM, marginTop: 6, textAlign: 'center' },
+  // Chart cards
+  chartCard: { backgroundColor: CARD, borderRadius: 20, padding: 16, marginHorizontal: 16, marginBottom: 12 },
 });
