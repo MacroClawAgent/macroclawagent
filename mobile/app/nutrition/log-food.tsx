@@ -43,24 +43,6 @@ interface DishEntry {
 }
 
 
-// ── History types (for clock view) ────────────────────────────────────────────
-interface FoodItem {
-  id: string; meal_tag: string; name: string; calories: number;
-  protein_g: number; carbs_g: number; fat_g: number;
-  batch_id?: string | null; dish_name?: string | null;
-}
-type Dish = { key: string; dishName: string; items: FoodItem[]; totalCals: number };
-interface NutritionData {
-  log:   { calories_consumed: number; protein_g: number; carbs_g: number; fat_g: number };
-  goals: { calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number };
-  foodItems: FoodItem[];
-}
-const MEAL_ICONS: Record<string, string> = {
-  Breakfast: "sunny-outline",
-  Lunch: "restaurant-outline",
-  Dinner: "moon-outline",
-  Snack: "cafe-outline",
-};
 
 // ── Swipeable Dish Row ───────────────────────────────────────────────────────
 const DELETE_THRESHOLD = -80;
@@ -168,7 +150,6 @@ export default function LogFoodScreen() {
   const [mealTag,    setMealTag]    = useState<MealTag>(defaultMealTag);
   const [query,      setQuery]      = useState("");
   const [toast,      setToast]      = useState<string | null>(null);
-  const [showHistory,setShowHistory]= useState(false);
 
   // Previous dishes (loaded from API — real logged/scanned meals)
   const [previousDishes, setPreviousDishes] = useState<DishEntry[]>([]);
@@ -190,10 +171,6 @@ export default function LogFoodScreen() {
   const [customFiber,   setCustomFiber]   = useState("");
   const [savingCustom,  setSavingCustom]  = useState(false);
 
-  // History / today log
-  const [data,           setData]           = useState<NutritionData | null>(null);
-  const [refreshing,     setRefreshing]     = useState(false);
-  const [expandedDishes, setExpandedDishes] = useState<Set<string>>(new Set());
 
   const searchRef = useRef<TextInput>(null);
 
@@ -222,64 +199,6 @@ export default function LogFoodScreen() {
 
   useFocusEffect(useCallback(() => { fetchDishes(); }, [fetchDishes]));
 
-  // ── Data fetching (unchanged logic) ────────────────────────────────────────
-  const fetchData = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    try {
-      const [logRes, itemsRes] = await Promise.allSettled([
-        apiGet<any>("/api/nutrition/today"),
-        apiGet<any>("/api/nutrition/food-items"),
-      ]);
-      const log   = logRes.status === "fulfilled" ? logRes.value : null;
-      const items = itemsRes.status === "fulfilled" ? itemsRes.value?.items ?? [] : [];
-      setData({
-        log:       log?.today ?? { calories_consumed: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
-        goals:     log?.goals ?? userProfile,
-        foodItems: items,
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => { if (showHistory) fetchData(); }, [showHistory]);
-
-  // ── Delete handlers (unchanged logic) ──────────────────────────────────────
-  const handleDelete = (id: string) => {
-    Alert.alert("Remove item?", undefined, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Remove", style: "destructive", onPress: async () => {
-        try { await apiDelete(`/api/nutrition/food-items/${id}`); await fetchData(); }
-        catch { Alert.alert("Error", "Failed to delete."); }
-      }},
-    ]);
-  };
-
-  const handleDeleteDish = (dish: Dish) => {
-    Alert.alert("Delete dish?", `Remove "${dish.dishName}" and all its ingredients?`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: async () => {
-        try {
-          const batchId  = dish.items[0]?.batch_id;
-          const todayStr = new Date().toISOString().split("T")[0];
-          if (batchId) {
-            await apiDelete(`/api/nutrition/food-items?batch_id=${batchId}&date=${todayStr}`);
-          } else {
-            await Promise.all(dish.items.map(i => apiDelete(`/api/nutrition/food-items/${i.id}`)));
-          }
-          await fetchData();
-        } catch { Alert.alert("Error", "Failed to delete dish."); }
-      }},
-    ]);
-  };
-
-  const toggleDish = (key: string) => {
-    setExpandedDishes(prev => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
 
   // ── Photo handlers (unchanged logic) ────────────────────────────────────────
   function handleTakePhoto() {
@@ -395,29 +314,6 @@ export default function LogFoodScreen() {
 
   const noResults = isSearching && filteredDishes.length === 0;
 
-  // ── History derived ────────────────────────────────────────────────────────
-  const foodItems = data?.foodItems ?? [];
-  const todayLabel = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-  const sections = TAGS.map(tag => {
-    const tagItems = foodItems.filter(i => i.meal_tag === tag);
-    const batchMap = new Map<string, FoodItem[]>();
-    for (const item of tagItems) {
-      const k   = item.batch_id ?? `solo_${item.id}`;
-      const arr = batchMap.get(k) ?? [];
-      arr.push(item);
-      batchMap.set(k, arr);
-    }
-    const dishes: Dish[] = Array.from(batchMap.entries()).map(([key, items]) => ({
-      key,
-      dishName: items[0].dish_name ?? (items.length > 1
-        ? [...items].sort((a, b) => b.calories - a.calories).slice(0, 2).map(i => i.name).join(" & ")
-        : items[0].name),
-      items,
-      totalCals: items.reduce((s, i) => s + i.calories, 0),
-    }));
-    return { tag, dishes };
-  }).filter(s => s.dishes.length > 0);
-
   // ── Quantity sheet derived ──────────────────────────────────────────────────
   const dish = selectedDish;
   const qCal     = dish ? Math.round(dish.calories * servings) : 0;
@@ -437,71 +333,9 @@ export default function LogFoodScreen() {
           <Text style={s.headerBackText}>Back</Text>
         </TouchableOpacity>
         <Text style={s.headerTitle}>Log Food</Text>
-        <TouchableOpacity onPress={() => setShowHistory(h => !h)} hitSlop={12} style={s.headerRight}>
-          <Ionicons name="time-outline" size={22} color={showHistory ? GOLD : MUTED} />
-        </TouchableOpacity>
+        <View style={s.headerRight} />
       </View>
 
-      {showHistory ? (
-        /* ═══════════════════ HISTORY VIEW ═══════════════════ */
-        <ScrollView contentContainerStyle={s.histScroll} showsVerticalScrollIndicator={false}>
-          <Text style={s.histHeading}>Today's Log</Text>
-          {sections.length === 0 ? (
-            <View style={s.histEmpty}>
-              <Text style={s.histEmptyText}>Nothing logged today yet</Text>
-            </View>
-          ) : sections.map(section => (
-            <View key={section.tag} style={s.histSection}>
-              <View style={s.histSectionHead}>
-                <Ionicons name={(MEAL_ICONS[section.tag] ?? "nutrition-outline") as any} size={16} color={GOLD} />
-                <Text style={s.histSectionTitle}>{section.tag}</Text>
-                <Text style={s.histDate}>{todayLabel}</Text>
-              </View>
-              {section.dishes.map(d => {
-                const expanded = expandedDishes.has(d.key);
-                const multi    = d.items.length > 1;
-                return (
-                  <View key={d.key} style={s.dishCard}>
-                    <View style={s.dishRow}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={s.dishName}>{d.dishName}</Text>
-                        <Text style={s.dishMeta}>{+d.totalCals.toFixed(0)} kcal{multi ? ` · ${d.items.length} ingredients` : ""}</Text>
-                      </View>
-                      <View style={s.dishActions}>
-                        {multi && (
-                          <TouchableOpacity onPress={() => toggleDish(d.key)} style={s.expandBtn}>
-                            <Text style={s.expandText}>{expanded ? "▲" : "▼"}</Text>
-                          </TouchableOpacity>
-                        )}
-                        <TouchableOpacity onPress={() => multi ? handleDeleteDish(d) : handleDelete(d.items[0].id)} style={s.deleteBtn}>
-                          <Text style={s.deleteText}>×</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                    {multi && expanded && (
-                      <View style={s.ingredientList}>
-                        {d.items.map((item, idx) => (
-                          <View key={item.id} style={[s.ingredientRow, idx === d.items.length - 1 && { borderBottomWidth: 0 }]}>
-                            <View style={{ flex: 1 }}>
-                              <Text style={s.ingredientName}>{item.name}</Text>
-                              <Text style={s.ingredientMacros}>{+item.calories.toFixed(0)} kcal · P {+item.protein_g.toFixed(1)}g</Text>
-                            </View>
-                            <TouchableOpacity onPress={() => handleDelete(item.id)} style={s.deleteBtn}>
-                              <Text style={s.deleteText}>×</Text>
-                            </TouchableOpacity>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-          ))}
-          <View style={{ height: 60 }} />
-        </ScrollView>
-      ) : (
-        /* ═══════════════════ MAIN LOG VIEW ═══════════════════ */
         <View style={{ flex: 1 }}>
 
           {/* ── Two photo buttons (fixed) ── */}
@@ -590,7 +424,6 @@ export default function LogFoodScreen() {
             </View>
           )}
         </View>
-      )}
 
       {/* ═══════════════════ QUANTITY SHEET ═══════════════════ */}
       <Modal visible={showQty} transparent animationType="slide" onRequestClose={() => setShowQty(false)}>
@@ -846,28 +679,4 @@ const s = StyleSheet.create({
   toastText: { fontSize: 14, fontWeight: "600", color: CREAM,  },
 
   // ── History view ─────────────────────────────────────────────────────────────
-  histScroll:       { padding: 16, paddingBottom: 60 },
-  histHeading:      { fontSize: 18, fontWeight: "700", color: CREAM, marginBottom: 12,  },
-  histEmpty:        { alignItems: "center", paddingVertical: 40 },
-  histEmptyText:    { fontSize: 15, color: MUTED,  },
-  histSection:      { marginBottom: 16 },
-  histSectionHead:  { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8, paddingLeft: 4 },
-  histSectionTitle: { fontSize: 15, fontWeight: "700", color: GOLD,  },
-  histDate:         { fontSize: 12, color: MUTED, marginLeft: "auto" as const,  },
-  dishCard: {
-    backgroundColor: CARD, borderRadius: 14, marginBottom: 6,
-    borderWidth: 1, borderColor: BORDER, overflow: "hidden",
-  },
-  dishRow:     { flexDirection: "row", alignItems: "center", padding: 14, gap: 10 },
-  dishName:    { fontSize: 15, fontWeight: "600", color: CREAM,  },
-  dishMeta:    { fontSize: 12, color: MUTED, marginTop: 2,  },
-  dishActions: { flexDirection: "row", gap: 8 },
-  expandBtn:   { padding: 6 },
-  expandText:  { fontSize: 12, color: MUTED,  },
-  deleteBtn:   { padding: 6 },
-  deleteText:  { fontSize: 20, color: CORAL, lineHeight: 22,  },
-  ingredientList: { borderTopWidth: 1, borderTopColor: "rgba(232,224,208,0.06)", paddingHorizontal: 14, paddingBottom: 8 },
-  ingredientRow:  { flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "rgba(232,224,208,0.04)", gap: 8 },
-  ingredientName: { fontSize: 13, color: CREAM,  },
-  ingredientMacros:{ fontSize: 11, color: MUTED, marginTop: 1,  },
 });
