@@ -151,6 +151,7 @@ export default function LogFoodScreen() {
   const [query,      setQuery]      = useState("");
   const [toast,      setToast]      = useState<string | null>(null);
   const [sortBy,     setSortBy]     = useState<"recent" | "most">("recent");
+  const [showFilter, setShowFilter] = useState(false);
 
   // Previous dishes (loaded from API — real logged/scanned meals)
   const [previousDishes, setPreviousDishes] = useState<DishEntry[]>([]);
@@ -380,21 +381,39 @@ export default function LogFoodScreen() {
             )}
           </View>
 
-          {/* ── Section label + filter toggle (fixed) ── */}
+          {/* ── Section label + filter dropdown (fixed) ── */}
           <View style={s.filterRow}>
             <Text style={s.sectionLabel}>{isSearching ? "RESULTS" : "YOUR DISHES"}</Text>
             {!isSearching && (
-              <TouchableOpacity
-                onPress={() => setSortBy(prev => prev === "recent" ? "most" : "recent")}
-                hitSlop={10}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="filter-outline"
-                  size={18}
-                  color={sortBy === "most" ? GOLD : MUTED}
-                />
-              </TouchableOpacity>
+              <View>
+                <TouchableOpacity
+                  onPress={() => setShowFilter(v => !v)}
+                  hitSlop={10}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="filter-outline" size={18} color={showFilter ? GOLD : MUTED} />
+                </TouchableOpacity>
+                {showFilter && (
+                  <View style={s.filterDropdown}>
+                    <TouchableOpacity
+                      style={[s.filterOption, sortBy === "recent" && s.filterOptionActive]}
+                      onPress={() => { setSortBy("recent"); setShowFilter(false); }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[s.filterOptionText, sortBy === "recent" && s.filterOptionTextActive]}>Date added</Text>
+                      {sortBy === "recent" && <Ionicons name="checkmark" size={14} color={GOLD} />}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[s.filterOption, sortBy === "most" && s.filterOptionActive]}
+                      onPress={() => { setSortBy("most"); setShowFilter(false); }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[s.filterOptionText, sortBy === "most" && s.filterOptionTextActive]}>Quantity logged</Text>
+                      {sortBy === "most" && <Ionicons name="checkmark" size={14} color={GOLD} />}
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
             )}
           </View>
 
@@ -642,6 +661,21 @@ const s = StyleSheet.create({
     fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)",
     letterSpacing: 1.2,
   },
+  filterDropdown: {
+    position: "absolute", top: 28, right: 0, zIndex: 10,
+    backgroundColor: CARD, borderRadius: 12, borderWidth: 1,
+    borderColor: "rgba(232,224,208,0.12)",
+    paddingVertical: 4, minWidth: 160,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4, shadowRadius: 12, elevation: 12,
+  },
+  filterOption: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 14, paddingVertical: 11,
+  },
+  filterOptionActive: {},
+  filterOptionText: { fontSize: 14, fontWeight: "500", color: MUTED },
+  filterOptionTextActive: { color: CREAM, fontWeight: "600" },
 
   // ── Empty state (inside card) ────────────────────────────────────────────────
   cardEmpty:      { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 6, paddingVertical: 40 },
