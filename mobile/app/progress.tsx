@@ -3,7 +3,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Svg, { Circle, Defs, Line, LinearGradient, Path, Rect, Stop, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop, Text as SvgText } from 'react-native-svg';
 import { useAuth } from '@/context/AuthContext';
 import { apiGet } from '@/lib/api';
 
@@ -169,6 +169,7 @@ const bc = StyleSheet.create({
 });
 
 // ── Macro Ring ───────────────────────────────────────────────────────────────
+const RING_SIZE = 58;
 function MacroRing({ value, target, color, label, unit }: {
   value: number; target: number; color: string; label: string; unit: string;
 }) {
@@ -178,15 +179,17 @@ function MacroRing({ value, target, color, label, unit }: {
   const dashOffset = circ * (1 - pct);
   return (
     <View style={mr.wrap}>
-      <Svg width={58} height={58}>
-        <Circle cx={29} cy={29} r={r} fill="none" stroke="rgba(232,224,208,0.06)" strokeWidth={stroke} />
-        <Circle
-          cx={29} cy={29} r={r} fill="none" stroke={color} strokeWidth={stroke}
-          strokeDasharray={`${circ}`} strokeDashoffset={dashOffset}
-          strokeLinecap="round" rotation={-90} origin="29,29"
-        />
-        <SvgText x={29} y={31} fontSize={12} fontWeight="700" fill={TEXT} textAnchor="middle">{Math.round(pct * 100)}%</SvgText>
-      </Svg>
+      <View style={mr.ringWrap}>
+        <Svg width={RING_SIZE} height={RING_SIZE}>
+          <Circle cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={r} fill="none" stroke="rgba(232,224,208,0.06)" strokeWidth={stroke} />
+          <Circle
+            cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+            strokeDasharray={`${circ}`} strokeDashoffset={dashOffset}
+            strokeLinecap="round" rotation={-90} origin={`${RING_SIZE / 2},${RING_SIZE / 2}`}
+          />
+        </Svg>
+        <Text style={mr.pctText}>{Math.round(pct * 100)}%</Text>
+      </View>
       <Text style={mr.val}>{value}{unit}</Text>
       <Text style={mr.label}>{label}</Text>
     </View>
@@ -194,9 +197,11 @@ function MacroRing({ value, target, color, label, unit }: {
 }
 
 const mr = StyleSheet.create({
-  wrap: { alignItems: 'center', gap: 4 },
-  val: { fontSize: 14, fontWeight: '700', color: TEXT },
-  label: { fontSize: 10, color: DIM },
+  wrap: { alignItems: 'center', gap: 4, flex: 1 },
+  ringWrap: { width: RING_SIZE, height: RING_SIZE, alignItems: 'center', justifyContent: 'center' },
+  pctText: { position: 'absolute', fontSize: 12, fontWeight: '700', color: TEXT, textAlign: 'center' },
+  val: { fontSize: 14, fontWeight: '700', color: TEXT, textAlign: 'center' },
+  label: { fontSize: 10, color: DIM, textAlign: 'center' },
 });
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
