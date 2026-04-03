@@ -114,7 +114,7 @@ export function NutritionWidget({ calorieProgress, macros, goalLabel, weeklyCalo
   const monthAvgCal = monthDays.length > 0 ? Math.round(monthDays.reduce((s, d) => s + d.kcal, 0) / monthDays.length) : 0;
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={cycleMode}>
+    <TouchableOpacity activeOpacity={0.9} onPress={cycleMode} style={{ flex: 1 }}>
       <BlurView
         intensity={isDark ? 52 : 72}
         tint={isDark ? "dark" : "light"}
