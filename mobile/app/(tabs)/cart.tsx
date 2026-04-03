@@ -631,7 +631,7 @@ const s = StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: 6, paddingBottom: 10,
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
   },
   title: { fontSize: 28, fontWeight: '800', color: TEXT },
   refreshBtn: {

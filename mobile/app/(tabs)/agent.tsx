@@ -649,7 +649,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
   },
-  title:         { fontSize: 32, fontWeight: '900', color: TEXT, letterSpacing: -0.5 },
+  title:         { fontSize: 28, fontWeight: '800', color: TEXT, letterSpacing: -0.5 },
   headerSub:     { fontSize: 12, color: MUTED, marginTop: 2 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   closeBtn:      {

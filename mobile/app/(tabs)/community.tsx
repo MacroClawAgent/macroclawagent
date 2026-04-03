@@ -553,9 +553,9 @@ export default function CommunityScreen() {
 const s = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8, gap: 10,
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8, gap: 10,
   },
-  headerTitle: { flex: 1, fontSize: 28, fontWeight: '900', letterSpacing: -0.5, color: CREAM },
+  headerTitle: { flex: 1, fontSize: 28, fontWeight: '800', letterSpacing: -0.5, color: CREAM },
   headerRight: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 40, height: 40, borderRadius: 13,
