@@ -4,6 +4,7 @@ import {
   Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AppHeader } from "@/components/ui/AppHeader";
@@ -214,7 +215,7 @@ export default function PhotoConfirmScreen() {
 
   const totals = sumTotals(foods);
 
-  const TAG_EMOJI: Record<string, string> = { Breakfast: "🍳", Lunch: "🥗", Dinner: "🍽", Snack: "🍎" };
+  const TAG_ICONS: Record<string, string> = { Breakfast: "sunny-outline", Lunch: "restaurant-outline", Dinner: "moon-outline", Snack: "flash-outline" };
 
   const handleShareToComm = () => {
     const saved = savedDishRef.current;
@@ -223,7 +224,7 @@ export default function PhotoConfirmScreen() {
       id: batchId.current,
       dishName: saved.dishName,
       mealTag: selectedTag,
-      mealEmoji: TAG_EMOJI[selectedTag] ?? "🍽",
+      mealEmoji: TAG_ICONS[selectedTag] ?? "restaurant-outline",
       calories: saved.totals.calories,
       protein: saved.totals.protein_g,
       carbs: saved.totals.carbs_g,
@@ -243,15 +244,15 @@ export default function PhotoConfirmScreen() {
   // Share prompt — shown after successful save
   if (stage === "share_prompt") {
     const saved = savedDishRef.current;
-    const emoji = TAG_EMOJI[selectedTag] ?? "🍽";
+    const iconName = TAG_ICONS[selectedTag] ?? "restaurant-outline";
     return (
-      <Screen style={{ backgroundColor: "#0B0B0B" }}>
-        <AppHeader title="" textColor="#F5F5F7" />
+      <Screen style={{ backgroundColor: "#1C1612" }}>
+        <AppHeader title="" textColor="#E8E0D0" />
         <View style={sp.container}>
           <View style={sp.emojiWrap}>
-            <Text style={sp.emoji}>{emoji}</Text>
+            <Ionicons name={iconName as any} size={36} color="#F5C842" />
           </View>
-          <Text style={sp.heading}>Meal saved! 🎉</Text>
+          <Text style={sp.heading}>Meal saved</Text>
           <Text style={sp.sub}>Share it with the community?</Text>
 
           {/* Meal card */}
@@ -264,17 +265,17 @@ export default function PhotoConfirmScreen() {
               </View>
               <View style={sp.macroDivider} />
               <View style={sp.macroItem}>
-                <Text style={[sp.macroVal, { color: "#34D399" }]}>{+(saved?.totals.protein_g ?? 0).toFixed(1)}g</Text>
+                <Text style={[sp.macroVal, { color: "#E07B54" }]}>{+(saved?.totals.protein_g ?? 0).toFixed(1)}g</Text>
                 <Text style={sp.macroLbl}>Protein</Text>
               </View>
               <View style={sp.macroDivider} />
               <View style={sp.macroItem}>
-                <Text style={[sp.macroVal, { color: "#FBBF24" }]}>{+(saved?.totals.carbs_g ?? 0).toFixed(1)}g</Text>
+                <Text style={[sp.macroVal, { color: "#F5C842" }]}>{+(saved?.totals.carbs_g ?? 0).toFixed(1)}g</Text>
                 <Text style={sp.macroLbl}>Carbs</Text>
               </View>
               <View style={sp.macroDivider} />
               <View style={sp.macroItem}>
-                <Text style={[sp.macroVal, { color: "#F97316" }]}>{+(saved?.totals.fat_g ?? 0).toFixed(1)}g</Text>
+                <Text style={[sp.macroVal, { color: "#8B9E6E" }]}>{+(saved?.totals.fat_g ?? 0).toFixed(1)}g</Text>
                 <Text style={sp.macroLbl}>Fat</Text>
               </View>
             </View>
@@ -297,13 +298,13 @@ export default function PhotoConfirmScreen() {
   // Loading states
   if (stage === "picking" || stage === "analyzing") {
     return (
-      <Screen style={{ backgroundColor: "#0B0B0B" }}>
-        <AppHeader title="AI Scan" showBack textColor="#F5F5F7" />
+      <Screen style={{ backgroundColor: "#1C1612" }}>
+        <AppHeader title="AI Scan" showBack textColor="#E8E0D0" />
         <View style={styles.centered}>
           <View style={styles.scanIcon}>
-            <Text style={styles.scanEmoji}>🍽</Text>
+            <Ionicons name="scan-outline" size={36} color="#F5C842" />
           </View>
-          <ActivityIndicator color="#20C7B7" size="large" style={{ marginTop: 24 }} />
+          <ActivityIndicator color="#F5C842" size="large" style={{ marginTop: 24 }} />
           <Text style={styles.analyzingText}>
             {stage === "picking" ? "Opening camera…" : "Analysing your meal…"}
           </Text>
@@ -315,10 +316,10 @@ export default function PhotoConfirmScreen() {
 
   if (stage === "error") {
     return (
-      <Screen style={{ backgroundColor: "#0B0B0B" }}>
-        <AppHeader title="AI Scan" showBack textColor="#F5F5F7" />
+      <Screen style={{ backgroundColor: "#1C1612" }}>
+        <AppHeader title="AI Scan" showBack textColor="#E8E0D0" />
         <View style={styles.centered}>
-          <Text style={styles.errorEmoji}>😕</Text>
+          <Ionicons name="alert-circle-outline" size={48} color="#E07B54" />
           <Text style={styles.errorTitle}>Detection failed</Text>
           <Text style={styles.errorBody}>{errorMsg}</Text>
           <TouchableOpacity onPress={() => router.back()} style={styles.retryBtn}>
@@ -333,8 +334,8 @@ export default function PhotoConfirmScreen() {
   }
 
   return (
-    <Screen style={{ backgroundColor: "#0B0B0B" }}>
-      <AppHeader title="Confirm Meal" showBack textColor="#F5F5F7" />
+    <Screen style={{ backgroundColor: "#1C1612" }}>
+      <AppHeader title="Confirm Meal" showBack textColor="#E8E0D0" />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -402,15 +403,15 @@ export default function PhotoConfirmScreen() {
                 <Text style={styles.totalLabel}>kcal</Text>
               </View>
               <View style={styles.totalItem}>
-                <Text style={[styles.totalVal, { color: "#60A5FA" }]}>{+totals.protein_g.toFixed(1)}g</Text>
+                <Text style={[styles.totalVal, { color: "#E07B54" }]}>{+totals.protein_g.toFixed(1)}g</Text>
                 <Text style={styles.totalLabel}>Protein</Text>
               </View>
               <View style={styles.totalItem}>
-                <Text style={[styles.totalVal, { color: "#FBBF24" }]}>{+totals.carbs_g.toFixed(1)}g</Text>
+                <Text style={[styles.totalVal, { color: "#F5C842" }]}>{+totals.carbs_g.toFixed(1)}g</Text>
                 <Text style={styles.totalLabel}>Carbs</Text>
               </View>
               <View style={styles.totalItem}>
-                <Text style={[styles.totalVal, { color: "#F97316" }]}>{+totals.fat_g.toFixed(1)}g</Text>
+                <Text style={[styles.totalVal, { color: "#8B9E6E" }]}>{+totals.fat_g.toFixed(1)}g</Text>
                 <Text style={styles.totalLabel}>Fat</Text>
               </View>
             </View>
@@ -424,7 +425,7 @@ export default function PhotoConfirmScreen() {
             activeOpacity={0.85}
           >
             {stage === "saving" ? (
-              <ActivityIndicator color="#0B0B0B" />
+              <ActivityIndicator color="#1C1612" />
             ) : (
               <Text style={styles.confirmText}>Save Meal</Text>
             )}
@@ -443,95 +444,92 @@ const styles = StyleSheet.create({
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
   scanIcon: {
     width: 80, height: 80, borderRadius: 24,
-    backgroundColor: "rgba(32,199,183,0.12)", borderWidth: 1,
-    borderColor: "rgba(32,199,183,0.3)", alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(245,200,66,0.12)", borderWidth: 1,
+    borderColor: "rgba(245,200,66,0.3)", alignItems: "center", justifyContent: "center",
   },
-  scanEmoji: { fontSize: 36 },
-  analyzingText: { color: "#F5F5F7", fontSize: 18, fontWeight: "700", marginTop: 16, textAlign: "center" },
-  analyzingSubtext: { color: "rgba(245,245,247,0.45)", fontSize: 13, marginTop: 6, textAlign: "center" },
-  errorEmoji: { fontSize: 48, marginBottom: 12 },
-  errorTitle: { color: "#F5F5F7", fontSize: 20, fontWeight: "800", marginBottom: 8, textAlign: "center" },
-  errorBody: { color: "rgba(245,245,247,0.55)", fontSize: 14, textAlign: "center", lineHeight: 20, marginBottom: 24 },
-  retryBtn: { backgroundColor: "#20C7B7", borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14, marginBottom: 12 },
-  retryText: { color: "#0B0B0B", fontWeight: "800", fontSize: 15 },
+  analyzingText: { color: "#E8E0D0", fontSize: 18, fontWeight: "700", marginTop: 16, textAlign: "center" },
+  analyzingSubtext: { color: "rgba(232,224,208,0.45)", fontSize: 13, marginTop: 6, textAlign: "center" },
+  errorTitle: { color: "#E8E0D0", fontSize: 20, fontWeight: "800", marginBottom: 8, textAlign: "center" },
+  errorBody: { color: "rgba(232,224,208,0.55)", fontSize: 14, textAlign: "center", lineHeight: 20, marginBottom: 24 },
+  retryBtn: { backgroundColor: "#F5C842", borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14, marginBottom: 12 },
+  retryText: { color: "#1C1612", fontWeight: "800", fontSize: 15 },
   tryAgainBtn: { paddingVertical: 10 },
-  tryAgainText: { color: "rgba(245,245,247,0.5)", fontWeight: "600", fontSize: 14 },
+  tryAgainText: { color: "rgba(232,224,208,0.5)", fontWeight: "600", fontSize: 14 },
 
   section: { gap: 10 },
-  sectionLabel: { fontSize: 11, fontWeight: "700", color: "rgba(245,245,247,0.45)", textTransform: "uppercase", letterSpacing: 0.8 },
+  sectionLabel: { fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.45)", textTransform: "uppercase", letterSpacing: 0.8 },
 
   tagRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   tagChip: {
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "rgba(232,224,208,0.07)", borderWidth: 1, borderColor: "rgba(232,224,208,0.1)",
   },
-  tagChipActive: { backgroundColor: "rgba(32,199,183,0.15)", borderColor: "#20C7B7" },
-  tagText: { color: "rgba(245,245,247,0.55)", fontSize: 13, fontWeight: "600" },
-  tagTextActive: { color: "#20C7B7" },
+  tagChipActive: { backgroundColor: "rgba(245,200,66,0.15)", borderColor: "#F5C842" },
+  tagText: { color: "rgba(232,224,208,0.55)", fontSize: 13, fontWeight: "600" },
+  tagTextActive: { color: "#F5C842" },
 
   foodRow: {
     flexDirection: "row", alignItems: "center", gap: 12,
-    backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(232,224,208,0.05)", borderRadius: 14,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.08)",
     padding: 14,
   },
   foodInfo: { flex: 1 },
-  foodName: { color: "#F5F5F7", fontSize: 14, fontWeight: "600", marginBottom: 2 },
-  foodMacros: { color: "rgba(245,245,247,0.45)", fontSize: 12, fontWeight: "500" },
+  foodName: { color: "#E8E0D0", fontSize: 14, fontWeight: "600", marginBottom: 2 },
+  foodMacros: { color: "rgba(232,224,208,0.45)", fontSize: 12, fontWeight: "500" },
   foodRight: { flexDirection: "row", alignItems: "center", gap: 4 },
   gramInput: {
-    backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 8,
+    backgroundColor: "rgba(232,224,208,0.1)", borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 6, fontSize: 14, fontWeight: "700",
-    color: "#F5F5F7", width: 56, textAlign: "center",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.15)",
+    color: "#E8E0D0", width: 56, textAlign: "center",
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.15)",
   },
-  gramLabel: { color: "rgba(245,245,247,0.45)", fontSize: 13, fontWeight: "500" },
+  gramLabel: { color: "rgba(232,224,208,0.45)", fontSize: 13, fontWeight: "500" },
   removeBtn: {
     width: 28, height: 28, borderRadius: 8,
     backgroundColor: "rgba(239,68,68,0.12)", alignItems: "center", justifyContent: "center",
   },
-  removeText: { color: "#EF4444", fontSize: 18, fontWeight: "700", lineHeight: 22 },
+  removeText: { color: "#E07B54", fontSize: 18, fontWeight: "700", lineHeight: 22 },
 
   totalsCard: {
-    backgroundColor: "rgba(32,199,183,0.08)", borderRadius: 16,
-    borderWidth: 1, borderColor: "rgba(32,199,183,0.2)", padding: 18, gap: 12,
+    backgroundColor: "rgba(245,200,66,0.08)", borderRadius: 16,
+    borderWidth: 1, borderColor: "rgba(245,200,66,0.2)", padding: 18, gap: 12,
   },
-  totalsTitle: { color: "#F5F5F7", fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
+  totalsTitle: { color: "#E8E0D0", fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
   totalsRow: { flexDirection: "row", justifyContent: "space-between" },
   totalItem: { alignItems: "center", gap: 2 },
-  totalVal: { color: "#F5F5F7", fontSize: 20, fontWeight: "800" },
-  totalLabel: { color: "rgba(245,245,247,0.45)", fontSize: 11, fontWeight: "500" },
+  totalVal: { color: "#E8E0D0", fontSize: 20, fontWeight: "800" },
+  totalLabel: { color: "rgba(232,224,208,0.45)", fontSize: 11, fontWeight: "500" },
 
   confirmBtn: {
-    backgroundColor: "#20C7B7", borderRadius: 16, paddingVertical: 16, alignItems: "center",
+    backgroundColor: "#F5C842", borderRadius: 16, paddingVertical: 16, alignItems: "center",
   },
-  confirmText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
+  confirmText: { color: "#1C1612", fontWeight: "800", fontSize: 16 },
 });
 
 const sp = StyleSheet.create({
   container: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, gap: 16 },
   emojiWrap: {
     width: 88, height: 88, borderRadius: 28, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(32,199,183,0.12)", borderWidth: 1, borderColor: "rgba(32,199,183,0.25)",
+    backgroundColor: "rgba(245,200,66,0.12)", borderWidth: 1, borderColor: "rgba(245,200,66,0.25)",
   },
-  emoji: { fontSize: 40 },
-  heading: { fontSize: 26, fontWeight: "800", color: "#F5F5F7", letterSpacing: -0.5 },
-  sub: { fontSize: 15, color: "rgba(245,245,247,0.55)", fontWeight: "500", marginTop: -6 },
+  heading: { fontSize: 26, fontWeight: "800", color: "#E8E0D0", letterSpacing: -0.5 },
+  sub: { fontSize: 15, color: "rgba(232,224,208,0.55)", fontWeight: "500", marginTop: -6 },
   mealCard: {
-    width: "100%", backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 20,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", padding: 18, gap: 12, marginVertical: 4,
+    width: "100%", backgroundColor: "rgba(232,224,208,0.06)", borderRadius: 20,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.1)", padding: 18, gap: 12, marginVertical: 4,
   },
-  dishName: { color: "#F5F5F7", fontSize: 17, fontWeight: "700" },
+  dishName: { color: "#E8E0D0", fontSize: 17, fontWeight: "700" },
   macroRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   macroItem: { alignItems: "center", flex: 1, gap: 2 },
-  macroVal: { color: "#F5F5F7", fontSize: 17, fontWeight: "800" },
-  macroLbl: { color: "rgba(245,245,247,0.4)", fontSize: 11, fontWeight: "500" },
-  macroDivider: { width: 1, height: 32, backgroundColor: "rgba(255,255,255,0.08)" },
-  ingredientsHint: { color: "rgba(245,245,247,0.3)", fontSize: 12, fontWeight: "500" },
+  macroVal: { color: "#E8E0D0", fontSize: 17, fontWeight: "800" },
+  macroLbl: { color: "rgba(232,224,208,0.4)", fontSize: 11, fontWeight: "500" },
+  macroDivider: { width: 1, height: 32, backgroundColor: "rgba(232,224,208,0.08)" },
+  ingredientsHint: { color: "rgba(232,224,208,0.3)", fontSize: 12, fontWeight: "500" },
   postBtn: {
-    width: "100%", backgroundColor: "#20C7B7", borderRadius: 16, paddingVertical: 16, alignItems: "center",
+    width: "100%", backgroundColor: "#F5C842", borderRadius: 16, paddingVertical: 16, alignItems: "center",
   },
-  postBtnText: { color: "#0B0B0B", fontWeight: "800", fontSize: 16 },
+  postBtnText: { color: "#1C1612", fontWeight: "800", fontSize: 16 },
   privateBtn: { paddingVertical: 12 },
-  privateBtnText: { color: "rgba(245,245,247,0.4)", fontSize: 15, fontWeight: "600" },
+  privateBtnText: { color: "rgba(232,224,208,0.4)", fontSize: 15, fontWeight: "600" },
 });
