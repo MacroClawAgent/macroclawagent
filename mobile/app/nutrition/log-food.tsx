@@ -392,16 +392,13 @@ export default function LogFoodScreen() {
         /* ═══════════════════ MAIN LOG VIEW ═══════════════════ */
         <View style={{ flex: 1 }}>
 
-          {/* ── Two photo buttons ── */}
+          {/* ── Two photo buttons (fixed) ── */}
           <View style={s.photoRow}>
-            {/* Take Photo */}
             <TouchableOpacity style={s.photoBtnCamera} onPress={handleTakePhoto} activeOpacity={0.85}>
               <Ionicons name="camera" size={28} color={DARK_TXT} />
               <Text style={s.photoBtnTitle}>Take Photo</Text>
               <Text style={s.photoBtnSub}>AI detects dish + macros</Text>
             </TouchableOpacity>
-
-            {/* Upload from Library */}
             <TouchableOpacity style={s.photoBtnLibrary} onPress={handleUploadPhoto} activeOpacity={0.85}>
               <Ionicons name="image-outline" size={28} color={GOLD} />
               <Text style={s.photoBtnTitleLight}>From Library</Text>
@@ -409,7 +406,7 @@ export default function LogFoodScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* ── Search bar ── */}
+          {/* ── Search bar (fixed) ── */}
           <View style={s.searchBox}>
             <Ionicons name="search-outline" size={20} color="rgba(248,213,97,0.6)" />
             <TextInput
@@ -430,49 +427,47 @@ export default function LogFoodScreen() {
             )}
           </View>
 
-          {/* ── Dish list ── */}
-          <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={s.listContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            {loadingDishes && !isSearching ? (
-              <View style={s.emptyState}>
-                <Ionicons name="hourglass-outline" size={36} color={MUTED} />
-                <Text style={[s.emptyTitle, { color: MUTED }]}>Loading your dishes...</Text>
-              </View>
-            ) : noResults ? (
-              <View style={s.emptyState}>
-                <Ionicons name="search-outline" size={36} color={MUTED} />
-                <Text style={s.emptyTitle}>No dishes found for "{query.trim()}"</Text>
-                <TouchableOpacity onPress={() => openCustom(query.trim())} style={s.emptyLink}>
-                  <Text style={s.emptyLinkText}>+ Add "{query.trim()}" as custom dish</Text>
-                </TouchableOpacity>
-              </View>
-            ) : !isSearching && filteredDishes.length === 0 ? (
-              <View style={s.emptyState}>
-                <Ionicons name="restaurant-outline" size={36} color={MUTED} />
-                <Text style={s.emptyTitle}>No dishes yet</Text>
-                <Text style={[s.emptyTitle, { fontSize: 13, color: MUTED, fontWeight: "400", marginTop: 4 }]}>
-                  Scan a meal or create a custom dish to get started
-                </Text>
-                <TouchableOpacity onPress={() => openCustom()} style={s.emptyLink}>
-                  <Text style={s.emptyLinkText}>+ Create custom dish</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <>
-                <Text style={s.sectionLabel}>{isSearching ? "RESULTS" : "YOUR DISHES"}</Text>
+          {/* ── Section label (fixed) ── */}
+          <Text style={s.sectionLabel}>{isSearching ? "RESULTS" : "YOUR DISHES"}</Text>
 
+          {/* ── Dish list (scrolls within its own card) ── */}
+          {loadingDishes && !isSearching ? (
+            <View style={s.emptyState}>
+              <Ionicons name="hourglass-outline" size={36} color={MUTED} />
+              <Text style={[s.emptyTitle, { color: MUTED }]}>Loading your dishes...</Text>
+            </View>
+          ) : noResults ? (
+            <View style={s.emptyState}>
+              <Ionicons name="search-outline" size={36} color={MUTED} />
+              <Text style={s.emptyTitle}>No dishes found for "{query.trim()}"</Text>
+              <TouchableOpacity onPress={() => openCustom(query.trim())} style={s.emptyLink}>
+                <Text style={s.emptyLinkText}>+ Add "{query.trim()}" as custom dish</Text>
+              </TouchableOpacity>
+            </View>
+          ) : !isSearching && filteredDishes.length === 0 ? (
+            <View style={s.emptyState}>
+              <Ionicons name="restaurant-outline" size={36} color={MUTED} />
+              <Text style={s.emptyTitle}>No dishes yet</Text>
+              <Text style={[s.emptyTitle, { fontSize: 13, color: MUTED, fontWeight: "400", marginTop: 4 }]}>
+                Scan a meal or create a custom dish to get started
+              </Text>
+              <TouchableOpacity onPress={() => openCustom()} style={s.emptyLink}>
+                <Text style={s.emptyLinkText}>+ Create custom dish</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={s.dishListCard}>
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={s.listContent}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
                 {filteredDishes.map((d, idx) => (
                   <View key={`${d.name}-${idx}`} style={s.dishRow2}>
-                    {/* Icon circle */}
                     <View style={s.dishEmoji}>
                       <Ionicons name="nutrition-outline" size={22} color={GOLD} />
                     </View>
-
-                    {/* Info */}
                     <View style={{ flex: 1 }}>
                       <Text style={s.dishTitle}>{d.name}</Text>
                       <View style={s.dishMacroRow}>
@@ -484,22 +479,17 @@ export default function LogFoodScreen() {
                         )}
                       </View>
                     </View>
-
-                    {/* Add button */}
                     <TouchableOpacity style={s.addCircle} onPress={() => openDishQty(d)} activeOpacity={0.8}>
                       <Ionicons name="add" size={20} color={DARK_TXT} />
                     </TouchableOpacity>
                   </View>
                 ))}
-
-                {/* Create custom dish */}
                 <TouchableOpacity style={s.createCustom} onPress={() => openCustom()} activeOpacity={0.7}>
                   <Text style={s.createCustomText}>+ Create custom dish</Text>
                 </TouchableOpacity>
-              </>
-            )}
-            <View style={{ height: 60 }} />
-          </ScrollView>
+              </ScrollView>
+            </View>
+          )}
         </View>
       )}
 
@@ -690,15 +680,21 @@ const s = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 16, color: CREAM, backgroundColor: "transparent",  },
 
   // ── Dish list ────────────────────────────────────────────────────────────────
-  listContent:  { paddingBottom: 20 },
+  dishListCard: {
+    flex: 1, marginHorizontal: 16, marginBottom: 8,
+    backgroundColor: CARD, borderRadius: 18,
+    borderWidth: 1, borderColor: "rgba(232,224,208,0.06)",
+    overflow: "hidden",
+  },
+  listContent:  { paddingVertical: 8 },
   sectionLabel: {
     fontSize: 11, fontWeight: "700", color: "rgba(232,224,208,0.4)",
-    letterSpacing: 1.2, marginLeft: 20, marginTop: 24, marginBottom: 12,
+    letterSpacing: 1.2, marginLeft: 20, marginTop: 16, marginBottom: 8,
      },
   dishRow2: {
-    backgroundColor: CARD, borderRadius: 16, marginHorizontal: 16, marginBottom: 8,
-    padding: 16, flexDirection: "row", alignItems: "center", gap: 14,
-    borderWidth: 1, borderColor: "rgba(232,224,208,0.06)",
+    paddingHorizontal: 16, paddingVertical: 12,
+    flexDirection: "row", alignItems: "center", gap: 14,
+    borderBottomWidth: 1, borderBottomColor: "rgba(232,224,208,0.06)",
   },
   dishEmoji: {
     width: 44, height: 44, borderRadius: 22,
