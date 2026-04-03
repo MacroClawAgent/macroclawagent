@@ -129,6 +129,7 @@ export default function AgentScreen() {
       : undefined,
     equipment: equipment.size > 0 ? [...equipment] : undefined,
     weeklyHistory: ctx.weeklyHistory ?? undefined,
+    recentDishes: ctx.recentDishes.length > 0 ? ctx.recentDishes : undefined,
   };
 
   const handleGenerate = useCallback(

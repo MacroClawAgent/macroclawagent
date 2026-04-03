@@ -1,7 +1,6 @@
 import type { UserPreferences } from '@/types/preferences';
 import type { Meal, DayPlan, MealType } from '@/types/mealPlan';
 import { buildConstraintString } from './preferencesService';
-import { getPantryString } from './pantryService';
 import type { PantryItem } from './pantryService';
 import { apiPost } from '@/lib/api';
 
@@ -37,6 +36,7 @@ interface NutritionTargets {
     };
   };
   plannedMealsToday?: { type: string; name: string; calories: number; protein: number }[];
+  recentDishes?: string[];
 }
 
 function buildActivityLine(activityContext?: NutritionTargets['activityContext']): string {
@@ -119,13 +119,36 @@ function buildPlannedMealsBlock(planned?: NutritionTargets['plannedMealsToday'])
   return lines.join('\n');
 }
 
+function buildRecentDishesBlock(recent?: string[]): string {
+  if (!recent || recent.length === 0) return '';
+  const lines = ['\nRECENTLY EATEN (last 3 days — do NOT repeat these):'];
+  recent.forEach(name => lines.push(`- ${name}`));
+  lines.push('Suggest DIFFERENT meals with different protein sources, cuisines, and cooking methods.\n');
+  return lines.join('\n');
+}
+
+function buildCostPantryBlock(pantryItems?: PantryItem[]): string {
+  if (!pantryItems || pantryItems.length === 0) return '';
+  const lines = pantryItems.map(i => `• ${i.name}${i.source === 'smart_cart' ? ' (from Smart Cart)' : ''}`);
+  return (
+    `\nPANTRY / FRIDGE (ingredients the user already has):\n${lines.join('\n')}\n\n` +
+    `COST OPTIMISATION RULES:\n` +
+    `1. BUILD meals around pantry items first — use as many as possible before they expire.\n` +
+    `2. Minimise new purchases: only add ingredients that are cheap staples (rice, pasta, eggs, canned goods) or essential for the recipe.\n` +
+    `3. Suggest meals where pantry items are the MAIN component, not just a garnish.\n` +
+    `4. In the "reason" field, mention which pantry items you used and roughly how much the user saves.\n` +
+    `5. Flag which ingredients come from pantry vs need to be purchased.\n`
+  );
+}
+
 // ── Prompt builders ────────────────────────────────────────────────────────────
 
 const MEAL_JSON_SPEC = `{"type":"breakfast","name":"meal name (max 5 words)","ingredients":"Ingredient 1 (150g), Ingredient 2 (100g)","ingredientsList":["ingredient 1","ingredient 2"],"calories":520,"protein":42,"carbs":48,"fat":14,"time":"7:30 AM","emoji":"🍗","cookTime":20,"difficulty":"Easy","reason":"One sentence max 15 words explaining why this meal is right for this user right now. Be specific — reference their goal, remaining macros, or pantry items.","recipeSteps":["Step 1.","Step 2.","Step 3.","Step 4.","Step 5."]}`;
 
 function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets, pantryItems?: PantryItem[]): string {
   const constraints = buildConstraintString(prefs);
-  const pantryContext = pantryItems && pantryItems.length > 0 ? `\n${getPantryString(pantryItems)}\n` : '';
+  const pantryContext = buildCostPantryBlock(pantryItems);
+  const recentBlock = buildRecentDishesBlock(targets.recentDishes);
   const consumedCtx = targets.consumed
     ? `\nALREADY EATEN TODAY: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein, ${targets.consumed.carbs}g carbs, ${targets.consumed.fat}g fat.\nRemaining: ${targets.calories - targets.consumed.calories} kcal, ${targets.protein - targets.consumed.protein}g protein.\n`
     : '';
@@ -139,7 +162,7 @@ function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets, pan
     `USER NUTRITION TARGETS:\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
     `Servings: ${prefs.servings} person(s)\n` +
-    consumedCtx + buildWeeklyContextBlock(targets) + activityLine + equipLine + pantryContext + `\n` +
+    consumedCtx + buildWeeklyContextBlock(targets) + recentBlock + activityLine + equipLine + pantryContext + `\n` +
     `Generate exactly 4 meals for today: breakfast, lunch, snack, dinner.\n\n` +
     `For EACH meal return this exact JSON structure:\n${MEAL_JSON_SPEC}\n\n` +
     `Return a JSON array of exactly 4 meal objects.\n` +
@@ -150,7 +173,8 @@ function buildTodayPrompt(prefs: UserPreferences, targets: NutritionTargets, pan
 
 function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targets: NutritionTargets, pantryItems?: PantryItem[]): string {
   const constraints = buildConstraintString(prefs);
-  const pantryContext = pantryItems && pantryItems.length > 0 ? `\n${getPantryString(pantryItems)}\n` : '';
+  const pantryContext = buildCostPantryBlock(pantryItems);
+  const recentBlock = buildRecentDishesBlock(targets.recentDishes);
   const consumedCtx = targets.consumed
     ? `\nALREADY EATEN TODAY: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein, ${targets.consumed.carbs}g carbs, ${targets.consumed.fat}g fat.\nRemaining today: ${targets.calories - targets.consumed.calories} kcal, ${targets.protein - targets.consumed.protein}g protein.\n`
     : '';
@@ -174,7 +198,7 @@ function buildSingleMealPrompt(mealType: MealType, prefs: UserPreferences, targe
     `${goalPreamble}\n\n` +
     (constraints ? `USER CONSTRAINTS:\n${constraints}\n\n` : '') +
     `Target for this meal: ~${calTarget} kcal, ${proTarget}g protein\n` +
-    consumedCtx + buildWeeklyContextBlock(targets) + buildPlannedMealsBlock(targets.plannedMealsToday) + activityLine + equipLine + pantryContext + `\n` +
+    consumedCtx + buildWeeklyContextBlock(targets) + recentBlock + buildPlannedMealsBlock(targets.plannedMealsToday) + activityLine + equipLine + pantryContext + `\n` +
     `Return a single JSON object (not an array) with this structure:\n${MEAL_JSON_SPEC}\n\n` +
     `JSON only — no other text.`
   );
@@ -241,6 +265,8 @@ function buildWeekPrompt(prefs: UserPreferences, targets: NutritionTargets): str
     ? `TODAY (${dayLabels[dayOfWeek]}) ALREADY EATEN: ${targets.consumed.calories} kcal, ${targets.consumed.protein}g protein. Plan only remaining meals for today.\n\n`
     : '';
 
+  const recentBlock = buildRecentDishesBlock(targets.recentDishes);
+
   return (
     `You are a professional nutritionist creating a personalised meal plan for an Australian user.\n\n` +
     `${goalPreamble}\n\n` +
@@ -248,10 +274,11 @@ function buildWeekPrompt(prefs: UserPreferences, targets: NutritionTargets): str
     `USER NUTRITION TARGETS:\nDaily calories: ${targets.calories} kcal\n` +
     `Protein: ${targets.protein}g\nCarbs: ${targets.carbs}g\nFat: ${targets.fat}g\n` +
     `Servings: ${prefs.servings} person(s)\n\n` +
-    pastDaysBlock + weekBudgetBlock + todayCtx +
+    pastDaysBlock + weekBudgetBlock + todayCtx + recentBlock +
     activityLine + equipLine +
     `Generate meals for ${daysToGenerate} days (${dayLabels[dayOfWeek]} to Sunday). Each day has 4 meals: breakfast, lunch, snack, dinner.\n\n` +
     `VARIETY RULES:\n- Never repeat the same meal twice in the week\n` +
+    `- Never repeat any meal from the RECENTLY EATEN list above\n` +
     `- Rotate protein sources: chicken, fish, beef/lamb, eggs, legumes throughout the week\n` +
     `- Vary cuisines and cooking methods\n\n` +
     `Return this exact JSON structure:\n` +

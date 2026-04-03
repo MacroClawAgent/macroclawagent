@@ -47,6 +47,7 @@ export interface AgentContextData {
     progressPct: number;
   };
   weeklyHistory: WeeklyHistory | null;
+  recentDishes: string[];
   training: TrainingData | null;
   pantry: {
     items: PantryItem[];
@@ -73,6 +74,7 @@ export function useAgentContext(): AgentContextData {
     calories: number; protein: number; carbs: number; fat: number;
   } | null>(null);
   const [weeklyHistory, setWeeklyHistory] = useState<WeeklyHistory | null>(null);
+  const [recentDishes, setRecentDishes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const targets = {
@@ -118,6 +120,17 @@ export function useAgentContext(): AgentContextData {
           },
         });
       }
+      // Fetch recent dishes (logged in last 3 days) for variety
+      try {
+        const dr = await apiGet<{ dishes: { name: string; last_logged: string }[] }>('/api/nutrition/food-items?distinct=true');
+        const threeDaysAgo = new Date();
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+        const cutoff = threeDaysAgo.toISOString().split('T')[0];
+        const recent = (dr.dishes ?? [])
+          .filter(d => d.last_logged >= cutoff)
+          .map(d => d.name);
+        setRecentDishes(recent);
+      } catch { /* ok */ }
     } catch {
       // No nutrition log yet
     }
@@ -181,6 +194,7 @@ export function useAgentContext(): AgentContextData {
     targets,
     nutrition: { consumed, remaining, progressPct },
     weeklyHistory,
+    recentDishes,
     training,
     pantry: { items: pantryItems, count: pantryItems.length, add: addPantryItem, remove: removePantryItem },
     preferences,
