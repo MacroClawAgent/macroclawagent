@@ -33,7 +33,7 @@ const CARD   = '#1C1410';
 const BORDER = 'rgba(255,220,150,0.12)';
 const CREAM  = '#E8E0D0';
 const MUTED  = 'rgba(232,224,208,0.4)';
-const BG     = '#0D0A07';
+const BG     = '#1C1612';
 
 type ActiveTab = 'foryou' | 'following' | 'challenges';
 
