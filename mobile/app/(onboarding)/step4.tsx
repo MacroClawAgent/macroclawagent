@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert,
@@ -63,12 +63,15 @@ export default function OnboardingStep4() {
     finally { setChecking(false); }
   }, []);
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   function handleChange(value: string) {
     const clean = value.toLowerCase().replace(/[^a-z0-9_]/g, "");
     setUsername(clean);
     setAvailable(null);
-    if (clean.length >= 3) {
-      setTimeout(() => checkAvailability(clean), 600);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (clean.length >= 3 && !validateUsername(clean)) {
+      debounceRef.current = setTimeout(() => checkAvailability(clean), 500);
     }
   }
 
@@ -96,8 +99,12 @@ export default function OnboardingStep4() {
       await refreshProfile();
       router.replace("/(tabs)/home");
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Something went wrong.";
-      Alert.alert("Error", message);
+      const msg = e instanceof Error ? e.message : "Something went wrong.";
+      if (msg.toLowerCase().includes("username")) {
+        setAvailable(false);
+      } else {
+        Alert.alert("Error", msg);
+      }
       setLoading(false);
     }
   }
