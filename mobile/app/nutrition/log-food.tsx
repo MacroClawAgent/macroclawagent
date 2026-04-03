@@ -33,7 +33,6 @@ function defaultMealTag(): MealTag {
 
 interface DishEntry {
   name: string;
-  emoji: string;
   calories: number;
   protein: number;
   carbs: number;
@@ -43,38 +42,6 @@ interface DishEntry {
   timesLogged?: number;
 }
 
-// ── Data ──────────────────────────────────────────────────────────────────────
-const INITIAL_PREVIOUS_DISHES: DishEntry[] = [
-  { name: "Chicken Rice Bowl",    emoji: "🍗", calories: 520, protein: 48, carbs: 52, fat: 12, fiber: 3,  lastLogged: "Yesterday, Lunch",   timesLogged: 8  },
-  { name: "Greek Yogurt Parfait", emoji: "🥣", calories: 420, protein: 22, carbs: 58, fat: 10, fiber: 4,  lastLogged: "Today, Breakfast",   timesLogged: 12 },
-  { name: "Salmon & Sweet Potato",emoji: "🐟", calories: 580, protein: 44, carbs: 48, fat: 18, fiber: 6,  lastLogged: "Mon, Dinner",        timesLogged: 5  },
-  { name: "Protein Shake",        emoji: "🥛", calories: 280, protein: 28, carbs: 32, fat: 4,  fiber: 1,  lastLogged: "Today, Snack",       timesLogged: 24 },
-  { name: "Beef Rice Bowl",       emoji: "🥩", calories: 580, protein: 42, carbs: 55, fat: 16, fiber: 2,  lastLogged: "Yesterday, Dinner",  timesLogged: 3  },
-  { name: "Avocado Toast & Eggs", emoji: "🥑", calories: 480, protein: 24, carbs: 42, fat: 24, fiber: 7,  lastLogged: "Sun, Breakfast",     timesLogged: 6  },
-];
-
-const DISH_DATABASE: DishEntry[] = [
-  { name: "Scrambled Eggs on Toast",  emoji: "🍳", calories: 380, protein: 22, carbs: 38, fat: 16, fiber: 3  },
-  { name: "Chicken Caesar Salad",     emoji: "🥗", calories: 420, protein: 36, carbs: 18, fat: 24, fiber: 4  },
-  { name: "Beef Burger",              emoji: "🍔", calories: 650, protein: 38, carbs: 52, fat: 28, fiber: 2  },
-  { name: "Pasta Bolognese",          emoji: "🍝", calories: 580, protein: 28, carbs: 72, fat: 18, fiber: 5  },
-  { name: "Fish & Chips",             emoji: "🐟", calories: 720, protein: 32, carbs: 82, fat: 28, fiber: 3  },
-  { name: "Sushi Roll (8 pieces)",    emoji: "🍣", calories: 320, protein: 16, carbs: 58, fat: 4,  fiber: 2  },
-  { name: "Steak & Vegetables",       emoji: "🥩", calories: 520, protein: 52, carbs: 22, fat: 24, fiber: 6  },
-  { name: "Chicken Wrap",             emoji: "🌯", calories: 480, protein: 38, carbs: 48, fat: 14, fiber: 4  },
-  { name: "Poke Bowl",                emoji: "🍱", calories: 490, protein: 36, carbs: 58, fat: 12, fiber: 5  },
-  { name: "Pad Thai",                 emoji: "🍜", calories: 620, protein: 24, carbs: 78, fat: 22, fiber: 3  },
-  { name: "Acai Bowl",                emoji: "🫐", calories: 380, protein: 8,  carbs: 72, fat: 10, fiber: 8  },
-  { name: "Omelette",                 emoji: "🍳", calories: 320, protein: 24, carbs: 4,  fat: 22, fiber: 1  },
-  { name: "Grilled Chicken Salad",    emoji: "🥗", calories: 360, protein: 42, carbs: 18, fat: 14, fiber: 5  },
-  { name: "Overnight Oats",           emoji: "🥣", calories: 380, protein: 16, carbs: 62, fat: 10, fiber: 7  },
-  { name: "Smoothie Bowl",            emoji: "🫐", calories: 340, protein: 12, carbs: 64, fat: 8,  fiber: 6  },
-  { name: "Bacon & Eggs",             emoji: "🥓", calories: 480, protein: 32, carbs: 4,  fat: 36, fiber: 0  },
-  { name: "Chicken Schnitzel",        emoji: "🍗", calories: 560, protein: 44, carbs: 38, fat: 22, fiber: 2  },
-  { name: "Lamb Souvlaki",            emoji: "🥙", calories: 520, protein: 36, carbs: 48, fat: 18, fiber: 3  },
-  { name: "Laksa",                    emoji: "🍜", calories: 580, protein: 28, carbs: 62, fat: 24, fiber: 4  },
-  { name: "Nasi Goreng",              emoji: "🍳", calories: 540, protein: 22, carbs: 68, fat: 18, fiber: 2  },
-];
 
 // ── History types (for clock view) ────────────────────────────────────────────
 interface FoodItem {
@@ -88,12 +55,12 @@ interface NutritionData {
   goals: { calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number };
   foodItems: FoodItem[];
 }
-const MOCK_HISTORY = [
-  { date: "Yesterday",  calories: 2100, protein: 168, carbs: 210, fat: 58 },
-  { date: "Sun 16 Mar", calories: 1840, protein: 142, carbs: 195, fat: 52 },
-  { date: "Sat 15 Mar", calories: 2450, protein: 185, carbs: 240, fat: 72 },
-];
-const MEAL_EMOJIS: Record<string, string> = { Breakfast: "🌅", Lunch: "☀️", Dinner: "🌙", Snack: "🍎" };
+const MEAL_ICONS: Record<string, string> = {
+  Breakfast: "sunny-outline",
+  Lunch: "restaurant-outline",
+  Dinner: "moon-outline",
+  Snack: "cafe-outline",
+};
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 export default function LogFoodScreen() {
@@ -106,8 +73,9 @@ export default function LogFoodScreen() {
   const [toast,      setToast]      = useState<string | null>(null);
   const [showHistory,setShowHistory]= useState(false);
 
-  // Previous dishes (starts with mock, grows as user adds)
-  const [previousDishes, setPreviousDishes] = useState<DishEntry[]>(INITIAL_PREVIOUS_DISHES);
+  // Previous dishes (loaded from API — real logged/scanned meals)
+  const [previousDishes, setPreviousDishes] = useState<DishEntry[]>([]);
+  const [loadingDishes, setLoadingDishes]   = useState(true);
 
   // Quantity sheet
   const [selectedDish, setSelectedDish] = useState<DishEntry | null>(null);
@@ -135,6 +103,26 @@ export default function LogFoodScreen() {
   useEffect(() => {
     const t = setTimeout(() => searchRef.current?.focus(), 250);
     return () => clearTimeout(t);
+  }, []);
+
+  // Fetch real logged dishes from API
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await apiGet<any>("/api/nutrition/food-items?distinct=true");
+        const dishes: DishEntry[] = (res?.dishes ?? []).map((d: any) => ({
+          name: d.name,
+          calories: d.calories,
+          protein: d.protein_g,
+          carbs: d.carbs_g,
+          fat: d.fat_g,
+          lastLogged: d.last_logged,
+          timesLogged: d.times_logged,
+        }));
+        setPreviousDishes(dishes);
+      } catch { /* silently fail — show empty */ }
+      finally { setLoadingDishes(false); }
+    })();
   }, []);
 
   // ── Data fetching (unchanged logic) ────────────────────────────────────────
@@ -240,7 +228,7 @@ export default function LogFoodScreen() {
       );
       setShowQty(false);
       DeviceEventEmitter.emit('nutrition_updated');
-      showToast(`${selectedDish.name} added to ${mealTag} ✓`);
+      showToast(`${selectedDish.name} added to ${mealTag}`);
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed to add.");
     } finally { setSaving(false); }
@@ -268,7 +256,7 @@ export default function LogFoodScreen() {
         fiber_g:   parseFloat(customFiber   || "0"),
       });
       const newDish: DishEntry = {
-        name: customName, emoji: "🍽️",
+        name: customName,
         calories: parseInt(customCals),
         protein: parseFloat(customProtein || "0"),
         carbs:   parseFloat(customCarbs   || "0"),
@@ -279,7 +267,7 @@ export default function LogFoodScreen() {
       setPreviousDishes(prev => [newDish, ...prev]);
       DeviceEventEmitter.emit('nutrition_updated');
       setShowCustom(false);
-      showToast(`${customName} added to ${mealTag} ✓`);
+      showToast(`${customName} added to ${mealTag}`);
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed to save.");
     } finally { setSavingCustom(false); }
@@ -289,19 +277,11 @@ export default function LogFoodScreen() {
   const trimmed    = query.trim().toLowerCase();
   const isSearching = trimmed.length > 0;
 
-  const filteredPrev = isSearching
+  const filteredDishes = isSearching
     ? previousDishes.filter(d => d.name.toLowerCase().includes(trimmed))
     : previousDishes;
 
-  const filteredDB = isSearching
-    ? DISH_DATABASE.filter(d =>
-        d.name.toLowerCase().includes(trimmed) &&
-        !previousDishes.some(p => p.name === d.name)
-      )
-    : [];
-
-  const combinedResults = [...filteredPrev, ...filteredDB];
-  const noResults = isSearching && combinedResults.length === 0;
+  const noResults = isSearching && filteredDishes.length === 0;
 
   // ── History derived ────────────────────────────────────────────────────────
   const foodItems = data?.foodItems ?? [];
@@ -361,7 +341,7 @@ export default function LogFoodScreen() {
           ) : sections.map(section => (
             <View key={section.tag} style={s.histSection}>
               <View style={s.histSectionHead}>
-                <Text style={s.histSectionEmoji}>{MEAL_EMOJIS[section.tag]}</Text>
+                <Ionicons name={(MEAL_ICONS[section.tag] ?? "nutrition-outline") as any} size={16} color={GOLD} />
                 <Text style={s.histSectionTitle}>{section.tag}</Text>
                 <Text style={s.histDate}>{todayLabel}</Text>
               </View>
@@ -406,29 +386,6 @@ export default function LogFoodScreen() {
               })}
             </View>
           ))}
-          <Text style={[s.histHeading, { marginTop: 24 }]}>Past Days</Text>
-          {MOCK_HISTORY.map(day => {
-            const total = (day.protein + day.carbs + day.fat) || 1;
-            return (
-              <View key={day.date} style={s.histDayCard}>
-                <View style={s.histDayTop}>
-                  <Text style={s.histDayDate}>{day.date}</Text>
-                  <Text style={s.histDayCal}>{day.calories.toLocaleString()} kcal</Text>
-                  <Text style={s.histChevron}>›</Text>
-                </View>
-                <View style={s.histMacroBar}>
-                  <View style={[s.histMacroSeg, { flex: day.protein / total, backgroundColor: CORAL }]} />
-                  <View style={[s.histMacroSeg, { flex: day.carbs   / total, backgroundColor: GOLD  }]} />
-                  <View style={[s.histMacroSeg, { flex: day.fat     / total, backgroundColor: "rgba(232,224,208,0.3)" }]} />
-                </View>
-                <View style={s.histMacroLbls}>
-                  <Text style={[s.histMacroLbl, { color: CORAL }]}>P {day.protein}g</Text>
-                  <Text style={[s.histMacroLbl, { color: GOLD  }]}>C {day.carbs}g</Text>
-                  <Text style={[s.histMacroLbl, { color: MUTED }]}>F {day.fat}g</Text>
-                </View>
-              </View>
-            );
-          })}
           <View style={{ height: 60 }} />
         </ScrollView>
       ) : (
@@ -480,23 +437,39 @@ export default function LogFoodScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {noResults ? (
+            {loadingDishes && !isSearching ? (
               <View style={s.emptyState}>
-                <Text style={s.emptyEmoji}>🍽️</Text>
+                <Ionicons name="hourglass-outline" size={36} color={MUTED} />
+                <Text style={[s.emptyTitle, { color: MUTED }]}>Loading your dishes...</Text>
+              </View>
+            ) : noResults ? (
+              <View style={s.emptyState}>
+                <Ionicons name="search-outline" size={36} color={MUTED} />
                 <Text style={s.emptyTitle}>No dishes found for "{query.trim()}"</Text>
                 <TouchableOpacity onPress={() => openCustom(query.trim())} style={s.emptyLink}>
                   <Text style={s.emptyLinkText}>+ Add "{query.trim()}" as custom dish</Text>
+                </TouchableOpacity>
+              </View>
+            ) : !isSearching && filteredDishes.length === 0 ? (
+              <View style={s.emptyState}>
+                <Ionicons name="restaurant-outline" size={36} color={MUTED} />
+                <Text style={s.emptyTitle}>No dishes yet</Text>
+                <Text style={[s.emptyTitle, { fontSize: 13, color: MUTED, fontWeight: "400", marginTop: 4 }]}>
+                  Scan a meal or create a custom dish to get started
+                </Text>
+                <TouchableOpacity onPress={() => openCustom()} style={s.emptyLink}>
+                  <Text style={s.emptyLinkText}>+ Create custom dish</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <>
                 <Text style={s.sectionLabel}>{isSearching ? "RESULTS" : "YOUR DISHES"}</Text>
 
-                {combinedResults.map((d, idx) => (
+                {filteredDishes.map((d, idx) => (
                   <View key={`${d.name}-${idx}`} style={s.dishRow2}>
-                    {/* Emoji circle */}
+                    {/* Icon circle */}
                     <View style={s.dishEmoji}>
-                      <Text style={{ fontSize: 22 }}>{d.emoji}</Text>
+                      <Ionicons name="nutrition-outline" size={22} color={GOLD} />
                     </View>
 
                     {/* Info */}
@@ -506,8 +479,8 @@ export default function LogFoodScreen() {
                         <Text style={s.dishCal}>{d.calories} cal</Text>
                         <Text style={s.dishDot}> · </Text>
                         <Text style={s.dishProt}>{d.protein}g protein</Text>
-                        {d.lastLogged && (
-                          <Text style={s.dishLastLog} numberOfLines={1}>{d.lastLogged.split(",")[0]}</Text>
+                        {d.timesLogged && d.timesLogged > 1 && (
+                          <Text style={s.dishLastLog} numberOfLines={1}>{d.timesLogged}x logged</Text>
                         )}
                       </View>
                     </View>
@@ -539,7 +512,7 @@ export default function LogFoodScreen() {
               <View style={s.handle} />
 
               {/* Dish name */}
-              <Text style={s.qtyDishName}>{dish?.emoji} {dish?.name}</Text>
+              <Text style={s.qtyDishName}>{dish?.name}</Text>
 
               {/* Meal type selector */}
               <Text style={s.qtyServingHint}>Add to which meal?</Text>
@@ -742,7 +715,6 @@ const s = StyleSheet.create({
 
   // ── Empty state ──────────────────────────────────────────────────────────────
   emptyState: { alignItems: "center", paddingTop: 60, paddingHorizontal: 32, gap: 4 },
-  emptyEmoji: { fontSize: 48 },
   emptyTitle: { fontSize: 16, fontWeight: "600", color: CREAM, marginTop: 12, textAlign: "center",  },
   emptyLink:  { marginTop: 8 },
   emptyLinkText: { fontSize: 14, color: GOLD,  },
@@ -802,7 +774,6 @@ const s = StyleSheet.create({
   histEmptyText:    { fontSize: 15, color: MUTED,  },
   histSection:      { marginBottom: 16 },
   histSectionHead:  { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8, paddingLeft: 4 },
-  histSectionEmoji: { fontSize: 16 },
   histSectionTitle: { fontSize: 15, fontWeight: "700", color: GOLD,  },
   histDate:         { fontSize: 12, color: MUTED, marginLeft: "auto" as const,  },
   dishCard: {
@@ -821,13 +792,4 @@ const s = StyleSheet.create({
   ingredientRow:  { flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "rgba(232,224,208,0.04)", gap: 8 },
   ingredientName: { fontSize: 13, color: CREAM,  },
   ingredientMacros:{ fontSize: 11, color: MUTED, marginTop: 1,  },
-  histDayCard:  { backgroundColor: CARD, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: BORDER },
-  histDayTop:   { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  histDayDate:  { fontSize: 15, fontWeight: "600", color: CREAM,  },
-  histDayCal:   { fontSize: 15, color: GOLD, fontWeight: "700", marginLeft: "auto" as const,  },
-  histChevron:  { fontSize: 22, color: MUTED, marginLeft: 8 },
-  histMacroBar: { height: 5, borderRadius: 3, flexDirection: "row", overflow: "hidden", marginBottom: 8 },
-  histMacroSeg: { height: 5 },
-  histMacroLbls:{ flexDirection: "row", gap: 16 },
-  histMacroLbl: { fontSize: 12, fontWeight: "600",  },
 });

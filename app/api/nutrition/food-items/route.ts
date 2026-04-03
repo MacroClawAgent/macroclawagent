@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 /**
  * GET /api/nutrition/food-items?date=YYYY-MM-DD
  * Returns all food log items for the given date (defaults to today).
+ *
+ * GET /api/nutrition/food-items?distinct=true
+ * Returns unique dishes the user has logged, with latest macros and log count.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -12,6 +15,50 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    // ── Distinct dishes mode ─────────────────────────────────────────────────
+    if (request.nextUrl.searchParams.get("distinct") === "true") {
+      const { data: rows, error: distErr } = await supabase
+        .from("food_log_items")
+        .select("dish_name,name,meal_tag,calories,protein_g,carbs_g,fat_g,log_date,created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      if (distErr) throw distErr;
+
+      // Group by dish_name (or name fallback), keep latest entry's macros + count
+      const map = new Map<string, {
+        name: string; meal_tag: string;
+        calories: number; protein_g: number; carbs_g: number; fat_g: number;
+        last_logged: string; times_logged: number;
+      }>();
+      for (const r of rows ?? []) {
+        const key = (r.dish_name || r.name || "").toLowerCase().trim();
+        if (!key) continue;
+        const existing = map.get(key);
+        if (existing) {
+          existing.times_logged += 1;
+        } else {
+          map.set(key, {
+            name: r.dish_name || r.name,
+            meal_tag: r.meal_tag,
+            calories: r.calories ?? 0,
+            protein_g: Number(r.protein_g ?? 0),
+            carbs_g: Number(r.carbs_g ?? 0),
+            fat_g: Number(r.fat_g ?? 0),
+            last_logged: r.log_date,
+            times_logged: 1,
+          });
+        }
+      }
+
+      const dishes = Array.from(map.values())
+        .sort((a, b) => b.times_logged - a.times_logged);
+
+      return NextResponse.json({ dishes });
+    }
+
+    // ── Standard date-based mode ─────────────────────────────────────────────
     const date = request.nextUrl.searchParams.get("date") ?? new Date().toISOString().split("T")[0];
 
     let { data, error } = await supabase
