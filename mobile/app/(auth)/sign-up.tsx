@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+  ScrollView, ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -29,6 +29,7 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const emailValid = isValidEmail(email.trim());
   const pwLong = password.length >= 6;
@@ -61,15 +62,16 @@ export default function SignUpScreen() {
 
   async function handleSignUp() {
     if (!canSubmit) return;
+    setSubmitError(null);
     setLoading(true);
     const { error } = await signUp(email.trim(), password);
     setLoading(false);
     if (error) {
-      // Supabase returns specific error for duplicate emails
-      if (error.toLowerCase().includes("already registered") || error.toLowerCase().includes("already been registered")) {
-        Alert.alert("Email taken", "An account with this email already exists. Try signing in instead.");
+      const lower = error.toLowerCase();
+      if (lower.includes("already registered") || lower.includes("already been registered") || lower.includes("already exists")) {
+        setSubmitError("This email address is already in use");
       } else {
-        Alert.alert("Sign up failed", error);
+        setSubmitError(error);
       }
     } else {
       router.replace("/");
@@ -77,8 +79,8 @@ export default function SignUpScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <View style={s.inner}>
+    <View style={s.container}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={s.inner} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {/* Back */}
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.7}>
           <Ionicons name="chevron-back" size={24} color={TEXT_C} />
@@ -111,7 +113,7 @@ export default function SignUpScreen() {
               placeholder="Email address"
               placeholderTextColor={DIM}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(v) => { setEmail(v); setSubmitError(null); }}
               autoCapitalize="none"
               keyboardType="email-address"
               autoCorrect={false}
@@ -149,6 +151,14 @@ export default function SignUpScreen() {
             {pwMatch && confirmPw.length > 0 && <Text style={[s.hint, { color: SAGE }]}>Passwords match</Text>}
           </View>
 
+          {/* Inline error */}
+          {submitError && (
+            <View style={s.errorRow}>
+              <Ionicons name="alert-circle" size={16} color={CORAL} />
+              <Text style={s.errorText}>{submitError}</Text>
+            </View>
+          )}
+
           <TouchableOpacity
             style={[s.submitBtn, !canSubmit && { opacity: 0.4 }]}
             onPress={handleSignUp}
@@ -167,8 +177,8 @@ export default function SignUpScreen() {
             <Text style={s.footerLink}>Sign in</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -196,6 +206,13 @@ const s = StyleSheet.create({
   pwWrap: { flexDirection: "row", alignItems: "center", gap: 8 },
   eyeBtn: { padding: 8 },
   hint: { fontSize: 12, color: CORAL, marginTop: 4, marginLeft: 4 },
+  errorRow: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    backgroundColor: "rgba(224,123,84,0.1)", borderRadius: 10,
+    borderWidth: 1, borderColor: "rgba(224,123,84,0.25)",
+    paddingHorizontal: 12, paddingVertical: 10,
+  },
+  errorText: { fontSize: 13, fontWeight: "600", color: CORAL, flex: 1 },
   submitBtn: { backgroundColor: GOLD, borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 4 },
   submitTxt: { color: BG, fontWeight: "800", fontSize: 16 },
   legal: { fontSize: 11, color: DIM, textAlign: "center", lineHeight: 16 },
