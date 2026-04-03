@@ -1,6 +1,7 @@
 import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
@@ -15,40 +16,45 @@ const MENU_ITEMS = [
     key: "personal",
     label: "My Profile",
     sub: "Name, weight, height & body metrics",
-    emoji: "👤",
-    bg: "rgba(43,182,166,0.12)",
+    icon: "person-outline" as const,
+    iconColor: "#8B9E6E",
+    bg: "rgba(139,158,110,0.12)",
     route: "/profile/personal",
   },
   {
     key: "personalise",
     label: "Personalise",
     sub: "Goals, diet type, allergies & preferences",
-    emoji: "🎯",
-    bg: "rgba(99,102,241,0.10)",
+    icon: "options-outline" as const,
+    iconColor: "#F5C842",
+    bg: "rgba(245,200,66,0.10)",
     route: "/profile/personalise",
   },
   {
     key: "integrations",
     label: "Integrations",
     sub: "Strava, Apple Health & more",
-    emoji: "🔗",
-    bg: "rgba(249,115,22,0.10)",
+    icon: "link-outline" as const,
+    iconColor: "#E07B54",
+    bg: "rgba(224,123,84,0.10)",
     route: "/profile/integrations",
   },
   {
     key: "community",
     label: "Community Profile",
     sub: "Username, bio & privacy settings",
-    emoji: "🌐",
-    bg: "rgba(43,182,166,0.10)",
+    icon: "people-outline" as const,
+    iconColor: "#8B9E6E",
+    bg: "rgba(139,158,110,0.10)",
     route: "/profile/community-profile",
   },
   {
     key: "settings",
     label: "Settings",
     sub: "Units, notifications & preferences",
-    emoji: "⚙️",
-    bg: "rgba(107,114,128,0.10)",
+    icon: "settings-outline" as const,
+    iconColor: "#E8E0D0",
+    bg: "rgba(232,224,208,0.08)",
     route: "/profile/settings-page",
   },
 ];
@@ -70,23 +76,27 @@ export default function ProfileScreen() {
     performance: "Performance",  maintain: "Stay Healthy",
   };
 
-  const GOAL_EMOJI: Record<string, string> = {
-    lose_weight: "🔥", build_muscle: "💪", performance: "⚡", maintain: "🌿",
+  const GOAL_ICONS: Record<string, { icon: string; color: string }> = {
+    lose_weight: { icon: 'flame-outline', color: '#E07B54' },
+    build_muscle: { icon: 'barbell-outline', color: '#F5C842' },
+    performance: { icon: 'flash-outline', color: '#F5C842' },
+    maintain: { icon: 'leaf-outline', color: '#8B9E6E' },
   };
   const goal = userProfile?.fitness_goal ?? "maintain";
+  const goalIcon = GOAL_ICONS[goal] ?? GOAL_ICONS.maintain;
 
   // Badges: goal, activity source, nutrition
   const badges = [
-    { emoji: GOAL_EMOJI[goal] ?? "🌿",                      pos: { bottom: -5, right: -5 } },
-    { emoji: userProfile?.strava_athlete_id ? "🏃" : "🥗",  pos: { top: -5, right: -5 } },
-    { emoji: "📊",                                           pos: { top: -5, left: -5 } },
+    { icon: goalIcon.icon, color: goalIcon.color,                                          pos: { bottom: -5, right: -5 } },
+    { icon: userProfile?.strava_athlete_id ? 'walk-outline' : 'nutrition-outline', color: '#8B9E6E', pos: { top: -5, right: -5 } },
+    { icon: 'stats-chart-outline', color: '#F5C842',                                       pos: { top: -5, left: -5 } },
   ];
 
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
       <View style={s.pageHeader}>
         <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={s.backBtn}>
-          <Text style={s.backArrow}>←</Text>
+          <Ionicons name="chevron-back" size={24} color="#E8E0D0" />
         </TouchableOpacity>
         <Text style={s.pageTitle}>Profile</Text>
       </View>
@@ -103,7 +113,7 @@ export default function ProfileScreen() {
             </View>
             {badges.map((b, i) => (
               <View key={i} style={[s.badge, b.pos as any]}>
-                <Text style={s.badgeEmoji}>{b.emoji}</Text>
+                <Ionicons name={b.icon as any} size={13} color={b.color} />
               </View>
             ))}
           </View>
@@ -114,7 +124,7 @@ export default function ProfileScreen() {
             {userProfile?.fitness_goal && (
               <View style={s.goalPill}>
                 <Text style={s.goalPillText}>
-                  {GOAL_EMOJI[goal]}  {goalLabel[goal]}
+                  {goalLabel[goal]}
                 </Text>
               </View>
             )}
@@ -134,7 +144,7 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
               >
                 <View style={[s.menuIcon, { backgroundColor: item.bg }]}>
-                  <Text style={s.menuEmoji}>{item.emoji}</Text>
+                  <Ionicons name={item.icon} size={20} color={item.iconColor} />
                 </View>
                 <View style={s.menuMid}>
                   <Text style={s.menuLabel}>{item.label}</Text>
@@ -176,7 +186,6 @@ const s = StyleSheet.create({
   safe:    { flex: 1, backgroundColor: BG },
   pageHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4, gap: 10 },
   backBtn:  { padding: 4 },
-  backArrow:{ fontSize: 24, color: "#E8E0D0", fontWeight: "400" },
   pageTitle:  { fontSize: 28, fontWeight: "900", color: "#E8E0D0", letterSpacing: -0.5 },
   content: { padding: 16, gap: 10, paddingBottom: 60 },
 
@@ -204,7 +213,6 @@ const s = StyleSheet.create({
     shadowColor: "#000", shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     elevation: 4,
   },
-  badgeEmoji: { fontSize: 13 },
   heroInfo:   { flex: 1, gap: 2 },
   heroName:   { fontSize: 18, fontWeight: "800", color: "#E8E0D0" },
   heroEmail:  { fontSize: 12, color: "rgba(232,224,208,0.4)" },
@@ -222,7 +230,6 @@ const s = StyleSheet.create({
   menuCard: { backgroundColor: WHITE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, overflow: "hidden" },
   menuRow:  { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, gap: 14 },
   menuIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  menuEmoji:{ fontSize: 18 },
   menuMid:  { flex: 1, gap: 1 },
   menuLabel:{ fontSize: 15, fontWeight: "700", color: "#E8E0D0" },
   menuSub:  { fontSize: 12, color: "rgba(232,224,208,0.4)" },
