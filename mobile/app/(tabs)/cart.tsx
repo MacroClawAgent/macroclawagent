@@ -98,11 +98,9 @@ function IngredientRow({
       : products[0];
 
   const isChecked = ingredient.isChecked;
-  // Price: prefer live product price, then estimatedPrice, then nothing
+  // Price: live product price only (no mock/estimated data)
   const displayPrice = selectedProduct?.price
     ? `$${selectedProduct.price.toFixed(2)}`
-    : ingredient.estimatedPrice
-    ? `$${ingredient.estimatedPrice.toFixed(2)}`
     : null;
 
   return (
@@ -309,14 +307,15 @@ export default function CartScreen() {
   const checkedCount = sc.cart?.ingredients.filter((i) => i.isChecked).length ?? 0;
   const ingredientCount = sc.cart?.ingredients.length ?? 0;
 
-  // Get the best price for an ingredient from the selected store
+  // Get the price for an ingredient from the selected store (real API only)
   function getIngPrice(ing: SmartCartIngredient): number | null {
     const store = sc.cart?.selectedStore;
     if (store === 'woolworths' && ing.woolworthsProducts?.length > 0) return ing.woolworthsProducts[0].price;
     if (store === 'coles' && ing.colesProducts?.length > 0) return ing.colesProducts[0].price;
+    // No store selected — show best available
     if (ing.woolworthsProducts?.length > 0) return ing.woolworthsProducts[0].price;
     if (ing.colesProducts?.length > 0) return ing.colesProducts[0].price;
-    return ing.estimatedPrice ?? null;
+    return null;
   }
 
   // Total = sum of checked items' best available prices
