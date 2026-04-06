@@ -8,8 +8,8 @@
     "scheme": "jonno",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
+      "image": "./assets/images/loading.png",
+      "resizeMode": "cover",
       "backgroundColor": "#1C1612"
     },
     "ios": {

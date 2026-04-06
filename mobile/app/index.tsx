@@ -4,36 +4,35 @@ import { router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
 const { width: W, height: H } = Dimensions.get("window");
+const BAR_WIDTH = W * 0.5;
 
 export default function SplashGate() {
   const { session, userProfile, loading } = useAuth();
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const logoScale = useRef(new Animated.Value(0.85)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
+  const barWidth = useRef(new Animated.Value(0)).current;
   const hasNavigated = useRef(false);
 
-  // Animate logo in
+  // Animate logo + progress bar
   useEffect(() => {
     Animated.sequence([
-      Animated.delay(300),
-      Animated.parallel([
-        Animated.timing(logoOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
-        Animated.spring(logoScale, { toValue: 1, friction: 8, tension: 40, useNativeDriver: true }),
-      ]),
+      Animated.delay(200),
+      Animated.timing(logoOpacity, { toValue: 1, duration: 500, useNativeDriver: false }),
     ]).start();
+
+    // Progress bar fills over 1.5s
+    Animated.timing(barWidth, { toValue: BAR_WIDTH, duration: 1500, useNativeDriver: false }).start();
   }, []);
 
   // Navigate once auth is resolved
   useEffect(() => {
     if (loading || hasNavigated.current) return;
 
-    // Wait minimum 1.5s for the splash to feel intentional
     const minDelay = setTimeout(() => {
       if (hasNavigated.current) return;
       hasNavigated.current = true;
 
-      // Fade out splash
-      Animated.timing(fadeAnim, { toValue: 0, duration: 400, useNativeDriver: true }).start(() => {
+      Animated.timing(fadeAnim, { toValue: 0, duration: 350, useNativeDriver: true }).start(() => {
         if (!session) {
           router.replace("/(auth)/sign-in");
         } else if (!userProfile?.profile_complete) {
@@ -42,37 +41,31 @@ export default function SplashGate() {
           router.replace("/(tabs)/home");
         }
       });
-    }, 1500);
+    }, 1600);
 
     return () => clearTimeout(minDelay);
   }, [loading, session, userProfile]);
 
   return (
     <Animated.View style={[s.container, { opacity: fadeAnim }]}>
-      {/* Background image */}
+      {/* Background image — full bleed */}
       <Image
         source={require("@/assets/images/loading.png")}
         style={s.bgImage}
         resizeMode="cover"
       />
 
-      {/* Gradient overlay at top and bottom for text readability */}
-      <View style={s.topGradient} />
-      <View style={s.bottomGradient} />
-
-      {/* Logo + text */}
-      <Animated.View style={[s.logoWrap, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}>
+      {/* Logo */}
+      <Animated.View style={[s.logoWrap, { opacity: logoOpacity }]}>
         <View style={s.logoDot} />
         <Text style={s.logoText}>Jonno</Text>
       </Animated.View>
 
-      {/* Tagline at bottom */}
+      {/* Bottom: tagline + progress bar */}
       <Animated.View style={[s.bottomContent, { opacity: logoOpacity }]}>
         <Text style={s.tagline}>Your AI Nutrition Coach</Text>
-        <View style={s.loadingDots}>
-          <View style={[s.dot, s.dot1]} />
-          <View style={[s.dot, s.dot2]} />
-          <View style={[s.dot, s.dot3]} />
+        <View style={s.barTrack}>
+          <Animated.View style={[s.barFill, { width: barWidth }]} />
         </View>
       </Animated.View>
     </Animated.View>
@@ -89,25 +82,9 @@ const s = StyleSheet.create({
     width: W,
     height: H,
   },
-  topGradient: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: H * 0.25,
-    backgroundColor: "rgba(28,22,18,0.7)",
-  },
-  bottomGradient: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: H * 0.2,
-    backgroundColor: "rgba(28,22,18,0.85)",
-  },
   logoWrap: {
     position: "absolute",
-    top: H * 0.12,
+    top: H * 0.1,
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
@@ -134,7 +111,7 @@ const s = StyleSheet.create({
     bottom: H * 0.08,
     alignSelf: "center",
     alignItems: "center",
-    gap: 16,
+    gap: 14,
   },
   tagline: {
     fontSize: 16,
@@ -142,17 +119,16 @@ const s = StyleSheet.create({
     color: "rgba(232,224,208,0.7)",
     letterSpacing: 0.5,
   },
-  loadingDots: {
-    flexDirection: "row",
-    gap: 6,
+  barTrack: {
+    width: BAR_WIDTH,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: "rgba(232,224,208,0.12)",
+    overflow: "hidden",
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  barFill: {
+    height: 3,
+    borderRadius: 2,
     backgroundColor: "#F5C842",
   },
-  dot1: { opacity: 0.4 },
-  dot2: { opacity: 0.7 },
-  dot3: { opacity: 1.0 },
 });
