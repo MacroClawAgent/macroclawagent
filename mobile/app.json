@@ -22,7 +22,8 @@
         "NSHealthShareUsageDescription": "Jonno reads your Apple Health data including workouts, activity, and body metrics to personalise your meal plans and nutrition targets.",
         "NSHealthUpdateUsageDescription": "Jonno saves your logged meals and nutrition data to Apple Health to keep all your health data in sync.",
         "NSLocationWhenInUseUsageDescription": "Jonno uses your location to find the nearest Woolworths and Coles supermarkets for your Smart Cart.",
-        "NSMotionUsageDescription": "Jonno uses motion data to track your activity and adjust your nutrition targets accordingly."
+        "NSMotionUsageDescription": "Jonno uses motion data to track your activity and adjust your nutrition targets accordingly.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -56,6 +57,13 @@
         {
           "photosPermission": "Jonno accesses your photos so you can upload meal images for AI analysis."
         }
+      ],
+      [
+        "react-native-health",
+        {
+          "healthSharePermission": "Jonno reads your workout and activity data to personalise your nutrition targets.",
+          "healthUpdatePermission": "Jonno saves your nutrition logs to Apple Health."
+        }
       ]
     ],
     "experiments": {
@@ -63,8 +71,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "REPLACE_WITH_YOUR_EAS_PROJECT_ID"
-      }
+        "projectId": "e89f5648-ed42-4399-ab43-c8894434331b"
+      },
+      "apiBaseUrl": "https://jonnoai.com",
+      "rapidApiKey": "",
+      "googlePlacesKey": "",
+      "router": {}
     }
   }
 }

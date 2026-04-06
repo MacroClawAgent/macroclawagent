@@ -1,14 +1,15 @@
 import React from "react";
-import { Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { useHealthKit } from "@/hooks/useHealthKit";
+import { apiGet } from "@/lib/api";
 
 const BG = "#0D0A07"; const WHITE = "#1C1410"; const BORDER = "rgba(255,220,150,0.12)"; const TEAL = "#F5C842";
 
 const ITEMS = [
-  { key: "strava",        name: "Strava",          sub: "Sync training & activities",          emoji: "🏃", bg: "rgba(252,82,0,0.10)",    connectUrl: "https://jonnoai.com",          live: true },
+  { key: "strava",        name: "Strava",          sub: "Sync training & activities",          emoji: "🏃", bg: "rgba(252,82,0,0.10)",    live: true },
   { key: "apple_health",  name: "Apple Health",    sub: "Steps, heart rate & sleep",           emoji: "❤️", bg: "rgba(255,59,48,0.10)",   live: Platform.OS === "ios" },
   { key: "hevy",          name: "Hevy",            sub: "Strength workouts, sets & volume",    emoji: "🏋️", bg: "rgba(168,85,247,0.10)",  live: false },
   { key: "garmin",        name: "Garmin Connect",  sub: "GPS watch & workout data",            emoji: "⌚", bg: "rgba(0,126,200,0.10)",   live: false },
@@ -34,8 +35,17 @@ export default function IntegrationsScreen() {
   async function handleConnect(item: typeof ITEMS[number]) {
     if (item.key === "apple_health") {
       await hk.requestPermission();
-    } else if (item.connectUrl) {
-      Linking.openURL(item.connectUrl);
+    } else if (item.key === "strava") {
+      try {
+        const res = await apiGet<{ url: string }>("/api/strava/mobile-init");
+        if (res?.url) {
+          Linking.openURL(res.url);
+        } else {
+          Alert.alert("Error", "Could not start Strava connection. Try again.");
+        }
+      } catch {
+        Alert.alert("Error", "Could not reach the server. Check your connection.");
+      }
     }
   }
 
