@@ -26,9 +26,15 @@ import type { CommunityPost, UserProfile, UserGoal } from '@/types/community';
 import { updateAvatar } from '@/services/profileService';
 import { deletePost, deletePostWithFoodLog } from '@/services/communityService';
 
-const TEAL = '#2DD4BF';
-const BLUE = '#3B6FD4';
-const BG = '#EEF4FA';
+const GOLD = '#F5C842';
+const CORAL = '#E07B54';
+const SAGE = '#8B9E6E';
+const BG = '#1C1612';
+const CARD = '#252018';
+const TEXT_C = '#E8E0D0';
+const MUTED = 'rgba(232,224,208,0.5)';
+const DIM = 'rgba(232,224,208,0.25)';
+const BORDER = 'rgba(255,220,150,0.12)';
 const SCREEN_W = Dimensions.get('window').width;
 const GRID_ITEM_W = (SCREEN_W - 48) / 2;
 
@@ -36,10 +42,10 @@ type ActiveTab = 'posts' | 'stats' | 'about';
 
 function goalStyle(goal: UserGoal): { bg: string; color: string; label: string } {
   switch (goal) {
-    case 'build_muscle': return { bg: 'rgba(34,197,94,0.1)',   color: '#16A34A', label: '💪 Build Muscle' };
-    case 'fat_loss':     return { bg: 'rgba(239,68,68,0.1)',   color: '#DC2626', label: '🔥 Fat Loss' };
-    case 'performance':  return { bg: 'rgba(245,158,11,0.1)',  color: '#D97706', label: '⚡ Performance' };
-    default:             return { bg: 'rgba(59,130,246,0.1)',  color: '#2563EB', label: '⚖️ Maintenance' };
+    case 'build_muscle': return { bg: 'rgba(139,158,110,0.12)', color: SAGE, label: 'Build Muscle' };
+    case 'fat_loss':     return { bg: 'rgba(224,123,84,0.12)',  color: CORAL, label: 'Fat Loss' };
+    case 'performance':  return { bg: 'rgba(245,200,66,0.12)',  color: GOLD, label: 'Performance' };
+    default:             return { bg: 'rgba(232,224,208,0.08)', color: TEXT_C, label: 'Maintenance' };
   }
 }
 
@@ -50,9 +56,9 @@ function mealEmoji(postType: string): string {
 }
 
 function gridGradient(postType: string): [string, string] {
-  if (postType === 'eating_out') return ['#DBEAFE', '#60A5FA'];
-  if (postType === 'meal_prep')  return ['#EDE9FE', '#A78BFA'];
-  return ['#D1FAE5', '#34D399'];
+  if (postType === 'eating_out') return ['#252018', '#3A2E1F'];
+  if (postType === 'meal_prep')  return ['#252018', '#2E2518'];
+  return ['#252018', '#1F2A1B'];
 }
 
 function Avatar({ profile, editable, onPress, size = 80 }: {
@@ -213,7 +219,7 @@ export default function UserProfileScreen() {
   if (loading || !displayed) {
     return (
       <Screen style={{ backgroundColor: BG }}>
-        <ActivityIndicator color={TEAL} size="large" style={{ marginTop: 80 }} />
+        <ActivityIndicator color={GOLD} size="large" style={{ marginTop: 80 }} />
       </Screen>
     );
   }
@@ -343,7 +349,7 @@ export default function UserProfileScreen() {
           {/* Username */}
           <View style={t.aboutRow}>
             <Text style={t.aboutLabel}>Username</Text>
-            <Text style={[t.aboutValue, { color: TEAL }]}>{displayed!.username}</Text>
+            <Text style={[t.aboutValue, { color: GOLD }]}>{displayed!.username}</Text>
           </View>
           <View style={t.aboutDivider} />
           {/* Goal */}
@@ -363,7 +369,7 @@ export default function UserProfileScreen() {
                 onPress={() => Linking.openURL(`https://instagram.com/${displayed!.instagramHandle}`).catch(() => {})}
               >
                 <Text style={t.aboutLabel}>Instagram</Text>
-                <Text style={[t.aboutValue, { color: TEAL }]}>@{displayed!.instagramHandle}</Text>
+                <Text style={[t.aboutValue, { color: GOLD }]}>@{displayed!.instagramHandle}</Text>
               </TouchableOpacity>
             </>
           ) : null}
@@ -392,8 +398,6 @@ export default function UserProfileScreen() {
 
   return (
     <Screen style={{ backgroundColor: BG, flex: 1 }}>
-      <LinearGradient colors={[BG, '#F5F8FC']} style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} pointerEvents="none" />
 
       {/* ── Navbar ── */}
       <View style={s.navbar}>
@@ -445,7 +449,7 @@ export default function UserProfileScreen() {
             activeOpacity={0.8}
           >
             {isFollowLoading ? (
-              <ActivityIndicator color={displayed.isFollowing ? TEAL : '#fff'} size="small" />
+              <ActivityIndicator color={displayed.isFollowing ? GOLD : '#E8E0D0'} size="small" />
             ) : (
               <Text style={[s.followBtnText, displayed.isFollowing && s.followBtnTextFollowing]}>
                 {displayed.isFollowing ? 'Following ✓' : 'Follow'}
@@ -536,47 +540,47 @@ const s = StyleSheet.create({
   },
   navBtn: { width: 56, alignItems: 'flex-start' },
   navBtnRight: { width: 56, alignItems: 'flex-end' },
-  backArrow: { fontSize: 22, color: '#1E293B' },
-  navTitle: { fontSize: 17, fontWeight: '700', color: '#1E293B' },
-  editText: { fontSize: 15, fontWeight: '600', color: TEAL },
+  backArrow: { fontSize: 22, color: '#E8E0D0' },
+  navTitle: { fontSize: 17, fontWeight: '700', color: '#E8E0D0' },
+  editText: { fontSize: 15, fontWeight: '600', color: GOLD },
 
   // Zone 1 — Hero
   hero: { alignItems: 'center', paddingHorizontal: 24, paddingTop: 4, paddingBottom: 12, gap: 5 },
-  avatar: { backgroundColor: TEAL, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontWeight: '700', color: '#fff' },
+  avatar: { backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontWeight: '700', color: '#E8E0D0' },
   cameraOverlay: {
     position: 'absolute', bottom: 0, right: 0,
-    backgroundColor: '#fff', borderRadius: 12, padding: 4,
+    backgroundColor: '#E8E0D0', borderRadius: 12, padding: 4,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4,
   },
-  name: { fontSize: 22, fontWeight: '700', color: '#1E293B', marginTop: 8 },
-  username: { fontSize: 14, color: '#94A3B8' },
+  name: { fontSize: 22, fontWeight: '700', color: '#E8E0D0', marginTop: 8 },
+  username: { fontSize: 14, color: 'rgba(232,224,208,0.4)' },
   goalBadge: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
   goalBadgeText: { fontSize: 13, fontWeight: '600' },
-  bio: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 20, marginHorizontal: 40 },
+  bio: { fontSize: 14, color: 'rgba(232,224,208,0.5)', textAlign: 'center', lineHeight: 20, marginHorizontal: 40 },
 
   // Instagram pill
   igPill: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(232,224,208,0.06)',
     borderRadius: 20, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
     paddingHorizontal: 12, paddingVertical: 5,
   },
   igDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E1306C' },
   igText: { fontSize: 13, color: '#6B7280' },
-  igArrow: { fontSize: 13, color: '#94A3B8' },
+  igArrow: { fontSize: 13, color: 'rgba(232,224,208,0.4)' },
 
   // Follow button
   followBtn: {
-    marginTop: 4, width: '80%', backgroundColor: TEAL, borderRadius: 24,
+    marginTop: 4, width: '80%', backgroundColor: GOLD, borderRadius: 24,
     paddingVertical: 12, alignItems: 'center',
-    shadowColor: TEAL, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10,
+    shadowColor: GOLD, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10,
   },
   followBtnFollowing: {
-    backgroundColor: 'transparent', borderWidth: 1.5, borderColor: TEAL, shadowOpacity: 0,
+    backgroundColor: 'transparent', borderWidth: 1.5, borderColor: GOLD, shadowOpacity: 0,
   },
-  followBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  followBtnTextFollowing: { color: TEAL },
+  followBtnText: { fontSize: 15, fontWeight: '600', color: '#E8E0D0' },
+  followBtnTextFollowing: { color: GOLD },
 
   // Zone 2 — Stats bar
   statsBar: {
@@ -585,22 +589,22 @@ const s = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.06)',
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 20, fontWeight: '700', color: '#1E293B' },
-  statLabel: { fontSize: 11, color: '#94A3B8', marginTop: 2 },
-  statDivider: { width: 1, height: 28, backgroundColor: '#E2E8F0' },
+  statValue: { fontSize: 20, fontWeight: '700', color: '#E8E0D0' },
+  statLabel: { fontSize: 11, color: 'rgba(232,224,208,0.4)', marginTop: 2 },
+  statDivider: { width: 1, height: 28, backgroundColor: 'rgba(232,224,208,0.08)' },
 
   // Zone 3 — Tab bar
   tabBar: {
     flexDirection: 'row',
-    borderBottomWidth: 2, borderBottomColor: '#F1F5F9',
+    borderBottomWidth: 2, borderBottomColor: 'rgba(232,224,208,0.06)',
   },
   tabItem: {
     flex: 1, paddingVertical: 12, alignItems: 'center',
     borderBottomWidth: 2, borderBottomColor: 'transparent', marginBottom: -2,
   },
-  tabItemActive: { borderBottomColor: TEAL },
-  tabLabel: { fontSize: 14, fontWeight: '500', color: '#94A3B8' },
-  tabLabelActive: { fontWeight: '600', color: '#1E293B' },
+  tabItemActive: { borderBottomColor: GOLD },
+  tabLabel: { fontSize: 14, fontWeight: '500', color: 'rgba(232,224,208,0.4)' },
+  tabLabelActive: { fontWeight: '600', color: '#E8E0D0' },
 });
 
 // ── Tab content styles ────────────────────────────────────────────────────────
@@ -619,47 +623,47 @@ const t = StyleSheet.create({
     height: 44, backgroundColor: 'rgba(0,0,0,0.35)',
     paddingHorizontal: 8, paddingVertical: 6, justifyContent: 'flex-end',
   },
-  gridMealName: { fontSize: 11, fontWeight: '600', color: '#fff' },
+  gridMealName: { fontSize: 11, fontWeight: '600', color: '#E8E0D0' },
   gridCal: { fontSize: 10, color: 'rgba(255,255,255,0.75)', marginTop: 1 },
   gridDeleteBtn: {
     position: 'absolute', top: 6, right: 6,
     backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 10,
     paddingHorizontal: 8, paddingVertical: 2,
   },
-  gridDeleteText: { fontSize: 14, color: '#fff', letterSpacing: 1 },
+  gridDeleteText: { fontSize: 14, color: '#E8E0D0', letterSpacing: 1 },
 
   emptyState: { flex: 1, alignItems: 'center', paddingTop: 48, gap: 8 },
   emptyEmoji: { fontSize: 48 },
-  emptyTitle: { fontSize: 16, fontWeight: '600', color: '#1E293B' },
-  emptySub: { fontSize: 13, color: '#94A3B8', textAlign: 'center', paddingHorizontal: 32 },
+  emptyTitle: { fontSize: 16, fontWeight: '600', color: '#E8E0D0' },
+  emptySub: { fontSize: 13, color: 'rgba(232,224,208,0.4)', textAlign: 'center', paddingHorizontal: 32 },
   emptyBtn: {
-    marginTop: 8, backgroundColor: TEAL, borderRadius: 24,
+    marginTop: 8, backgroundColor: GOLD, borderRadius: 24,
     paddingHorizontal: 24, paddingVertical: 12,
   },
-  emptyBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  emptyBtnText: { color: '#E8E0D0', fontWeight: '600', fontSize: 14 },
 
   // Shared tab scroll
   tabScroll: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 },
 
   // Glass card (Stats + About)
   glassCard: {
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: '#252018',
     borderRadius: 20, padding: 18,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#B0C4D8', shadowOffset: { width: 0, height: 4 },
+    borderWidth: 1, borderColor: 'rgba(232,224,208,0.06)',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12, shadowRadius: 16, elevation: 3,
   },
   cardLabel: {
-    fontSize: 11, fontWeight: '700', color: '#94A3B8',
+    fontSize: 11, fontWeight: '700', color: 'rgba(232,224,208,0.4)',
     letterSpacing: 0.8, marginBottom: 14,
   },
 
   // Stats tab — 3-col row
   statsRow3: { flexDirection: 'row', alignItems: 'center' },
   stat3: { flex: 1, alignItems: 'center' },
-  stat3Val: { fontSize: 22, fontWeight: '700', color: '#1E293B' },
-  stat3Label: { fontSize: 12, color: '#94A3B8', textAlign: 'center', marginTop: 4 },
-  stat3Divider: { width: 1, height: 36, backgroundColor: '#E2E8F0' },
+  stat3Val: { fontSize: 22, fontWeight: '700', color: '#E8E0D0' },
+  stat3Label: { fontSize: 12, color: 'rgba(232,224,208,0.4)', textAlign: 'center', marginTop: 4 },
+  stat3Divider: { width: 1, height: 36, backgroundColor: 'rgba(232,224,208,0.08)' },
 
   // Stats tab — goal card
   goalRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
@@ -670,10 +674,10 @@ const t = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 3,
   },
   activeBadgeText: { fontSize: 11, fontWeight: '600', color: '#16A34A' },
-  goalSub: { fontSize: 13, color: '#64748B' },
+  goalSub: { fontSize: 13, color: 'rgba(232,224,208,0.5)' },
 
   // Stats tab — cuisines
-  cuisineSubtitle: { fontSize: 12, color: '#94A3B8', marginBottom: 12, marginTop: -8 },
+  cuisineSubtitle: { fontSize: 12, color: 'rgba(232,224,208,0.4)', marginBottom: 12, marginTop: -8 },
   cuisineWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   cuisinePill: {
     backgroundColor: 'rgba(45,212,191,0.08)', borderRadius: 20,
@@ -681,53 +685,53 @@ const t = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(45,212,191,0.25)',
     margin: 2,
   },
-  cuisineText: { fontSize: 13, fontWeight: '500', color: TEAL },
+  cuisineText: { fontSize: 13, fontWeight: '500', color: GOLD },
 
   // About tab rows
   aboutRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingVertical: 14,
   },
-  aboutDivider: { height: 1, backgroundColor: '#F1F5F9' },
-  aboutLabel: { fontSize: 14, color: '#94A3B8' },
-  aboutValue: { fontSize: 14, color: '#1E293B', fontWeight: '500' },
+  aboutDivider: { height: 1, backgroundColor: 'rgba(232,224,208,0.06)' },
+  aboutLabel: { fontSize: 14, color: 'rgba(232,224,208,0.4)' },
+  aboutValue: { fontSize: 14, color: '#E8E0D0', fontWeight: '500' },
 
   editProfileBtn: {
-    marginTop: 16, backgroundColor: 'rgba(255,255,255,0.9)',
+    marginTop: 16, backgroundColor: 'rgba(232,224,208,0.06)',
     borderRadius: 20, paddingVertical: 14, alignItems: 'center',
     borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
   },
-  editProfileBtnText: { fontSize: 15, fontWeight: '600', color: '#1E293B' },
+  editProfileBtnText: { fontSize: 15, fontWeight: '600', color: '#E8E0D0' },
 });
 
 // ── Follow list modal styles ──────────────────────────────────────────────────
 const fl = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFCFF' },
+  container: { flex: 1, backgroundColor: '#1C1612' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 16 : 20,
-    paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9',
+    paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(232,224,208,0.06)',
   },
-  title: { fontSize: 18, fontWeight: '700', color: '#1E293B' },
+  title: { fontSize: 18, fontWeight: '700', color: '#E8E0D0' },
   closeBtn: { padding: 4 },
-  closeText: { fontSize: 16, color: '#94A3B8' },
+  closeText: { fontSize: 16, color: 'rgba(232,224,208,0.4)' },
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 16,
-    padding: 12, borderWidth: 1, borderColor: '#F1F5F9',
+    backgroundColor: '#252018', borderRadius: 16,
+    padding: 12, borderWidth: 1, borderColor: 'rgba(232,224,208,0.06)',
   },
   avatar: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: TEAL, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: { fontSize: 15, fontWeight: '700', color: '#fff' },
-  name: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
-  username: { fontSize: 12, color: '#94A3B8', marginTop: 1 },
+  avatarText: { fontSize: 15, fontWeight: '700', color: '#E8E0D0' },
+  name: { fontSize: 14, fontWeight: '700', color: '#E8E0D0' },
+  username: { fontSize: 12, color: 'rgba(232,224,208,0.4)', marginTop: 1 },
   followBtn: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-    borderWidth: 1.5, borderColor: BLUE,
+    borderWidth: 1.5, borderColor: GOLD,
   },
-  followBtnActive: { backgroundColor: BLUE },
-  followBtnText: { fontSize: 12, fontWeight: '700', color: BLUE },
-  followBtnTextActive: { color: '#fff' },
+  followBtnActive: { backgroundColor: GOLD },
+  followBtnText: { fontSize: 12, fontWeight: '700', color: GOLD },
+  followBtnTextActive: { color: '#E8E0D0' },
 });

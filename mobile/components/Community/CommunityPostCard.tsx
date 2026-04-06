@@ -167,7 +167,7 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
             <View style={s.imageContainer}>
               <Image source={localImg} style={s.image} resizeMode="cover" />
               <LinearGradient colors={['transparent', 'rgba(0,0,0,0.65)']} style={s.imageOverlay}>
-                <Text style={s.imageDishName} numberOfLines={1}>{post.mealName}</Text>
+                <Text style={s.imageDishName} numberOfLines={2}>{post.mealName}</Text>
               </LinearGradient>
               {restaurantPill}
             </View>
@@ -178,7 +178,7 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
             <View style={s.imageContainer}>
               <Image source={{ uri: post.imageUri }} style={s.image} resizeMode="cover" />
               <LinearGradient colors={['transparent', 'rgba(0,0,0,0.65)']} style={s.imageOverlay}>
-                <Text style={s.imageDishName} numberOfLines={1}>{post.mealName}</Text>
+                <Text style={s.imageDishName} numberOfLines={2}>{post.mealName}</Text>
               </LinearGradient>
               {restaurantPill}
             </View>
@@ -192,8 +192,10 @@ export function CommunityPostCard({ post, onLike, isOwn, onDelete }: Props) {
         );
       })()}
 
-      {/* Caption */}
-      <Text style={s.caption}>{post.caption}</Text>
+      {/* Caption — only show if different from meal name */}
+      {post.caption && post.caption.toLowerCase().trim() !== post.mealName?.toLowerCase().trim() && (
+        <Text style={s.caption}>{post.caption}</Text>
+      )}
 
       {/* Nutrition strip */}
       <View style={s.nutritionStrip}>
