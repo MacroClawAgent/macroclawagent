@@ -34,7 +34,13 @@ export default function IntegrationsScreen() {
 
   async function handleConnect(item: typeof ITEMS[number]) {
     if (item.key === "apple_health") {
-      await hk.requestPermission();
+      const ok = await hk.requestPermission();
+      if (!ok) {
+        Alert.alert(
+          "Apple Health",
+          "Could not connect to Apple Health. Make sure Health access is enabled in Settings > Privacy > Health > Jonno.",
+        );
+      }
     } else if (item.key === "strava") {
       try {
         const res = await apiGet<{ url: string }>("/api/strava/mobile-init");
