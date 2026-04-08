@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { View, Text, Image, Animated, StyleSheet, Dimensions } from "react-native";
+import * as SplashScreen from "expo-splash-screen";
 import { router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
@@ -12,17 +13,18 @@ export default function SplashGate() {
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const barWidth = useRef(new Animated.Value(0)).current;
   const hasNavigated = useRef(false);
+  const splashHidden = useRef(false);
 
-  // Animate logo + progress bar
-  useEffect(() => {
-    Animated.sequence([
-      Animated.delay(200),
-      Animated.timing(logoOpacity, { toValue: 1, duration: 500, useNativeDriver: false }),
-    ]).start();
-
-    // Progress bar fills over 1.5s
+  // Once our custom splash image loads, hide the native splash
+  function onImageLoad() {
+    if (!splashHidden.current) {
+      splashHidden.current = true;
+      SplashScreen.hideAsync();
+    }
+    // Start animations
+    Animated.timing(logoOpacity, { toValue: 1, duration: 500, useNativeDriver: false }).start();
     Animated.timing(barWidth, { toValue: BAR_WIDTH, duration: 1500, useNativeDriver: false }).start();
-  }, []);
+  }
 
   // Navigate once auth is resolved
   useEffect(() => {
@@ -48,11 +50,12 @@ export default function SplashGate() {
 
   return (
     <Animated.View style={[s.container, { opacity: fadeAnim }]}>
-      {/* Background image — full bleed */}
+      {/* Background image — triggers native splash hide on load */}
       <Image
         source={require("@/assets/images/loading.png")}
         style={s.bgImage}
         resizeMode="cover"
+        onLoad={onImageLoad}
       />
 
       {/* Logo */}

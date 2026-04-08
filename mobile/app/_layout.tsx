@@ -35,9 +35,7 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+  // Don't hide splash here — index.tsx handles it for seamless transition
 
   if (!loaded) return null;
 
