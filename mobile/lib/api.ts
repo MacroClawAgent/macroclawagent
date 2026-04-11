@@ -1,5 +1,4 @@
 import Constants from "expo-constants";
-import NetInfo from "@react-native-community/netinfo";
 import { supabase } from "./supabase";
 
 const BASE_URL: string =
@@ -14,12 +13,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   };
 }
 
-async function checkNetwork(): Promise<void> {
-  const state = await NetInfo.fetch();
-  if (!state.isConnected) {
-    throw new Error("No internet connection. Please check your network and try again.");
-  }
-}
+// Network check removed — fetchWithRetry handles failures gracefully
 
 async function fetchWithRetry(url: string, options: RequestInit, retries = 1): Promise<Response> {
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -39,7 +33,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 1): P
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  await checkNetwork();
+
   const headers = await getAuthHeaders();
   const res = await fetchWithRetry(`${BASE_URL}${path}`, { headers });
   if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
@@ -47,7 +41,7 @@ export async function apiGet<T>(path: string): Promise<T> {
 }
 
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
-  await checkNetwork();
+
   const headers = await getAuthHeaders();
   const res = await fetchWithRetry(`${BASE_URL}${path}`, {
     method: "POST",
@@ -62,7 +56,7 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
 }
 
 export async function apiDelete<T>(path: string): Promise<T> {
-  await checkNetwork();
+
   const headers = await getAuthHeaders();
   const res = await fetchWithRetry(`${BASE_URL}${path}`, { method: "DELETE", headers });
   if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
@@ -70,7 +64,7 @@ export async function apiDelete<T>(path: string): Promise<T> {
 }
 
 export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
-  await checkNetwork();
+
   const headers = await getAuthHeaders();
   const res = await fetchWithRetry(`${BASE_URL}${path}`, {
     method: "PATCH",
