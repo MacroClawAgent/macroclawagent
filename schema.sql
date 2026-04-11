@@ -35,6 +35,17 @@ CREATE TABLE IF NOT EXISTS public.users (
 -- Add fitness_goal to existing databases (safe to run if column already exists)
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS fitness_goal TEXT DEFAULT 'performance';
 
+-- User preferences (synced from mobile app)
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dietary_requirement TEXT DEFAULT 'none';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS allergies TEXT[] DEFAULT '{}';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS cuisines TEXT[] DEFAULT '{}';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS budget TEXT DEFAULT 'moderate';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS cooking_time TEXT DEFAULT 'normal';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS servings INTEGER DEFAULT 1;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS spice_level TEXT DEFAULT 'medium';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS disliked_ingredients TEXT[] DEFAULT '{}';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT true;
+
 -- ============================================================
 -- MEAL PLANS TABLE
 -- Stores AI-generated meal plans linked to Strava activity

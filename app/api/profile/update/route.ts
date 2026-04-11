@@ -19,42 +19,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      full_name,
-      date_of_birth,
-      gender,
-      weight_kg,
-      height_cm,
-      unit_preference,
-      avatar_url,
-      profile_complete,
-      calorie_goal,
-      protein_goal,
-      carbs_goal,
-      fat_goal,
-      fitness_goal,
-      username,
-      bio,
-      is_public,
-    } = body;
+    // Build update payload from all accepted fields
+    const ALLOWED_FIELDS = [
+      'full_name', 'date_of_birth', 'gender', 'weight_kg', 'height_cm',
+      'unit_preference', 'avatar_url', 'profile_complete',
+      'calorie_goal', 'protein_goal', 'carbs_goal', 'fat_goal', 'fitness_goal',
+      'username', 'bio', 'is_public',
+      // Preferences (synced from mobile)
+      'dietary_requirement', 'allergies', 'cuisines', 'budget',
+      'cooking_time', 'servings', 'spice_level', 'disliked_ingredients',
+    ];
 
     const updatePayload: Record<string, unknown> = {};
-    if (full_name !== undefined) updatePayload.full_name = full_name;
-    if (date_of_birth !== undefined) updatePayload.date_of_birth = date_of_birth;
-    if (gender !== undefined) updatePayload.gender = gender;
-    if (weight_kg !== undefined) updatePayload.weight_kg = weight_kg;
-    if (height_cm !== undefined) updatePayload.height_cm = height_cm;
-    if (unit_preference !== undefined) updatePayload.unit_preference = unit_preference;
-    if (avatar_url !== undefined) updatePayload.avatar_url = avatar_url;
-    if (profile_complete !== undefined) updatePayload.profile_complete = profile_complete;
-    if (calorie_goal !== undefined) updatePayload.calorie_goal = calorie_goal;
-    if (protein_goal !== undefined) updatePayload.protein_goal = protein_goal;
-    if (carbs_goal !== undefined) updatePayload.carbs_goal = carbs_goal;
-    if (fat_goal !== undefined) updatePayload.fat_goal = fat_goal;
-    if (fitness_goal !== undefined) updatePayload.fitness_goal = fitness_goal;
-    if (username !== undefined) updatePayload.username = username;
-    if (bio !== undefined) updatePayload.bio = bio;
-    if (is_public !== undefined) updatePayload.is_public = is_public;
+    for (const key of ALLOWED_FIELDS) {
+      if (body[key] !== undefined) updatePayload[key] = body[key];
+    }
 
     const { data, error } = await supabase
       .from("users")

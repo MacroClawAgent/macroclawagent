@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { UserPreferences } from '@/types/preferences';
 import { DEFAULT_PREFERENCES } from '@/types/preferences';
+import { apiPost } from '@/lib/api';
 
 const STORAGE_KEY = 'jonno_preferences';
 
@@ -9,6 +10,17 @@ export const savePreferences = async (prefs: UserPreferences): Promise<void> => 
     STORAGE_KEY,
     JSON.stringify({ ...prefs, lastUpdated: new Date().toISOString() }),
   );
+  // Sync to Supabase in background (non-blocking)
+  apiPost('/api/profile/update', {
+    dietary_requirement: prefs.dietaryRequirement,
+    allergies: prefs.allergies,
+    cuisines: prefs.cuisines,
+    budget: prefs.budget,
+    cooking_time: prefs.cookingTime,
+    servings: prefs.servings,
+    spice_level: prefs.spiceLevel,
+    disliked_ingredients: prefs.dislikedIngredients,
+  }).catch(() => {}); // Silent — local is source of truth
 };
 
 export const loadPreferences = async (): Promise<UserPreferences> => {

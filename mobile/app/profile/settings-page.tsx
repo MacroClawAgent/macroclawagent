@@ -6,7 +6,8 @@ import { useRouter } from "expo-router";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { apiPost } from "@/lib/api";
+import { apiPost, apiDelete } from "@/lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BG = "#0D0A07"; const WHITE = "#1C1410"; const BORDER = "rgba(255,220,150,0.12)"; const TEAL = "#F5C842";
 
@@ -81,6 +82,27 @@ export default function SettingsPageScreen() {
         router.replace("/(auth)/sign-in");
       }},
     ]);
+  }
+
+  function handleDeleteAccount() {
+    Alert.alert(
+      "Delete Account",
+      "This will permanently delete your account and all your data. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: async () => {
+          try {
+            await apiDelete("/api/profile/delete");
+            // Clear all local data
+            await AsyncStorage.clear();
+            await signOut();
+            router.replace("/(auth)/sign-in");
+          } catch {
+            Alert.alert("Error", "Could not delete account. Please try again.");
+          }
+        }},
+      ]
+    );
   }
 
   return (
@@ -171,6 +193,10 @@ export default function SettingsPageScreen() {
 
         <TouchableOpacity style={s.signOutBtn} onPress={handleSignOut} activeOpacity={0.85}>
           <Text style={s.signOutTxt}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={s.deleteBtn} onPress={handleDeleteAccount} activeOpacity={0.85}>
+          <Text style={s.deleteBtnTxt}>Delete Account</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -277,6 +303,8 @@ const s = StyleSheet.create({
   toggleTxtActive: { color: "#E8E0D0", fontWeight: "700" },
   signOutBtn: { backgroundColor: WHITE, borderRadius: 14, paddingVertical: 16, alignItems: "center", borderWidth: 1, borderColor: "#FCA5A5", marginTop: 6 },
   signOutTxt: { color: "#EF4444", fontWeight: "700", fontSize: 15 },
+  deleteBtn: { borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 10 },
+  deleteBtnTxt: { color: "rgba(239,68,68,0.5)", fontWeight: "600", fontSize: 13 },
   // Modals
   modalOverlay: { flex: 1, justifyContent: "flex-end" },
   modalSheet: {
