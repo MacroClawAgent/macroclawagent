@@ -157,7 +157,7 @@ export default function SettingsPageScreen() {
           <Divider />
           <View style={s.row}>
             <Text style={s.rowLabel}>Notifications</Text>
-            <Text style={s.rowValue}>On</Text>
+            <Text style={[s.rowValue, { color: "rgba(232,224,208,0.3)" }]}>Coming Soon</Text>
           </View>
           <Divider />
           <View style={s.row}>

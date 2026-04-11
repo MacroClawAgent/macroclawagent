@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import NetInfo from "@react-native-community/netinfo";
 import { supabase } from "./supabase";
 
 const BASE_URL: string =
@@ -13,16 +14,42 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   };
 }
 
+async function checkNetwork(): Promise<void> {
+  const state = await NetInfo.fetch();
+  if (!state.isConnected) {
+    throw new Error("No internet connection. Please check your network and try again.");
+  }
+}
+
+async function fetchWithRetry(url: string, options: RequestInit, retries = 1): Promise<Response> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeout);
+      return res;
+    } catch (e: any) {
+      if (attempt === retries) throw e;
+      // Wait 1s before retry
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+  throw new Error("Request failed");
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
+  await checkNetwork();
   const headers = await getAuthHeaders();
-  const res = await fetch(`${BASE_URL}${path}`, { headers });
+  const res = await fetchWithRetry(`${BASE_URL}${path}`, { headers });
   if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
   return res.json();
 }
 
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  await checkNetwork();
   const headers = await getAuthHeaders();
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetchWithRetry(`${BASE_URL}${path}`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
@@ -35,15 +62,17 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
 }
 
 export async function apiDelete<T>(path: string): Promise<T> {
+  await checkNetwork();
   const headers = await getAuthHeaders();
-  const res = await fetch(`${BASE_URL}${path}`, { method: "DELETE", headers });
+  const res = await fetchWithRetry(`${BASE_URL}${path}`, { method: "DELETE", headers });
   if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
   return res.json();
 }
 
 export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
+  await checkNetwork();
   const headers = await getAuthHeaders();
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetchWithRetry(`${BASE_URL}${path}`, {
     method: "PATCH",
     headers,
     body: JSON.stringify(body),
