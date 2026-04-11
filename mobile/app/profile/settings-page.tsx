@@ -155,10 +155,10 @@ export default function SettingsPageScreen() {
             </View>
           </View>
           <Divider />
-          <View style={s.row}>
+          <TouchableOpacity style={s.row} onPress={() => router.push("/profile/notifications")} activeOpacity={0.7}>
             <Text style={s.rowLabel}>Notifications</Text>
-            <Text style={[s.rowValue, { color: "rgba(232,224,208,0.3)" }]}>Coming Soon</Text>
-          </View>
+            <Text style={s.chevron}>›</Text>
+          </TouchableOpacity>
           <Divider />
           <View style={s.row}>
             <Text style={s.rowLabel}>Language</Text>

@@ -9,6 +9,7 @@ export default function ProfileLayout() {
       <Stack.Screen name="personalise" />
       <Stack.Screen name="integrations" />
       <Stack.Screen name="settings-page" />
+      <Stack.Screen name="notifications" />
       <Stack.Screen name="terms" />
       <Stack.Screen name="privacy" />
     </Stack>

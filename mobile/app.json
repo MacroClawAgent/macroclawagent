@@ -64,6 +64,13 @@
           "healthSharePermission": "Jonno reads your workout and activity data to personalise your nutrition targets.",
           "healthUpdatePermission": "Jonno saves your nutrition logs to Apple Health."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#F5C842"
+        }
       ]
     ],
     "experiments": {

@@ -37,6 +37,15 @@ export default function RootLayout() {
 
   // Don't hide splash here — index.tsx handles it for seamless transition
 
+  // Schedule notifications on app launch (non-blocking)
+  useEffect(() => {
+    if (loaded) {
+      import('@/services/notificationService').then(ns => {
+        ns.scheduleAllNotifications().catch(() => {});
+      });
+    }
+  }, [loaded]);
+
   if (!loaded) return null;
 
   return (
