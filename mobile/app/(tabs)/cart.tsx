@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Clipboard,
   KeyboardAvoidingView,
   Linking,
   Modal,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -41,6 +43,49 @@ const SAGE      = '#8B9E6E';
 const DIM       = 'rgba(232,224,208,0.3)';
 const WW_GREEN  = '#007837';
 const COLES_RED = '#E31837';
+
+// ── Aisle mapping ────────────────────────────────────────────────────────────
+type Aisle = 'produce' | 'meat_seafood' | 'dairy_eggs' | 'bakery' | 'pantry' | 'frozen' | 'drinks' | 'other';
+
+const AISLE_META: Record<Aisle, { label: string; icon: string; order: number }> = {
+  produce:      { label: 'Produce',        icon: 'leaf-outline',       order: 0 },
+  meat_seafood: { label: 'Meat & Seafood', icon: 'fish-outline',       order: 1 },
+  dairy_eggs:   { label: 'Dairy & Eggs',   icon: 'water-outline',      order: 2 },
+  bakery:       { label: 'Bakery',         icon: 'restaurant-outline', order: 3 },
+  pantry:       { label: 'Pantry & Dry',   icon: 'cube-outline',       order: 4 },
+  frozen:       { label: 'Frozen',         icon: 'snow-outline',       order: 5 },
+  drinks:       { label: 'Drinks',         icon: 'cafe-outline',       order: 6 },
+  other:        { label: 'Other',          icon: 'grid-outline',       order: 7 },
+};
+
+const AISLE_KEYWORDS: [RegExp, Aisle][] = [
+  [/chicken|beef|lamb|pork|mince|steak|salmon|tuna|fish|prawn|turkey|bacon|sausage/i, 'meat_seafood'],
+  [/milk|yoghurt|yogurt|cheese|cream|butter|egg/i, 'dairy_eggs'],
+  [/bread|wrap|tortilla|roll|bun|crumpet|muffin/i, 'bakery'],
+  [/spinach|broccoli|carrot|onion|garlic|tomato|capsicum|zucchini|lettuce|avocado|mushroom|potato|sweet potato|corn|cucumber|celery|bean sprout|kale|rocket|herb|basil|coriander|parsley|lemon|lime|apple|banana|berr|strawberr|blueberr|mango|orange|ginger/i, 'produce'],
+  [/frozen|ice cream/i, 'frozen'],
+  [/juice|water|kombucha|coffee|tea\b/i, 'drinks'],
+  [/rice|pasta|oat|quinoa|flour|sugar|oil|vinegar|sauce|soy|honey|peanut butter|almond|walnut|cashew|can|tin|lentil|chickpea|coconut|spice|cumin|paprika|cinnamon|chilli|salt|pepper|stock|broth|cereal|protein powder|noodle/i, 'pantry'],
+];
+
+function getAisle(name: string): Aisle {
+  for (const [pattern, aisle] of AISLE_KEYWORDS) {
+    if (pattern.test(name)) return aisle;
+  }
+  return 'other';
+}
+
+function groupByAisle(ingredients: SmartCartIngredient[]): { aisle: Aisle; items: SmartCartIngredient[] }[] {
+  const map = new Map<Aisle, SmartCartIngredient[]>();
+  for (const ing of ingredients) {
+    const a = getAisle(ing.name);
+    if (!map.has(a)) map.set(a, []);
+    map.get(a)!.push(ing);
+  }
+  return [...map.entries()]
+    .map(([aisle, items]) => ({ aisle, items }))
+    .sort((a, b) => AISLE_META[a.aisle].order - AISLE_META[b.aisle].order);
+}
 
 // ── Category meta ──────────────────────────────────────────────────────────────
 const CATEGORY_META: Record<IngredientCategory, { label: string; emoji: string }> = {
@@ -286,11 +331,189 @@ function ProductPickerModal({
   );
 }
 
+// ── Shopping List View ────────────────────────────────────────────────────────
+
+function ShoppingListView({ ingredients, storeName, total, getPrice, onClose }: {
+  ingredients: SmartCartIngredient[];
+  storeName: string;
+  total: number;
+  getPrice: (ing: SmartCartIngredient) => number | null;
+  onClose: () => void;
+}) {
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const aisles = groupByAisle(ingredients);
+  const checkedCount = checked.size;
+
+  function toggleItem(id: string) {
+    setChecked(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function buildListText(): string {
+    const lines: string[] = [];
+    lines.push('JONNO SHOPPING LIST');
+    if (storeName) lines.push(storeName);
+    lines.push('─'.repeat(30));
+    lines.push('');
+    for (const { aisle, items } of aisles) {
+      lines.push(AISLE_META[aisle].label.toUpperCase());
+      for (const item of items) {
+        const price = getPrice(item);
+        const priceStr = price ? `$${price.toFixed(2)}` : '';
+        const qty = item.displayQuantity ?? `${item.quantity}${item.unit}`;
+        lines.push(`  ${checked.has(item.id) ? '✓' : '□'} ${item.name} ${qty}  ${priceStr}`);
+      }
+      lines.push('');
+    }
+    lines.push('─'.repeat(30));
+    lines.push(`ESTIMATED TOTAL: $${total.toFixed(2)}`);
+    lines.push(`${ingredients.length} items`);
+    return lines.join('\n');
+  }
+
+  function handleCopy() {
+    const text = buildListText();
+    Clipboard.setString(text);
+    Alert.alert('Copied', 'Shopping list copied to clipboard');
+  }
+
+  function handleShare() {
+    const text = buildListText();
+    Share.share({ message: text, title: 'Jonno Shopping List' });
+  }
+
+  return (
+    <View style={sl.container}>
+      {/* Header */}
+      <View style={sl.header}>
+        <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={24} color={TEXT} />
+        </TouchableOpacity>
+        <View style={{ flex: 1, marginLeft: 10 }}>
+          <Text style={sl.title}>Shopping List</Text>
+          <Text style={sl.subtitle}>{storeName} · {ingredients.length} items</Text>
+        </View>
+        <TouchableOpacity onPress={handleCopy} style={sl.iconBtn} activeOpacity={0.7}>
+          <Ionicons name="copy-outline" size={20} color={TEXT} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleShare} style={sl.iconBtn} activeOpacity={0.7}>
+          <Ionicons name="share-outline" size={20} color={TEXT} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Progress */}
+      <View style={sl.progressRow}>
+        <View style={sl.progressTrack}>
+          <View style={[sl.progressFill, { width: `${ingredients.length > 0 ? (checkedCount / ingredients.length) * 100 : 0}%` }]} />
+        </View>
+        <Text style={sl.progressText}>{checkedCount}/{ingredients.length}</Text>
+      </View>
+
+      {/* Aisle list */}
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        {aisles.map(({ aisle, items }) => (
+          <View key={aisle} style={sl.aisleSection}>
+            <View style={sl.aisleHeader}>
+              <Ionicons name={AISLE_META[aisle].icon as any} size={16} color={GOLD} />
+              <Text style={sl.aisleLabel}>{AISLE_META[aisle].label}</Text>
+              <Text style={sl.aisleCount}>{items.length}</Text>
+            </View>
+            {items.map(item => {
+              const isChecked = checked.has(item.id);
+              const price = getPrice(item);
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[sl.itemRow, isChecked && sl.itemRowChecked]}
+                  onPress={() => toggleItem(item.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[sl.checkbox, isChecked && sl.checkboxOn]}>
+                    {isChecked && <Ionicons name="checkmark" size={12} color={BG} />}
+                  </View>
+                  <Text style={[sl.itemName, isChecked && sl.itemNameChecked]} numberOfLines={1}>{item.name}</Text>
+                  {price ? (
+                    <Text style={[sl.itemPrice, isChecked && { opacity: 0.3 }]}>${price.toFixed(2)}</Text>
+                  ) : null}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Bottom total */}
+      <View style={sl.bottomBar}>
+        <View>
+          <Text style={sl.totalLabel}>Estimated Total</Text>
+          <Text style={sl.totalValue}>${total.toFixed(2)}</Text>
+        </View>
+        <TouchableOpacity style={sl.copyBtn} onPress={handleCopy} activeOpacity={0.85}>
+          <Ionicons name="copy-outline" size={16} color={BG} />
+          <Text style={sl.copyBtnText}>Copy List</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const sl = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BG },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+  title: { fontSize: 18, fontWeight: '700', color: TEXT },
+  subtitle: { fontSize: 12, color: DIM, marginTop: 1 },
+  iconBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: CARD, alignItems: 'center', justifyContent: 'center', marginLeft: 6 },
+
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, marginBottom: 12 },
+  progressTrack: { flex: 1, height: 4, borderRadius: 2, backgroundColor: 'rgba(232,224,208,0.08)' },
+  progressFill: { height: 4, borderRadius: 2, backgroundColor: SAGE },
+  progressText: { fontSize: 12, fontWeight: '600', color: DIM },
+
+  aisleSection: { marginBottom: 8 },
+  aisleHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
+  aisleLabel: { fontSize: 13, fontWeight: '700', color: GOLD, flex: 1, letterSpacing: 0.3 },
+  aisleCount: { fontSize: 11, color: DIM, fontWeight: '600' },
+
+  itemRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(232,224,208,0.04)',
+  },
+  itemRowChecked: { opacity: 0.5 },
+  checkbox: {
+    width: 22, height: 22, borderRadius: 6,
+    borderWidth: 1.5, borderColor: 'rgba(232,224,208,0.2)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  checkboxOn: { backgroundColor: SAGE, borderColor: SAGE },
+  itemName: { fontSize: 15, color: TEXT, flex: 1 },
+  itemNameChecked: { textDecorationLine: 'line-through', color: DIM },
+  itemPrice: { fontSize: 14, fontWeight: '600', color: TEXT },
+
+  bottomBar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: CARD, borderTopWidth: 1, borderTopColor: 'rgba(232,224,208,0.06)',
+    paddingHorizontal: 20, paddingVertical: 16, paddingBottom: 34,
+  },
+  totalLabel: { fontSize: 12, color: DIM },
+  totalValue: { fontSize: 22, fontWeight: '800', color: TEXT },
+  copyBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: GOLD, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 20,
+  },
+  copyBtnText: { fontSize: 15, fontWeight: '700', color: BG },
+});
+
 // ── Main Screen ────────────────────────────────────────────────────────────────
 export default function CartScreen() {
   const router = useRouter();
   const sc = useSmartCart();
   const [showDetail, setShowDetail] = useState(false);
+  const [showShoppingList, setShowShoppingList] = useState(false);
 
   // Re-check for fresh agent cart every time tab gains focus
   useFocusEffect(
@@ -508,15 +731,12 @@ export default function CartScreen() {
               {checkedCount} of {ingredientCount} items selected
             </Text>
             <TouchableOpacity
-              onPress={() => Alert.alert('Coming Soon', 'In-app ordering and checkout is coming soon. For now, use the ingredient list to shop in store or online.')}
+              onPress={() => setShowShoppingList(true)}
               activeOpacity={0.85}
               style={s.shopBtn}
             >
-              <Text style={s.shopBtnLabel}>
-                {sc.cart.selectedNearbyStore
-                  ? `Shop at ${storeName}`
-                  : 'Select a store first'}
-              </Text>
+              <Ionicons name="list-outline" size={18} color={BG} style={{ marginRight: 6 }} />
+              <Text style={s.shopBtnLabel}>Get Shopping List</Text>
             </TouchableOpacity>
           </View>
 
@@ -619,6 +839,17 @@ export default function CartScreen() {
         }}
         onClose={() => setPickerIngredient(null)}
       />
+
+      {/* ═══ Shopping List Modal ═══ */}
+      <Modal visible={showShoppingList} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowShoppingList(false)}>
+        <ShoppingListView
+          ingredients={sc.cart?.ingredients ?? []}
+          storeName={storeName}
+          total={total}
+          getPrice={getIngPrice}
+          onClose={() => setShowShoppingList(false)}
+        />
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -731,9 +962,9 @@ const s = StyleSheet.create({
   },
   loadingBadgeText: { fontSize: 11, fontWeight: '600', color: GOLD },
   shopBtn: {
-    backgroundColor: CORAL, borderRadius: 24, paddingVertical: 16,
-    alignItems: 'center', marginTop: 8,
-    shadowColor: CORAL, shadowOpacity: 0.35, shadowRadius: 12,
+    backgroundColor: GOLD, borderRadius: 24, paddingVertical: 16,
+    alignItems: 'center', justifyContent: 'center', flexDirection: 'row', marginTop: 8,
+    shadowColor: GOLD, shadowOpacity: 0.25, shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 }, elevation: 4,
   },
   shopBtnDisabled: { opacity: 0.45, shadowOpacity: 0 },
