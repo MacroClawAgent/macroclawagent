@@ -11,7 +11,8 @@
     "build:preview": "eas build --platform ios --profile preview",
     "submit:ios": "eas submit --platform ios",
     "doctor": "expo doctor",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@expo-google-fonts/bebas-neue": "^0.4.1",
@@ -52,6 +53,8 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "patch-package": "^8.0.1",
+    "postinstall-postinstall": "^2.1.0",
     "typescript": "~5.9.2"
   },
   "private": true
