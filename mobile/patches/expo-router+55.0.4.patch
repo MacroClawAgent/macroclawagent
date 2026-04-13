@@ -1,0 +1,97 @@
+diff --git a/node_modules/expo-router/ios/Toolbar/RouterToolbarHostView.swift b/node_modules/expo-router/ios/Toolbar/RouterToolbarHostView.swift
+index 3b2a9ad..055f54f 100644
+--- a/node_modules/expo-router/ios/Toolbar/RouterToolbarHostView.swift
++++ b/node_modules/expo-router/ios/Toolbar/RouterToolbarHostView.swift
+@@ -80,14 +80,7 @@ class RouterToolbarHostView: RouterViewWithLogger, LinkPreviewMenuUpdatable {
+             )
+             // Otherwise, the menu items will be reversed in the toolbar
+             item.preferredMenuElementOrder = .fixed
+-            if #available(iOS 26.0, *) {
+-              if let hidesSharedBackground = menu.hidesSharedBackground {
+-                item.hidesSharedBackground = hidesSharedBackground
+-              }
+-              if let sharesBackground = menu.sharesBackground {
+-                item.sharesBackground = sharesBackground
+-              }
+-            }
++            // iOS 26 APIs unavailable in Xcode 16.3 SDK
+             if let titleStyle = menu.titleStyle {
+               RouterFontUtils.setTitleStyle(fromConfig: titleStyle, for: item)
+             }
+diff --git a/node_modules/expo-router/ios/Toolbar/RouterToolbarItemView.swift b/node_modules/expo-router/ios/Toolbar/RouterToolbarItemView.swift
+index 47936de..e65de6d 100644
+--- a/node_modules/expo-router/ios/Toolbar/RouterToolbarItemView.swift
++++ b/node_modules/expo-router/ios/Toolbar/RouterToolbarItemView.swift
+@@ -113,7 +113,8 @@ class RouterToolbarItemView: RouterViewWithLogger {
+         return
+       }
+ 
+-      item = controller.navigationItem.searchBarPlacementBarButtonItem
++      // searchBarPlacementBarButtonItem unavailable in iOS 18.4 SDK
++      item = UIBarButtonItem()
+     } else {
+       // Normal button - apply content properties during initial creation
+       applyContentProperties(to: item)
+@@ -160,43 +161,13 @@ class RouterToolbarItemView: RouterViewWithLogger {
+   }
+ 
+   private func applyCommonProperties(to item: UIBarButtonItem) {
+-    if #available(iOS 26.0, *) {
+-      item.hidesSharedBackground = hidesSharedBackground
+-      item.sharesBackground = sharesBackground
+-    }
++    // iOS 26 APIs (hidesSharedBackground, sharesBackground, Badge) unavailable in Xcode 16.3 SDK
+     item.style = barButtonItemStyle ?? .plain
+     item.width = width.map { CGFloat($0) } ?? 0
+     item.isSelected = selected
+     item.accessibilityLabel = routerAccessibilityLabel
+     item.accessibilityHint = routerAccessibilityHint
+     item.isEnabled = !disabled
+-    if #available(iOS 26.0, *) {
+-      if let badgeConfig = badgeConfiguration {
+-        var badge = UIBarButtonItem.Badge.indicator()
+-        if let value = badgeConfig.value {
+-          badge = .string(value)
+-        }
+-        if let backgroundColor = badgeConfig.backgroundColor {
+-          badge.backgroundColor = backgroundColor
+-        }
+-        if let foregroundColor = badgeConfig.color {
+-          badge.foregroundColor = foregroundColor
+-        }
+-        if badgeConfig.fontFamily != nil || badgeConfig.fontSize != nil
+-          || badgeConfig.fontWeight != nil {
+-          let font = RouterFontUtils.convertTitleStyleToFont(
+-            TitleStyle(
+-              fontFamily: badgeConfig.fontFamily,
+-              fontSize: badgeConfig.fontSize,
+-              fontWeight: badgeConfig.fontWeight
+-            ))
+-          badge.font = font
+-        }
+-        item.badge = badge
+-      } else {
+-        item.badge = nil
+-      }
+-    }
+   }
+ 
+   required init(appContext: AppContext? = nil) {
+diff --git a/node_modules/expo-router/ios/Toolbar/RouterToolbarModule.swift b/node_modules/expo-router/ios/Toolbar/RouterToolbarModule.swift
+index 1bee03c..e1b33b2 100644
+--- a/node_modules/expo-router/ios/Toolbar/RouterToolbarModule.swift
++++ b/node_modules/expo-router/ios/Toolbar/RouterToolbarModule.swift
+@@ -94,11 +94,8 @@ enum BarItemStyle: String, Enumerable {
+     case .plain:
+       return .plain
+     case .prominent:
+-      if #available(iOS 26.0, *) {
+-        return .prominent
+-      } else {
+-        return .done
+-      }
++      // .prominent is iOS 26+ only, unavailable in Xcode 16.3 SDK
++      return .done
+     }
+   }
+ }

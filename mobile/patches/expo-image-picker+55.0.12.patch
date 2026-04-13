@@ -1,0 +1,46 @@
+diff --git a/node_modules/expo-image-picker/ios/ImagePickerPermissionRequesters.swift b/node_modules/expo-image-picker/ios/ImagePickerPermissionRequesters.swift
+index 41ec2e9..2e75f8e 100644
+--- a/node_modules/expo-image-picker/ios/ImagePickerPermissionRequesters.swift
++++ b/node_modules/expo-image-picker/ios/ImagePickerPermissionRequesters.swift
+@@ -19,10 +19,8 @@ public class CameraPermissionRequester: NSObject, EXPermissionsRequester {
+     var status: EXPermissionStatus
+     let cameraUsageDescription = Bundle.main.object(forInfoDictionaryKey: "NSCameraUsageDescription")
+     if cameraUsageDescription == nil {
+-      RCTFatal(RCTErrorWithMessage("""
+-      This app is missing 'NSCameraUsageDescription', video services will fail. \
+-      Ensure this key exists in the app's Info.plist
+-      """))
++      // RCTFatal unavailable in Swift — log warning instead
++      print("[expo-image-picker] This app is missing 'NSCameraUsageDescription', video services will fail. Ensure this key exists in the app's Info.plist")
+       systemStatus = AVAuthorizationStatus.denied
+     } else {
+       systemStatus = AVCaptureDevice.authorizationStatus(for: AVMediaType.video)
+diff --git a/node_modules/expo-image-picker/ios/MediaHandler.swift b/node_modules/expo-image-picker/ios/MediaHandler.swift
+index a0e3a44..dd34bda 100644
+--- a/node_modules/expo-image-picker/ios/MediaHandler.swift
++++ b/node_modules/expo-image-picker/ios/MediaHandler.swift
+@@ -296,20 +296,14 @@ internal struct MediaHandler {
+   }
+ 
+   private func getMimeType(from asset: PHAsset?, fileExtension: String) -> String? {
+-    let utType: UTType? = if #available(iOS 26.0, *) {
+-      asset?.contentType ?? UTType(filenameExtension: fileExtension)
+-    } else {
+-      UTType(filenameExtension: fileExtension)
+-    }
++    // iOS 26 contentType unavailable in Xcode 16.3 SDK
++    let utType: UTType? = UTType(filenameExtension: fileExtension)
+     return utType?.preferredMIMEType
+   }
+ 
+   private func getMimeType(from resource: PHAssetResource, fileExtension: String) -> String? {
+-    let utType: UTType? = if #available(iOS 26.0, *) {
+-      resource.contentType
+-    } else {
+-      UTType(resource.uniformTypeIdentifier) ?? UTType(filenameExtension: fileExtension)
+-    }
++    // iOS 26 contentType unavailable in Xcode 16.3 SDK
++    let utType: UTType? = UTType(resource.uniformTypeIdentifier) ?? UTType(filenameExtension: fileExtension)
+     return utType?.preferredMIMEType
+   }
+ 
